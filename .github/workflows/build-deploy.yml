@@ -1,0 +1,62 @@
+name: Build and Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'next.config.*'
+      - 'tsconfig.json'
+      - 'postcss.config.*'
+      - 'Dockerfile'
+      - '.dockerignore'
+
+jobs:
+  validate-config:
+    runs-on: self-hosted
+    steps:
+      - name: Check required variables and secrets
+        run: |
+          MISSING=""
+          [ -z "${{ vars.REGISTRY }}" ] && MISSING="$MISSING REGISTRY"
+          [ -z "${{ vars.INFRA_REPO_SSH }}" ] && MISSING="$MISSING INFRA_REPO_SSH"
+          [ -z "${{ vars.NEXT_PUBLIC_API_BASE_URL }}" ] && MISSING="$MISSING NEXT_PUBLIC_API_BASE_URL"
+          [ -z "${{ secrets.CR_USERNAME }}" ] && MISSING="$MISSING CR_USERNAME"
+          [ -z "${{ secrets.CR_PASSWORD }}" ] && MISSING="$MISSING CR_PASSWORD"
+          [ -z "${{ secrets.INFRA_DEPLOY_KEY }}" ] && MISSING="$MISSING INFRA_DEPLOY_KEY"
+
+          if [ -n "$MISSING" ]; then
+            echo "❌ Missing required variables/secrets:$MISSING"
+            exit 1
+          fi
+          echo "✅ All required variables and secrets are set"
+
+  build:
+    needs: validate-config
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and push
+        run: ./ci/build-and-push.sh frontend
+        env:
+          REGISTRY: ${{ vars.REGISTRY }}
+          CR_USERNAME: ${{ secrets.CR_USERNAME }}
+          CR_PASSWORD: ${{ secrets.CR_PASSWORD }}
+          NEXT_PUBLIC_API_BASE_URL: ${{ vars.NEXT_PUBLIC_API_BASE_URL }}
+
+  update-infra:
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update infra
+        run: ./ci/update-infra.sh frontend
+        env:
+          INFRA_REPO_SSH: ${{ vars.INFRA_REPO_SSH }}
+          INFRA_DEPLOY_KEY: ${{ secrets.INFRA_DEPLOY_KEY }}
