@@ -50,7 +50,7 @@ chmod 600 "$SSH_KEY_FILE"
 export GIT_SSH_COMMAND="ssh -i ${SSH_KEY_FILE} -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null"
 
 echo "▶ Cloning infra repo..."
-git clone "${INFRA_REPO_SSH}" "${WORKDIR}/repo"
+git clone --quiet "${INFRA_REPO_SSH}" "${WORKDIR}/repo"
 cd "${WORKDIR}/repo"
 
 git config user.email "ci@agimate.ru"
