@@ -58,5 +58,6 @@ jobs:
       - name: Update infra
         run: ./ci/update-infra.sh frontend
         env:
+          REGISTRY: ${{ vars.REGISTRY }}
           INFRA_REPO_SSH: ${{ vars.INFRA_REPO_SSH }}
           INFRA_DEPLOY_KEY: ${{ secrets.INFRA_DEPLOY_KEY }}
