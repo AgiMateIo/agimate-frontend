@@ -53,6 +53,9 @@ echo "▶ Cloning infra repo..."
 git clone "${INFRA_REPO_SSH}" "${WORKDIR}/repo"
 cd "${WORKDIR}/repo"
 
+git config user.email "ci@agimate.ru"
+git config user.name "agimate-ci"
+
 # Update each service
 for SERVICE in "$@"; do
   echo "▶ Updating ${SERVICE} → ${TAG}..."
