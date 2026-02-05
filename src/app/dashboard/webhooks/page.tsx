@@ -1,32 +1,73 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import apiService from '@/services/api';
+import { Webhook } from '@/types';
 import WebhooksList from '@/components/webhooks/WebhooksList';
 import AddWebhookModal from '@/components/webhooks/AddWebhookModal';
-import { usePromiseCache } from '@/hooks/usePromiseCache';
 
 export default function WebhooksPage() {
   const [showAddModal, setShowAddModal] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [webhooks, setWebhooks] = useState<Webhook[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const { promise: webhooksPromise, invalidate: invalidateWebhooks } = usePromiseCache(
-    () => apiService.getWebhooks(),
-    [],
-    'webhooks'
-  );
+  const fetchData = useCallback(async () => {
+    try {
+      setError(null);
+      const data = await apiService.getWebhooks();
+      setWebhooks(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load webhooks');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const handleRefresh = () => {
-    invalidateWebhooks();
-    setRefreshKey(prev => prev + 1);
-  };
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleWebhookAdded = () => {
-    handleRefresh();
+    fetchData();
     setShowAddModal(false);
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <nav className="flex items-center gap-2 text-sm">
+          <Link href="/dashboard" className="text-muted hover:text-foreground transition-colors">
+            Dashboard
+          </Link>
+          <ChevronRightIcon className="h-4 w-4 text-muted" />
+          <span className="text-foreground font-medium">Webhooks</span>
+        </nav>
+        <h1 className="text-2xl font-bold text-foreground">Webhooks</h1>
+        <div className="text-center py-12 text-muted">Loading webhooks...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <nav className="flex items-center gap-2 text-sm">
+          <Link href="/dashboard" className="text-muted hover:text-foreground transition-colors">
+            Dashboard
+          </Link>
+          <ChevronRightIcon className="h-4 w-4 text-muted" />
+          <span className="text-foreground font-medium">Webhooks</span>
+        </nav>
+        <h1 className="text-2xl font-bold text-foreground">Webhooks</h1>
+        <div className="bg-error/10 border border-error/20 rounded-lg p-4">
+          <p className="text-error">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -59,12 +100,10 @@ export default function WebhooksPage() {
           </button>
         </div>
 
-        <Suspense key={refreshKey} fallback={<div className="text-center py-8 text-muted">Loading webhooks...</div>}>
-          <WebhooksList
-            webhooksPromise={webhooksPromise}
-            onUpdate={handleRefresh}
-          />
-        </Suspense>
+        <WebhooksList
+          webhooks={webhooks}
+          onUpdate={fetchData}
+        />
       </div>
 
       {/* Add Webhook Modal */}

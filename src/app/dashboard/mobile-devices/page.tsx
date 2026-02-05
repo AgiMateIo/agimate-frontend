@@ -1,33 +1,73 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import apiService from '@/services/api';
+import { DeviceAuthKeyResponse } from '@/types';
 import MobileDevicesList from '@/components/mobile-devices/MobileDevicesList';
 import AddDeviceKeyModal from '@/components/mobile-devices/AddDeviceKeyModal';
-import { usePromiseCache } from '@/hooks/usePromiseCache';
 
 export default function MobileDevicesPage() {
   const [showAddModal, setShowAddModal] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [devices, setDevices] = useState<DeviceAuthKeyResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Use the new usePromiseCache hook instead of module-level cache
-  const { promise: devicesPromise, invalidate: invalidateDevices } = usePromiseCache(
-    () => apiService.getDeviceAuthKeys(),
-    [],
-    'mobile-devices'
-  );
+  const fetchData = useCallback(async () => {
+    try {
+      setError(null);
+      const data = await apiService.getDeviceAuthKeys();
+      setDevices(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load device keys');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const handleRefresh = () => {
-    invalidateDevices();
-    setRefreshKey(prev => prev + 1);
-  };
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleDeviceKeyAdded = () => {
-    handleRefresh();
+    fetchData();
     setShowAddModal(false);
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <nav className="flex items-center gap-2 text-sm">
+          <Link href="/dashboard" className="text-muted hover:text-foreground transition-colors">
+            Dashboard
+          </Link>
+          <ChevronRightIcon className="h-4 w-4 text-muted" />
+          <span className="text-foreground font-medium">Mobile Devices</span>
+        </nav>
+        <h1 className="text-2xl font-bold text-foreground">Mobile Devices</h1>
+        <div className="text-center py-12 text-muted">Loading device keys...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <nav className="flex items-center gap-2 text-sm">
+          <Link href="/dashboard" className="text-muted hover:text-foreground transition-colors">
+            Dashboard
+          </Link>
+          <ChevronRightIcon className="h-4 w-4 text-muted" />
+          <span className="text-foreground font-medium">Mobile Devices</span>
+        </nav>
+        <h1 className="text-2xl font-bold text-foreground">Mobile Devices</h1>
+        <div className="bg-error/10 border border-error/20 rounded-lg p-4">
+          <p className="text-error">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -60,12 +100,10 @@ export default function MobileDevicesPage() {
           </button>
         </div>
 
-        <Suspense key={refreshKey} fallback={<div className="text-center py-8 text-muted">Loading device keys...</div>}>
-          <MobileDevicesList
-            devicesPromise={devicesPromise}
-            onUpdate={handleRefresh}
-          />
-        </Suspense>
+        <MobileDevicesList
+          devices={devices}
+          onUpdate={fetchData}
+        />
       </div>
 
       {/* Add Device Key Modal */}

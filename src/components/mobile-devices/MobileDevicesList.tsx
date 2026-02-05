@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import apiService from '@/services/api';
 import { DeviceAuthKeyResponse } from '@/types';
 import { TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
@@ -9,19 +9,18 @@ import EditDeviceKeyModal from './EditDeviceKeyModal';
 import { Toggle } from '@/components/ui/Toggle';
 
 interface MobileDevicesListProps {
-  devicesPromise: Promise<DeviceAuthKeyResponse[]>;
+  devices: DeviceAuthKeyResponse[];
   onUpdate?: () => void;
 }
 
-export default function MobileDevicesList({ devicesPromise, onUpdate }: MobileDevicesListProps) {
-  const initialDevices = use(devicesPromise);
-  const [devices, setDevices] = useState<DeviceAuthKeyResponse[]>(initialDevices);
+export default function MobileDevicesList({ devices: devicesProp, onUpdate }: MobileDevicesListProps) {
+  const [devices, setDevices] = useState<DeviceAuthKeyResponse[]>(devicesProp);
   const [editingDevice, setEditingDevice] = useState<DeviceAuthKeyResponse | null>(null);
 
-  // Sync state when promise result changes (after invalidation)
+  // Sync state when prop changes (after parent refetch)
   useEffect(() => {
-    setDevices(initialDevices);
-  }, [initialDevices]);
+    setDevices(devicesProp);
+  }, [devicesProp]);
   const [deletingDevice, setDeletingDevice] = useState<DeviceAuthKeyResponse | null>(null);
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
 

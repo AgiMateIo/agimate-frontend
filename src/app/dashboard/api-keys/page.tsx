@@ -1,28 +1,73 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import apiService from '@/services/api';
-import { ConnectorsApiKeyWithSecret } from '@/types';
+import { ConnectorsApiKey, ConnectorsApiKeyWithSecret } from '@/types';
 import ConnectorsApiKeysList from '@/components/connectors/ConnectorsApiKeysList';
 import AddApiKeyModal from '@/components/connectors/AddApiKeyModal';
-import { usePromiseCache } from '@/hooks/usePromiseCache';
 
 export default function ApiKeysPage() {
   const [showAddModal, setShowAddModal] = useState(false);
+  const [apiKeys, setApiKeys] = useState<ConnectorsApiKey[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Use the new usePromiseCache hook instead of module-level cache
-  const { promise: apiKeysPromise, invalidate: invalidateApiKeys } = usePromiseCache(
-    () => apiService.getConnectorsApiKeys(),
-    [],
-    'connectors-api-keys'
-  );
+  const fetchData = useCallback(async () => {
+    try {
+      setError(null);
+      const data = await apiService.getConnectorsApiKeys();
+      setApiKeys(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load API keys');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleApiKeyAdded = (apiKey: ConnectorsApiKeyWithSecret) => {
-    invalidateApiKeys();
+    fetchData();
     setShowAddModal(false);
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <nav className="flex items-center gap-2 text-sm">
+          <Link href="/dashboard/api-keys" className="text-muted hover:text-foreground transition-colors">
+            API Keys
+          </Link>
+          <ChevronRightIcon className="h-4 w-4 text-muted" />
+          <span className="text-foreground font-medium">API Keys</span>
+        </nav>
+        <h1 className="text-2xl font-bold text-foreground">API Keys</h1>
+        <div className="text-center py-12 text-muted">Loading API keys...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <nav className="flex items-center gap-2 text-sm">
+          <Link href="/dashboard/api-keys" className="text-muted hover:text-foreground transition-colors">
+            API Keys
+          </Link>
+          <ChevronRightIcon className="h-4 w-4 text-muted" />
+          <span className="text-foreground font-medium">API Keys</span>
+        </nav>
+        <h1 className="text-2xl font-bold text-foreground">API Keys</h1>
+        <div className="bg-error/10 border border-error/20 rounded-lg p-4">
+          <p className="text-error">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -55,12 +100,10 @@ export default function ApiKeysPage() {
           </button>
         </div>
 
-        <Suspense fallback={<div className="text-center py-8 text-muted">Loading API keys...</div>}>
-          <ConnectorsApiKeysList
-            apiKeysPromise={apiKeysPromise}
-            onUpdate={invalidateApiKeys}
-          />
-        </Suspense>
+        <ConnectorsApiKeysList
+          apiKeys={apiKeys}
+          onUpdate={fetchData}
+        />
       </div>
 
       {/* Add API Key Modal */}

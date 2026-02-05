@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import apiService from '@/services/api';
 import { Webhook } from '@/types';
@@ -9,21 +9,20 @@ import DeleteWebhookModal from './DeleteWebhookModal';
 import { Toggle } from '@/components/ui/Toggle';
 
 interface WebhooksListProps {
-  webhooksPromise: Promise<Webhook[]>;
+  webhooks: Webhook[];
   onUpdate?: () => void;
 }
 
-export default function WebhooksList({ webhooksPromise, onUpdate }: WebhooksListProps) {
+export default function WebhooksList({ webhooks: webhooksProp, onUpdate }: WebhooksListProps) {
   const router = useRouter();
-  const initialWebhooks = use(webhooksPromise);
-  const [webhooks, setWebhooks] = useState<Webhook[]>(initialWebhooks);
+  const [webhooks, setWebhooks] = useState<Webhook[]>(webhooksProp);
   const [deletingWebhook, setDeletingWebhook] = useState<Webhook | null>(null);
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
 
-  // Sync state when promise result changes (after invalidation)
+  // Sync state when prop changes (after parent refetch)
   useEffect(() => {
-    setWebhooks(initialWebhooks);
-  }, [initialWebhooks]);
+    setWebhooks(webhooksProp);
+  }, [webhooksProp]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString.replace(' ', 'T'));

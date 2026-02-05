@@ -14,8 +14,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Agimate - AI-Powered Marketplace Analytics",
-  description: "Smart analytics and automation for marketplace sellers",
+  title: "AgiMate — Глаза, уши и руки для вашего AI-агента",
+  description: "AgiMate подключает AI-агентов к вашим устройствам и сервисам. Скриншоты, уведомления из 100+ сервисов, выполнение команд — пусть AI не только говорит, но и действует.",
+  openGraph: {
+    title: "AgiMate — Глаза, уши и руки для вашего AI-агента",
+    description: "AgiMate подключает AI-агентов к вашим устройствам и сервисам. Пусть AI не только говорит — пусть действует.",
+    type: "website",
+    locale: "ru_RU",
+  },
 };
 
 export default function RootLayout({
@@ -24,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="ru">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <UserProvider>
           {children}

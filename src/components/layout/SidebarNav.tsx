@@ -36,7 +36,7 @@ export default function SidebarNav() {
       {/* Logo */}
       <div className="h-16 flex items-center px-6 border-b border-border">
         <Link href="/dashboard" className="text-xl font-bold text-foreground">
-          Agimate
+          AgiMate
         </Link>
       </div>
 
@@ -66,7 +66,7 @@ export default function SidebarNav() {
       {/* Footer */}
       <div className="p-4 border-t border-border">
         <div className="text-xs text-muted">
-          Agimate v1.0.0
+          AgiMate v1.0.0
         </div>
       </div>
     </aside>

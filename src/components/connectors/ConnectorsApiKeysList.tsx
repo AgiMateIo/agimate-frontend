@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import apiService from '@/services/api';
 import { ConnectorsApiKey } from '@/types';
 import { TrashIcon, PencilIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
@@ -10,19 +10,18 @@ import RegenerateApiKeyModal from './RegenerateApiKeyModal';
 import { Toggle } from '@/components/ui/Toggle';
 
 interface ConnectorsApiKeysListProps {
-  apiKeysPromise: Promise<ConnectorsApiKey[]>;
+  apiKeys: ConnectorsApiKey[];
   onUpdate?: () => void;
 }
 
-export default function ConnectorsApiKeysList({ apiKeysPromise, onUpdate }: ConnectorsApiKeysListProps) {
-  const initialApiKeys = use(apiKeysPromise);
-  const [apiKeys, setApiKeys] = useState<ConnectorsApiKey[]>(initialApiKeys);
+export default function ConnectorsApiKeysList({ apiKeys: apiKeysProp, onUpdate }: ConnectorsApiKeysListProps) {
+  const [apiKeys, setApiKeys] = useState<ConnectorsApiKey[]>(apiKeysProp);
   const [editingApiKey, setEditingApiKey] = useState<ConnectorsApiKey | null>(null);
 
-  // Sync state when promise result changes (after invalidation)
+  // Sync state when prop changes (after parent refetch)
   useEffect(() => {
-    setApiKeys(initialApiKeys);
-  }, [initialApiKeys]);
+    setApiKeys(apiKeysProp);
+  }, [apiKeysProp]);
   const [deletingApiKey, setDeletingApiKey] = useState<ConnectorsApiKey | null>(null);
   const [regeneratingApiKey, setRegeneratingApiKey] = useState<ConnectorsApiKey | null>(null);
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
