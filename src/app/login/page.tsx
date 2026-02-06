@@ -8,7 +8,8 @@ import { useUser } from '@/contexts/UserContext';
 import { API } from '@/config/constants';
 
 const getApiBaseUrl = (): string => {
-  return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://api.agimate.lc:8000/';
+  const url = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://api.agimate.lc:8000/';
+  return url.endsWith('/') ? url : `${url}/`;
 };
 
 export default function LoginPage() {

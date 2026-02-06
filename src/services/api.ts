@@ -25,7 +25,8 @@ import type {
   WebhookDeliveriesResponse,
 } from '@/types';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://api.agimate.lc:8000/';
+const rawBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://api.agimate.lc:8000/';
+const BASE_URL = rawBaseUrl.endsWith('/') ? rawBaseUrl : `${rawBaseUrl}/`;
 
 // Helper functions to handle storage
 const getAccessToken = (): string | null => typeof window !== 'undefined' ? sessionStorage.getItem('access_token') : null;
