@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import apiService from '@/services/api';
 import { useUser } from '@/contexts/UserContext';
+import { API } from '@/config/constants';
 
 const getApiBaseUrl = (): string => {
   return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://api.agimate.lc:8000/';
@@ -69,7 +70,7 @@ export default function LoginPage() {
 
           <div className="space-y-3">
             <a
-              href={`${getApiBaseUrl()}user-api/oauth2/authorization/google`}
+              href={`${getApiBaseUrl()}${API.ENDPOINTS.USER_API}/oauth2/authorization/google`}
               className="w-full bg-surface-secondary hover:bg-border text-foreground border border-border/50 py-3 px-4 rounded-lg flex items-center justify-center font-medium transition-colors"
             >
               <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
@@ -82,7 +83,7 @@ export default function LoginPage() {
             </a>
 
             <a
-              href={`${getApiBaseUrl()}user-api/oauth2/authorization/yandex`}
+              href={`${getApiBaseUrl()}${API.ENDPOINTS.USER_API}/oauth2/authorization/yandex`}
               className="w-full bg-surface-secondary hover:bg-border text-foreground border border-border/50 py-3 px-4 rounded-lg flex items-center justify-center font-medium transition-colors"
             >
               <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">

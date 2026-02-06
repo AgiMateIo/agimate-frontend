@@ -38,9 +38,9 @@ export const UI = {
 export const API = {
   // API endpoint prefixes
   ENDPOINTS: {
-    USER_API: 'user-api',
-    CONNECTORS_API: 'connectors-api',
-    MOBILE_API: 'mobile-api',
+    USER_API: 'user',
+    CONNECTORS_API: 'connectors',
+    DEVICE_API: 'device',
   },
 
   // Request timeouts (if needed in future)

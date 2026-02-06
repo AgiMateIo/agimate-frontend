@@ -1,5 +1,6 @@
 // api.ts
 import { User } from './types';
+import { API } from '@/config/constants';
 import type {
   ConnectorInfo,
   MethodDefinition,
@@ -103,7 +104,7 @@ class ApiService {
 
   private async performTokenRefresh(tokenToUse: string): Promise<boolean> {
     try {
-      const response = await fetch(`${BASE_URL}user-api/oauth2/refresh`, {
+      const response = await fetch(`${BASE_URL}${API.ENDPOINTS.USER_API}/oauth2/refresh`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -225,79 +226,79 @@ class ApiService {
   }
 
   async getUserInfo(): Promise<User> {
-    return this.get<User>('user-api/user/me');
+    return this.get<User>(`${API.ENDPOINTS.USER_API}/user/me`);
   }
 
   // ========== CONNECTORS API METHODS ==========
 
   // Connectors
   async getConnectors(): Promise<ConnectorInfo[]> {
-    return this.get<ConnectorInfo[]>('connectors-api/manage/connectors/');
+    return this.get<ConnectorInfo[]>(`${API.ENDPOINTS.CONNECTORS_API}/manage/connectors/`);
   }
 
   // Credentials
   async getCredentialsSummary(): Promise<ConnectorSummary[]> {
-    return this.get<ConnectorSummary[]>('connectors-api/manage/credentials/');
+    return this.get<ConnectorSummary[]>(`${API.ENDPOINTS.CONNECTORS_API}/manage/credentials/`);
   }
 
   async getCredentials(connectorCode: string): Promise<Credential[]> {
-    return this.get<Credential[]>(`connectors-api/manage/credentials/${connectorCode}/`);
+    return this.get<Credential[]>(`${API.ENDPOINTS.CONNECTORS_API}/manage/credentials/${connectorCode}/`);
   }
 
   async createCredential(connectorCode: string, data: CreateCredentialRequest): Promise<Credential> {
-    return this.post<Credential>(`connectors-api/manage/credentials/${connectorCode}`, data);
+    return this.post<Credential>(`${API.ENDPOINTS.CONNECTORS_API}/manage/credentials/${connectorCode}`, data);
   }
 
   async updateCredential(connectorCode: string, credentialId: string, data: UpdateCredentialRequest): Promise<Credential> {
-    return this.put<Credential>(`connectors-api/manage/credentials/${connectorCode}/${credentialId}`, data);
+    return this.put<Credential>(`${API.ENDPOINTS.CONNECTORS_API}/manage/credentials/${connectorCode}/${credentialId}`, data);
   }
 
   async deleteCredential(connectorCode: string, credentialId: string): Promise<void> {
-    return this.delete<void>(`connectors-api/manage/credentials/${connectorCode}/${credentialId}`);
+    return this.delete<void>(`${API.ENDPOINTS.CONNECTORS_API}/manage/credentials/${connectorCode}/${credentialId}`);
   }
 
 
   // ConnectorsApiKey Management
   async getConnectorsApiKeys(): Promise<ConnectorsApiKey[]> {
-    return this.get<ConnectorsApiKey[]>('connectors-api/manage/api-keys/');
+    return this.get<ConnectorsApiKey[]>(`${API.ENDPOINTS.CONNECTORS_API}/manage/api-keys/`);
   }
 
   async createConnectorsApiKey(data: CreateConnectorsApiKeyRequest): Promise<ConnectorsApiKeyWithSecret> {
-    return this.post<ConnectorsApiKeyWithSecret>('connectors-api/manage/api-keys/', data);
+    return this.post<ConnectorsApiKeyWithSecret>(`${API.ENDPOINTS.CONNECTORS_API}/manage/api-keys/`, data);
   }
 
   async updateConnectorsApiKey(keyId: string, data: UpdateConnectorsApiKeyRequest): Promise<ConnectorsApiKey> {
-    return this.put<ConnectorsApiKey>(`connectors-api/manage/api-keys/${keyId}`, data);
+    return this.put<ConnectorsApiKey>(`${API.ENDPOINTS.CONNECTORS_API}/manage/api-keys/${keyId}`, data);
   }
 
   async deleteConnectorsApiKey(keyId: string): Promise<void> {
-    return this.delete<void>(`connectors-api/manage/api-keys/${keyId}`);
+    return this.delete<void>(`${API.ENDPOINTS.CONNECTORS_API}/manage/api-keys/${keyId}`);
   }
 
   async regenerateConnectorsApiKey(keyId: string): Promise<ConnectorsApiKeyWithSecret> {
-    return this.post<ConnectorsApiKeyWithSecret>(`connectors-api/manage/api-keys/${keyId}/regenerate`, {});
+    return this.post<ConnectorsApiKeyWithSecret>(`${API.ENDPOINTS.CONNECTORS_API}/manage/api-keys/${keyId}/regenerate`, {});
   }
 
-  // ========== MOBILE DEVICES API METHODS ==========
+  // ========== DEVICE API METHODS ==========
 
   // Get all device auth keys
   async getDeviceAuthKeys(): Promise<DeviceAuthKeyResponse[]> {
-    return this.get<DeviceAuthKeyResponse[]>('mobile-api/manage/devices/');
+    return this.get<DeviceAuthKeyResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/devices/`);
   }
 
   // Create new device auth key
   async createDeviceAuthKey(data: CreateDeviceAuthKeyRequest): Promise<DeviceAuthKeyCreatedResponse> {
-    return this.post<DeviceAuthKeyCreatedResponse>('mobile-api/manage/devices/', data);
+    return this.post<DeviceAuthKeyCreatedResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/devices/`, data);
   }
 
   // Update device auth key (name, description, enabled)
   async updateDeviceAuthKey(id: string, data: UpdateDeviceAuthKeyRequest): Promise<DeviceAuthKeyResponse> {
-    return this.put<DeviceAuthKeyResponse>(`mobile-api/manage/devices/${id}`, data);
+    return this.put<DeviceAuthKeyResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/devices/${id}`, data);
   }
 
   // Delete device auth key
   async deleteDeviceAuthKey(id: string): Promise<void> {
-    return this.delete<void>(`mobile-api/manage/devices/${id}`);
+    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/devices/${id}`);
   }
 
   // ========== WEBHOOKS API METHODS ==========
@@ -305,39 +306,39 @@ class ApiService {
   // Get all webhooks (with optional event type filter)
   async getWebhooks(eventType?: string): Promise<Webhook[]> {
     const query = eventType ? `?eventType=${encodeURIComponent(eventType)}` : '';
-    return this.get<Webhook[]>(`connectors-api/manage/webhooks/${query}`);
+    return this.get<Webhook[]>(`${API.ENDPOINTS.CONNECTORS_API}/manage/webhooks/${query}`);
   }
 
   // Get webhook by ID
   async getWebhook(webhookId: string): Promise<Webhook> {
-    return this.get<Webhook>(`connectors-api/manage/webhooks/${webhookId}`);
+    return this.get<Webhook>(`${API.ENDPOINTS.CONNECTORS_API}/manage/webhooks/${webhookId}`);
   }
 
   // Create new webhook
   async createWebhook(data: CreateWebhookRequest): Promise<Webhook> {
-    return this.post<Webhook>('connectors-api/manage/webhooks', data);
+    return this.post<Webhook>(`${API.ENDPOINTS.CONNECTORS_API}/manage/webhooks`, data);
   }
 
   // Update webhook
   async updateWebhook(webhookId: string, data: UpdateWebhookRequest): Promise<Webhook> {
-    return this.put<Webhook>(`connectors-api/manage/webhooks/${webhookId}`, data);
+    return this.put<Webhook>(`${API.ENDPOINTS.CONNECTORS_API}/manage/webhooks/${webhookId}`, data);
   }
 
   // Delete webhook
   async deleteWebhook(webhookId: string): Promise<void> {
-    return this.delete<void>(`connectors-api/manage/webhooks/${webhookId}`);
+    return this.delete<void>(`${API.ENDPOINTS.CONNECTORS_API}/manage/webhooks/${webhookId}`);
   }
 
   // Get available event types (with optional filter)
   async getEventTypes(eventTypeLike?: string): Promise<WebhookEventType[]> {
     const query = eventTypeLike ? `?event_type_like=${encodeURIComponent(eventTypeLike)}` : '';
-    return this.get<WebhookEventType[]>(`connectors-api/manage/events/${query}`);
+    return this.get<WebhookEventType[]>(`${API.ENDPOINTS.CONNECTORS_API}/manage/events/${query}`);
   }
 
   // Get webhook deliveries (history)
   async getWebhookDeliveries(webhookId: string, page = 0, size = 20): Promise<WebhookDeliveriesResponse> {
     return this.get<WebhookDeliveriesResponse>(
-      `connectors-api/manage/webhooks/${webhookId}/deliveries?page=${page}&size=${size}`
+      `${API.ENDPOINTS.CONNECTORS_API}/manage/webhooks/${webhookId}/deliveries?page=${page}&size=${size}`
     );
   }
 
@@ -354,7 +355,7 @@ class ApiService {
     try {
       // Only call the backend logout endpoint if we have a refresh token
       if (refreshTokenId) {
-        const response = await fetch(`${BASE_URL}user-api/oauth2/logout`, {
+        const response = await fetch(`${BASE_URL}${API.ENDPOINTS.USER_API}/oauth2/logout`, {
           method: 'POST',
           credentials: 'include',
           headers: {
