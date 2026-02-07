@@ -1,5 +1,7 @@
 'use client';
 
+import { useLocale } from 'next-intl';
+import { localeMap } from '@/i18n/routing';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { SalesDataPoint } from '@/types';
 
@@ -8,13 +10,16 @@ interface SalesChartProps {
 }
 
 export default function SalesChart({ data }: SalesChartProps) {
+  const locale = useLocale();
+  const bcp47Locale = localeMap[locale];
+
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+    return date.toLocaleDateString(bcp47Locale, { day: 'numeric', month: 'short' });
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('ru-RU', {
+    return new Intl.NumberFormat(bcp47Locale, {
       style: 'currency',
       currency: 'RUB',
       maximumFractionDigits: 0,

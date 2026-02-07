@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { ConnectorsApiKey, ConnectorsApiKeyWithSecret } from '@/types';
 import ConnectorsApiKeysList from '@/components/connectors/ConnectorsApiKeysList';

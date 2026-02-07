@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { ConnectorInfo } from '@/types';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
 

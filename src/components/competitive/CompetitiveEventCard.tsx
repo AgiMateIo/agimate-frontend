@@ -1,5 +1,7 @@
 'use client';
 
+import { useLocale } from 'next-intl';
+import { localeMap } from '@/i18n/routing';
 import { CompetitiveEvent } from '@/types';
 import {
   ArrowTrendingDownIcon,
@@ -43,10 +45,12 @@ const eventTypeConfig = {
 };
 
 export default function CompetitiveEventCard({ event }: CompetitiveEventCardProps) {
+  const locale = useLocale();
+  const bcp47Locale = localeMap[locale];
   const config = eventTypeConfig[event.type];
   const EventIcon = config.icon;
 
-  const timestamp = new Date(event.timestamp).toLocaleString('ru-RU', {
+  const timestamp = new Date(event.timestamp).toLocaleString(bcp47Locale, {
     day: 'numeric',
     month: 'short',
     hour: '2-digit',

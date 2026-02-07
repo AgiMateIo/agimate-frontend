@@ -1,5 +1,7 @@
 'use client';
 
+import { useLocale } from 'next-intl';
+import { localeMap } from '@/i18n/routing';
 import { Product } from '@/types';
 import { StarIcon } from '@heroicons/react/24/solid';
 
@@ -8,8 +10,11 @@ interface TopProductsTableProps {
 }
 
 export default function TopProductsTable({ products }: TopProductsTableProps) {
+  const locale = useLocale();
+  const bcp47Locale = localeMap[locale];
+
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('ru-RU', {
+    return new Intl.NumberFormat(bcp47Locale, {
       style: 'currency',
       currency: 'RUB',
       maximumFractionDigits: 0,

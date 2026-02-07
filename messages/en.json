@@ -1,0 +1,361 @@
+{
+  "Metadata": {
+    "title": "AgiMate — Eyes, ears, and hands for your AI agent",
+    "description": "AgiMate connects AI agents to your devices and services. Screenshots, notifications from 100+ services, command execution — let AI not just talk, but act.",
+    "ogTitle": "AgiMate — Eyes, ears, and hands for your AI agent",
+    "ogDescription": "AgiMate connects AI agents to your devices and services. Let AI not just talk — let it act."
+  },
+  "HomePage": {
+    "nav": {
+      "howItWorks": "How it works",
+      "useCases": "Use cases",
+      "download": "Download",
+      "dashboard": "Dashboard",
+      "login": "Sign in"
+    },
+    "hero": {
+      "title": "Give your AI a",
+      "titleHighlight": "body",
+      "subtitle": "AgiMate connects AI agents to your devices and services.",
+      "subtitleSecond": "Let AI not just talk — let it act.",
+      "cta": "Try for free",
+      "secondaryCta": "How it works"
+    },
+    "problem": {
+      "badge": "Problem",
+      "text": "Your AI assistant can answer questions. But ask it to take a screenshot, track a file, or send a message — and it's helpless."
+    },
+    "solution": {
+      "badge": "Solution",
+      "text": "AgiMate gives AI eyes, ears, and hands. Install the app on a device — and your AI agent can see, hear, and act."
+    },
+    "capabilities": {
+      "see": {
+        "title": "See",
+        "description": "Screenshots, file tracking, device events"
+      },
+      "hear": {
+        "title": "Hear",
+        "description": "Notifications from 100+ services — Ozon, WB, Telegram and more"
+      },
+      "act": {
+        "title": "Act",
+        "description": "Execute commands, send messages, control applications"
+      }
+    },
+    "howItWorks": {
+      "title": "How it works",
+      "subtitle": "AgiMate — a bridge between AI agents and the real world",
+      "aiBox": {
+        "title": "Your AI (any)",
+        "items": ["Claude", "ChatGPT", "Your bot"]
+      },
+      "platformBox": {
+        "title": "AgiMate Platform",
+        "subtitle": "\"Bridge\""
+      },
+      "devicesBox": {
+        "title": "Devices & Services",
+        "phone": "Phone",
+        "computer": "Computer",
+        "marketplace": "Ozon, WB",
+        "messenger": "Telegram"
+      },
+      "caption": "Works with any AI via MCP protocol or n8n.",
+      "captionSecond": "Connect once — use everywhere."
+    },
+    "useCases": {
+      "title": "What you can automate",
+      "subtitle": "Real tasks that AgiMate solves for business",
+      "items": [
+        {
+          "title": "AI Secretary",
+          "description": "Monitoring incoming messages in Email, Telegram, WhatsApp. AI analyzes, categorizes, and responds to common questions.",
+          "flow": ["Incoming message", "AI analysis", "Auto-reply or escalation"]
+        },
+        {
+          "title": "Document Automation",
+          "description": "Tracking new files, recognizing document types, extracting data, and uploading to 1C or CRM.",
+          "flow": ["New file", "Recognition", "Upload to 1C/CRM"]
+        },
+        {
+          "title": "Monitoring & Alerts",
+          "description": "Tracking device events — screenshots, notifications, changes. AI analyzes and sends alerts.",
+          "flow": ["Device event", "AI analysis", "Alert to Telegram"]
+        },
+        {
+          "title": "E-commerce Assistant",
+          "description": "Monitoring orders on Ozon and Wildberries, automatic status updates, customer responses.",
+          "flow": ["New order", "Status update", "Customer response"]
+        },
+        {
+          "title": "Competitor Price Monitoring",
+          "description": "Tracking competitor product prices on marketplaces. AI analyzes changes and suggests adjustments.",
+          "flow": ["Price change", "AI analysis", "Recommendation + alert"]
+        },
+        {
+          "title": "Legacy Software Bridge",
+          "description": "AI controls desktop apps without APIs — 1C, Excel, specialized software. Integration with modern services.",
+          "flow": ["AI command", "App action", "Result to cloud"]
+        },
+        {
+          "title": "Voice Notifications",
+          "description": "Important events are voiced via TTS on the device. Don't miss critical alerts, even if you're not looking at the screen.",
+          "flow": ["Critical event", "AI prioritization", "Voice notification"]
+        },
+        {
+          "title": "Data Collection & Reports",
+          "description": "Automatic data collection from various sources, aggregation, and scheduled report generation.",
+          "flow": ["Collect from sources", "AI aggregation", "Report to Notion/Sheets"]
+        }
+      ]
+    },
+    "download": {
+      "title": "Try it now",
+      "subtitle": "Open-source. Free. Community plugins.",
+      "cta": "Sign up for free",
+      "android": {
+        "title": "Android",
+        "description": "Install the agent on your phone",
+        "button": "Download APK"
+      },
+      "desktop": {
+        "title": "Desktop",
+        "description": "Install the agent on your computer"
+      },
+      "n8n": {
+        "title": "n8n node",
+        "description": "Connect to your workflows",
+        "button": "Documentation"
+      }
+    },
+    "footer": {
+      "copyright": "AgiMate © 2025",
+      "github": "GitHub",
+      "telegram": "Telegram",
+      "docs": "Documentation"
+    }
+  },
+  "Login": {
+    "title": "Sign in to AgiMate",
+    "subtitle": "Sign in to continue",
+    "google": "Sign in with Google",
+    "yandex": "Sign in with Yandex",
+    "terms": "By continuing, you agree to the",
+    "termsLink": "Terms of Service",
+    "and": "and",
+    "privacyLink": "Privacy Policy"
+  },
+  "Logout": {
+    "title": "Sign out",
+    "subtitle": "Are you sure you want to sign out?",
+    "confirm": "Yes, sign out",
+    "back": "Go back"
+  },
+  "Sidebar": {
+    "dashboard": "Dashboard",
+    "analytics": "Analytics",
+    "smartActions": "Smart Actions",
+    "chat": "AI Chat",
+    "connectors": "Connectors",
+    "apiKeys": "API Keys",
+    "webhooks": "Webhooks",
+    "mobileDevices": "Mobile Devices",
+    "competitive": "Competitive",
+    "settings": "Settings"
+  },
+  "TopBar": {
+    "pageTitles": {
+      "dashboard": "Dashboard",
+      "analytics": "Analytics",
+      "smartActions": "Smart Actions",
+      "chat": "AI Chat",
+      "integrations": "Integrations",
+      "competitive": "Competitive Intelligence",
+      "settings": "Settings"
+    },
+    "marketplaces": {
+      "all": "All Marketplaces",
+      "ozon": "Ozon",
+      "wb": "Wildberries"
+    },
+    "dateRanges": {
+      "today": "Today",
+      "7d": "Last 7 days",
+      "30d": "Last 30 days",
+      "90d": "Last 90 days"
+    },
+    "logOut": "Log out"
+  },
+  "Dashboard": {
+    "revenueToday": "Revenue today",
+    "ordersMonth": "Orders (month)",
+    "averageOrderValue": "Average order value",
+    "activeIntegrations": "Active integrations"
+  },
+  "Analytics": {
+    "title": "Analytics",
+    "subtitle": "Detailed insights into your marketplace performance",
+    "totalRevenueYTD": "Total Revenue (YTD)",
+    "totalOrdersYTD": "Total Orders (YTD)",
+    "conversionRate": "Conversion Rate",
+    "returnRate": "Return Rate",
+    "revenueTrend": "Revenue Trend (12 months)",
+    "salesByCategory": "Sales by Category",
+    "revenueByMarketplace": "Revenue by Marketplace",
+    "revenue": "Revenue",
+    "share": "Share",
+    "ofTotal": "of total"
+  },
+  "Connectors": {
+    "title": "Connectors",
+    "credentialsConfigured": "{count} credentials configured",
+    "searchPlaceholder": "Search connectors...",
+    "noConnectorsFound": "No connectors found matching \"{query}\"",
+    "loadingConnectors": "Loading connectors...",
+    "credentials": "Credentials",
+    "addCredential": "Add Credential",
+    "loadingCredentials": "Loading credentials...",
+    "connectorNotFound": "Connector not found",
+    "backToConnectors": "← Back to Connectors",
+    "apiMethodsAvailable": "API methods available",
+    "credential": "{count, plural, one {# credential} other {# credentials}}",
+    "noCredentials": "No credentials configured yet",
+    "created": "Created",
+    "lastUsed": "Last used",
+    "updated": "Updated"
+  },
+  "ApiKeys": {
+    "title": "API Keys",
+    "subtitle": "Manage API keys for accessing connector or device methods via API",
+    "activeKeys": "Active Keys",
+    "createApiKey": "Create API Key",
+    "loadingApiKeys": "Loading API keys...",
+    "noApiKeys": "No API keys created yet"
+  },
+  "Webhooks": {
+    "title": "Webhooks",
+    "subtitle": "Manage webhook registrations for event notifications",
+    "webhookRegistrations": "Webhook Registrations",
+    "createWebhook": "Create Webhook",
+    "loadingWebhooks": "Loading webhooks...",
+    "loadingWebhook": "Loading webhook...",
+    "webhookNotFound": "Webhook not found",
+    "backToWebhooks": "Back to Webhooks",
+    "info": "Info",
+    "history": "History",
+    "loadingHistory": "Loading delivery history...",
+    "noDeliveries": "No deliveries recorded yet",
+    "noDeliveriesHint": "Deliveries will appear here when the webhook is triggered",
+    "deliveryCount": "{count, plural, one {# delivery} other {# deliveries}} total",
+    "status": "Status",
+    "eventType": "Event Type",
+    "url": "URL",
+    "duration": "Duration",
+    "triggeredAt": "Triggered At",
+    "page": "Page {current} of {total}",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "MobileDevices": {
+    "title": "Mobile Devices",
+    "subtitle": "Manage device authentication keys for mobile app access",
+    "deviceKeys": "Device Keys",
+    "createDeviceKey": "Create Device Key",
+    "loadingDeviceKeys": "Loading device keys...",
+    "noDeviceKeys": "No device keys created yet"
+  },
+  "Competitive": {
+    "title": "Competitive Intelligence",
+    "subtitle": "Market position and competitor activities",
+    "categoryRank": "Category rank",
+    "outOfSellers": "out of {count} sellers",
+    "topCompetitor": "Top competitor",
+    "todayInsight": "Today's insight",
+    "recentEvents": "Recent Events"
+  },
+  "SmartActions": {
+    "title": "Smart Actions",
+    "subtitle": "Automatic recommendations based on your data",
+    "noActions": "No actions found for this priority level."
+  },
+  "Chat": {
+    "askYourData": "Ask your data",
+    "quickPrompts": [
+      "Show me yesterday's sales summary",
+      "Which products are at risk of stockout?",
+      "Which products have the lowest rating?",
+      "Create an action plan for this week",
+      "What are my top performing categories?",
+      "How did my competitors perform last week?"
+    ],
+    "typeMessage": "Type a message...",
+    "emptyState": "Start a conversation by selecting a quick prompt or typing your own question."
+  },
+  "Settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account and preferences",
+    "profile": {
+      "title": "Profile",
+      "description": "Manage your account information",
+      "displayName": "Display Name",
+      "email": "Email",
+      "memberSince": "Member since",
+      "notSet": "Not set",
+      "unknown": "Unknown"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "Configure how you receive alerts",
+      "emailNotifications": "Email notifications",
+      "smartActionsAlerts": "Smart Actions alerts",
+      "weeklyReports": "Weekly reports",
+      "enabled": "Enabled",
+      "criticalHigh": "Critical & High"
+    },
+    "security": {
+      "title": "Security",
+      "description": "Keep your account secure",
+      "twoFactor": "Two-factor authentication",
+      "activeSessions": "Active sessions",
+      "lastLogin": "Last login",
+      "disabled": "Disabled",
+      "devices": "{count} devices"
+    },
+    "billing": {
+      "title": "Billing",
+      "description": "Manage your subscription",
+      "currentPlan": "Current plan",
+      "nextBillingDate": "Next billing date",
+      "paymentMethod": "Payment method"
+    },
+    "dangerZone": {
+      "title": "Danger Zone",
+      "description": "Irreversible and destructive actions",
+      "deleteData": "Delete all data",
+      "deleteDataDescription": "Permanently delete all your analytics data",
+      "deleteAccount": "Delete account",
+      "deleteAccountDescription": "Permanently delete your account and all data",
+      "change": "Change"
+    }
+  },
+  "Common": {
+    "loading": "Loading...",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "close": "Close",
+    "back": "Back",
+    "breadcrumbDashboard": "Dashboard",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo": "{count, plural, one {# day ago} other {# days ago}}"
+  },
+  "LocaleSwitcher": {
+    "ru": "RU",
+    "en": "EN"
+  }
+}

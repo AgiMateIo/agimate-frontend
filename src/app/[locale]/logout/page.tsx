@@ -1,13 +1,15 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useRouter } from '@/i18n/navigation';
+import { Link } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { useUser } from '@/contexts/UserContext';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 export default function LogoutPage() {
   const router = useRouter();
   const { logout } = useUser();
+  const t = useTranslations('Logout');
 
   const handleLogout = async () => {
     try {
@@ -41,8 +43,8 @@ export default function LogoutPage() {
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="bg-surface/80 backdrop-blur-sm border border-border/50 rounded-xl shadow-sm p-8 max-w-md w-full">
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-foreground mb-2">Выход</h1>
-            <p className="text-muted text-sm">Вы уверены, что хотите выйти?</p>
+            <h1 className="text-2xl font-bold text-foreground mb-2">{t('title')}</h1>
+            <p className="text-muted text-sm">{t('subtitle')}</p>
           </div>
 
           <div className="space-y-3">
@@ -50,7 +52,7 @@ export default function LogoutPage() {
               onClick={handleLogout}
               className="w-full bg-error text-white py-3 px-4 rounded-lg font-medium hover:bg-error/90 transition-colors"
             >
-              Да, выйти
+              {t('confirm')}
             </button>
 
             <button
@@ -58,7 +60,7 @@ export default function LogoutPage() {
               className="w-full bg-surface-secondary text-foreground border border-border/50 py-3 px-4 rounded-lg font-medium hover:bg-border transition-colors flex items-center justify-center gap-2"
             >
               <ArrowLeftIcon className="h-4 w-4" />
-              Назад
+              {t('back')}
             </button>
           </div>
         </div>

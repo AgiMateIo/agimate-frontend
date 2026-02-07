@@ -2,25 +2,25 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import apiService from '@/services/api';
-import { Webhook } from '@/types';
-import WebhooksList from '@/components/webhooks/WebhooksList';
-import AddWebhookModal from '@/components/webhooks/AddWebhookModal';
+import { DeviceAuthKeyResponse } from '@/types';
+import MobileDevicesList from '@/components/mobile-devices/MobileDevicesList';
+import AddDeviceKeyModal from '@/components/mobile-devices/AddDeviceKeyModal';
 
-export default function WebhooksPage() {
+export default function MobileDevicesPage() {
   const [showAddModal, setShowAddModal] = useState(false);
-  const [webhooks, setWebhooks] = useState<Webhook[]>([]);
+  const [devices, setDevices] = useState<DeviceAuthKeyResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
       setError(null);
-      const data = await apiService.getWebhooks();
-      setWebhooks(data);
+      const data = await apiService.getDeviceAuthKeys();
+      setDevices(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load webhooks');
+      setError(err instanceof Error ? err.message : 'Failed to load device keys');
     } finally {
       setLoading(false);
     }
@@ -30,7 +30,7 @@ export default function WebhooksPage() {
     fetchData();
   }, [fetchData]);
 
-  const handleWebhookAdded = () => {
+  const handleDeviceKeyAdded = () => {
     fetchData();
     setShowAddModal(false);
   };
@@ -43,10 +43,10 @@ export default function WebhooksPage() {
             Dashboard
           </Link>
           <ChevronRightIcon className="h-4 w-4 text-muted" />
-          <span className="text-foreground font-medium">Webhooks</span>
+          <span className="text-foreground font-medium">Mobile Devices</span>
         </nav>
-        <h1 className="text-2xl font-bold text-foreground">Webhooks</h1>
-        <div className="text-center py-12 text-muted">Loading webhooks...</div>
+        <h1 className="text-2xl font-bold text-foreground">Mobile Devices</h1>
+        <div className="text-center py-12 text-muted">Loading device keys...</div>
       </div>
     );
   }
@@ -59,9 +59,9 @@ export default function WebhooksPage() {
             Dashboard
           </Link>
           <ChevronRightIcon className="h-4 w-4 text-muted" />
-          <span className="text-foreground font-medium">Webhooks</span>
+          <span className="text-foreground font-medium">Mobile Devices</span>
         </nav>
-        <h1 className="text-2xl font-bold text-foreground">Webhooks</h1>
+        <h1 className="text-2xl font-bold text-foreground">Mobile Devices</h1>
         <div className="bg-error/10 border border-error/20 rounded-lg p-4">
           <p className="text-error">{error}</p>
         </div>
@@ -77,40 +77,40 @@ export default function WebhooksPage() {
           Dashboard
         </Link>
         <ChevronRightIcon className="h-4 w-4 text-muted" />
-        <span className="text-foreground font-medium">Webhooks</span>
+        <span className="text-foreground font-medium">Mobile Devices</span>
       </nav>
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Webhooks</h1>
+        <h1 className="text-2xl font-bold text-foreground">Mobile Devices</h1>
         <p className="text-muted mt-1">
-          Manage webhook registrations for event notifications
+          Manage device authentication keys for mobile app access
         </p>
       </div>
 
-      {/* Webhooks Section */}
+      {/* Device Keys Section */}
       <div className="bg-surface rounded-xl border border-border p-6 space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">Webhook Registrations</h2>
+          <h2 className="text-lg font-semibold text-foreground">Device Keys</h2>
           <button
             onClick={() => setShowAddModal(true)}
             className="bg-accent text-accent-foreground px-4 py-2 rounded-lg font-medium hover:bg-accent/90 transition-colors"
           >
-            Create Webhook
+            Create Device Key
           </button>
         </div>
 
-        <WebhooksList
-          webhooks={webhooks}
+        <MobileDevicesList
+          devices={devices}
           onUpdate={fetchData}
         />
       </div>
 
-      {/* Add Webhook Modal */}
+      {/* Add Device Key Modal */}
       {showAddModal && (
-        <AddWebhookModal
+        <AddDeviceKeyModal
           onClose={() => setShowAddModal(false)}
-          onSuccess={handleWebhookAdded}
+          onSuccess={handleDeviceKeyAdded}
         />
       )}
     </div>

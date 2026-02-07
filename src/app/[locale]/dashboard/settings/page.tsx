@@ -1,9 +1,13 @@
 'use client';
 
+import { useLocale } from 'next-intl';
+import { localeMap } from '@/i18n/routing';
 import { useUser } from '@/contexts/UserContext';
 import { BellIcon, ShieldCheckIcon, CreditCardIcon, UserIcon } from '@heroicons/react/24/outline';
 
 export default function SettingsPage() {
+  const locale = useLocale();
+  const bcp47Locale = localeMap[locale];
   const { user } = useUser();
 
   const settingsSections = [
@@ -15,7 +19,7 @@ export default function SettingsPage() {
       items: [
         { label: 'Display Name', value: user?.displayName || 'Not set' },
         { label: 'Email', value: user?.email || 'Not set' },
-        { label: 'Member since', value: user?.createdAt ? new Date(user.createdAt).toLocaleDateString('ru-RU') : 'Unknown' },
+        { label: 'Member since', value: user?.createdAt ? new Date(user.createdAt).toLocaleDateString(bcp47Locale) : 'Unknown' },
       ],
     },
     {
@@ -37,7 +41,7 @@ export default function SettingsPage() {
       items: [
         { label: 'Two-factor authentication', value: 'Disabled', toggle: true },
         { label: 'Active sessions', value: '2 devices' },
-        { label: 'Last login', value: user?.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString('ru-RU') : 'Unknown' },
+        { label: 'Last login', value: user?.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString(bcp47Locale) : 'Unknown' },
       ],
     },
     {

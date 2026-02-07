@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
+import { Link } from '@/i18n/navigation';
 import { ChevronRightIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { Webhook } from '@/types';

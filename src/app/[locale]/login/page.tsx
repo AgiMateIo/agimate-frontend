@@ -1,8 +1,9 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useEffect, useRef } from 'react';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
 import { useUser } from '@/contexts/UserContext';
 import { API } from '@/config/constants';
@@ -15,6 +16,7 @@ const getApiBaseUrl = (): string => {
 export default function LoginPage() {
   const router = useRouter();
   const { fetchUser } = useUser();
+  const t = useTranslations('Login');
   const hasRun = useRef(false);
 
   useEffect(() => {
@@ -65,8 +67,8 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="bg-surface/80 backdrop-blur-sm border border-border/50 rounded-xl shadow-sm p-8 max-w-md w-full">
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-foreground mb-2">Вход в AgiMate</h1>
-            <p className="text-muted text-sm">Войдите, чтобы продолжить</p>
+            <h1 className="text-2xl font-bold text-foreground mb-2">{t('title')}</h1>
+            <p className="text-muted text-sm">{t('subtitle')}</p>
           </div>
 
           <div className="space-y-3">
@@ -80,7 +82,7 @@ export default function LoginPage() {
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
               </svg>
-              Войти через Google
+              {t('google')}
             </a>
 
             <a
@@ -90,16 +92,16 @@ export default function LoginPage() {
               <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
                 <path fill="#FF0000" d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 15.563h-2.788V8.375h-2.063c-2.625 0-4.313-1.5-4.313-3.938 0-2.438 1.688-3.875 4.313-3.875h4.851v2.25h-4.5c-1.313 0-2.063.75-2.063 1.625 0 .875.75 1.688 2.063 1.688h1.5c.563 0 .938.375.938.938v9.5z"/>
               </svg>
-              Войти через Яндекс
+              {t('yandex')}
             </a>
           </div>
 
           <div className="mt-8 pt-6 border-t border-border/50 text-center">
             <p className="text-muted text-xs">
-              Продолжая, вы соглашаетесь с{' '}
-              <a href="#" className="text-accent hover:underline">Условиями использования</a>
-              {' '}и{' '}
-              <a href="#" className="text-accent hover:underline">Политикой конфиденциальности</a>.
+              {t('terms')}{' '}
+              <a href="#" className="text-accent hover:underline">{t('termsLink')}</a>
+              {' '}{t('and')}{' '}
+              <a href="#" className="text-accent hover:underline">{t('privacyLink')}</a>.
             </p>
           </div>
         </div>

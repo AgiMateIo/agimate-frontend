@@ -1,5 +1,7 @@
 'use client';
 
+import { useLocale } from 'next-intl';
+import { localeMap } from '@/i18n/routing';
 import { ArrowTrendingUpIcon, ArrowTrendingDownIcon } from '@heroicons/react/24/solid';
 
 interface MetricsCardProps {
@@ -17,6 +19,8 @@ export default function MetricsCard({
   deltaLabel,
   variant = 'default',
 }: MetricsCardProps) {
+  const locale = useLocale();
+  const bcp47Locale = localeMap[locale];
   const isPositive = delta !== undefined && delta >= 0;
 
   const variantStyles = {
@@ -28,7 +32,7 @@ export default function MetricsCard({
 
   const formatValue = (val: string | number) => {
     if (typeof val === 'number') {
-      return val.toLocaleString('ru-RU');
+      return val.toLocaleString(bcp47Locale);
     }
     return val;
   };

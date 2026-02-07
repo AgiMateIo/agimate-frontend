@@ -1,5 +1,7 @@
 'use client';
 
+import { useLocale } from 'next-intl';
+import { localeMap } from '@/i18n/routing';
 import { SmartAction } from '@/types';
 import { BoltIcon } from '@heroicons/react/24/outline';
 
@@ -27,8 +29,10 @@ const severityStyles = {
 };
 
 export default function SmartActionCard({ action }: SmartActionCardProps) {
+  const locale = useLocale();
+  const bcp47Locale = localeMap[locale];
   const styles = severityStyles[action.severity];
-  const createdAt = new Date(action.createdAt).toLocaleString('ru-RU', {
+  const createdAt = new Date(action.createdAt).toLocaleString(bcp47Locale, {
     day: 'numeric',
     month: 'short',
     hour: '2-digit',

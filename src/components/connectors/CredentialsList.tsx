@@ -1,5 +1,7 @@
 'use client';
 
+import { useLocale } from 'next-intl';
+import { localeMap } from '@/i18n/routing';
 import { use, useState, useEffect } from 'react';
 import apiService from '@/services/api';
 import { Credential } from '@/types';
@@ -15,6 +17,8 @@ interface CredentialsListProps {
 }
 
 export default function CredentialsList({ connectorCode, credentialsPromise, onUpdate }: CredentialsListProps) {
+  const locale = useLocale();
+  const bcp47Locale = localeMap[locale];
   const initialCredentials = use(credentialsPromise);
   const [credentials, setCredentials] = useState<Credential[]>(initialCredentials);
   const [editingCredential, setEditingCredential] = useState<Credential | null>(null);
@@ -28,7 +32,7 @@ export default function CredentialsList({ connectorCode, credentialsPromise, onU
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString.replace(' ', 'T'));
-    return new Intl.DateTimeFormat('ru-RU', {
+    return new Intl.DateTimeFormat(bcp47Locale, {
       day: '2-digit',
       month: 'long',
       year: 'numeric',

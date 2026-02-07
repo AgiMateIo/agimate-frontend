@@ -1,37 +1,41 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { useUser } from '@/contexts/UserContext';
+import LocaleSwitcher from '@/components/ui/LocaleSwitcher';
 import { ChevronDownIcon, UserCircleIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
-
-const pageTitles: Record<string, string> = {
-  '/dashboard': 'Dashboard',
-  '/dashboard/analytics': 'Analytics',
-  '/dashboard/smart-actions': 'Smart Actions',
-  '/dashboard/chat': 'AI Chat',
-  '/dashboard/integrations': 'Integrations',
-  '/dashboard/competitive': 'Competitive Intelligence',
-  '/dashboard/settings': 'Settings',
-};
-
-const marketplaces = [
-  { id: 'all', name: 'All Marketplaces' },
-  { id: 'ozon', name: 'Ozon' },
-  { id: 'wb', name: 'Wildberries' },
-];
-
-const dateRanges = [
-  { id: 'today', name: 'Today' },
-  { id: '7d', name: 'Last 7 days' },
-  { id: '30d', name: 'Last 30 days' },
-  { id: '90d', name: 'Last 90 days' },
-];
 
 export default function TopBar() {
   const pathname = usePathname();
   const { user, logout } = useUser();
-  const pageTitle = pageTitles[pathname] || 'Dashboard';
+  const t = useTranslations('TopBar');
+
+  const pageTitles: Record<string, string> = {
+    '/dashboard': t('pageTitles.dashboard'),
+    '/dashboard/analytics': t('pageTitles.analytics'),
+    '/dashboard/smart-actions': t('pageTitles.smartActions'),
+    '/dashboard/chat': t('pageTitles.chat'),
+    '/dashboard/integrations': t('pageTitles.integrations'),
+    '/dashboard/competitive': t('pageTitles.competitive'),
+    '/dashboard/settings': t('pageTitles.settings'),
+  };
+
+  const marketplaces = [
+    { id: 'all', name: t('marketplaces.all') },
+    { id: 'ozon', name: t('marketplaces.ozon') },
+    { id: 'wb', name: t('marketplaces.wb') },
+  ];
+
+  const dateRanges = [
+    { id: 'today', name: t('dateRanges.today') },
+    { id: '7d', name: t('dateRanges.7d') },
+    { id: '30d', name: t('dateRanges.30d') },
+    { id: '90d', name: t('dateRanges.90d') },
+  ];
+
+  const pageTitle = pageTitles[pathname] || t('pageTitles.dashboard');
 
   const [selectedMarketplace, setSelectedMarketplace] = useState('all');
   const [selectedDateRange, setSelectedDateRange] = useState('7d');
@@ -80,7 +84,9 @@ export default function TopBar() {
         </div>
       </div>
 
-      {/* Right: User Avatar */}
+      {/* Right: Language + User Avatar */}
+      <div className="flex items-center gap-3">
+        <LocaleSwitcher />
       <div className="relative">
         <button
           onClick={() => setShowUserMenu(!showUserMenu)}
@@ -111,10 +117,11 @@ export default function TopBar() {
               }}
               className="w-full text-left px-4 py-2 text-sm text-error hover:bg-surface-secondary transition-colors"
             >
-              Log out
+              {t('logOut')}
             </button>
           </div>
         )}
+      </div>
       </div>
     </header>
   );

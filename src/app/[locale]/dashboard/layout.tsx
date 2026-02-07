@@ -1,7 +1,7 @@
 'use client';
 
 import { useUser } from '@/contexts/UserContext';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useEffect } from 'react';
 import SidebarNav from '@/components/layout/SidebarNav';
 import TopBar from '@/components/layout/TopBar';

@@ -1,5 +1,7 @@
 'use client';
 
+import { useLocale } from 'next-intl';
+import { localeMap } from '@/i18n/routing';
 import MetricsCard from '@/components/dashboard/MetricsCard';
 import SalesChart from '@/components/dashboard/SalesChart';
 import TopProductsTable from '@/components/dashboard/TopProductsTable';
@@ -8,8 +10,11 @@ import { dashboardMetrics, salesChartData, topProducts } from '@/data/dashboard'
 import { smartActions } from '@/data/smartActions';
 
 export default function DashboardPage() {
+  const locale = useLocale();
+  const bcp47Locale = localeMap[locale];
+
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('ru-RU', {
+    return new Intl.NumberFormat(bcp47Locale, {
       style: 'currency',
       currency: 'RUB',
       maximumFractionDigits: 0,

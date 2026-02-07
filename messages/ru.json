@@ -1,0 +1,361 @@
+{
+  "Metadata": {
+    "title": "AgiMate — Глаза, уши и руки для вашего AI-агента",
+    "description": "AgiMate подключает AI-агентов к вашим устройствам и сервисам. Скриншоты, уведомления из 100+ сервисов, выполнение команд — пусть AI не только говорит, но и действует.",
+    "ogTitle": "AgiMate — Глаза, уши и руки для вашего AI-агента",
+    "ogDescription": "AgiMate подключает AI-агентов к вашим устройствам и сервисам. Пусть AI не только говорит — пусть действует."
+  },
+  "HomePage": {
+    "nav": {
+      "howItWorks": "Как это работает",
+      "useCases": "Сценарии",
+      "download": "Скачать",
+      "dashboard": "Dashboard",
+      "login": "Войти"
+    },
+    "hero": {
+      "title": "Дайте вашему AI",
+      "titleHighlight": "тело",
+      "subtitle": "AgiMate подключает AI-агентов к вашим устройствам и сервисам.",
+      "subtitleSecond": "Пусть AI не только говорит — пусть действует.",
+      "cta": "Попробовать бесплатно",
+      "secondaryCta": "Как это работает"
+    },
+    "problem": {
+      "badge": "Проблема",
+      "text": "Ваш AI-помощник умеет отвечать на вопросы. Но попросите его сделать скриншот, отследить файл или отправить сообщение — и он разводит руками."
+    },
+    "solution": {
+      "badge": "Решение",
+      "text": "AgiMate даёт AI глаза, уши и руки. Установите приложение на устройство — и ваш AI-агент сможет видеть, слышать и действовать."
+    },
+    "capabilities": {
+      "see": {
+        "title": "Видеть",
+        "description": "Скриншоты, отслеживание файлов, события на устройстве"
+      },
+      "hear": {
+        "title": "Слышать",
+        "description": "Уведомления из 100+ сервисов — Ozon, WB, Telegram и другие"
+      },
+      "act": {
+        "title": "Действовать",
+        "description": "Выполнять команды, отправлять сообщения, управлять приложениями"
+      }
+    },
+    "howItWorks": {
+      "title": "Как это работает",
+      "subtitle": "AgiMate — мост между AI-агентами и реальным миром",
+      "aiBox": {
+        "title": "Ваш AI (любой)",
+        "items": ["Claude", "ChatGPT", "Ваш бот"]
+      },
+      "platformBox": {
+        "title": "AgiMate Platform",
+        "subtitle": "«Мост»"
+      },
+      "devicesBox": {
+        "title": "Устройства и сервисы",
+        "phone": "Телефон",
+        "computer": "Компьютер",
+        "marketplace": "Ozon, WB",
+        "messenger": "Telegram"
+      },
+      "caption": "Работает с любым AI через MCP-протокол или n8n.",
+      "captionSecond": "Подключите один раз — используйте везде."
+    },
+    "useCases": {
+      "title": "Что можно автоматизировать",
+      "subtitle": "Реальные задачи, которые AgiMate решает для бизнеса",
+      "items": [
+        {
+          "title": "AI-секретарь",
+          "description": "Мониторинг входящих сообщений в Email, Telegram, WhatsApp. AI анализирует, категоризирует и отвечает на типовые вопросы.",
+          "flow": ["Входящее сообщение", "AI-анализ", "Автоответ или эскалация"]
+        },
+        {
+          "title": "Автоматизация документов",
+          "description": "Отслеживание новых файлов, распознавание типа документа, извлечение данных и загрузка в 1С или CRM.",
+          "flow": ["Новый файл", "Распознавание", "Выгрузка в 1С/CRM"]
+        },
+        {
+          "title": "Мониторинг и алерты",
+          "description": "Отслеживание событий на устройстве — скриншоты, уведомления, изменения. AI анализирует и отправляет алерты.",
+          "flow": ["Событие на устройстве", "AI-анализ", "Алерт в Telegram"]
+        },
+        {
+          "title": "E-commerce помощник",
+          "description": "Мониторинг заказов на Ozon и Wildberries, автоматическое обновление статусов, ответы покупателям.",
+          "flow": ["Новый заказ", "Обновление статуса", "Ответ покупателю"]
+        },
+        {
+          "title": "Мониторинг цен конкурентов",
+          "description": "Отслеживание цен на товары конкурентов на маркетплейсах. AI анализирует изменения и предлагает корректировки.",
+          "flow": ["Изменение цены", "AI-анализ", "Рекомендация + алерт"]
+        },
+        {
+          "title": "Legacy Software Bridge",
+          "description": "AI управляет desktop-приложениями без API — 1С, Excel, специализированное ПО. Интеграция с современными сервисами.",
+          "flow": ["Команда от AI", "Действие в приложении", "Результат в облако"]
+        },
+        {
+          "title": "Голосовые уведомления",
+          "description": "Важные события озвучиваются через TTS на устройстве. Не пропустите критичные алерты, даже если не смотрите на экран.",
+          "flow": ["Критичное событие", "AI-приоритизация", "Голосовое уведомление"]
+        },
+        {
+          "title": "Сбор данных и отчёты",
+          "description": "Автоматический сбор данных из разных источников, агрегация и формирование отчётов по расписанию.",
+          "flow": ["Сбор из источников", "AI-агрегация", "Отчёт в Notion/Sheets"]
+        }
+      ]
+    },
+    "download": {
+      "title": "Попробуйте сейчас",
+      "subtitle": "Open-source. Бесплатно. Плагины от сообщества.",
+      "cta": "Зарегистрироваться бесплатно",
+      "android": {
+        "title": "Android",
+        "description": "Установите агент на телефон",
+        "button": "Скачать APK"
+      },
+      "desktop": {
+        "title": "Desktop",
+        "description": "Установите агент на компьютер"
+      },
+      "n8n": {
+        "title": "n8n нода",
+        "description": "Подключите к вашим workflow",
+        "button": "Документация"
+      }
+    },
+    "footer": {
+      "copyright": "AgiMate © 2025",
+      "github": "GitHub",
+      "telegram": "Telegram",
+      "docs": "Документация"
+    }
+  },
+  "Login": {
+    "title": "Вход в AgiMate",
+    "subtitle": "Войдите, чтобы продолжить",
+    "google": "Войти через Google",
+    "yandex": "Войти через Яндекс",
+    "terms": "Продолжая, вы соглашаетесь с",
+    "termsLink": "Условиями использования",
+    "and": "и",
+    "privacyLink": "Политикой конфиденциальности"
+  },
+  "Logout": {
+    "title": "Выход",
+    "subtitle": "Вы уверены, что хотите выйти?",
+    "confirm": "Да, выйти",
+    "back": "Назад"
+  },
+  "Sidebar": {
+    "dashboard": "Dashboard",
+    "analytics": "Аналитика",
+    "smartActions": "Smart Actions",
+    "chat": "AI Chat",
+    "connectors": "Коннекторы",
+    "apiKeys": "API ключи",
+    "webhooks": "Вебхуки",
+    "mobileDevices": "Мобильные устройства",
+    "competitive": "Конкуренция",
+    "settings": "Настройки"
+  },
+  "TopBar": {
+    "pageTitles": {
+      "dashboard": "Dashboard",
+      "analytics": "Аналитика",
+      "smartActions": "Smart Actions",
+      "chat": "AI Chat",
+      "integrations": "Интеграции",
+      "competitive": "Конкурентная разведка",
+      "settings": "Настройки"
+    },
+    "marketplaces": {
+      "all": "Все маркетплейсы",
+      "ozon": "Ozon",
+      "wb": "Wildberries"
+    },
+    "dateRanges": {
+      "today": "Сегодня",
+      "7d": "Последние 7 дней",
+      "30d": "Последние 30 дней",
+      "90d": "Последние 90 дней"
+    },
+    "logOut": "Выйти"
+  },
+  "Dashboard": {
+    "revenueToday": "Доход сегодня",
+    "ordersMonth": "Заказы (месяц)",
+    "averageOrderValue": "Средний чек",
+    "activeIntegrations": "Активных интеграций"
+  },
+  "Analytics": {
+    "title": "Аналитика",
+    "subtitle": "Подробная аналитика эффективности на маркетплейсах",
+    "totalRevenueYTD": "Общий доход (YTD)",
+    "totalOrdersYTD": "Всего заказов (YTD)",
+    "conversionRate": "Конверсия",
+    "returnRate": "Возвраты",
+    "revenueTrend": "Динамика дохода (12 месяцев)",
+    "salesByCategory": "Продажи по категориям",
+    "revenueByMarketplace": "Доход по маркетплейсам",
+    "revenue": "Доход",
+    "share": "Доля",
+    "ofTotal": "от общего"
+  },
+  "Connectors": {
+    "title": "Коннекторы",
+    "credentialsConfigured": "{count} учётных данных настроено",
+    "searchPlaceholder": "Поиск коннекторов...",
+    "noConnectorsFound": "Коннекторы не найдены: \"{query}\"",
+    "loadingConnectors": "Загрузка коннекторов...",
+    "credentials": "Учётные данные",
+    "addCredential": "Добавить",
+    "loadingCredentials": "Загрузка учётных данных...",
+    "connectorNotFound": "Коннектор не найден",
+    "backToConnectors": "← Назад к коннекторам",
+    "apiMethodsAvailable": "Доступны API-методы",
+    "credential": "{count, plural, one {# учётная запись} few {# учётных записи} other {# учётных записей}}",
+    "noCredentials": "Учётные данные не настроены",
+    "created": "Создано",
+    "lastUsed": "Последнее использование",
+    "updated": "Обновлено"
+  },
+  "ApiKeys": {
+    "title": "API ключи",
+    "subtitle": "Управление API ключами для доступа к методам коннекторов и устройств через API",
+    "activeKeys": "Активные ключи",
+    "createApiKey": "Создать API ключ",
+    "loadingApiKeys": "Загрузка API ключей...",
+    "noApiKeys": "API ключи не созданы"
+  },
+  "Webhooks": {
+    "title": "Вебхуки",
+    "subtitle": "Управление вебхуками для уведомлений о событиях",
+    "webhookRegistrations": "Регистрации вебхуков",
+    "createWebhook": "Создать вебхук",
+    "loadingWebhooks": "Загрузка вебхуков...",
+    "loadingWebhook": "Загрузка вебхука...",
+    "webhookNotFound": "Вебхук не найден",
+    "backToWebhooks": "Назад к вебхукам",
+    "info": "Информация",
+    "history": "История",
+    "loadingHistory": "Загрузка истории доставок...",
+    "noDeliveries": "Доставок пока нет",
+    "noDeliveriesHint": "Доставки появятся здесь, когда вебхук будет вызван",
+    "deliveryCount": "{count, plural, one {# доставка} few {# доставки} other {# доставок}} всего",
+    "status": "Статус",
+    "eventType": "Тип события",
+    "url": "URL",
+    "duration": "Длительность",
+    "triggeredAt": "Дата вызова",
+    "page": "Страница {current} из {total}",
+    "previous": "Назад",
+    "next": "Далее"
+  },
+  "MobileDevices": {
+    "title": "Мобильные устройства",
+    "subtitle": "Управление ключами аутентификации устройств для мобильного приложения",
+    "deviceKeys": "Ключи устройств",
+    "createDeviceKey": "Создать ключ",
+    "loadingDeviceKeys": "Загрузка ключей устройств...",
+    "noDeviceKeys": "Ключи устройств не созданы"
+  },
+  "Competitive": {
+    "title": "Конкурентная разведка",
+    "subtitle": "Рыночная позиция и активность конкурентов",
+    "categoryRank": "Позиция в категории",
+    "outOfSellers": "из {count} продавцов",
+    "topCompetitor": "Лидер конкурентов",
+    "todayInsight": "Инсайт дня",
+    "recentEvents": "Последние события"
+  },
+  "SmartActions": {
+    "title": "Smart Actions",
+    "subtitle": "Автоматические рекомендации на основе ваших данных",
+    "noActions": "Нет действий для этого уровня приоритета."
+  },
+  "Chat": {
+    "askYourData": "Спросите у данных",
+    "quickPrompts": [
+      "Покажи сводку продаж за вчера",
+      "Какие товары рискуют закончиться?",
+      "У каких товаров самый низкий рейтинг?",
+      "Составь план действий на эту неделю",
+      "Какие мои лучшие категории?",
+      "Как дела у конкурентов на прошлой неделе?"
+    ],
+    "typeMessage": "Введите сообщение...",
+    "emptyState": "Начните диалог, выбрав один из быстрых запросов или напишите свой вопрос."
+  },
+  "Settings": {
+    "title": "Настройки",
+    "subtitle": "Управление аккаунтом и настройками",
+    "profile": {
+      "title": "Профиль",
+      "description": "Управление информацией аккаунта",
+      "displayName": "Имя",
+      "email": "Email",
+      "memberSince": "Дата регистрации",
+      "notSet": "Не задано",
+      "unknown": "Неизвестно"
+    },
+    "notifications": {
+      "title": "Уведомления",
+      "description": "Настройка получения уведомлений",
+      "emailNotifications": "Email уведомления",
+      "smartActionsAlerts": "Оповещения Smart Actions",
+      "weeklyReports": "Еженедельные отчёты",
+      "enabled": "Включены",
+      "criticalHigh": "Критичные и Высокие"
+    },
+    "security": {
+      "title": "Безопасность",
+      "description": "Защита аккаунта",
+      "twoFactor": "Двухфакторная аутентификация",
+      "activeSessions": "Активные сессии",
+      "lastLogin": "Последний вход",
+      "disabled": "Выключена",
+      "devices": "{count} устройств"
+    },
+    "billing": {
+      "title": "Биллинг",
+      "description": "Управление подпиской",
+      "currentPlan": "Текущий план",
+      "nextBillingDate": "Следующее списание",
+      "paymentMethod": "Способ оплаты"
+    },
+    "dangerZone": {
+      "title": "Опасная зона",
+      "description": "Необратимые и разрушительные действия",
+      "deleteData": "Удалить все данные",
+      "deleteDataDescription": "Безвозвратно удалить все данные аналитики",
+      "deleteAccount": "Удалить аккаунт",
+      "deleteAccountDescription": "Безвозвратно удалить аккаунт и все данные",
+      "change": "Изменить"
+    }
+  },
+  "Common": {
+    "loading": "Загрузка...",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "copy": "Копировать",
+    "copied": "Скопировано!",
+    "close": "Закрыть",
+    "back": "Назад",
+    "breadcrumbDashboard": "Dashboard",
+    "today": "Сегодня",
+    "yesterday": "Вчера",
+    "daysAgo": "{count, plural, one {# день назад} few {# дня назад} other {# дней назад}}"
+  },
+  "LocaleSwitcher": {
+    "ru": "RU",
+    "en": "EN"
+  }
+}

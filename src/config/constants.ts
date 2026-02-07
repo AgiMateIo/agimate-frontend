@@ -31,8 +31,6 @@ export const UI = {
     minute: '2-digit',
   } as Intl.DateTimeFormatOptions,
 
-  // Default locale for formatting
-  DEFAULT_LOCALE: 'ru-RU',
 } as const;
 
 export const API = {

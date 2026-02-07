@@ -3,9 +3,10 @@
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
+import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { ConnectorInfo, Credential } from '@/types';
 import CredentialsList from '@/components/connectors/CredentialsList';

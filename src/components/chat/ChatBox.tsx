@@ -1,5 +1,7 @@
 'use client';
 
+import { useLocale } from 'next-intl';
+import { localeMap } from '@/i18n/routing';
 import { useState, useRef, useEffect } from 'react';
 import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
 import { ChatMessage } from '@/types';
@@ -11,6 +13,8 @@ interface ChatBoxProps {
 }
 
 export default function ChatBox({ messages, onSendMessage, isLoading = false }: ChatBoxProps) {
+  const locale = useLocale();
+  const bcp47Locale = localeMap[locale];
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -31,7 +35,7 @@ export default function ChatBox({ messages, onSendMessage, isLoading = false }: 
   };
 
   const formatTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString('ru-RU', {
+    return new Date(timestamp).toLocaleTimeString(bcp47Locale, {
       hour: '2-digit',
       minute: '2-digit',
     });

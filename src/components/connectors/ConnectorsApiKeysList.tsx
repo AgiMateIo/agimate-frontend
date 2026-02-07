@@ -1,5 +1,7 @@
 'use client';
 
+import { useLocale } from 'next-intl';
+import { localeMap } from '@/i18n/routing';
 import { useState, useEffect } from 'react';
 import apiService from '@/services/api';
 import { ConnectorsApiKey } from '@/types';
@@ -15,6 +17,8 @@ interface ConnectorsApiKeysListProps {
 }
 
 export default function ConnectorsApiKeysList({ apiKeys: apiKeysProp, onUpdate }: ConnectorsApiKeysListProps) {
+  const locale = useLocale();
+  const bcp47Locale = localeMap[locale];
   const [apiKeys, setApiKeys] = useState<ConnectorsApiKey[]>(apiKeysProp);
   const [editingApiKey, setEditingApiKey] = useState<ConnectorsApiKey | null>(null);
 
@@ -28,7 +32,7 @@ export default function ConnectorsApiKeysList({ apiKeys: apiKeysProp, onUpdate }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString.replace(' ', 'T'));
-    return new Intl.DateTimeFormat('ru-RU', {
+    return new Intl.DateTimeFormat(bcp47Locale, {
       day: '2-digit',
       month: 'long',
       year: 'numeric',

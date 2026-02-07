@@ -14,18 +14,13 @@ export function parseBackendDate(dateString: string): Date {
  * Format date for display using specified locale
  *
  * @param dateString - Date string in backend format "yyyy-MM-dd HH:mm:ss"
- * @param locale - Locale string (default: ru-RU)
+ * @param locale - BCP 47 locale string (e.g., 'ru-RU', 'en-US')
  * @param options - Intl.DateTimeFormatOptions (default: from constants)
  * @returns Formatted date string
- *
- * @example
- * ```ts
- * formatDate('2025-01-15 14:30:00') // "15 января 2025 г., 14:30"
- * ```
  */
 export function formatDate(
   dateString: string,
-  locale: string = UI.DEFAULT_LOCALE,
+  locale: string,
   options: Intl.DateTimeFormatOptions = UI.DATE_FORMAT_OPTIONS
 ): string {
   const date = parseBackendDate(dateString);
@@ -33,29 +28,26 @@ export function formatDate(
 }
 
 /**
- * Format date as relative time (e.g., "2 hours ago")
+ * Format date as relative time
  *
  * @param dateString - Date string in backend format
- * @param locale - Locale string (default: ru-RU)
+ * @param locale - BCP 47 locale string
+ * @param labels - Localized labels for relative time
  * @returns Relative time string
- *
- * @example
- * ```ts
- * formatRelativeTime('2025-01-15 14:30:00') // "Today" or "2 days ago"
- * ```
  */
 export function formatRelativeTime(
   dateString: string,
-  locale: string = UI.DEFAULT_LOCALE
+  locale: string,
+  labels: { today: string; yesterday: string; daysAgo: (count: number) => string }
 ): string {
   const date = parseBackendDate(dateString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays === 0) return labels.today;
+  if (diffDays === 1) return labels.yesterday;
+  if (diffDays < 7) return labels.daysAgo(diffDays);
 
   // For older dates, show formatted date
   return formatDate(dateString, locale);
@@ -65,17 +57,12 @@ export function formatRelativeTime(
  * Format date in short format (without time)
  *
  * @param dateString - Date string in backend format
- * @param locale - Locale string (default: ru-RU)
+ * @param locale - BCP 47 locale string
  * @returns Short formatted date
- *
- * @example
- * ```ts
- * formatShortDate('2025-01-15 14:30:00') // "15 января 2025 г."
- * ```
  */
 export function formatShortDate(
   dateString: string,
-  locale: string = UI.DEFAULT_LOCALE
+  locale: string
 ): string {
   const date = parseBackendDate(dateString);
   return new Intl.DateTimeFormat(locale, {

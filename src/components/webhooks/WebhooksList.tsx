@@ -1,7 +1,9 @@
 'use client';
 
+import { useLocale } from 'next-intl';
+import { localeMap } from '@/i18n/routing';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { Webhook } from '@/types';
 import { TrashIcon, LockClosedIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
@@ -14,6 +16,8 @@ interface WebhooksListProps {
 }
 
 export default function WebhooksList({ webhooks: webhooksProp, onUpdate }: WebhooksListProps) {
+  const locale = useLocale();
+  const bcp47Locale = localeMap[locale];
   const router = useRouter();
   const [webhooks, setWebhooks] = useState<Webhook[]>(webhooksProp);
   const [deletingWebhook, setDeletingWebhook] = useState<Webhook | null>(null);
@@ -26,7 +30,7 @@ export default function WebhooksList({ webhooks: webhooksProp, onUpdate }: Webho
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString.replace(' ', 'T'));
-    return new Intl.DateTimeFormat('ru-RU', {
+    return new Intl.DateTimeFormat(bcp47Locale, {
       day: '2-digit',
       month: 'long',
       year: 'numeric',

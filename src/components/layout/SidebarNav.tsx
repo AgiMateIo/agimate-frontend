@@ -1,7 +1,8 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { Link } from '@/i18n/navigation';
+import { usePathname } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import {
   HomeIcon,
   ChartBarIcon,
@@ -15,21 +16,23 @@ import {
   Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 
-const navItems = [
-  { label: 'Dashboard', icon: HomeIcon, href: '/dashboard' },
-  { label: 'Analytics', icon: ChartBarIcon, href: '/dashboard/analytics' },
-  { label: 'Smart Actions', icon: ExclamationTriangleIcon, href: '/dashboard/smart-actions' },
-  { label: 'AI Chat', icon: ChatBubbleLeftRightIcon, href: '/dashboard/chat' },
-  { label: 'Connectors', icon: PuzzlePieceIcon, href: '/dashboard/connectors' },
-  { label: 'API Keys', icon: KeyIcon, href: '/dashboard/api-keys' },
-  { label: 'Webhooks', icon: BellAlertIcon, href: '/dashboard/webhooks' },
-  { label: 'Mobile Devices', icon: DevicePhoneMobileIcon, href: '/dashboard/mobile-devices' },
-  { label: 'Competitive', icon: BoltIcon, href: '/dashboard/competitive' },
-  { label: 'Settings', icon: Cog6ToothIcon, href: '/dashboard/settings' },
+const getNavItems = (t: ReturnType<typeof useTranslations>) => [
+  { label: t('dashboard'), icon: HomeIcon, href: '/dashboard' },
+  { label: t('analytics'), icon: ChartBarIcon, href: '/dashboard/analytics' },
+  { label: t('smartActions'), icon: ExclamationTriangleIcon, href: '/dashboard/smart-actions' },
+  { label: t('chat'), icon: ChatBubbleLeftRightIcon, href: '/dashboard/chat' },
+  { label: t('connectors'), icon: PuzzlePieceIcon, href: '/dashboard/connectors' },
+  { label: t('apiKeys'), icon: KeyIcon, href: '/dashboard/api-keys' },
+  { label: t('webhooks'), icon: BellAlertIcon, href: '/dashboard/webhooks' },
+  { label: t('mobileDevices'), icon: DevicePhoneMobileIcon, href: '/dashboard/mobile-devices' },
+  { label: t('competitive'), icon: BoltIcon, href: '/dashboard/competitive' },
+  { label: t('settings'), icon: Cog6ToothIcon, href: '/dashboard/settings' },
 ];
 
 export default function SidebarNav() {
   const pathname = usePathname();
+  const t = useTranslations('Sidebar');
+  const navItems = getNavItems(t);
 
   return (
     <aside className="w-64 border-r border-border bg-surface flex flex-col shrink-0">

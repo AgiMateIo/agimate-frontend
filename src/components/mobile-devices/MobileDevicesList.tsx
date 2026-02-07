@@ -1,5 +1,7 @@
 'use client';
 
+import { useLocale } from 'next-intl';
+import { localeMap } from '@/i18n/routing';
 import { useState, useEffect } from 'react';
 import apiService from '@/services/api';
 import { DeviceAuthKeyResponse } from '@/types';
@@ -14,6 +16,8 @@ interface MobileDevicesListProps {
 }
 
 export default function MobileDevicesList({ devices: devicesProp, onUpdate }: MobileDevicesListProps) {
+  const locale = useLocale();
+  const bcp47Locale = localeMap[locale];
   const [devices, setDevices] = useState<DeviceAuthKeyResponse[]>(devicesProp);
   const [editingDevice, setEditingDevice] = useState<DeviceAuthKeyResponse | null>(null);
 
@@ -26,7 +30,7 @@ export default function MobileDevicesList({ devices: devicesProp, onUpdate }: Mo
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString.replace(' ', 'T'));
-    return new Intl.DateTimeFormat('ru-RU', {
+    return new Intl.DateTimeFormat(bcp47Locale, {
       day: '2-digit',
       month: 'long',
       year: 'numeric',

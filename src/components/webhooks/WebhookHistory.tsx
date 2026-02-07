@@ -1,5 +1,7 @@
 'use client';
 
+import { useLocale } from 'next-intl';
+import { localeMap } from '@/i18n/routing';
 import { useState, useEffect } from 'react';
 import apiService from '@/services/api';
 import { WebhookDelivery } from '@/types';
@@ -11,6 +13,8 @@ interface WebhookHistoryProps {
 }
 
 export default function WebhookHistory({ webhookId }: WebhookHistoryProps) {
+  const locale = useLocale();
+  const bcp47Locale = localeMap[locale];
   const [deliveries, setDeliveries] = useState<WebhookDelivery[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -41,7 +45,7 @@ export default function WebhookHistory({ webhookId }: WebhookHistoryProps) {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString.replace(' ', 'T'));
-    return new Intl.DateTimeFormat('ru-RU', {
+    return new Intl.DateTimeFormat(bcp47Locale, {
       day: '2-digit',
       month: 'short',
       year: 'numeric',

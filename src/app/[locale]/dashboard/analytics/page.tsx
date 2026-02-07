@@ -1,5 +1,7 @@
 'use client';
 
+import { useLocale } from 'next-intl';
+import { localeMap } from '@/i18n/routing';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import MetricsCard from '@/components/dashboard/MetricsCard';
 
@@ -35,11 +37,14 @@ const marketplaceData = [
 ];
 
 export default function AnalyticsPage() {
+  const locale = useLocale();
+  const bcp47Locale = localeMap[locale];
+
   const formatCurrency = (value: number) => {
     if (value >= 1000000) {
       return `${(value / 1000000).toFixed(1)}M`;
     }
-    return new Intl.NumberFormat('ru-RU', {
+    return new Intl.NumberFormat(bcp47Locale, {
       style: 'currency',
       currency: 'RUB',
       maximumFractionDigits: 0,
