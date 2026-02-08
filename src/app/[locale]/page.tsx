@@ -219,9 +219,9 @@ export default function HomePage() {
           </Link>
         </div>
         <div className="mt-14 grid gap-6 sm:grid-cols-3">
-          <DownloadCard icon={<DevicePhoneMobileIcon className="h-8 w-8" />} title={t('download.android.title')} description={t('download.android.description')} buttonLabel={t('download.android.button')} disabled />
-          <DownloadCard icon={<ComputerDesktopIcon className="h-8 w-8" />} title={t('download.desktop.title')} description={t('download.desktop.description')} buttons={['Windows', 'macOS', 'Linux']} disabled />
-          <DownloadCard icon={<svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" /></svg>} title={t('download.n8n.title')} description={t('download.n8n.description')} buttonLabel={t('download.n8n.button')} disabled />
+          <DownloadCard icon={<DevicePhoneMobileIcon className="h-8 w-8" />} title={t('download.android.title')} description={t('download.android.description')} buttonLabel={t('download.android.button')} href="/android" />
+          <DownloadCard icon={<ComputerDesktopIcon className="h-8 w-8" />} title={t('download.desktop.title')} description={t('download.desktop.description')} buttonLabel={t('download.desktop.button')} href="/desktop" />
+          <DownloadCard icon={<svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" /></svg>} title={t('download.n8n.title')} description={t('download.n8n.description')} buttonLabel={t('download.n8n.button')} href="/n8n" />
         </div>
       </section>
 
@@ -230,7 +230,7 @@ export default function HomePage() {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 sm:flex-row">
           <span className="text-sm text-muted">{t('footer.copyright')}</span>
           <div className="flex items-center gap-6 text-sm text-muted">
-            <a href="#" className="hover:text-foreground transition-colors">{t('footer.github')}</a>
+            <a href="https://github.com/AgiMateIo" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">{t('footer.github')}</a>
             <a href="#" className="hover:text-foreground transition-colors">{t('footer.telegram')}</a>
             <a href="#" className="hover:text-foreground transition-colors">{t('footer.docs')}</a>
           </div>
@@ -250,7 +250,7 @@ function CapabilityCard({ icon, title, description }: { icon: React.ReactNode; t
   );
 }
 
-function DownloadCard({ icon, title, description, buttonLabel, buttons, disabled }: { icon: React.ReactNode; title: string; description: string; buttonLabel?: string; buttons?: string[]; disabled?: boolean }) {
+function DownloadCard({ icon, title, description, buttonLabel, buttons, disabled, href }: { icon: React.ReactNode; title: string; description: string; buttonLabel?: string; buttons?: string[]; disabled?: boolean; href?: string }) {
   return (
     <div className="flex flex-col items-center rounded-2xl border border-border/50 bg-surface p-8 text-center">
       <div className="mb-4 text-accent">{icon}</div>
@@ -260,6 +260,8 @@ function DownloadCard({ icon, title, description, buttonLabel, buttons, disabled
         <div className="flex flex-wrap justify-center gap-2">
           {buttons.map((label) => (<button key={label} disabled={disabled} className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:text-muted">{label}</button>))}
         </div>
+      ) : href ? (
+        <Link href={href} className="rounded-lg border border-border px-5 py-2 text-sm font-medium text-muted transition-colors hover:border-accent hover:text-accent">{buttonLabel}</Link>
       ) : (
         <button disabled={disabled} className="rounded-lg border border-border px-5 py-2 text-sm font-medium text-muted transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:text-muted">{buttonLabel}</button>
       )}
