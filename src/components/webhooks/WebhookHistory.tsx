@@ -5,7 +5,7 @@ import { localeMap } from '@/i18n/routing';
 import { useState, useEffect } from 'react';
 import apiService from '@/services/api';
 import { WebhookDelivery } from '@/types';
-import { Alert } from '@/components/ui/Alert';
+import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 interface WebhookHistoryProps {
@@ -63,7 +63,7 @@ export default function WebhookHistory({ webhookId }: WebhookHistoryProps) {
   };
 
   if (error) {
-    return <Alert variant="error">{error}</Alert>;
+    return <ErrorAlert>{error}</ErrorAlert>;
   }
 
   if (loading) {

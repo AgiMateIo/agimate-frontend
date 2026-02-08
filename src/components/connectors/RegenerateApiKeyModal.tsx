@@ -8,6 +8,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input } from '@/components/ui/FormField';
 import { Alert } from '@/components/ui/Alert';
+import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useClipboard } from '@/hooks/useClipboard';
 
 interface RegenerateApiKeyModalProps {
@@ -118,7 +119,7 @@ export default function RegenerateApiKeyModal({ apiKey, onClose, onSuccess }: Re
           The current API key will immediately stop working. Any applications using the old key will need to be updated with the new key.
         </Alert>
 
-        {error && <Alert variant="error">{error}</Alert>}
+        {error && <ErrorAlert>{error}</ErrorAlert>}
 
         <div className="flex gap-3 pt-2">
           <Button

@@ -6,6 +6,7 @@ import { DeviceAuthKeyResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
+import { ErrorAlert } from '@/components/ui/ErrorAlert';
 
 interface DeleteDeviceKeyModalProps {
   deviceKey: DeviceAuthKeyResponse;
@@ -42,7 +43,7 @@ export default function DeleteDeviceKeyModal({ deviceKey, onClose, onSuccess }: 
           This action cannot be undone. Devices using this key will no longer be able to connect.
         </Alert>
 
-        {error && <Alert variant="error">{error}</Alert>}
+        {error && <ErrorAlert>{error}</ErrorAlert>}
 
         <div className="flex gap-3 pt-2">
           <Button

@@ -6,6 +6,7 @@ import { Credential } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
+import { ErrorAlert } from '@/components/ui/ErrorAlert';
 
 interface DeleteCredentialModalProps {
   connectorCode: string;
@@ -48,7 +49,7 @@ export default function DeleteCredentialModal({
           This action cannot be undone. Any integrations using this credential will stop working.
         </Alert>
 
-        {error && <Alert variant="error">{error}</Alert>}
+        {error && <ErrorAlert>{error}</ErrorAlert>}
 
         <div className="flex gap-3 pt-2">
           <Button

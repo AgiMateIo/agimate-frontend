@@ -28,6 +28,20 @@ import type {
 const rawBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://api.agimate.lc:8000/';
 const BASE_URL = rawBaseUrl.endsWith('/') ? rawBaseUrl : `${rawBaseUrl}/`;
 
+const SERVICE_UNAVAILABLE_MESSAGE = 'SERVICE_UNAVAILABLE';
+
+// Wraps fetch to replace network errors with a user-friendly message
+const safeFetch = async (url: string, options?: RequestInit): Promise<Response> => {
+  try {
+    return await fetch(url, options);
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error(SERVICE_UNAVAILABLE_MESSAGE);
+    }
+    throw error;
+  }
+};
+
 // Helper functions to handle storage
 const getAccessToken = (): string | null => typeof window !== 'undefined' ? sessionStorage.getItem('access_token') : null;
 const getRefreshTokenId = (): string | null => typeof window !== 'undefined' ? localStorage.getItem('refresh_token_id') : null;
@@ -105,7 +119,7 @@ class ApiService {
 
   private async performTokenRefresh(tokenToUse: string): Promise<boolean> {
     try {
-      const response = await fetch(`${BASE_URL}${API.ENDPOINTS.USER_API}/oauth2/refresh`, {
+      const response = await safeFetch(`${BASE_URL}${API.ENDPOINTS.USER_API}/oauth2/refresh`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -146,7 +160,7 @@ class ApiService {
       headers,
     };
 
-    let response = await fetch(url, config);
+    let response = await safeFetch(url, config);
 
     if (response.status === 401 || response.status === 403) {
       // Try to refresh the token once if unauthorized
@@ -170,7 +184,7 @@ class ApiService {
           ...options.headers,
         };
 
-        response = await fetch(url, { ...options, headers: retryHeaders });
+        response = await safeFetch(url, { ...options, headers: retryHeaders });
 
         if (response.status === 401 || response.status === 403) {
           // Token refresh failed, clear tokens and redirect to login
@@ -356,7 +370,7 @@ class ApiService {
     try {
       // Only call the backend logout endpoint if we have a refresh token
       if (refreshTokenId) {
-        const response = await fetch(`${BASE_URL}${API.ENDPOINTS.USER_API}/oauth2/logout`, {
+        const response = await safeFetch(`${BASE_URL}${API.ENDPOINTS.USER_API}/oauth2/logout`, {
           method: 'POST',
           credentials: 'include',
           headers: {

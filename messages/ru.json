@@ -353,7 +353,10 @@
     "breadcrumbDashboard": "Dashboard",
     "today": "Сегодня",
     "yesterday": "Вчера",
-    "daysAgo": "{count, plural, one {# день назад} few {# дня назад} other {# дней назад}}"
+    "daysAgo": "{count, plural, one {# день назад} few {# дня назад} other {# дней назад}}",
+    "errors": {
+      "SERVICE_UNAVAILABLE": "Сервис временно недоступен"
+    }
   },
   "LocaleSwitcher": {
     "ru": "RU",

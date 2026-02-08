@@ -6,6 +6,7 @@ import { ConnectorsApiKey } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
+import { ErrorAlert } from '@/components/ui/ErrorAlert';
 
 interface DeleteApiKeyModalProps {
   apiKey: ConnectorsApiKey;
@@ -42,7 +43,7 @@ export default function DeleteApiKeyModal({ apiKey, onClose, onSuccess }: Delete
           This action cannot be undone. Any applications using this API key will no longer be able to access the Connectors API.
         </Alert>
 
-        {error && <Alert variant="error">{error}</Alert>}
+        {error && <ErrorAlert>{error}</ErrorAlert>}
 
         <div className="flex gap-3 pt-2">
           <Button

@@ -6,6 +6,7 @@ import { Webhook, UpdateWebhookRequest } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input, TextArea } from '@/components/ui/FormField';
 import { Alert } from '@/components/ui/Alert';
+import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { LockClosedIcon } from '@heroicons/react/24/outline';
 import EventTypePicker from './EventTypePicker';
@@ -178,7 +179,7 @@ export default function WebhookEditForm({ webhook, onSuccess, onDelete }: Webhoo
           <Toggle checked={enabled} onChange={setEnabled} label="Webhook is enabled" />
         </FormField>
 
-      {error && <Alert variant="error">{error}</Alert>}
+      {error && <ErrorAlert>{error}</ErrorAlert>}
 
       <div className="flex gap-3 pt-4 border-t border-border">
         <Button
