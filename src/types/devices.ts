@@ -1,4 +1,14 @@
-// Mobile Devices types
+// Devices types
+
+// Connected device returned by GET /device/manage/devices/
+export interface ConnectedDevice {
+  connectionId: string;
+  connectionName: string;
+  deviceId: string | null;
+  deviceName: string | null;
+  deviceOs: string | null;
+  connected: boolean;
+}
 
 // Response при создании (показывает полный ключ только один раз)
 export interface DeviceAuthKeyCreatedResponse {

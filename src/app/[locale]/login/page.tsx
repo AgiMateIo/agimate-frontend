@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from '@/i18n/navigation';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
@@ -18,6 +18,12 @@ export default function LoginPage() {
   const { fetchUser } = useUser();
   const t = useTranslations('Login');
   const hasRun = useRef(false);
+  const [redirectParams, setRedirectParams] = useState('');
+
+  useEffect(() => {
+    const loginUrl = window.location.origin + '/login';
+    setRedirectParams(`?redirect_to=${encodeURIComponent(loginUrl)}`);
+  }, []);
 
   useEffect(() => {
     const handleOAuthCallback = async () => {
@@ -73,7 +79,7 @@ export default function LoginPage() {
 
           <div className="space-y-3">
             <a
-              href={`${getApiBaseUrl()}${API.ENDPOINTS.USER_API}/oauth2/authorization/google`}
+              href={`${getApiBaseUrl()}${API.ENDPOINTS.USER_API}/oauth2/authorization/google${redirectParams}`}
               className="w-full bg-surface-secondary hover:bg-border text-foreground border border-border/50 py-3 px-4 rounded-lg flex items-center justify-center font-medium transition-colors"
             >
               <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
@@ -86,7 +92,7 @@ export default function LoginPage() {
             </a>
 
             <a
-              href={`${getApiBaseUrl()}${API.ENDPOINTS.USER_API}/oauth2/authorization/yandex`}
+              href={`${getApiBaseUrl()}${API.ENDPOINTS.USER_API}/oauth2/authorization/yandex${redirectParams}`}
               className="w-full bg-surface-secondary hover:bg-border text-foreground border border-border/50 py-3 px-4 rounded-lg flex items-center justify-center font-medium transition-colors"
             >
               <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">

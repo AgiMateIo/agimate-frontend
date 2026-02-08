@@ -14,6 +14,7 @@ import type {
   ConnectorsApiKeyWithSecret,
   CreateConnectorsApiKeyRequest,
   UpdateConnectorsApiKeyRequest,
+  ConnectedDevice,
   DeviceAuthKeyResponse,
   DeviceAuthKeyCreatedResponse,
   CreateDeviceAuthKeyRequest,
@@ -296,24 +297,30 @@ class ApiService {
 
   // ========== DEVICE API METHODS ==========
 
-  // Get all device auth keys
+  // Connected devices
+  async getConnectedDevices(): Promise<ConnectedDevice[]> {
+    return this.get<ConnectedDevice[]>(`${API.ENDPOINTS.DEVICE_API}/manage/devices/`);
+  }
+
+  async disconnectDevice(connectionId: string): Promise<void> {
+    return this.post(`${API.ENDPOINTS.DEVICE_API}/manage/devices/${connectionId}/disconnect`, {});
+  }
+
+  // Device auth keys
   async getDeviceAuthKeys(): Promise<DeviceAuthKeyResponse[]> {
-    return this.get<DeviceAuthKeyResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/devices/`);
+    return this.get<DeviceAuthKeyResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/device-keys/`);
   }
 
-  // Create new device auth key
   async createDeviceAuthKey(data: CreateDeviceAuthKeyRequest): Promise<DeviceAuthKeyCreatedResponse> {
-    return this.post<DeviceAuthKeyCreatedResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/devices/`, data);
+    return this.post<DeviceAuthKeyCreatedResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/device-keys/`, data);
   }
 
-  // Update device auth key (name, description, enabled)
   async updateDeviceAuthKey(id: string, data: UpdateDeviceAuthKeyRequest): Promise<DeviceAuthKeyResponse> {
-    return this.put<DeviceAuthKeyResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/devices/${id}`, data);
+    return this.put<DeviceAuthKeyResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/device-keys/${id}`, data);
   }
 
-  // Delete device auth key
   async deleteDeviceAuthKey(id: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/devices/${id}`);
+    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/device-keys/${id}`);
   }
 
   // ========== WEBHOOKS API METHODS ==========

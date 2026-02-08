@@ -10,12 +10,12 @@ import DeleteDeviceKeyModal from './DeleteDeviceKeyModal';
 import EditDeviceKeyModal from './EditDeviceKeyModal';
 import { Toggle } from '@/components/ui/Toggle';
 
-interface MobileDevicesListProps {
+interface DeviceKeysListProps {
   devices: DeviceAuthKeyResponse[];
   onUpdate?: () => void;
 }
 
-export default function MobileDevicesList({ devices: devicesProp, onUpdate }: MobileDevicesListProps) {
+export default function DeviceKeysList({ devices: devicesProp, onUpdate }: DeviceKeysListProps) {
   const locale = useLocale();
   const bcp47Locale = localeMap[locale];
   const [devices, setDevices] = useState<DeviceAuthKeyResponse[]>(devicesProp);
@@ -51,7 +51,6 @@ export default function MobileDevicesList({ devices: devicesProp, onUpdate }: Mo
       await apiService.updateDeviceAuthKey(device.id, {
         enabled: !device.enabled,
       });
-      // Cache will be cleared on unmount
     } catch (error) {
       console.error('Failed to update device key:', error);
       // Revert on error
@@ -76,7 +75,6 @@ export default function MobileDevicesList({ devices: devicesProp, onUpdate }: Mo
   const handleEditSuccess = (updated: DeviceAuthKeyResponse) => {
     setDevices(prev => prev.map(d => d.id === updated.id ? updated : d));
     setEditingDevice(null);
-    // Cache will be cleared on unmount
   };
 
   if (devices.length === 0) {

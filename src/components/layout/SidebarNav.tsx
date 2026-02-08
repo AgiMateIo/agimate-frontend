@@ -24,7 +24,7 @@ const getNavItems = (t: ReturnType<typeof useTranslations>) => [
   { label: t('connectors'), icon: PuzzlePieceIcon, href: '/dashboard/connectors' },
   { label: t('apiKeys'), icon: KeyIcon, href: '/dashboard/api-keys' },
   { label: t('webhooks'), icon: BellAlertIcon, href: '/dashboard/webhooks' },
-  { label: t('mobileDevices'), icon: DevicePhoneMobileIcon, href: '/dashboard/mobile-devices' },
+  { label: t('devices'), icon: DevicePhoneMobileIcon, href: '/dashboard/devices' },
   { label: t('competitive'), icon: BoltIcon, href: '/dashboard/competitive' },
   { label: t('settings'), icon: Cog6ToothIcon, href: '/dashboard/settings' },
 ];

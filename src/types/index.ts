@@ -11,5 +11,5 @@ export * from './smart-actions';
 export * from './competitive';
 export * from './chat';
 export * from './connectors';
-export * from './mobile-devices';
+export * from './devices';
 export * from './webhooks';

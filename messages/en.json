@@ -161,7 +161,7 @@
     "connectors": "Connectors",
     "apiKeys": "API Keys",
     "webhooks": "Webhooks",
-    "mobileDevices": "Mobile Devices",
+    "devices": "Devices",
     "competitive": "Competitive",
     "settings": "Settings"
   },
@@ -258,13 +258,24 @@
     "previous": "Previous",
     "next": "Next"
   },
-  "MobileDevices": {
-    "title": "Mobile Devices",
-    "subtitle": "Manage device authentication keys for mobile app access",
+  "Devices": {
+    "title": "Devices",
+    "subtitle": "Manage connected devices and device authentication keys",
+    "devicesTab": "Devices",
+    "deviceKeysTab": "Device Keys",
     "deviceKeys": "Device Keys",
     "createDeviceKey": "Create Device Key",
     "loadingDeviceKeys": "Loading device keys...",
-    "noDeviceKeys": "No device keys created yet"
+    "noDeviceKeys": "No device keys created yet",
+    "loadingDevices": "Loading devices...",
+    "noDevices": "No devices found",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "noDeviceConnected": "No device connected",
+    "disconnect": "Disconnect",
+    "disconnectDevice": "Disconnect Device",
+    "disconnectConfirm": "Are you sure you want to disconnect \"{name}\"?",
+    "disconnectWarning": "The device will be disconnected. It can reconnect using the same key if enabled."
   },
   "Competitive": {
     "title": "Competitive Intelligence",
