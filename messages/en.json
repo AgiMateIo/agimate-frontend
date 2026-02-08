@@ -121,7 +121,8 @@
       },
       "desktop": {
         "title": "Desktop",
-        "description": "Install the agent on your computer"
+        "description": "Install the agent on your computer",
+        "button": "Learn more"
       },
       "n8n": {
         "title": "n8n node",
@@ -357,5 +358,636 @@
   "LocaleSwitcher": {
     "ru": "RU",
     "en": "EN"
+  },
+  "N8nPage": {
+    "meta": {
+      "title": "AgiMate + n8n — Connect real devices to your workflows",
+      "description": "Three n8n nodes: device event triggers, connector method calls, and mobile device management. Install in under a minute.",
+      "ogTitle": "AgiMate + n8n — Nodes for real-device automation",
+      "ogDescription": "Event triggers, connectors for 100+ services, mobile device management — all through n8n."
+    },
+    "nav": {
+      "nodes": "Nodes",
+      "setup": "Setup",
+      "examples": "Examples",
+      "install": "Install"
+    },
+    "hero": {
+      "title": "AgiMate",
+      "titleHighlight": "+ n8n",
+      "subtitle": "Three nodes to connect real devices and 100+ services to your workflows.",
+      "cta": "Install"
+    },
+    "nodes": {
+      "title": "Three nodes — one integration",
+      "subtitle": "Each node has its role. Together — full automation.",
+      "trigger": {
+        "title": "AgiMate Trigger",
+        "description": "Starts a workflow on device or service events. Works as a webhook — n8n listens and reacts.",
+        "features": [
+          "Mobile device events",
+          "Notifications from 100+ services",
+          "Filter by event type",
+          "Automatic retry on errors"
+        ],
+        "useCaseLabel": "Example",
+        "useCase": ["New Ozon order", "AgiMate Trigger", "Process in n8n"]
+      },
+      "connectors": {
+        "title": "AgiMate Connectors",
+        "description": "Calls connector methods — fetching data, updating statuses, sending messages. Any service from the catalog.",
+        "features": [
+          "100+ services: Ozon, WB, Telegram, etc.",
+          "Full access to API methods",
+          "Dynamic method and parameter selection",
+          "Automatic authorization"
+        ],
+        "useCaseLabel": "Example",
+        "useCase": ["Fetch orders", "AgiMate Connectors", "Data to Google Sheets"]
+      },
+      "mobile": {
+        "title": "AgiMate Mobile",
+        "description": "Controls mobile devices — screenshots, notifications, command execution. AI gets eyes and hands.",
+        "features": [
+          "Device screenshots",
+          "Send notifications and TTS",
+          "Execute commands on device",
+          "Status monitoring"
+        ],
+        "useCaseLabel": "Example",
+        "useCase": ["AI command", "AgiMate Mobile", "Action on phone"]
+      }
+    },
+    "setup": {
+      "title": "Install in 3 steps",
+      "subtitle": "From installation to your first workflow — under a minute.",
+      "steps": [
+        {
+          "title": "Install the node",
+          "description": "Via npm in your n8n instance or through the Community Nodes UI."
+        },
+        {
+          "title": "Add credentials",
+          "description": "Enter your AgiMate API key in n8n settings. One key for all three nodes."
+        },
+        {
+          "title": "Create a workflow",
+          "description": "Drag the node onto the canvas, pick a method, and run. Done."
+        }
+      ],
+      "npmCommand": "npm install n8n-nodes-agimate",
+      "copy": "Copy",
+      "copied": "Copied!"
+    },
+    "examples": {
+      "title": "Use cases",
+      "subtitle": "Ready-made ideas for your workflows",
+      "items": [
+        {
+          "title": "Order monitoring",
+          "description": "New marketplace orders automatically go to Google Sheets and Telegram.",
+          "flow": ["AgiMate Trigger", "Filter", "Google Sheets + Telegram"]
+        },
+        {
+          "title": "AI-powered support",
+          "description": "Incoming customer messages are analyzed by AI, which replies or escalates.",
+          "flow": ["AgiMate Trigger", "OpenAI", "AgiMate Connectors"]
+        },
+        {
+          "title": "Scheduled screenshots",
+          "description": "Takes a device screenshot every hour and saves it to cloud for auditing.",
+          "flow": ["Schedule", "AgiMate Mobile", "Google Drive"]
+        },
+        {
+          "title": "Price change alerts",
+          "description": "Monitors competitor prices and sends a notification on deviation.",
+          "flow": ["AgiMate Trigger", "Compare", "Slack / Telegram"]
+        },
+        {
+          "title": "Inventory sync",
+          "description": "Automatic stock synchronization between warehouse and marketplaces.",
+          "flow": ["Schedule", "AgiMate Connectors", "Ozon + WB API"]
+        },
+        {
+          "title": "Voice notifications",
+          "description": "Critical events are announced on device via TTS.",
+          "flow": ["AgiMate Trigger", "Filter", "AgiMate Mobile TTS"]
+        }
+      ]
+    },
+    "aiTools": {
+      "title": "AI Agent integration",
+      "subtitle": "Use AgiMate as a tool for n8n AI Agent",
+      "description": "The n8n AI Agent can use AgiMate nodes as tools. The agent decides when to call a connector, take a screenshot, or send a notification.",
+      "agentLabel": "AI Agent",
+      "toolsLabel": "AgiMate Tools",
+      "tools": ["Fetch orders", "Take screenshot", "Send notification", "Update status"]
+    },
+    "eventTypes": {
+      "title": "Event types",
+      "subtitle": "Events you can subscribe to via AgiMate Trigger",
+      "headers": {
+        "event": "Event",
+        "description": "Description",
+        "source": "Source"
+      },
+      "items": [
+        { "event": "order.created", "description": "New order", "source": "Marketplaces" },
+        { "event": "order.status_changed", "description": "Order status change", "source": "Marketplaces" },
+        { "event": "message.received", "description": "Incoming message", "source": "Messengers" },
+        { "event": "price.changed", "description": "Competitor price change", "source": "Monitoring" },
+        { "event": "device.screenshot", "description": "Device screenshot", "source": "Mobile" },
+        { "event": "device.notification", "description": "Device notification", "source": "Mobile" },
+        { "event": "inventory.low", "description": "Low stock", "source": "Warehouse" },
+        { "event": "review.new", "description": "New review", "source": "Marketplaces" }
+      ]
+    },
+    "install": {
+      "title": "Get started now",
+      "subtitle": "Two ways to install — pick what works for you",
+      "npm": {
+        "title": "Via CLI",
+        "description": "Run this command in your n8n directory:",
+        "command": "npm install n8n-nodes-agimate"
+      },
+      "ui": {
+        "title": "Via n8n UI",
+        "steps": [
+          "Settings → Community Nodes",
+          "Install a community node",
+          "Enter n8n-nodes-agimate"
+        ]
+      },
+      "github": "GitHub",
+      "docs": "Documentation"
+    },
+    "footer": {
+      "copyright": "AgiMate © 2025",
+      "github": "GitHub",
+      "telegram": "Telegram",
+      "docs": "Documentation"
+    }
+  },
+  "DesktopPage": {
+    "meta": {
+      "title": "AgiMate Desktop — AI agent for your computer",
+      "description": "Free open-source app that gives AI agents access to files, notifications, and commands on your computer. Windows, macOS, Linux.",
+      "ogTitle": "AgiMate Desktop — AI agent for your computer",
+      "ogDescription": "Bridge between AI and your computer. File watching, notifications, text-to-speech, plugin system."
+    },
+    "nav": {
+      "features": "Features",
+      "plugins": "Plugins",
+      "specs": "Specs",
+      "install": "Install"
+    },
+    "hero": {
+      "title": "AgiMate",
+      "titleHighlight": "Desktop",
+      "subtitle": "A background agent that gives your AI access to files, notifications, and system commands. Install once — and forget.",
+      "cta": "Download for free"
+    },
+    "howItWorks": {
+      "title": "Bridge between AI and your computer",
+      "subtitle": "AgiMate Desktop lives in the system tray and connects computer events with your AI agent.",
+      "boxes": {
+        "pc": "PC Events",
+        "pcSubtitle": "Files, buttons, timers",
+        "desktop": "AgiMate Desktop",
+        "desktopSubtitle": "System tray · Background agent",
+        "ai": "AI Agent",
+        "aiSubtitle": "Analysis and commands"
+      },
+      "steps": [
+        {
+          "title": "An event occurs on the computer",
+          "description": "A new file in a folder, a button press, or a timer trigger — a plugin intercepts the event."
+        },
+        {
+          "title": "The agent sends data to the server",
+          "description": "AgiMate Desktop transmits the event to the backend via HTTP. Data includes type, time, and parameters."
+        },
+        {
+          "title": "AI makes a decision",
+          "description": "Your AI agent (via n8n, MCP, or webhook) analyzes the event and chooses an action."
+        },
+        {
+          "title": "The command is executed on the computer",
+          "description": "The response command arrives via WebSocket — notification, speech, or another plugin action."
+        }
+      ]
+    },
+    "features": {
+      "title": "Built-in capabilities",
+      "subtitle": "Built-in triggers and actions — work right after installation.",
+      "triggersTitle": "Triggers",
+      "triggers": {
+        "fileWatcher": {
+          "title": "File Watcher",
+          "description": "Real-time folder monitoring. New file, change, deletion, move — the agent instantly notifies AI.",
+          "features": [
+            "Recursive monitoring of nested folders",
+            "Filter by mask: *.pdf, *.doc*, *.xlsx",
+            "Data: path, filename, size, event type",
+            "Example: new invoice in Downloads → AI sends to 1C"
+          ]
+        },
+        "quickButtons": {
+          "title": "Quick Buttons",
+          "description": "Customizable button panel for manual triggers. Press — and AI runs a configured scenario.",
+          "features": [
+            "Two types: instant and with text input",
+            "Configurable grid (column count)",
+            "Live configuration editor",
+            "Example: 'Quick Note' → input dialog → AI saves to Notion"
+          ]
+        }
+      },
+      "actionsTitle": "Actions",
+      "actions": {
+        "notifications": {
+          "title": "Notifications",
+          "description": "AI sends notifications right to your desktop. System ones — to tray. Important ones — as modal windows.",
+          "features": [
+            "System notification (background) and modal window",
+            "Customizable title, text, and duration",
+            "Example: AI found suspicious order → modal notification"
+          ]
+        },
+        "tts": {
+          "title": "Text-to-Speech (TTS)",
+          "description": "AI speaks text through your computer speakers. Don't miss important events, even when not looking at the screen.",
+          "features": [
+            "macOS: built-in say command with voice selection",
+            "Windows: SAPI via PowerShell (built into system)",
+            "Linux: espeak or spd-say",
+            "Example: critical alert → 'Attention, warehouse stock is below minimum'"
+          ]
+        }
+      }
+    },
+    "plugins": {
+      "title": "Extend as you wish",
+      "subtitle": "Each plugin is a folder with code and config. Write your own in 30 minutes or use community-made ones.",
+      "types": {
+        "trigger": {
+          "title": "Trigger plugins",
+          "description": "Monitor events on the computer and send data to the AI agent.",
+          "direction": "Device → AI",
+          "examples": "Files, buttons, timers"
+        },
+        "action": {
+          "title": "Action plugins",
+          "description": "Receive commands from AI and execute actions on the computer.",
+          "direction": "AI → Device",
+          "examples": "Notifications, TTS, automation"
+        }
+      },
+      "comparison": {
+        "headers": {
+          "param": "Parameter",
+          "trigger": "Trigger plugin",
+          "action": "Action plugin"
+        },
+        "rows": [
+          { "param": "Direction", "trigger": "Device → AI", "action": "AI → Device" },
+          { "param": "Purpose", "trigger": "Monitors events", "action": "Executes commands" },
+          { "param": "Examples", "trigger": "Files, buttons, timers", "action": "Notifications, TTS" },
+          { "param": "Base class", "trigger": "TriggerPlugin", "action": "ActionPlugin" }
+        ]
+      },
+      "triggerCode": {
+        "title": "Trigger plugin example (Python)",
+        "code": "from core.plugin_base import TriggerPlugin\n\nclass MyTrigger(TriggerPlugin):\n    @property\n    def name(self) -> str:\n        return \"My Trigger\"\n\n    async def start(self) -> None:\n        # Start monitoring\n        pass\n\n    async def stop(self) -> None:\n        # Stop monitoring\n        pass"
+      },
+      "actionCode": {
+        "title": "Action plugin example (Python)",
+        "code": "from core.plugin_base import ActionPlugin\n\nclass MyAction(ActionPlugin):\n    @property\n    def name(self) -> str:\n        return \"My Action\"\n\n    def get_supported_actions(self) -> list[str]:\n        return [\"MY_ACTION\"]\n\n    async def execute(self, action_type: str,\n                      parameters: dict) -> bool:\n        # Execute action\n        return True"
+      }
+    },
+    "useCases": {
+      "title": "What you can automate",
+      "subtitle": "Real scenarios with AgiMate Desktop",
+      "items": [
+        {
+          "title": "Document processing",
+          "description": "New file in Downloads → AI recognizes document type → extracts data → uploads to 1C or CRM.",
+          "flow": ["New file", "AI recognition", "Upload to 1C/CRM"]
+        },
+        {
+          "title": "AI secretary on PC",
+          "description": "AI monitors files and events on the computer, analyzes and categorizes, notifies or acts automatically.",
+          "flow": ["PC event", "AI analysis", "Notification / action"]
+        },
+        {
+          "title": "Voice assistant",
+          "description": "Critical event → AI evaluates priority → speaks through speakers + shows desktop notification.",
+          "flow": ["Critical event", "AI prioritization", "TTS + notification"]
+        },
+        {
+          "title": "Legacy Software Bridge",
+          "description": "AI interacts with desktop apps without APIs — 1C, Excel, specialized software. Bridge between old and new.",
+          "flow": ["AI command", "App action", "Result to cloud"]
+        },
+        {
+          "title": "Scheduled data collection",
+          "description": "Button 'Collect report' → AI gathers data from sources → generates report → notifies when ready.",
+          "flow": ["Button", "AI data collection", "Report + notification"]
+        },
+        {
+          "title": "Quick commands",
+          "description": "Button panel for common operations: 'Create task', 'Send report', 'Check status' — one press launches an AI scenario.",
+          "flow": ["Button press", "AI scenario", "Result"]
+        }
+      ]
+    },
+    "specs": {
+      "title": "Under the hood",
+      "subtitle": "AgiMate Desktop technical specifications",
+      "rows": [
+        { "param": "Platforms", "value": "Windows, macOS, Linux" },
+        { "param": "Size", "value": "~80–100 MB" },
+        { "param": "Server connection", "value": "HTTP + WebSocket (Centrifugo)" },
+        { "param": "Protocol", "value": "MCP-compatible, n8n node" },
+        { "param": "Auto-reconnect", "value": "Exponential backoff, up to 10 retries" },
+        { "param": "Plugins", "value": "Hot-loading, config validation" },
+        { "param": "Tests", "value": "313 tests, 97% coverage (core)" }
+      ]
+    },
+    "interface": {
+      "title": "Simple and unobtrusive",
+      "subtitle": "Lives in the system tray — stays out of your way. All settings in one window.",
+      "screens": {
+        "tray": {
+          "title": "System Tray",
+          "description": "Tray icon with connection status indicator.",
+          "items": [
+            "Connecting... (yellow)",
+            "Connected (green)",
+            "Disconnected (gray)",
+            "Error (red)"
+          ]
+        },
+        "settings": {
+          "title": "General Settings",
+          "description": "Tab with server connection parameters.",
+          "items": [
+            "Server address and API key",
+            "Auto-connect on startup",
+            "Reconnect interval",
+            "Device ID and binding status"
+          ]
+        },
+        "pluginsTab": {
+          "title": "Plugins Tab",
+          "description": "Plugin management and configuration.",
+          "items": [
+            "List of installed plugins",
+            "Status: active / inactive",
+            "Enable/disable with one click",
+            "Settings for each plugin"
+          ]
+        }
+      }
+    },
+    "install": {
+      "title": "Get started in 2 minutes",
+      "subtitle": "Three simple steps from download to your first trigger",
+      "steps": [
+        {
+          "title": "Download the app",
+          "description": "Choose your platform and download the installer."
+        },
+        {
+          "title": "Configure the connection",
+          "description": "Enter the server address and API key in settings. The app will connect automatically."
+        },
+        {
+          "title": "Done!",
+          "description": "The agent runs in the background. Enable the plugins you need — and your AI gets access to your computer."
+        }
+      ],
+      "platforms": {
+        "macos": "macOS (.app)",
+        "windows": "Windows (.exe)",
+        "linux": "Linux (.AppImage)"
+      }
+    },
+    "download": {
+      "title": "Open Source. Free. Extensible.",
+      "subtitle": "Download AgiMate Desktop and give your AI access to the real world.",
+      "downloadButton": "Download",
+      "github": "GitHub",
+      "docs": "Documentation"
+    },
+    "footer": {
+      "copyright": "AgiMate © 2025",
+      "github": "GitHub",
+      "telegram": "Telegram",
+      "docs": "Documentation"
+    }
+  },
+  "AndroidPage": {
+    "meta": {
+      "title": "AgiMate for Android — Device triggers and remote actions",
+      "description": "AgiMate Android app: triggers on Wi-Fi, battery, calls, and notifications. Remote push notifications and text-to-speech via TTS.",
+      "ogTitle": "AgiMate for Android — Triggers and remote actions",
+      "ogDescription": "Device triggers and remote commands for your AI agent. Install the APK and connect your phone to automation."
+    },
+    "nav": {
+      "features": "Features",
+      "howItWorks": "How it works",
+      "interface": "Interface",
+      "install": "Install"
+    },
+    "hero": {
+      "title": "AgiMate",
+      "titleHighlight": "for Android",
+      "subtitle": "Turn your phone into a sensor and remote control for your AI agent. Device event triggers + remote actions.",
+      "cta": "Download APK"
+    },
+    "features": {
+      "title": "Two operating modes",
+      "subtitle": "The app works in two directions: sends events from the device and receives commands from the backend.",
+      "triggersTitle": "Device triggers",
+      "triggersCaption": "All triggers run in the background — no need to keep the app open.",
+      "triggers": {
+        "wifi": {
+          "title": "Wi-Fi connection",
+          "description": "Fires when connecting to or disconnecting from a Wi-Fi network. Can filter by network name.",
+          "useCase": "Example: employee arrives at office → AI launches morning briefing"
+        },
+        "battery": {
+          "title": "Battery level",
+          "description": "Fires when charge drops below threshold or when plugged into charger.",
+          "useCase": "Example: charge < 15% on work tablet → alert in Telegram"
+        },
+        "call": {
+          "title": "Incoming call",
+          "description": "Fires on incoming, missed, or ended calls. Sends number and duration.",
+          "useCase": "Example: missed call → AI sends SMS 'Will call back in 5 minutes'"
+        },
+        "notification": {
+          "title": "App notification",
+          "description": "Intercepts notifications from selected apps. Sends title, text, and app name.",
+          "useCase": "Example: Ozon notification 'New order' → AI processes the order"
+        }
+      },
+      "actionsTitle": "Remote actions",
+      "actionsCaption": "Commands arrive instantly via WebSocket connection to the backend.",
+      "actions": {
+        "notify": {
+          "title": "Push notification",
+          "description": "Send a push notification to the device with a custom title and text from the backend.",
+          "useCase": "Example: AI detects anomaly → push 'Attention: unusual activity at 14:32'"
+        },
+        "tts": {
+          "title": "Text-to-Speech (TTS)",
+          "description": "Speak text aloud via system Text-to-Speech. Works even with screen locked.",
+          "useCase": "Example: critical alert → phone says 'Attention, stock of item X is below minimum'"
+        }
+      }
+    },
+    "howItWorks": {
+      "title": "How it works",
+      "subtitle": "Architecture of interaction between the app, backend, and your AI",
+      "boxes": {
+        "android": "Android App",
+        "androidSubtitle": "Triggers + actions",
+        "backend": "AgiMate Backend",
+        "backendSubtitle": "API Gateway + WebSocket",
+        "ai": "Your AI / n8n",
+        "aiSubtitle": "Logic and automation"
+      },
+      "steps": [
+        {
+          "title": "App registers with the backend",
+          "description": "On first launch, the app authenticates with a device key and establishes a WebSocket connection."
+        },
+        {
+          "title": "Trigger fires on the device",
+          "description": "An event (Wi-Fi, battery, call, notification) is intercepted in the background."
+        },
+        {
+          "title": "Data is sent to the backend via HTTP",
+          "description": "The app sends a JSON with event type and data to the API Gateway."
+        },
+        {
+          "title": "Backend calls webhook or n8n",
+          "description": "The event is routed to subscribers: webhooks, n8n workflows, or AI agent."
+        },
+        {
+          "title": "AI sends a command back",
+          "description": "The response command (push, TTS) arrives on the device via WebSocket instantly."
+        }
+      ]
+    },
+    "interface": {
+      "title": "App interface",
+      "subtitle": "Three main screens — simple and intuitive",
+      "screens": {
+        "triggers": {
+          "title": "Triggers screen",
+          "description": "List of all triggers with on/off toggles.",
+          "items": [
+            "Toggle triggers with a single tap",
+            "Configure parameters for each trigger",
+            "Status indicator: active / inactive",
+            "Log of recent trigger events"
+          ]
+        },
+        "actions": {
+          "title": "Actions screen",
+          "description": "History of received commands and their execution status.",
+          "items": [
+            "Real-time incoming command log",
+            "Status: completed / error",
+            "Test push and TTS sending",
+            "WebSocket connection indicator"
+          ]
+        },
+        "settings": {
+          "title": "Settings",
+          "description": "Backend connection and app configuration.",
+          "items": [
+            "Enter device key",
+            "Backend URL (default: AgiMate cloud)",
+            "Auto-start on device boot",
+            "Permission management"
+          ]
+        }
+      }
+    },
+    "developers": {
+      "title": "For developers",
+      "subtitle": "Technical documentation on data formats and requirements",
+      "triggerFormat": {
+        "title": "Trigger format (JSON)",
+        "description": "Each trigger sends an event in the following format:",
+        "json": "{\n  \"type\": \"device.wifi_connected\",\n  \"deviceId\": \"abc-123\",\n  \"timestamp\": \"2025-01-15T14:30:00Z\",\n  \"data\": {\n    \"ssid\": \"Office-5G\",\n    \"bssid\": \"00:1A:2B:3C:4D:5E\"\n  }\n}"
+      },
+      "actionFormat": {
+        "title": "Action format (JSON)",
+        "description": "Commands are sent to the device in the following format:",
+        "json": "{\n  \"action\": \"notify\",\n  \"payload\": {\n    \"title\": \"Attention\",\n    \"body\": \"Stock of item X is below minimum\",\n    \"priority\": \"high\"\n  }\n}"
+      },
+      "requirementsTitle": "Requirements and permissions",
+      "requirements": [
+        { "param": "Android", "value": "8.0+ (API 26)" },
+        { "param": "APK size", "value": "~5 MB" },
+        { "param": "Connection", "value": "Wi-Fi or mobile data" },
+        { "param": "Background work", "value": "Foreground Service" },
+        { "param": "Protocol", "value": "HTTPS + WSS" }
+      ],
+      "permissionsTitle": "Android permissions",
+      "permissions": [
+        "INTERNET — network communication",
+        "ACCESS_NETWORK_STATE — Wi-Fi monitoring",
+        "READ_PHONE_STATE — call information",
+        "RECEIVE_BOOT_COMPLETED — auto-start",
+        "POST_NOTIFICATIONS — sending notifications",
+        "FOREGROUND_SERVICE — background operation"
+      ]
+    },
+    "install": {
+      "title": "Installation",
+      "subtitle": "Five simple steps from download to your first trigger",
+      "downloadApk": "Download APK",
+      "steps": [
+        {
+          "title": "Download the APK",
+          "description": "Download the latest APK version from GitHub Releases."
+        },
+        {
+          "title": "Allow installation from unknown sources",
+          "description": "Settings → Security → Unknown sources (or allow for your browser)."
+        },
+        {
+          "title": "Install and open the app",
+          "description": "Run the APK file, wait for installation, and open AgiMate."
+        },
+        {
+          "title": "Enter the device key",
+          "description": "Create a key in Dashboard → Mobile Devices and paste it in the app settings."
+        },
+        {
+          "title": "Enable the triggers you need",
+          "description": "Select triggers, grant the required permissions — done!"
+        }
+      ]
+    },
+    "download": {
+      "title": "Download AgiMate for Android",
+      "subtitle": "Open-source. Free. Full control over your data.",
+      "apk": "Download APK",
+      "github": "GitHub",
+      "docs": "Documentation"
+    },
+    "footer": {
+      "copyright": "AgiMate © 2025",
+      "github": "GitHub",
+      "telegram": "Telegram",
+      "docs": "Documentation"
+    }
   }
 }
