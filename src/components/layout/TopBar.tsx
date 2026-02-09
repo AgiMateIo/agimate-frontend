@@ -1,10 +1,11 @@
 'use client';
 
 import { usePathname } from '@/i18n/navigation';
+import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useUser } from '@/contexts/UserContext';
 import LocaleSwitcher from '@/components/ui/LocaleSwitcher';
-import { ChevronDownIcon, UserCircleIcon } from '@heroicons/react/24/outline';
+import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
 export default function TopBar() {
@@ -12,77 +13,47 @@ export default function TopBar() {
   const { user, logout } = useUser();
   const t = useTranslations('TopBar');
 
-  const pageTitles: Record<string, string> = {
-    '/dashboard': t('pageTitles.dashboard'),
-    '/dashboard/analytics': t('pageTitles.analytics'),
-    '/dashboard/smart-actions': t('pageTitles.smartActions'),
-    '/dashboard/chat': t('pageTitles.chat'),
-    '/dashboard/integrations': t('pageTitles.integrations'),
-    '/dashboard/competitive': t('pageTitles.competitive'),
-    '/dashboard/settings': t('pageTitles.settings'),
-  };
-
-  const marketplaces = [
-    { id: 'all', name: t('marketplaces.all') },
-    { id: 'ozon', name: t('marketplaces.ozon') },
-    { id: 'wb', name: t('marketplaces.wb') },
-  ];
-
-  const dateRanges = [
-    { id: 'today', name: t('dateRanges.today') },
-    { id: '7d', name: t('dateRanges.7d') },
-    { id: '30d', name: t('dateRanges.30d') },
-    { id: '90d', name: t('dateRanges.90d') },
-  ];
-
-  const pageTitle = pageTitles[pathname] || t('pageTitles.dashboard');
-
-  const [selectedMarketplace, setSelectedMarketplace] = useState('all');
-  const [selectedDateRange, setSelectedDateRange] = useState('7d');
   const [showUserMenu, setShowUserMenu] = useState(false);
 
-  const currentMarketplace = marketplaces.find(m => m.id === selectedMarketplace);
-  const currentDateRange = dateRanges.find(d => d.id === selectedDateRange);
+  // Build breadcrumbs from pathname
+  const segments = pathname.split('/').filter(Boolean);
+  // segments: e.g. ["dashboard", "connectors", "ozon"]
+
+  const breadcrumbSegmentNames: Record<string, string> = {
+    dashboard: t('breadcrumbs.dashboard'),
+    connectors: t('breadcrumbs.connectors'),
+    devices: t('breadcrumbs.devices'),
+    triggers: t('breadcrumbs.triggers'),
+    actions: t('breadcrumbs.actions'),
+    webhooks: t('breadcrumbs.webhooks'),
+    'api-keys': t('breadcrumbs.apiKeys'),
+    settings: t('breadcrumbs.settings'),
+  };
+
+  const breadcrumbs = segments.map((segment, index) => {
+    const href = '/' + segments.slice(0, index + 1).join('/');
+    const label = breadcrumbSegmentNames[segment] || segment.charAt(0).toUpperCase() + segment.slice(1);
+    const isLast = index === segments.length - 1;
+    return { href, label, isLast };
+  });
 
   return (
     <header className="h-16 border-b border-border bg-surface flex items-center justify-between px-6 shrink-0">
-      {/* Left: Page Title */}
-      <h1 className="text-lg font-semibold text-foreground">{pageTitle}</h1>
-
-      {/* Center: Filters */}
-      <div className="flex items-center gap-3">
-        {/* Marketplace Selector */}
-        <div className="relative">
-          <select
-            value={selectedMarketplace}
-            onChange={(e) => setSelectedMarketplace(e.target.value)}
-            className="appearance-none bg-surface-secondary border border-border rounded-lg px-4 py-2 pr-10 text-sm font-medium text-foreground cursor-pointer hover:bg-surface focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1"
-          >
-            {marketplaces.map((mp) => (
-              <option key={mp.id} value={mp.id}>
-                {mp.name}
-              </option>
-            ))}
-          </select>
-          <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
-        </div>
-
-        {/* Date Range Selector */}
-        <div className="relative">
-          <select
-            value={selectedDateRange}
-            onChange={(e) => setSelectedDateRange(e.target.value)}
-            className="appearance-none bg-surface-secondary border border-border rounded-lg px-4 py-2 pr-10 text-sm font-medium text-foreground cursor-pointer hover:bg-surface focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1"
-          >
-            {dateRanges.map((dr) => (
-              <option key={dr.id} value={dr.id}>
-                {dr.name}
-              </option>
-            ))}
-          </select>
-          <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
-        </div>
-      </div>
+      {/* Left: Breadcrumbs */}
+      <nav className="flex items-center gap-2 text-sm">
+        {breadcrumbs.map((crumb, index) => (
+          <span key={crumb.href} className="flex items-center gap-2">
+            {index > 0 && <ChevronRightIcon className="h-4 w-4 text-muted" />}
+            {crumb.isLast ? (
+              <span className="text-foreground font-medium">{crumb.label}</span>
+            ) : (
+              <Link href={crumb.href} className="text-muted hover:text-foreground transition-colors">
+                {crumb.label}
+              </Link>
+            )}
+          </span>
+        ))}
+      </nav>
 
       {/* Right: Language + User Avatar */}
       <div className="flex items-center gap-3">

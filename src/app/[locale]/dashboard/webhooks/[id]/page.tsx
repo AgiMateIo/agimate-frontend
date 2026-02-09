@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useRouter } from '@/i18n/navigation';
-import { Link } from '@/i18n/navigation';
-import { ChevronRightIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { Webhook } from '@/types';
 import { Alert } from '@/components/ui/Alert';
@@ -100,19 +99,6 @@ export default function WebhookDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumbs */}
-      <nav className="flex items-center gap-2 text-sm">
-        <Link href="/dashboard" className="text-muted hover:text-foreground transition-colors">
-          Dashboard
-        </Link>
-        <ChevronRightIcon className="h-4 w-4 text-muted" />
-        <Link href="/dashboard/webhooks" className="text-muted hover:text-foreground transition-colors">
-          Webhooks
-        </Link>
-        <ChevronRightIcon className="h-4 w-4 text-muted" />
-        <span className="text-foreground font-medium">{webhook.name}</span>
-      </nav>
-
       {/* Back Button */}
       <button
         onClick={() => router.push('/dashboard/webhooks')}

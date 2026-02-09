@@ -5,10 +5,9 @@ import { localeMap } from '@/i18n/routing';
 import { useState, useEffect } from 'react';
 import apiService from '@/services/api';
 import { ConnectorsApiKey } from '@/types';
-import { TrashIcon, PencilIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
 import DeleteApiKeyModal from './DeleteApiKeyModal';
 import EditApiKeyModal from './EditApiKeyModal';
-import RegenerateApiKeyModal from './RegenerateApiKeyModal';
 import { Toggle } from '@/components/ui/Toggle';
 
 interface ConnectorsApiKeysListProps {
@@ -27,7 +26,6 @@ export default function ConnectorsApiKeysList({ apiKeys: apiKeysProp, onUpdate }
     setApiKeys(apiKeysProp);
   }, [apiKeysProp]);
   const [deletingApiKey, setDeletingApiKey] = useState<ConnectorsApiKey | null>(null);
-  const [regeneratingApiKey, setRegeneratingApiKey] = useState<ConnectorsApiKey | null>(null);
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
 
   const formatDate = (dateString: string) => {
@@ -81,13 +79,6 @@ export default function ConnectorsApiKeysList({ apiKeys: apiKeysProp, onUpdate }
     // Cache will be cleared on unmount
   };
 
-  const handleRegenerateSuccess = () => {
-    setRegeneratingApiKey(null);
-    // Cache will be cleared on unmount
-    // Note: The actual key data doesn't change in the list, only updatedAt changes
-    // The RegenerateApiKeyModal will handle showing the new key
-  };
-
   if (apiKeys.length === 0) {
     return (
       <div className="text-center py-8 text-muted">
@@ -123,15 +114,6 @@ export default function ConnectorsApiKeysList({ apiKeys: apiKeysProp, onUpdate }
                   onChange={() => handleToggleEnabled(apiKey)}
                   disabled={updatingIds.has(apiKey.pubId)}
                 />
-
-                {/* Regenerate Button */}
-                <button
-                  onClick={() => setRegeneratingApiKey(apiKey)}
-                  className="p-2 text-muted hover:text-warning transition-colors rounded-lg"
-                  title="Regenerate API Key"
-                >
-                  <ArrowPathIcon className="h-5 w-5" />
-                </button>
 
                 {/* Edit Button */}
                 <button
@@ -171,13 +153,6 @@ export default function ConnectorsApiKeysList({ apiKeys: apiKeysProp, onUpdate }
         />
       )}
 
-      {regeneratingApiKey && (
-        <RegenerateApiKeyModal
-          apiKey={regeneratingApiKey}
-          onClose={() => setRegeneratingApiKey(null)}
-          onSuccess={handleRegenerateSuccess}
-        />
-      )}
     </>
   );
 }

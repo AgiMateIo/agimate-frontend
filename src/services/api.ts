@@ -276,24 +276,21 @@ class ApiService {
 
   // ConnectorsApiKey Management
   async getConnectorsApiKeys(): Promise<ConnectorsApiKey[]> {
-    return this.get<ConnectorsApiKey[]>(`${API.ENDPOINTS.CONNECTORS_API}/manage/api-keys/`);
+    return this.get<ConnectorsApiKey[]>(`${API.ENDPOINTS.USER_API}/manage/api-keys/`);
   }
 
   async createConnectorsApiKey(data: CreateConnectorsApiKeyRequest): Promise<ConnectorsApiKeyWithSecret> {
-    return this.post<ConnectorsApiKeyWithSecret>(`${API.ENDPOINTS.CONNECTORS_API}/manage/api-keys/`, data);
+    return this.post<ConnectorsApiKeyWithSecret>(`${API.ENDPOINTS.USER_API}/manage/api-keys/`, data);
   }
 
   async updateConnectorsApiKey(keyId: string, data: UpdateConnectorsApiKeyRequest): Promise<ConnectorsApiKey> {
-    return this.put<ConnectorsApiKey>(`${API.ENDPOINTS.CONNECTORS_API}/manage/api-keys/${keyId}`, data);
+    return this.put<ConnectorsApiKey>(`${API.ENDPOINTS.USER_API}/manage/api-keys/${keyId}`, data);
   }
 
   async deleteConnectorsApiKey(keyId: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.CONNECTORS_API}/manage/api-keys/${keyId}`);
+    return this.delete<void>(`${API.ENDPOINTS.USER_API}/manage/api-keys/${keyId}`);
   }
 
-  async regenerateConnectorsApiKey(keyId: string): Promise<ConnectorsApiKeyWithSecret> {
-    return this.post<ConnectorsApiKeyWithSecret>(`${API.ENDPOINTS.CONNECTORS_API}/manage/api-keys/${keyId}/regenerate`, {});
-  }
 
   // ========== DEVICE API METHODS ==========
 

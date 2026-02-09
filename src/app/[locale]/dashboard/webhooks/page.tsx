@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { ChevronRightIcon } from '@heroicons/react/24/outline';
-import { Link } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { Webhook } from '@/types';
 import WebhooksList from '@/components/webhooks/WebhooksList';
@@ -38,13 +36,6 @@ export default function WebhooksPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <nav className="flex items-center gap-2 text-sm">
-          <Link href="/dashboard" className="text-muted hover:text-foreground transition-colors">
-            Dashboard
-          </Link>
-          <ChevronRightIcon className="h-4 w-4 text-muted" />
-          <span className="text-foreground font-medium">Webhooks</span>
-        </nav>
         <h1 className="text-2xl font-bold text-foreground">Webhooks</h1>
         <div className="text-center py-12 text-muted">Loading webhooks...</div>
       </div>
@@ -54,13 +45,6 @@ export default function WebhooksPage() {
   if (error) {
     return (
       <div className="space-y-6">
-        <nav className="flex items-center gap-2 text-sm">
-          <Link href="/dashboard" className="text-muted hover:text-foreground transition-colors">
-            Dashboard
-          </Link>
-          <ChevronRightIcon className="h-4 w-4 text-muted" />
-          <span className="text-foreground font-medium">Webhooks</span>
-        </nav>
         <h1 className="text-2xl font-bold text-foreground">Webhooks</h1>
         <div className="bg-error/10 border border-error/20 rounded-lg p-4">
           <p className="text-error">{error}</p>
@@ -71,15 +55,6 @@ export default function WebhooksPage() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumbs */}
-      <nav className="flex items-center gap-2 text-sm">
-        <Link href="/dashboard" className="text-muted hover:text-foreground transition-colors">
-          Dashboard
-        </Link>
-        <ChevronRightIcon className="h-4 w-4 text-muted" />
-        <span className="text-foreground font-medium">Webhooks</span>
-      </nav>
-
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground">Webhooks</h1>

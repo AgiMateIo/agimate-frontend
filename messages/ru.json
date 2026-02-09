@@ -155,58 +155,30 @@
   },
   "Sidebar": {
     "dashboard": "Dashboard",
-    "analytics": "Аналитика",
-    "smartActions": "Smart Actions",
-    "chat": "AI Chat",
     "connectors": "Коннекторы",
-    "apiKeys": "API ключи",
-    "webhooks": "Вебхуки",
     "devices": "Устройства",
-    "competitive": "Конкуренция",
+    "triggers": "Триггеры",
+    "actions": "Действия",
+    "webhooks": "Вебхуки",
+    "apiKeys": "API ключи",
     "settings": "Настройки"
   },
   "TopBar": {
-    "pageTitles": {
+    "breadcrumbs": {
       "dashboard": "Dashboard",
-      "analytics": "Аналитика",
-      "smartActions": "Smart Actions",
-      "chat": "AI Chat",
-      "integrations": "Интеграции",
-      "competitive": "Конкурентная разведка",
+      "connectors": "Коннекторы",
+      "devices": "Устройства",
+      "triggers": "Триггеры",
+      "actions": "Действия",
+      "webhooks": "Вебхуки",
+      "apiKeys": "API ключи",
       "settings": "Настройки"
-    },
-    "marketplaces": {
-      "all": "Все маркетплейсы",
-      "ozon": "Ozon",
-      "wb": "Wildberries"
-    },
-    "dateRanges": {
-      "today": "Сегодня",
-      "7d": "Последние 7 дней",
-      "30d": "Последние 30 дней",
-      "90d": "Последние 90 дней"
     },
     "logOut": "Выйти"
   },
-  "Dashboard": {
-    "revenueToday": "Доход сегодня",
-    "ordersMonth": "Заказы (месяц)",
-    "averageOrderValue": "Средний чек",
-    "activeIntegrations": "Активных интеграций"
-  },
-  "Analytics": {
-    "title": "Аналитика",
-    "subtitle": "Подробная аналитика эффективности на маркетплейсах",
-    "totalRevenueYTD": "Общий доход (YTD)",
-    "totalOrdersYTD": "Всего заказов (YTD)",
-    "conversionRate": "Конверсия",
-    "returnRate": "Возвраты",
-    "revenueTrend": "Динамика дохода (12 месяцев)",
-    "salesByCategory": "Продажи по категориям",
-    "revenueByMarketplace": "Доход по маркетплейсам",
-    "revenue": "Доход",
-    "share": "Доля",
-    "ofTotal": "от общего"
+  "DashboardHome": {
+    "title": "Dashboard",
+    "underConstruction": "Этот раздел находится в разработке."
   },
   "Connectors": {
     "title": "Коннекторы",
@@ -277,32 +249,13 @@
     "disconnectConfirm": "Вы уверены, что хотите отключить \"{name}\"?",
     "disconnectWarning": "Устройство будет отключено. Оно сможет подключиться снова, если ключ активен."
   },
-  "Competitive": {
-    "title": "Конкурентная разведка",
-    "subtitle": "Рыночная позиция и активность конкурентов",
-    "categoryRank": "Позиция в категории",
-    "outOfSellers": "из {count} продавцов",
-    "topCompetitor": "Лидер конкурентов",
-    "todayInsight": "Инсайт дня",
-    "recentEvents": "Последние события"
+  "Triggers": {
+    "title": "Триггеры",
+    "underConstruction": "Этот раздел находится в разработке."
   },
-  "SmartActions": {
-    "title": "Smart Actions",
-    "subtitle": "Автоматические рекомендации на основе ваших данных",
-    "noActions": "Нет действий для этого уровня приоритета."
-  },
-  "Chat": {
-    "askYourData": "Спросите у данных",
-    "quickPrompts": [
-      "Покажи сводку продаж за вчера",
-      "Какие товары рискуют закончиться?",
-      "У каких товаров самый низкий рейтинг?",
-      "Составь план действий на эту неделю",
-      "Какие мои лучшие категории?",
-      "Как дела у конкурентов на прошлой неделе?"
-    ],
-    "typeMessage": "Введите сообщение...",
-    "emptyState": "Начните диалог, выбрав один из быстрых запросов или напишите свой вопрос."
+  "Actions": {
+    "title": "Действия",
+    "underConstruction": "Этот раздел находится в разработке."
   },
   "Settings": {
     "title": "Настройки",

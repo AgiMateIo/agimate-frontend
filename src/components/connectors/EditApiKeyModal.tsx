@@ -59,7 +59,6 @@ export default function EditApiKeyModal({ apiKey, onClose, onSuccess }: EditApiK
 
         <Alert variant="info">
           Note: The API key itself cannot be viewed or edited for security reasons.
-          To get a new key, use the "Regenerate" button in the API keys list.
         </Alert>
 
         {error && <ErrorAlert>{error}</ErrorAlert>}

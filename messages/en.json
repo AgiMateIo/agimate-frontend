@@ -155,58 +155,30 @@
   },
   "Sidebar": {
     "dashboard": "Dashboard",
-    "analytics": "Analytics",
-    "smartActions": "Smart Actions",
-    "chat": "AI Chat",
     "connectors": "Connectors",
-    "apiKeys": "API Keys",
-    "webhooks": "Webhooks",
     "devices": "Devices",
-    "competitive": "Competitive",
+    "triggers": "Triggers",
+    "actions": "Actions",
+    "webhooks": "Webhooks",
+    "apiKeys": "API Keys",
     "settings": "Settings"
   },
   "TopBar": {
-    "pageTitles": {
+    "breadcrumbs": {
       "dashboard": "Dashboard",
-      "analytics": "Analytics",
-      "smartActions": "Smart Actions",
-      "chat": "AI Chat",
-      "integrations": "Integrations",
-      "competitive": "Competitive Intelligence",
+      "connectors": "Connectors",
+      "devices": "Devices",
+      "triggers": "Triggers",
+      "actions": "Actions",
+      "webhooks": "Webhooks",
+      "apiKeys": "API Keys",
       "settings": "Settings"
-    },
-    "marketplaces": {
-      "all": "All Marketplaces",
-      "ozon": "Ozon",
-      "wb": "Wildberries"
-    },
-    "dateRanges": {
-      "today": "Today",
-      "7d": "Last 7 days",
-      "30d": "Last 30 days",
-      "90d": "Last 90 days"
     },
     "logOut": "Log out"
   },
-  "Dashboard": {
-    "revenueToday": "Revenue today",
-    "ordersMonth": "Orders (month)",
-    "averageOrderValue": "Average order value",
-    "activeIntegrations": "Active integrations"
-  },
-  "Analytics": {
-    "title": "Analytics",
-    "subtitle": "Detailed insights into your marketplace performance",
-    "totalRevenueYTD": "Total Revenue (YTD)",
-    "totalOrdersYTD": "Total Orders (YTD)",
-    "conversionRate": "Conversion Rate",
-    "returnRate": "Return Rate",
-    "revenueTrend": "Revenue Trend (12 months)",
-    "salesByCategory": "Sales by Category",
-    "revenueByMarketplace": "Revenue by Marketplace",
-    "revenue": "Revenue",
-    "share": "Share",
-    "ofTotal": "of total"
+  "DashboardHome": {
+    "title": "Dashboard",
+    "underConstruction": "This section is under construction."
   },
   "Connectors": {
     "title": "Connectors",
@@ -277,32 +249,13 @@
     "disconnectConfirm": "Are you sure you want to disconnect \"{name}\"?",
     "disconnectWarning": "The device will be disconnected. It can reconnect using the same key if enabled."
   },
-  "Competitive": {
-    "title": "Competitive Intelligence",
-    "subtitle": "Market position and competitor activities",
-    "categoryRank": "Category rank",
-    "outOfSellers": "out of {count} sellers",
-    "topCompetitor": "Top competitor",
-    "todayInsight": "Today's insight",
-    "recentEvents": "Recent Events"
+  "Triggers": {
+    "title": "Triggers",
+    "underConstruction": "This section is under construction."
   },
-  "SmartActions": {
-    "title": "Smart Actions",
-    "subtitle": "Automatic recommendations based on your data",
-    "noActions": "No actions found for this priority level."
-  },
-  "Chat": {
-    "askYourData": "Ask your data",
-    "quickPrompts": [
-      "Show me yesterday's sales summary",
-      "Which products are at risk of stockout?",
-      "Which products have the lowest rating?",
-      "Create an action plan for this week",
-      "What are my top performing categories?",
-      "How did my competitors perform last week?"
-    ],
-    "typeMessage": "Type a message...",
-    "emptyState": "Start a conversation by selecting a quick prompt or typing your own question."
+  "Actions": {
+    "title": "Actions",
+    "underConstruction": "This section is under construction."
   },
   "Settings": {
     "title": "Settings",

@@ -6,10 +6,6 @@
  */
 
 // Re-export all types from domain files
-export * from './dashboard';
-export * from './smart-actions';
-export * from './competitive';
-export * from './chat';
 export * from './connectors';
 export * from './devices';
 export * from './webhooks';

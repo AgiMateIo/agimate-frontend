@@ -4,8 +4,6 @@ export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, Suspense } from 'react';
 import { useParams } from 'next/navigation';
-import { ChevronRightIcon } from '@heroicons/react/24/outline';
-import { Link } from '@/i18n/navigation';
 import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { ConnectorInfo, Credential } from '@/types';
@@ -81,18 +79,6 @@ export default function ConnectorDetailsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumbs */}
-      <nav className="flex items-center gap-2 text-sm">
-        <Link
-          href="/dashboard/connectors"
-          className="text-muted hover:text-foreground transition-colors"
-        >
-          Connectors
-        </Link>
-        <ChevronRightIcon className="h-4 w-4 text-muted" />
-        <span className="text-foreground font-medium">{connector.name}</span>
-      </nav>
-
       {/* Header */}
       <div className="flex items-start gap-4">
         <div className="w-16 h-16 rounded-xl bg-surface-secondary flex items-center justify-center border border-border">
