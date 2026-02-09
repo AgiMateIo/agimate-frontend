@@ -33,9 +33,10 @@ export default function LoginPage() {
       if (typeof window !== 'undefined') {
         const hash = window.location.hash.substring(1);
 
-        if (hash) {
+        if (hash.startsWith('rti-')) {
+          const refreshTokenId = hash.substring(4);
           try {
-            const success = await apiService.refreshAuthTokens(hash);
+            const success = await apiService.refreshAuthTokens(refreshTokenId);
 
             if (success) {
               await fetchUser();
