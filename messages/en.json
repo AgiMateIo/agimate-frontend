@@ -247,7 +247,18 @@
     "disconnect": "Disconnect",
     "disconnectDevice": "Disconnect Device",
     "disconnectConfirm": "Are you sure you want to disconnect \"{name}\"?",
-    "disconnectWarning": "The device will be disconnected. It can reconnect using the same key if enabled."
+    "disconnectWarning": "The device will be disconnected. It can reconnect using the same key if enabled.",
+    "triggerLogsTab": "Trigger Logs",
+    "triggerLogs": "Trigger Logs",
+    "loadingTriggerLogs": "Loading trigger logs...",
+    "noTriggerLogs": "No trigger logs found",
+    "triggerName": "Trigger",
+    "triggerType": "Type",
+    "triggerSource": "Source",
+    "triggerId": "Trigger ID",
+    "deviceId": "Device ID",
+    "occurredAt": "Occurred at",
+    "triggerData": "Data"
   },
   "Triggers": {
     "title": "Triggers",

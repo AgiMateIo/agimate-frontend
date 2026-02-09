@@ -247,7 +247,18 @@
     "disconnect": "Отключить",
     "disconnectDevice": "Отключение устройства",
     "disconnectConfirm": "Вы уверены, что хотите отключить \"{name}\"?",
-    "disconnectWarning": "Устройство будет отключено. Оно сможет подключиться снова, если ключ активен."
+    "disconnectWarning": "Устройство будет отключено. Оно сможет подключиться снова, если ключ активен.",
+    "triggerLogsTab": "Логи триггеров",
+    "triggerLogs": "Логи триггеров",
+    "loadingTriggerLogs": "Загрузка логов триггеров...",
+    "noTriggerLogs": "Логи триггеров не найдены",
+    "triggerName": "Триггер",
+    "triggerType": "Тип",
+    "triggerSource": "Источник",
+    "triggerId": "ID триггера",
+    "deviceId": "ID устройства",
+    "occurredAt": "Время события",
+    "triggerData": "Данные"
   },
   "Triggers": {
     "title": "Триггеры",

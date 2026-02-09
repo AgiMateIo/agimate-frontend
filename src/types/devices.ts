@@ -41,3 +41,18 @@ export interface UpdateDeviceAuthKeyRequest {
   description?: string;  // max 500
   enabled?: boolean;
 }
+
+// Trigger log entry returned by GET /device/manage/trigger-logs/
+export interface TriggerLog {
+  id: string;
+  deviceAuthKeyId: string;
+  triggerId: string;
+  triggerType: string;
+  triggerName: string;
+  triggerSource: string;
+  requestDeviceId: string;
+  linkedDeviceId: string;
+  occurredAt: string;       // ISO format "yyyy-MM-ddTHH:mm:ss"
+  triggerData: Record<string, unknown>;
+  createdAt: string;         // ISO format "yyyy-MM-ddTHH:mm:ss"
+}

@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Tabs } from '@/components/ui/Tabs';
 import ConnectedDevicesTab from '@/components/devices/ConnectedDevicesTab';
 import DeviceKeysTab from '@/components/devices/DeviceKeysTab';
+import TriggerLogsTab from '@/components/devices/TriggerLogsTab';
 
 export default function DevicesPage() {
   const t = useTranslations('Devices');
@@ -20,6 +21,11 @@ export default function DevicesPage() {
       id: 'device-keys',
       label: t('deviceKeysTab'),
       content: <DeviceKeysTab />,
+    },
+    {
+      id: 'trigger-logs',
+      label: t('triggerLogsTab'),
+      content: <TriggerLogsTab />,
     },
   ];
 

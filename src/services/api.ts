@@ -19,6 +19,7 @@ import type {
   DeviceAuthKeyCreatedResponse,
   CreateDeviceAuthKeyRequest,
   UpdateDeviceAuthKeyRequest,
+  TriggerLog,
   Webhook,
   CreateWebhookRequest,
   UpdateWebhookRequest,
@@ -318,6 +319,15 @@ class ApiService {
 
   async deleteDeviceAuthKey(id: string): Promise<void> {
     return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/device-keys/${id}`);
+  }
+
+  // Trigger logs
+  async getTriggerLogs(params?: { deviceId?: string; deviceAuthKeyId?: string }): Promise<TriggerLog[]> {
+    const searchParams = new URLSearchParams();
+    if (params?.deviceId) searchParams.set('deviceId', params.deviceId);
+    if (params?.deviceAuthKeyId) searchParams.set('deviceAuthKeyId', params.deviceAuthKeyId);
+    const query = searchParams.toString();
+    return this.get<TriggerLog[]>(`${API.ENDPOINTS.DEVICE_API}/manage/trigger-logs/${query ? `?${query}` : ''}`);
   }
 
   // ========== WEBHOOKS API METHODS ==========
