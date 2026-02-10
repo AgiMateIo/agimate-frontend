@@ -9,8 +9,6 @@ import {
   KeyIcon,
   BellAlertIcon,
   DevicePhoneMobileIcon,
-  BoltIcon,
-  PlayIcon,
   Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 
@@ -18,8 +16,6 @@ const getNavItems = (t: ReturnType<typeof useTranslations>) => [
   { label: t('dashboard'), icon: HomeIcon, href: '/dashboard' },
   { label: t('connectors'), icon: PuzzlePieceIcon, href: '/dashboard/connectors' },
   { label: t('devices'), icon: DevicePhoneMobileIcon, href: '/dashboard/devices' },
-  { label: t('triggers'), icon: BoltIcon, href: '/dashboard/triggers' },
-  { label: t('actions'), icon: PlayIcon, href: '/dashboard/actions' },
   { label: t('webhooks'), icon: BellAlertIcon, href: '/dashboard/webhooks' },
   { label: t('apiKeys'), icon: KeyIcon, href: '/dashboard/api-keys' },
   { label: t('settings'), icon: Cog6ToothIcon, href: '/dashboard/settings' },

@@ -145,7 +145,8 @@
     "terms": "By continuing, you agree to the",
     "termsLink": "Terms of Service",
     "and": "and",
-    "privacyLink": "Privacy Policy"
+    "privacyLink": "Privacy Policy",
+    "redirecting": "Redirecting..."
   },
   "Logout": {
     "title": "Sign out",
@@ -157,8 +158,6 @@
     "dashboard": "Dashboard",
     "connectors": "Connectors",
     "devices": "Devices",
-    "triggers": "Triggers",
-    "actions": "Actions",
     "webhooks": "Webhooks",
     "apiKeys": "API Keys",
     "settings": "Settings"
@@ -228,7 +227,10 @@
     "triggeredAt": "Triggered At",
     "page": "Page {current} of {total}",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "autoRefresh": "Auto",
+    "autoRefreshOff": "Off",
+    "refresh": "Refresh"
   },
   "Devices": {
     "title": "Devices",
@@ -277,14 +279,6 @@
     "actionParams": "Parameters",
     "paramName": "Name",
     "paramType": "Type"
-  },
-  "Triggers": {
-    "title": "Triggers",
-    "underConstruction": "This section is under construction."
-  },
-  "Actions": {
-    "title": "Actions",
-    "underConstruction": "This section is under construction."
   },
   "Settings": {
     "title": "Settings",

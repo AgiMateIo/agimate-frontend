@@ -145,7 +145,8 @@
     "terms": "Продолжая, вы соглашаетесь с",
     "termsLink": "Условиями использования",
     "and": "и",
-    "privacyLink": "Политикой конфиденциальности"
+    "privacyLink": "Политикой конфиденциальности",
+    "redirecting": "Перенаправление..."
   },
   "Logout": {
     "title": "Выход",
@@ -157,8 +158,6 @@
     "dashboard": "Dashboard",
     "connectors": "Коннекторы",
     "devices": "Устройства",
-    "triggers": "Триггеры",
-    "actions": "Действия",
     "webhooks": "Вебхуки",
     "apiKeys": "API ключи",
     "settings": "Настройки"
@@ -228,7 +227,10 @@
     "triggeredAt": "Дата вызова",
     "page": "Страница {current} из {total}",
     "previous": "Назад",
-    "next": "Далее"
+    "next": "Далее",
+    "autoRefresh": "Авто",
+    "autoRefreshOff": "Выкл",
+    "refresh": "Обновить"
   },
   "Devices": {
     "title": "Устройства",
@@ -277,14 +279,6 @@
     "actionParams": "Параметры",
     "paramName": "Название",
     "paramType": "Тип"
-  },
-  "Triggers": {
-    "title": "Триггеры",
-    "underConstruction": "Этот раздел находится в разработке."
-  },
-  "Actions": {
-    "title": "Действия",
-    "underConstruction": "Этот раздел находится в разработке."
   },
   "Settings": {
     "title": "Настройки",

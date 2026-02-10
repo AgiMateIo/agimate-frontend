@@ -2,11 +2,18 @@
 
 import { useLocale } from 'next-intl';
 import { localeMap } from '@/i18n/routing';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import apiService from '@/services/api';
 import { WebhookDelivery } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { ChevronLeftIcon, ChevronRightIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+
+const REFRESH_OPTIONS = [
+  { value: null, label: 'Off' },
+  { value: 5, label: '5s' },
+  { value: 10, label: '10s' },
+  { value: 30, label: '30s' },
+] as const;
 
 interface WebhookHistoryProps {
   webhookId: string;
@@ -21,27 +28,55 @@ export default function WebhookHistory({ webhookId }: WebhookHistoryProps) {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+  const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
+  const [refreshOpen, setRefreshOpen] = useState(false);
+  const refreshRef = useRef<HTMLDivElement>(null);
   const pageSize = 20;
 
-  useEffect(() => {
-    const fetchDeliveries = async () => {
+  const fetchDeliveries = useCallback(async (silent: boolean = false) => {
+    if (!silent) {
       setLoading(true);
       setError('');
-      try {
-        const response = await apiService.getWebhookDeliveries(webhookId, page, pageSize);
-        setDeliveries(response.content);
-        setTotalElements(response.totalElements);
-        setTotalPages(Math.ceil(response.totalElements / pageSize));
-      } catch (err) {
+    }
+    try {
+      const response = await apiService.getWebhookDeliveries(webhookId, page, pageSize);
+      setDeliveries(response.content);
+      setTotalElements(response.totalElements);
+      setTotalPages(Math.ceil(response.totalElements / pageSize));
+      if (silent) setError('');
+    } catch (err) {
+      if (!silent) {
         setError(err instanceof Error ? err.message : 'Failed to load delivery history');
         setDeliveries([]);
-      } finally {
-        setLoading(false);
+      }
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  }, [webhookId, page]);
+
+  useEffect(() => {
+    fetchDeliveries(false);
+  }, [fetchDeliveries]);
+
+  useEffect(() => {
+    if (refreshInterval === null) return;
+    const intervalId = setInterval(() => {
+      fetchDeliveries(true);
+    }, refreshInterval * 1000);
+    return () => clearInterval(intervalId);
+  }, [refreshInterval, fetchDeliveries]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (refreshRef.current && !refreshRef.current.contains(e.target as Node)) {
+        setRefreshOpen(false);
       }
     };
-
-    fetchDeliveries();
-  }, [webhookId, page]);
+    if (refreshOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [refreshOpen]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString.replace(' ', 'T'));
@@ -62,8 +97,55 @@ export default function WebhookHistory({ webhookId }: WebhookHistoryProps) {
     return 'bg-muted/10 text-muted border-muted/20';
   };
 
+  const currentLabel = REFRESH_OPTIONS.find((o) => o.value === refreshInterval)?.label ?? 'Off';
+
+  const refreshControls = (
+    <div className="flex items-center gap-2">
+      <div ref={refreshRef} className="relative">
+        <button
+          onClick={() => setRefreshOpen((v) => !v)}
+          className="px-2 py-1 rounded-lg bg-surface-secondary text-xs font-medium text-muted hover:text-foreground transition-colors"
+        >
+          {refreshInterval === null ? 'Auto' : currentLabel}
+        </button>
+        {refreshOpen && (
+          <div className="absolute right-0 mt-1 rounded-lg bg-surface-secondary shadow-lg border border-border py-1 z-50 min-w-[48px]">
+            {REFRESH_OPTIONS.map(({ value, label }) => (
+              <button
+                key={label}
+                onClick={() => {
+                  setRefreshInterval(value);
+                  setRefreshOpen(false);
+                }}
+                className={`block w-full px-3 py-1 text-xs font-medium transition-colors ${
+                  value === refreshInterval
+                    ? 'text-accent'
+                    : 'text-muted hover:text-foreground'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      <button
+        onClick={() => fetchDeliveries(false)}
+        className="p-1 rounded-lg text-muted hover:text-foreground hover:bg-surface-secondary transition-colors"
+        title="Refresh"
+      >
+        <ArrowPathIcon className="h-4 w-4" />
+      </button>
+    </div>
+  );
+
   if (error) {
-    return <ErrorAlert>{error}</ErrorAlert>;
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-end">{refreshControls}</div>
+        <ErrorAlert>{error}</ErrorAlert>
+      </div>
+    );
   }
 
   if (loading) {
@@ -72,18 +154,24 @@ export default function WebhookHistory({ webhookId }: WebhookHistoryProps) {
 
   if (deliveries.length === 0) {
     return (
-      <div className="text-center py-12 text-muted">
-        <p>No deliveries recorded yet</p>
-        <p className="text-xs mt-2">Deliveries will appear here when the webhook is triggered</p>
+      <div className="space-y-4">
+        <div className="flex justify-end">{refreshControls}</div>
+        <div className="text-center py-12 text-muted">
+          <p>No deliveries recorded yet</p>
+          <p className="text-xs mt-2">Deliveries will appear here when the webhook is triggered</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      {/* Summary */}
-      <div className="text-sm text-muted">
-        {totalElements} {totalElements === 1 ? 'delivery' : 'deliveries'} total
+      {/* Summary + Refresh Controls */}
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-muted">
+          {totalElements} {totalElements === 1 ? 'delivery' : 'deliveries'} total
+        </div>
+        {refreshControls}
       </div>
 
       {/* Deliveries Table */}

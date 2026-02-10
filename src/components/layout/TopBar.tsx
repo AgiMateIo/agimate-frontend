@@ -23,8 +23,6 @@ export default function TopBar() {
     dashboard: t('breadcrumbs.dashboard'),
     connectors: t('breadcrumbs.connectors'),
     devices: t('breadcrumbs.devices'),
-    triggers: t('breadcrumbs.triggers'),
-    actions: t('breadcrumbs.actions'),
     webhooks: t('breadcrumbs.webhooks'),
     'api-keys': t('breadcrumbs.apiKeys'),
     settings: t('breadcrumbs.settings'),

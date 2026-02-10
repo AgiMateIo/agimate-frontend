@@ -93,6 +93,7 @@ const storeTokens = (accessToken: string, newRefreshTokenId: string) => {
 
 class ApiService {
   private tokenRefreshPromise: Promise<boolean> | null = null;
+  private inflightGetRequests = new Map<string, Promise<unknown>>();
 
   // Private method to refresh access token using refresh token from storage - calls /oauth2/refresh endpoint
   private async refreshAccessToken(refreshTokenId?: string): Promise<boolean> {
@@ -217,7 +218,19 @@ class ApiService {
 
   async get<T>(endpoint: string): Promise<T> {
     const url = `${BASE_URL}${endpoint}`;
-    return this.makeRequest<T>(url);
+
+    const existing = this.inflightGetRequests.get(url);
+    if (existing) {
+      return existing as Promise<T>;
+    }
+
+    const promise = this.makeRequest<T>(url);
+    this.inflightGetRequests.set(url, promise);
+    promise.finally(() => {
+      this.inflightGetRequests.delete(url);
+    });
+
+    return promise;
   }
 
   async post<T>(endpoint: string, data: unknown): Promise<T> {
