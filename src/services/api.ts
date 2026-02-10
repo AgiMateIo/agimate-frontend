@@ -15,6 +15,7 @@ import type {
   CreateConnectorsApiKeyRequest,
   UpdateConnectorsApiKeyRequest,
   ConnectedDevice,
+  DeviceDetail,
   DeviceAuthKeyResponse,
   DeviceAuthKeyCreatedResponse,
   CreateDeviceAuthKeyRequest,
@@ -300,8 +301,12 @@ class ApiService {
     return this.get<ConnectedDevice[]>(`${API.ENDPOINTS.DEVICE_API}/manage/devices/`);
   }
 
-  async disconnectDevice(connectionId: string): Promise<void> {
-    return this.post(`${API.ENDPOINTS.DEVICE_API}/manage/devices/${connectionId}/disconnect`, {});
+  async getDeviceDetail(deviceId: string): Promise<DeviceDetail> {
+    return this.get<DeviceDetail>(`${API.ENDPOINTS.DEVICE_API}/manage/devices/${deviceId}`);
+  }
+
+  async disconnectDevice(deviceId: string): Promise<void> {
+    return this.post(`${API.ENDPOINTS.DEVICE_API}/manage/devices/${deviceId}/disconnect`, {});
   }
 
   // Device auth keys

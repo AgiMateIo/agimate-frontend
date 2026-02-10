@@ -2,9 +2,9 @@
 
 // Connected device returned by GET /device/manage/devices/
 export interface ConnectedDevice {
-  connectionId: string;
-  connectionName: string;
-  deviceId: string | null;
+  deviceAuthKeyId: string;
+  deviceAuthKeyName: string;
+  linkedDeviceId: string | null;
   deviceName: string | null;
   deviceOs: string | null;
   connected: boolean;
@@ -40,6 +40,23 @@ export interface UpdateDeviceAuthKeyRequest {
   name?: string;  // max 100
   description?: string;  // max 500
   enabled?: boolean;
+}
+
+// Trigger/action entry: key is the type string, value has params list
+export interface DeviceCapabilityEntry {
+  params: string[];
+}
+
+// Device detail returned by GET /device/manage/devices/{deviceId}
+export interface DeviceDetail {
+  deviceId: string;
+  deviceAuthKeyId: string;
+  deviceAuthKeyName: string;
+  deviceName: string | null;
+  deviceOs: string | null;
+  connected: boolean;
+  triggers: Record<string, DeviceCapabilityEntry> | null;
+  actions: Record<string, DeviceCapabilityEntry> | null;
 }
 
 // Trigger log entry returned by GET /device/manage/trigger-logs/

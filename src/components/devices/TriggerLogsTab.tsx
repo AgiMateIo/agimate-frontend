@@ -1,16 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useTranslations, useLocale } from 'next-intl';
-import { localeMap } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
 import { TriggerLog } from '@/types';
-import { UI } from '@/config/constants';
 
 export default function TriggerLogsTab() {
   const t = useTranslations('Devices');
-  const locale = useLocale();
-  const bcp47Locale = localeMap[locale];
   const [logs, setLogs] = useState<TriggerLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,8 +42,9 @@ export default function TriggerLogsTab() {
 
   const formatDateTime = (dateStr: string) => {
     try {
-      const date = new Date(dateStr);
-      return new Intl.DateTimeFormat(bcp47Locale, UI.DATE_FORMAT_OPTIONS).format(date);
+      const d = new Date(dateStr);
+      const pad = (n: number) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
     } catch {
       return dateStr;
     }
@@ -72,59 +69,54 @@ export default function TriggerLogsTab() {
   }
 
   return (
-    <div className="space-y-3">
-      {logs.map((log) => (
-        <div
-          key={log.id}
-          className="bg-surface rounded-xl border border-border p-4"
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-medium text-foreground">{log.triggerName}</h3>
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-accent/10 text-accent">
-                  {log.triggerType}
-                </span>
-              </div>
-              <div className="text-sm text-muted mt-2 space-y-1">
-                <p>
-                  <span className="text-foreground/70">{t('triggerSource')}:</span>{' '}
-                  {log.triggerSource}
-                </p>
-                <p>
-                  <span className="text-foreground/70">{t('triggerId')}:</span>{' '}
-                  <span className="font-mono text-xs">{log.triggerId}</span>
-                </p>
-                <p>
-                  <span className="text-foreground/70">{t('deviceId')}:</span>{' '}
-                  <span className="font-mono text-xs">{log.linkedDeviceId}</span>
-                </p>
-                <p>
-                  <span className="text-foreground/70">{t('occurredAt')}:</span>{' '}
-                  {formatDateTime(log.occurredAt)}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Collapsible trigger data */}
-          {log.triggerData && Object.keys(log.triggerData).length > 0 && (
-            <div className="mt-3 pt-3 border-t border-border">
-              <button
-                onClick={() => toggleExpand(log.id)}
-                className="text-sm text-accent hover:text-accent/80 font-medium transition-colors"
-              >
-                {t('triggerData')} {expandedIds.has(log.id) ? '▲' : '▼'}
-              </button>
-              {expandedIds.has(log.id) && (
-                <pre className="mt-2 p-3 bg-background rounded-lg text-xs font-mono text-foreground/80 overflow-x-auto">
-                  {JSON.stringify(log.triggerData, null, 2)}
-                </pre>
-              )}
-            </div>
-          )}
-        </div>
-      ))}
+    <div className="overflow-x-auto rounded-xl border border-border">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="bg-surface border-b border-border text-left text-muted">
+            <th className="px-4 py-3 font-medium whitespace-nowrap">{t('createdAt')}</th>
+            <th className="px-4 py-3 font-medium whitespace-nowrap">{t('occurredAt')}</th>
+            <th className="px-4 py-3 font-medium whitespace-nowrap">{t('triggerName')}</th>
+            <th className="px-4 py-3 font-medium whitespace-nowrap">{t('deviceId')}</th>
+            <th className="px-4 py-3 font-medium whitespace-nowrap">{t('triggerData')}</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-border">
+          {logs.map((log) => (
+            <tr key={log.id} className="bg-surface hover:bg-surface/80 transition-colors">
+              <td className="px-4 py-3 whitespace-nowrap text-muted">{formatDateTime(log.createdAt)}</td>
+              <td className="px-4 py-3 whitespace-nowrap text-muted">{formatDateTime(log.occurredAt)}</td>
+              <td className="px-4 py-3">
+                <span className="text-foreground font-medium">{log.triggerName}</span>
+              </td>
+              <td className="px-4 py-3">
+                <span className="font-mono text-xs text-muted">{log.linkedDeviceId}</span>
+              </td>
+              <td className="px-4 py-3">
+                {log.triggerData && Object.keys(log.triggerData).length > 0 ? (
+                  <div>
+                    <button
+                      onClick={() => toggleExpand(log.id)}
+                      className="flex items-center gap-1 text-xs text-accent hover:text-accent/80 font-medium transition-colors"
+                    >
+                      <span className="max-w-[200px] truncate font-mono">
+                        {JSON.stringify(log.triggerData)}
+                      </span>
+                      <span className="shrink-0">{expandedIds.has(log.id) ? '▲' : '▼'}</span>
+                    </button>
+                    {expandedIds.has(log.id) && (
+                      <pre className="mt-2 p-3 bg-background rounded-lg text-xs font-mono text-foreground/80 overflow-x-auto max-w-md">
+                        {JSON.stringify(log.triggerData, null, 2)}
+                      </pre>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-muted text-xs">—</span>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

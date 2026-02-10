@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { ConnectedDevice } from '@/types';
 import DisconnectDeviceModal from './DisconnectDeviceModal';
@@ -29,9 +30,9 @@ export default function ConnectedDevicesTab() {
     fetchData();
   }, [fetchData]);
 
-  const handleDisconnectSuccess = (connectionId: string) => {
+  const handleDisconnectSuccess = (linkedDeviceId: string) => {
     setDevices(prev =>
-      prev.map(d => d.connectionId === connectionId ? { ...d, connected: false } : d)
+      prev.map(d => d.linkedDeviceId === linkedDeviceId ? { ...d, connected: false } : d)
     );
     setDisconnectingDevice(null);
   };
@@ -59,32 +60,49 @@ export default function ConnectedDevicesTab() {
       <div className="space-y-3">
         {devices.map((device) => (
           <div
-            key={device.connectionId}
+            key={device.deviceAuthKeyId}
             className="bg-surface rounded-xl border border-border p-4"
           >
             <div className="flex items-start justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-medium text-foreground">
-                    {device.deviceName || t('noDeviceConnected')}
-                  </h3>
-                  <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                      device.connected
-                        ? 'bg-success/10 text-success'
-                        : 'bg-muted/10 text-muted'
-                    }`}
-                  >
-                    {device.connected ? t('connected') : t('disconnected')}
-                  </span>
+              {device.linkedDeviceId ? (
+                <Link
+                  href={`/dashboard/devices/${device.linkedDeviceId}`}
+                  className="flex-1 min-w-0 hover:opacity-80 transition-opacity"
+                >
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-medium text-foreground">
+                      {device.deviceName || t('noDeviceConnected')}
+                    </h3>
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                        device.connected
+                          ? 'bg-success/10 text-success'
+                          : 'bg-muted/10 text-muted'
+                      }`}
+                    >
+                      {device.connected ? t('connected') : t('disconnected')}
+                    </span>
+                  </div>
+                  <div className="text-sm text-muted mt-1 space-y-0.5">
+                    <p>{device.deviceAuthKeyName}{device.deviceOs ? ` (${device.deviceOs})` : ''}</p>
+                    <p className="text-xs font-mono">{device.linkedDeviceId}</p>
+                  </div>
+                </Link>
+              ) : (
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-medium text-foreground">
+                      {t('noDeviceConnected')}
+                    </h3>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-muted/10 text-muted">
+                      {t('disconnected')}
+                    </span>
+                  </div>
+                  <div className="text-sm text-muted mt-1">
+                    <p>{device.deviceAuthKeyName}</p>
+                  </div>
                 </div>
-                <div className="text-sm text-muted mt-1 space-y-0.5">
-                  <p>{device.connectionName}{device.deviceOs ? ` (${device.deviceOs})` : ''}</p>
-                  {device.deviceId && (
-                    <p className="text-xs font-mono">{device.deviceId}</p>
-                  )}
-                </div>
-              </div>
+              )}
 
               {device.connected && (
                 <button

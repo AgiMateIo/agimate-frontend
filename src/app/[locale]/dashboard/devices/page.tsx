@@ -9,18 +9,18 @@ import TriggerLogsTab from '@/components/devices/TriggerLogsTab';
 
 export default function DevicesPage() {
   const t = useTranslations('Devices');
-  const [activeTab, setActiveTab] = useState('devices');
+  const [activeTab, setActiveTab] = useState('device-keys');
 
   const tabs = [
-    {
-      id: 'devices',
-      label: t('devicesTab'),
-      content: <ConnectedDevicesTab />,
-    },
     {
       id: 'device-keys',
       label: t('deviceKeysTab'),
       content: <DeviceKeysTab />,
+    },
+    {
+      id: 'devices',
+      label: t('devicesTab'),
+      content: <ConnectedDevicesTab />,
     },
     {
       id: 'trigger-logs',

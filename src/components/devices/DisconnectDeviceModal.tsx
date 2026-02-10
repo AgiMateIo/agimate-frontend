@@ -12,7 +12,7 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 interface DisconnectDeviceModalProps {
   device: ConnectedDevice;
   onClose: () => void;
-  onSuccess: (connectionId: string) => void;
+  onSuccess: (linkedDeviceId: string) => void;
 }
 
 export default function DisconnectDeviceModal({ device, onClose, onSuccess }: DisconnectDeviceModalProps) {
@@ -26,8 +26,8 @@ export default function DisconnectDeviceModal({ device, onClose, onSuccess }: Di
     setError(null);
 
     try {
-      await apiService.disconnectDevice(device.connectionId);
-      onSuccess(device.connectionId);
+      await apiService.disconnectDevice(device.linkedDeviceId!);
+      onSuccess(device.linkedDeviceId!);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to disconnect device');
     } finally {
@@ -39,7 +39,7 @@ export default function DisconnectDeviceModal({ device, onClose, onSuccess }: Di
     <Modal isOpen={true} onClose={onClose} title={t('disconnectDevice')} size="sm">
       <div className="space-y-4">
         <p className="text-foreground">
-          {t('disconnectConfirm', { name: device.connectionName })}
+          {t('disconnectConfirm', { name: device.deviceAuthKeyName })}
         </p>
 
         <Alert variant="warning">
