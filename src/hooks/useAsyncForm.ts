@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { ApiError } from '@/services/api';
 
 interface UseAsyncFormOptions<T> {
   onSuccess?: (result: T) => void;
@@ -9,11 +10,13 @@ interface UseAsyncFormOptions<T> {
 export function useAsyncForm<T = void>(options: UseAsyncFormOptions<T> = {}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent, action: () => Promise<T>) => {
       e.preventDefault();
       setError(null);
+      setFieldErrors({});
       setLoading(true);
 
       try {
@@ -21,12 +24,16 @@ export function useAsyncForm<T = void>(options: UseAsyncFormOptions<T> = {}) {
         options.onSuccess?.(result);
         return result;
       } catch (err) {
-        const errorMessage =
-          err instanceof Error
-            ? err.message
-            : options.defaultError || 'An error occurred';
-        setError(errorMessage);
-        options.onError?.(err instanceof Error ? err : new Error(errorMessage));
+        if (err instanceof ApiError && err.details) {
+          setFieldErrors(err.details);
+        } else {
+          const errorMessage =
+            err instanceof Error
+              ? err.message
+              : options.defaultError || 'An error occurred';
+          setError(errorMessage);
+        }
+        options.onError?.(err instanceof Error ? err : new Error(options.defaultError || 'An error occurred'));
         throw err;
       } finally {
         setLoading(false);
@@ -35,11 +42,15 @@ export function useAsyncForm<T = void>(options: UseAsyncFormOptions<T> = {}) {
     [options]
   );
 
-  const clearError = useCallback(() => setError(null), []);
+  const clearError = useCallback(() => {
+    setError(null);
+    setFieldErrors({});
+  }, []);
 
   return {
     loading,
     error,
+    fieldErrors,
     handleSubmit,
     setError,
     clearError,

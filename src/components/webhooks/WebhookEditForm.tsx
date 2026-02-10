@@ -42,12 +42,19 @@ export default function WebhookEditForm({ webhook, onSuccess, onDelete }: Webhoo
     setUrlError('');
   }, [webhook]);
 
-  const { loading, error, handleSubmit, setError } = useAsyncForm<Webhook>({
+  const { loading, error, fieldErrors, handleSubmit, setError } = useAsyncForm<Webhook>({
     onSuccess: (updated) => {
       onSuccess(updated);
     },
     defaultError: 'Failed to update webhook',
   });
+
+  const getFieldError = (prefix: string) =>
+    Object.entries(fieldErrors)
+      .filter(([key]) => key.startsWith(prefix))
+      .map(([, value]) => value)
+      .join('; ')
+    || '';
 
   const validateUrl = (value: string) => {
     if (!value.trim()) {
@@ -107,7 +114,7 @@ export default function WebhookEditForm({ webhook, onSuccess, onDelete }: Webhoo
   return (
     <form onSubmit={onSubmit} className="space-y-4">
 
-        <FormField label="Name" required>
+        <FormField label="Name" required error={getFieldError('name')}>
           <Input
             type="text"
             value={name}
@@ -118,7 +125,7 @@ export default function WebhookEditForm({ webhook, onSuccess, onDelete }: Webhoo
           />
         </FormField>
 
-        <FormField label="Description">
+        <FormField label="Description" error={getFieldError('description')}>
           <TextArea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -128,15 +135,15 @@ export default function WebhookEditForm({ webhook, onSuccess, onDelete }: Webhoo
           />
         </FormField>
 
-        <FormField label="Event Types" required error={eventTypesError}>
+        <FormField label="Event Types" required error={eventTypesError || getFieldError('eventTypes')}>
           <EventTypePicker
             selectedEventTypes={eventTypes}
             onChange={setEventTypes}
-            error={eventTypesError}
+            error={eventTypesError || getFieldError('eventTypes')}
           />
         </FormField>
 
-        <FormField label="URL" required error={urlError}>
+        <FormField label="URL" required error={urlError || getFieldError('url')}>
           <Input
             type="text"
             value={url}

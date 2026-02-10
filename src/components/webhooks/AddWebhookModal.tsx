@@ -28,12 +28,19 @@ export default function AddWebhookModal({ onClose, onSuccess }: AddWebhookModalP
   const [eventTypesError, setEventTypesError] = useState('');
   const [urlError, setUrlError] = useState('');
 
-  const { loading, error, handleSubmit } = useAsyncForm<Webhook>({
+  const { loading, error, fieldErrors, handleSubmit } = useAsyncForm<Webhook>({
     onSuccess: () => {
       onSuccess();
     },
     defaultError: 'Failed to create webhook',
   });
+
+  const getFieldError = (prefix: string) =>
+    Object.entries(fieldErrors)
+      .filter(([key]) => key.startsWith(prefix))
+      .map(([, value]) => value)
+      .join('; ')
+    || '';
 
   const validateUrl = (value: string) => {
     if (!value.trim()) {
@@ -80,7 +87,7 @@ export default function AddWebhookModal({ onClose, onSuccess }: AddWebhookModalP
   return (
     <Modal isOpen={true} onClose={onClose} title="Create Webhook">
       <form onSubmit={onSubmit} className="space-y-4">
-        <FormField label="Name" required>
+        <FormField label="Name" required error={getFieldError('name')}>
           <Input
             type="text"
             value={name}
@@ -91,7 +98,7 @@ export default function AddWebhookModal({ onClose, onSuccess }: AddWebhookModalP
           />
         </FormField>
 
-        <FormField label="Description">
+        <FormField label="Description" error={getFieldError('description')}>
           <TextArea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -101,15 +108,15 @@ export default function AddWebhookModal({ onClose, onSuccess }: AddWebhookModalP
           />
         </FormField>
 
-        <FormField label="Event Types" required error={eventTypesError}>
+        <FormField label="Event Types" required error={eventTypesError || getFieldError('eventTypes')}>
           <EventTypePicker
             selectedEventTypes={eventTypes}
             onChange={setEventTypes}
-            error={eventTypesError}
+            error={eventTypesError || getFieldError('eventTypes')}
           />
         </FormField>
 
-        <FormField label="URL" required error={urlError}>
+        <FormField label="URL" required error={urlError || getFieldError('url')}>
           <Input
             type="text"
             value={url}

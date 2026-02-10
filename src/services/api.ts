@@ -31,6 +31,16 @@ import type {
 
 const SERVICE_UNAVAILABLE_MESSAGE = 'SERVICE_UNAVAILABLE';
 
+export class ApiError extends Error {
+  details: Record<string, string> | null;
+
+  constructor(message: string, details: Record<string, string> | null = null) {
+    super(message);
+    this.name = 'ApiError';
+    this.details = details;
+  }
+}
+
 // Wraps fetch to replace network errors with a user-friendly message
 const safeFetch = async (url: string, options?: RequestInit): Promise<Response> => {
   try {
@@ -76,8 +86,9 @@ const handleErrorResponse = async (response: Response): Promise<never> => {
     typeof errorData === 'object' &&
     (errorData as { error?: { message?: string } }).error?.message
   ) {
-    console.warn(`Backend error: ${(errorData as { error: { message: string } }).error.message}`);
-    throw new Error((errorData as { error: { message: string } }).error.message);
+    const errorObj = (errorData as { error: { message: string; details?: Record<string, string> } }).error;
+    console.warn(`Backend error: ${errorObj.message}`);
+    throw new ApiError(errorObj.message, errorObj.details ?? null);
   }
 
   throw new Error(`HTTP ${response.status}: ${response.statusText}`);
