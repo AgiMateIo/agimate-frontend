@@ -177,7 +177,18 @@
   },
   "DashboardHome": {
     "title": "Dashboard",
-    "underConstruction": "Этот раздел находится в разработке."
+    "subtitle": "Обзор ресурсов AgiMate",
+    "credentials": "Учётные данные",
+    "devices": "Устройства",
+    "webhooks": "Вебхуки",
+    "apiKeys": "API ключи",
+    "noCredentials": "Нет учётных данных",
+    "noDevices": "Нет подключённых устройств",
+    "noWebhooks": "Нет вебхуков",
+    "noApiKeys": "Нет API ключей",
+    "create": "Создать",
+    "viewAll": "Перейти",
+    "loadingResources": "Загрузка..."
   },
   "Connectors": {
     "title": "Коннекторы",

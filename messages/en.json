@@ -177,7 +177,18 @@
   },
   "DashboardHome": {
     "title": "Dashboard",
-    "underConstruction": "This section is under construction."
+    "subtitle": "Overview of your AgiMate resources",
+    "credentials": "Credentials",
+    "devices": "Devices",
+    "webhooks": "Webhooks",
+    "apiKeys": "API Keys",
+    "noCredentials": "No credentials yet",
+    "noDevices": "No devices connected",
+    "noWebhooks": "No webhooks yet",
+    "noApiKeys": "No API keys yet",
+    "create": "Create",
+    "viewAll": "View all",
+    "loadingResources": "Loading..."
   },
   "Connectors": {
     "title": "Connectors",

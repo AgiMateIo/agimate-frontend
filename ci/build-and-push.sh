@@ -11,7 +11,6 @@ set -euo pipefail
 #   REGISTRY                 — Container Registry URL
 #   CR_USERNAME              — Container Registry login
 #   CR_PASSWORD              — Container Registry password
-#   NEXT_PUBLIC_API_BASE_URL — API gateway URL (baked into bundle)
 # ──────────────────────────────────────────────────────────
 
 SERVICE=$1
@@ -50,14 +49,8 @@ docker images "${IMAGE}" --format '{{.ID}} {{.CreatedAt}}' | sort -u | while rea
 done
 
 # ── Docker build ──────────────────────────────────────────
-BUILD_ARGS=()
-if [ -n "${NEXT_PUBLIC_API_BASE_URL:-}" ]; then
-  BUILD_ARGS+=(--build-arg "NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}")
-fi
-
 echo "▶ Building Docker image..."
 docker build \
-  "${BUILD_ARGS[@]}" \
   -t "${IMAGE}:${TAG}" \
   -t "${IMAGE}:latest" \
   .

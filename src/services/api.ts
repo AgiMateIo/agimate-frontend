@@ -1,6 +1,7 @@
 // api.ts
 import { User } from './types';
 import { API } from '@/config/constants';
+import { getApiBaseUrl } from '@/utils/api-url';
 import type {
   ConnectorInfo,
   MethodDefinition,
@@ -27,9 +28,6 @@ import type {
   WebhookEventType,
   WebhookDeliveriesResponse,
 } from '@/types';
-
-const rawBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://api.agimate.lc:8000/';
-const BASE_URL = rawBaseUrl.endsWith('/') ? rawBaseUrl : `${rawBaseUrl}/`;
 
 const SERVICE_UNAVAILABLE_MESSAGE = 'SERVICE_UNAVAILABLE';
 
@@ -123,7 +121,7 @@ class ApiService {
 
   private async performTokenRefresh(tokenToUse: string): Promise<boolean> {
     try {
-      const response = await safeFetch(`${BASE_URL}${API.ENDPOINTS.USER_API}/oauth2/refresh`, {
+      const response = await safeFetch(`${getApiBaseUrl()}${API.ENDPOINTS.USER_API}/oauth2/refresh`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -217,7 +215,7 @@ class ApiService {
   }
 
   async get<T>(endpoint: string): Promise<T> {
-    const url = `${BASE_URL}${endpoint}`;
+    const url = `${getApiBaseUrl()}${endpoint}`;
 
     const existing = this.inflightGetRequests.get(url);
     if (existing) {
@@ -234,7 +232,7 @@ class ApiService {
   }
 
   async post<T>(endpoint: string, data: unknown): Promise<T> {
-    const url = `${BASE_URL}${endpoint}`;
+    const url = `${getApiBaseUrl()}${endpoint}`;
     return this.makeRequest<T>(url, {
       method: 'POST',
       body: JSON.stringify(data),
@@ -242,7 +240,7 @@ class ApiService {
   }
 
   async put<T>(endpoint: string, data: unknown): Promise<T> {
-    const url = `${BASE_URL}${endpoint}`;
+    const url = `${getApiBaseUrl()}${endpoint}`;
     return this.makeRequest<T>(url, {
       method: 'PUT',
       body: JSON.stringify(data),
@@ -250,7 +248,7 @@ class ApiService {
   }
 
   async delete<T>(endpoint: string): Promise<T> {
-    const url = `${BASE_URL}${endpoint}`;
+    const url = `${getApiBaseUrl()}${endpoint}`;
     return this.makeRequest<T>(url, {
       method: 'DELETE',
     });
@@ -402,7 +400,7 @@ class ApiService {
     try {
       // Only call the backend logout endpoint if we have a refresh token
       if (refreshTokenId) {
-        const response = await safeFetch(`${BASE_URL}${API.ENDPOINTS.USER_API}/oauth2/logout`, {
+        const response = await safeFetch(`${getApiBaseUrl()}${API.ENDPOINTS.USER_API}/oauth2/logout`, {
           method: 'POST',
           credentials: 'include',
           headers: {

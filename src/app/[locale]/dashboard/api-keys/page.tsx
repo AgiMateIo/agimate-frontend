@@ -1,16 +1,21 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { ClipboardDocumentIcon, ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { ConnectorsApiKey, ConnectorsApiKeyWithSecret } from '@/types';
 import ConnectorsApiKeysList from '@/components/connectors/ConnectorsApiKeysList';
 import AddApiKeyModal from '@/components/connectors/AddApiKeyModal';
+import { useClipboard } from '@/hooks/useClipboard';
+import { getApiBaseUrl } from '@/utils/api-url';
 
 export default function ApiKeysPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [apiKeys, setApiKeys] = useState<ConnectorsApiKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { copied, copy } = useClipboard();
+  const apiBaseUrl = getApiBaseUrl();
 
   const fetchData = useCallback(async () => {
     try {
@@ -61,6 +66,30 @@ export default function ApiKeysPage() {
         <p className="text-muted mt-1">
           Manage API keys for accessing connector or device methods via API
         </p>
+      </div>
+
+      {/* API Access Info */}
+      <div className="bg-surface rounded-xl border border-border p-6 space-y-3">
+        <h2 className="text-lg font-semibold text-foreground">API Access</h2>
+        <p className="text-muted text-sm">
+          Pass your API key via the <code className="bg-surface-secondary px-1.5 py-0.5 rounded text-xs font-mono">X-API-Key</code> header with each request.
+        </p>
+        <div className="flex items-center gap-2">
+          <code className="flex-1 bg-surface-secondary border border-border/50 rounded-lg px-4 py-2.5 text-sm font-mono text-foreground truncate">
+            {apiBaseUrl}
+          </code>
+          <button
+            onClick={() => copy(apiBaseUrl)}
+            className="shrink-0 p-2.5 rounded-lg border border-border/50 hover:bg-surface-secondary transition-colors text-muted hover:text-foreground"
+            title="Copy API URL"
+          >
+            {copied ? (
+              <ClipboardDocumentCheckIcon className="w-5 h-5 text-success" />
+            ) : (
+              <ClipboardDocumentIcon className="w-5 h-5" />
+            )}
+          </button>
+        </div>
       </div>
 
       {/* API Keys Section */}

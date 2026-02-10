@@ -7,11 +7,7 @@ import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
 import { useUser } from '@/contexts/UserContext';
 import { API } from '@/config/constants';
-
-const getApiBaseUrl = (): string => {
-  const url = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://api.agimate.lc:8000/';
-  return url.endsWith('/') ? url : `${url}/`;
-};
+import { getApiBaseUrl } from '@/utils/api-url';
 
 export default function LoginPage() {
   const router = useRouter();
