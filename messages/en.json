@@ -289,7 +289,12 @@
     "noActions": "No actions configured",
     "actionParams": "Parameters",
     "paramName": "Name",
-    "paramType": "Type"
+    "paramType": "Type",
+    "gettingStartedTitle": "How to connect a device",
+    "gettingStartedStep1": "Create a device key in the \"Device Keys\" tab",
+    "gettingStartedStep2": "Enter the key in the app settings:",
+    "desktopApp": "AgiMate Desktop",
+    "androidApp": "AgiMate for Android"
   },
   "Settings": {
     "title": "Settings",

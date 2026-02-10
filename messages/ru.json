@@ -289,7 +289,12 @@
     "noActions": "Действия не настроены",
     "actionParams": "Параметры",
     "paramName": "Название",
-    "paramType": "Тип"
+    "paramType": "Тип",
+    "gettingStartedTitle": "Как подключить устройство",
+    "gettingStartedStep1": "Создайте ключ устройства во вкладке «Ключи устройств»",
+    "gettingStartedStep2": "Укажите ключ в настройках приложения:",
+    "desktopApp": "AgiMate Desktop",
+    "androidApp": "AgiMate для Android"
   },
   "Settings": {
     "title": "Настройки",
