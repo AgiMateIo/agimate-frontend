@@ -1,9 +1,9 @@
 'use client';
 
-import { Link } from '@/i18n/navigation';
-import { useUser } from '@/contexts/UserContext';
 import { useTranslations } from 'next-intl';
-import LocaleSwitcher from '@/components/ui/LocaleSwitcher';
+import LandingHeader from '@/components/landing/LandingHeader';
+import LandingBackground from '@/components/landing/LandingBackground';
+import LandingFooter from '@/components/landing/LandingFooter';
 import {
   ArrowRightIcon,
   ArrowDownIcon,
@@ -19,7 +19,6 @@ import {
 } from '@heroicons/react/24/outline';
 
 export default function AndroidPage() {
-  const { user, loading } = useUser();
   const t = useTranslations('AndroidPage');
 
   const triggers = [
@@ -59,55 +58,21 @@ export default function AndroidPage() {
 
   return (
     <div className="min-h-screen text-foreground">
-      {/* Background gradient mesh */}
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#F0EEE9] to-[#F8F7F5] dark:from-[#1a1715] dark:to-[#0f0e0d]" />
-        <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-[#A47764]/30 dark:bg-[#A47764]/15 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full bg-[#A47764]/20 dark:bg-[#A47764]/10 blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#A47764]/10 dark:bg-[#A47764]/5 blur-3xl" />
-      </div>
+      <LandingBackground />
 
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border/40 backdrop-blur-md bg-background/80">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/" className="text-xl font-bold tracking-tight hover:text-accent transition-colors">
-            AgiMate
-          </Link>
-          <nav className="flex items-center gap-6 text-sm text-muted">
-            <a href="#features" className="hidden sm:inline hover:text-foreground transition-colors">
-              {t('nav.features')}
-            </a>
-            <a href="#how-it-works" className="hidden sm:inline hover:text-foreground transition-colors">
-              {t('nav.howItWorks')}
-            </a>
-            <a href="#interface" className="hidden sm:inline hover:text-foreground transition-colors">
-              {t('nav.interface')}
-            </a>
-            <a href="#install" className="hidden sm:inline hover:text-foreground transition-colors">
-              {t('nav.install')}
-            </a>
-            <LocaleSwitcher />
-            {!loading && user ? (
-              <Link
-                href="/dashboard"
-                className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent/90 transition-colors"
-              >
-                Dashboard
-              </Link>
-            ) : (
-              <Link
-                href="/login"
-                className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent/90 transition-colors"
-              >
-                Sign in
-              </Link>
-            )}
-          </nav>
-        </div>
-      </header>
+      <LandingHeader
+        navLinks={[
+          { href: '#features', label: t('nav.features') },
+          { href: '#how-it-works', label: t('nav.howItWorks') },
+          { href: '#interface', label: t('nav.interface') },
+          { href: '#install', label: t('nav.install') },
+        ]}
+        loginLabel={t('nav.login')}
+        dashboardLabel={t('nav.dashboard')}
+      />
 
       {/* Hero */}
-      <section className="mx-auto max-w-6xl px-6 pb-24 pt-20 md:pt-28 text-center">
+      <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-16 pt-14 sm:pb-20 sm:pt-16 md:pt-28 md:pb-24 text-center">
         <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl md:text-6xl">
           {t('hero.title')}{' '}
           <span className="bg-gradient-to-r from-accent to-purple-400 bg-clip-text text-transparent">
@@ -120,7 +85,7 @@ export default function AndroidPage() {
         <div className="mt-10">
           <a
             href="#download"
-            className="inline-flex items-center gap-2 rounded-lg bg-accent px-7 py-3.5 font-medium text-accent-foreground shadow-lg shadow-accent/25 hover:bg-accent/90 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-accent px-7 py-3.5 font-medium text-accent-foreground shadow-lg shadow-accent/25 hover:bg-accent/90 transition-colors w-full sm:w-auto justify-center"
           >
             {t('hero.cta')}
             <ArrowRightIcon className="h-4 w-4" />
@@ -129,9 +94,9 @@ export default function AndroidPage() {
       </section>
 
       {/* Two Modes: Triggers & Actions */}
-      <section id="features" className="mx-auto max-w-6xl px-6 py-20">
-        <h2 className="mb-4 text-center text-3xl font-bold tracking-tight">{t('features.title')}</h2>
-        <p className="mx-auto mb-14 max-w-xl text-center text-muted">{t('features.subtitle')}</p>
+      <section id="features" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">{t('features.title')}</h2>
+        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-xl text-center text-muted">{t('features.subtitle')}</p>
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Triggers column */}
           <div>
@@ -170,13 +135,13 @@ export default function AndroidPage() {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="mx-auto max-w-6xl px-6 py-20">
-        <h2 className="mb-4 text-center text-3xl font-bold tracking-tight">{t('howItWorks.title')}</h2>
-        <p className="mx-auto mb-14 max-w-xl text-center text-muted">{t('howItWorks.subtitle')}</p>
+      <section id="how-it-works" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">{t('howItWorks.title')}</h2>
+        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-xl text-center text-muted">{t('howItWorks.subtitle')}</p>
 
         {/* 3-box diagram */}
         <div className="grid items-stretch gap-4 md:grid-cols-[1fr_auto_1fr_auto_1fr]">
-          <div className="rounded-2xl border border-border/50 bg-surface p-6 text-center">
+          <div className="rounded-2xl border border-border/50 bg-surface shadow-card p-4 sm:p-6 text-center">
             <div className="mb-3 text-xs font-medium uppercase tracking-wider text-muted">{t('howItWorks.boxes.android')}</div>
             <div className="flex justify-center mb-2">
               <DevicePhoneMobileIcon className="h-8 w-8 text-success" />
@@ -201,7 +166,7 @@ export default function AndroidPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-accent/40 bg-accent/5 p-6 text-center shadow-lg shadow-accent/10">
+          <div className="rounded-2xl border border-accent/40 bg-accent/5 p-4 sm:p-6 text-center shadow-lg shadow-accent/10">
             <div className="mb-3 text-xs font-medium uppercase tracking-wider text-accent">{t('howItWorks.boxes.backend')}</div>
             <div className="text-sm font-medium text-muted">{t('howItWorks.boxes.backendSubtitle')}</div>
           </div>
@@ -219,7 +184,7 @@ export default function AndroidPage() {
             <ArrowDownIcon className="h-5 w-5 text-accent" />
           </div>
 
-          <div className="rounded-2xl border border-border/50 bg-surface p-6 text-center">
+          <div className="rounded-2xl border border-border/50 bg-surface shadow-card p-4 sm:p-6 text-center">
             <div className="mb-3 text-xs font-medium uppercase tracking-wider text-muted">{t('howItWorks.boxes.ai')}</div>
             <div className="text-sm text-muted">{t('howItWorks.boxes.aiSubtitle')}</div>
           </div>
@@ -242,9 +207,9 @@ export default function AndroidPage() {
       </section>
 
       {/* Interface */}
-      <section id="interface" className="mx-auto max-w-6xl px-6 py-20">
-        <h2 className="mb-4 text-center text-3xl font-bold tracking-tight">{t('interface.title')}</h2>
-        <p className="mx-auto mb-14 max-w-xl text-center text-muted">{t('interface.subtitle')}</p>
+      <section id="interface" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">{t('interface.title')}</h2>
+        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-xl text-center text-muted">{t('interface.subtitle')}</p>
         <div className="grid gap-6 md:grid-cols-3">
           {screens.map((screen) => (
             <ScreenCard
@@ -259,59 +224,59 @@ export default function AndroidPage() {
       </section>
 
       {/* For Developers */}
-      <section id="developers" className="mx-auto max-w-6xl px-6 py-20">
-        <h2 className="mb-4 text-center text-3xl font-bold tracking-tight">{t('developers.title')}</h2>
-        <p className="mx-auto mb-14 max-w-xl text-center text-muted">{t('developers.subtitle')}</p>
+      <section id="developers" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">{t('developers.title')}</h2>
+        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-xl text-center text-muted">{t('developers.subtitle')}</p>
 
         <div className="mx-auto max-w-3xl space-y-4">
           {/* Trigger JSON */}
-          <details className="group rounded-2xl border border-border/50 bg-surface transition-colors hover:border-accent/30">
-            <summary className="flex cursor-pointer items-center justify-between p-6 text-lg font-semibold [&::-webkit-details-marker]:hidden">
+          <details className="group rounded-2xl border border-border/50 bg-surface shadow-card transition-colors hover:border-accent/30">
+            <summary className="flex cursor-pointer items-center justify-between p-4 sm:p-6 text-lg font-semibold [&::-webkit-details-marker]:hidden">
               {t('developers.triggerFormat.title')}
               <span className="text-muted transition-transform group-open:rotate-180">
                 <ArrowDownIcon className="h-5 w-5" />
               </span>
             </summary>
-            <div className="px-6 pb-6">
+            <div className="px-4 sm:px-6 pb-4 sm:pb-6">
               <p className="mb-4 text-sm text-muted">{t('developers.triggerFormat.description')}</p>
-              <pre className="overflow-x-auto rounded-lg border border-border/50 bg-background/80 p-4 font-mono text-sm">
+              <pre className="overflow-x-auto rounded-lg border border-border/50 bg-background/80 p-3 sm:p-4 font-mono text-xs sm:text-sm">
                 <code>{t('developers.triggerFormat.json')}</code>
               </pre>
             </div>
           </details>
 
           {/* Action JSON */}
-          <details className="group rounded-2xl border border-border/50 bg-surface transition-colors hover:border-accent/30">
-            <summary className="flex cursor-pointer items-center justify-between p-6 text-lg font-semibold [&::-webkit-details-marker]:hidden">
+          <details className="group rounded-2xl border border-border/50 bg-surface shadow-card transition-colors hover:border-accent/30">
+            <summary className="flex cursor-pointer items-center justify-between p-4 sm:p-6 text-lg font-semibold [&::-webkit-details-marker]:hidden">
               {t('developers.actionFormat.title')}
               <span className="text-muted transition-transform group-open:rotate-180">
                 <ArrowDownIcon className="h-5 w-5" />
               </span>
             </summary>
-            <div className="px-6 pb-6">
+            <div className="px-4 sm:px-6 pb-4 sm:pb-6">
               <p className="mb-4 text-sm text-muted">{t('developers.actionFormat.description')}</p>
-              <pre className="overflow-x-auto rounded-lg border border-border/50 bg-background/80 p-4 font-mono text-sm">
+              <pre className="overflow-x-auto rounded-lg border border-border/50 bg-background/80 p-3 sm:p-4 font-mono text-xs sm:text-sm">
                 <code>{t('developers.actionFormat.json')}</code>
               </pre>
             </div>
           </details>
 
           {/* Requirements */}
-          <details className="group rounded-2xl border border-border/50 bg-surface transition-colors hover:border-accent/30">
-            <summary className="flex cursor-pointer items-center justify-between p-6 text-lg font-semibold [&::-webkit-details-marker]:hidden">
+          <details className="group rounded-2xl border border-border/50 bg-surface shadow-card transition-colors hover:border-accent/30">
+            <summary className="flex cursor-pointer items-center justify-between p-4 sm:p-6 text-lg font-semibold [&::-webkit-details-marker]:hidden">
               {t('developers.requirementsTitle')}
               <span className="text-muted transition-transform group-open:rotate-180">
                 <ArrowDownIcon className="h-5 w-5" />
               </span>
             </summary>
-            <div className="px-6 pb-6">
+            <div className="px-4 sm:px-6 pb-4 sm:pb-6">
               <div className="overflow-x-auto rounded-lg border border-border/50">
                 <table className="w-full text-left text-sm">
                   <tbody>
                     {devRequirements.map((req) => (
                       <tr key={req.param} className="border-b border-border/30 last:border-0">
-                        <td className="px-4 py-3 font-medium">{req.param}</td>
-                        <td className="px-4 py-3 text-muted">{req.value}</td>
+                        <td className="px-3 py-2.5 sm:px-4 sm:py-3 font-medium">{req.param}</td>
+                        <td className="px-3 py-2.5 sm:px-4 sm:py-3 text-muted">{req.value}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -333,9 +298,9 @@ export default function AndroidPage() {
       </section>
 
       {/* Installation */}
-      <section id="install" className="mx-auto max-w-6xl px-6 py-20">
-        <h2 className="mb-4 text-center text-3xl font-bold tracking-tight">{t('install.title')}</h2>
-        <p className="mx-auto mb-14 max-w-xl text-center text-muted">{t('install.subtitle')}</p>
+      <section id="install" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">{t('install.title')}</h2>
+        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-xl text-center text-muted">{t('install.subtitle')}</p>
 
         <div className="mx-auto max-w-2xl">
           <div className="relative">
@@ -363,16 +328,16 @@ export default function AndroidPage() {
       </section>
 
       {/* CTA Download */}
-      <section id="download" className="mx-auto max-w-6xl px-6 py-20">
+      <section id="download" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
         <div className="text-center">
-          <h2 className="mb-4 text-3xl font-bold tracking-tight">{t('download.title')}</h2>
+          <h2 className="mb-4 text-2xl sm:text-3xl font-bold tracking-tight">{t('download.title')}</h2>
           <p className="mx-auto mb-10 max-w-md text-muted">{t('download.subtitle')}</p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <a
               href="https://github.com/AgiMateIo/android/releases/latest"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg bg-accent px-7 py-3.5 font-medium text-accent-foreground shadow-lg shadow-accent/25 hover:bg-accent/90 transition-colors"
+              className="inline-flex items-center gap-2 rounded-lg bg-accent px-7 py-3.5 font-medium text-accent-foreground shadow-lg shadow-accent/25 hover:bg-accent/90 transition-colors w-full sm:w-auto justify-center"
             >
               {t('download.apk')}
               <ArrowRightIcon className="h-4 w-4" />
@@ -381,13 +346,13 @@ export default function AndroidPage() {
               href="https://github.com/AgiMateIo/android"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg border border-border px-7 py-3.5 font-medium text-foreground hover:bg-surface-secondary transition-colors"
+              className="inline-flex items-center gap-2 rounded-lg border border-border px-7 py-3.5 font-medium text-foreground hover:bg-surface-secondary transition-colors w-full sm:w-auto justify-center"
             >
               {t('download.github')}
             </a>
             <a
               href="#"
-              className="inline-flex items-center gap-2 rounded-lg border border-border px-7 py-3.5 font-medium text-foreground hover:bg-surface-secondary transition-colors"
+              className="inline-flex items-center gap-2 rounded-lg border border-border px-7 py-3.5 font-medium text-foreground hover:bg-surface-secondary transition-colors w-full sm:w-auto justify-center"
             >
               {t('download.docs')}
             </a>
@@ -395,17 +360,14 @@ export default function AndroidPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border/40">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 sm:flex-row">
-          <span className="text-sm text-muted">{t('footer.copyright')}</span>
-          <div className="flex items-center gap-6 text-sm text-muted">
-            <a href="https://github.com/AgiMateIo/android" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">{t('footer.github')}</a>
-            <a href="#" className="hover:text-foreground transition-colors">{t('footer.telegram')}</a>
-            <a href="#" className="hover:text-foreground transition-colors">{t('footer.docs')}</a>
-          </div>
-        </div>
-      </footer>
+      <LandingFooter
+        copyright={t('footer.copyright')}
+        links={[
+          { label: t('footer.github'), href: 'https://github.com/AgiMateIo/android', external: true },
+          { label: t('footer.telegram'), href: '#' },
+          { label: t('footer.docs'), href: '#' },
+        ]}
+      />
     </div>
   );
 }
@@ -424,7 +386,7 @@ function TriggerCard({
   useCase: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border/50 border-l-4 border-l-success bg-surface p-6 transition-colors hover:border-accent/30 hover:border-l-success">
+    <div className="rounded-2xl border border-border/50 border-l-4 border-l-success bg-surface shadow-card p-4 sm:p-6 transition-colors hover:border-accent/30 hover:border-l-success">
       <div className="mb-3 flex items-center gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-success/10 text-success">
           {icon}
@@ -451,7 +413,7 @@ function ActionCard({
   useCase: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border/50 border-l-4 border-l-accent bg-surface p-6 transition-colors hover:border-accent/30 hover:border-l-accent">
+    <div className="rounded-2xl border border-border/50 border-l-4 border-l-accent bg-surface shadow-card p-4 sm:p-6 transition-colors hover:border-accent/30 hover:border-l-accent">
       <div className="mb-3 flex items-center gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
           {icon}
@@ -478,7 +440,7 @@ function ScreenCard({
   items: string[];
 }) {
   return (
-    <div className="rounded-2xl border border-border/50 bg-surface p-6 transition-colors hover:border-accent/30">
+    <div className="rounded-2xl border border-border/50 bg-surface shadow-card p-4 sm:p-6 transition-colors hover:border-accent/30">
       <div className="mb-6 flex h-40 items-center justify-center rounded-xl bg-background/80 border border-border/30">
         <div className="text-accent/40">{icon}</div>
       </div>

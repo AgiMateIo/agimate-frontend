@@ -376,7 +376,9 @@
       "nodes": "Ноды",
       "setup": "Установка",
       "examples": "Примеры",
-      "install": "Скачать"
+      "install": "Скачать",
+      "dashboard": "Dashboard",
+      "login": "Войти"
     },
     "hero": {
       "title": "AgiMate",
@@ -545,7 +547,9 @@
       "features": "Возможности",
       "plugins": "Плагины",
       "specs": "Характеристики",
-      "install": "Установка"
+      "install": "Установка",
+      "dashboard": "Dashboard",
+      "login": "Войти"
     },
     "hero": {
       "title": "AgiMate",
@@ -804,7 +808,9 @@
       "features": "Возможности",
       "howItWorks": "Как работает",
       "interface": "Интерфейс",
-      "install": "Установка"
+      "install": "Установка",
+      "dashboard": "Dashboard",
+      "login": "Войти"
     },
     "hero": {
       "title": "AgiMate",

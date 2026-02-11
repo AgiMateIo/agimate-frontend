@@ -1,9 +1,9 @@
 'use client';
 
-import { Link } from '@/i18n/navigation';
-import { useUser } from '@/contexts/UserContext';
 import { useTranslations } from 'next-intl';
-import LocaleSwitcher from '@/components/ui/LocaleSwitcher';
+import LandingHeader from '@/components/landing/LandingHeader';
+import LandingBackground from '@/components/landing/LandingBackground';
+import LandingFooter from '@/components/landing/LandingFooter';
 import { useClipboard } from '@/hooks/useClipboard';
 import {
   ArrowRightIcon,
@@ -19,7 +19,6 @@ import {
 } from '@heroicons/react/24/outline';
 
 export default function N8nPage() {
-  const { user, loading } = useUser();
   const t = useTranslations('N8nPage');
   const { copied, copy } = useClipboard();
 
@@ -67,55 +66,21 @@ export default function N8nPage() {
 
   return (
     <div className="min-h-screen text-foreground">
-      {/* Background gradient mesh */}
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#F0EEE9] to-[#F8F7F5] dark:from-[#1a1715] dark:to-[#0f0e0d]" />
-        <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-[#A47764]/30 dark:bg-[#A47764]/15 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full bg-[#A47764]/20 dark:bg-[#A47764]/10 blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#A47764]/10 dark:bg-[#A47764]/5 blur-3xl" />
-      </div>
+      <LandingBackground />
 
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border/40 backdrop-blur-md bg-background/80">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/" className="text-xl font-bold tracking-tight hover:text-accent transition-colors">
-            AgiMate
-          </Link>
-          <nav className="flex items-center gap-6 text-sm text-muted">
-            <a href="#nodes" className="hidden sm:inline hover:text-foreground transition-colors">
-              {t('nav.nodes')}
-            </a>
-            <a href="#setup" className="hidden sm:inline hover:text-foreground transition-colors">
-              {t('nav.setup')}
-            </a>
-            <a href="#examples" className="hidden sm:inline hover:text-foreground transition-colors">
-              {t('nav.examples')}
-            </a>
-            <a href="#install" className="hidden sm:inline hover:text-foreground transition-colors">
-              {t('nav.install')}
-            </a>
-            <LocaleSwitcher />
-            {!loading && user ? (
-              <Link
-                href="/dashboard"
-                className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent/90 transition-colors"
-              >
-                Dashboard
-              </Link>
-            ) : (
-              <Link
-                href="/login"
-                className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent/90 transition-colors"
-              >
-                Sign in
-              </Link>
-            )}
-          </nav>
-        </div>
-      </header>
+      <LandingHeader
+        navLinks={[
+          { href: '#nodes', label: t('nav.nodes') },
+          { href: '#setup', label: t('nav.setup') },
+          { href: '#examples', label: t('nav.examples') },
+          { href: '#install', label: t('nav.install') },
+        ]}
+        loginLabel={t('nav.login')}
+        dashboardLabel={t('nav.dashboard')}
+      />
 
       {/* Hero */}
-      <section className="mx-auto max-w-6xl px-6 pb-24 pt-20 md:pt-28 text-center">
+      <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-16 pt-14 sm:pb-20 sm:pt-16 md:pt-28 md:pb-24 text-center">
         <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl md:text-6xl">
           {t('hero.title')}{' '}
           <span className="bg-gradient-to-r from-accent to-purple-400 bg-clip-text text-transparent">
@@ -128,7 +93,7 @@ export default function N8nPage() {
         <div className="mt-10">
           <a
             href="#install"
-            className="inline-flex items-center gap-2 rounded-lg bg-accent px-7 py-3.5 font-medium text-accent-foreground shadow-lg shadow-accent/25 hover:bg-accent/90 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-accent px-7 py-3.5 font-medium text-accent-foreground shadow-lg shadow-accent/25 hover:bg-accent/90 transition-colors w-full sm:w-auto justify-center"
           >
             {t('hero.cta')}
             <ArrowRightIcon className="h-4 w-4" />
@@ -137,9 +102,9 @@ export default function N8nPage() {
       </section>
 
       {/* Three Nodes */}
-      <section id="nodes" className="mx-auto max-w-6xl px-6 py-20">
-        <h2 className="mb-4 text-center text-3xl font-bold tracking-tight">{t('nodes.title')}</h2>
-        <p className="mx-auto mb-14 max-w-xl text-center text-muted">{t('nodes.subtitle')}</p>
+      <section id="nodes" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">{t('nodes.title')}</h2>
+        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-xl text-center text-muted">{t('nodes.subtitle')}</p>
         <div className="grid gap-6 md:grid-cols-3">
           {nodeCards.map((card) => {
             const features = t.raw(`nodes.${card.key}.features`) as string[];
@@ -162,9 +127,9 @@ export default function N8nPage() {
       </section>
 
       {/* Setup in 3 Steps */}
-      <section id="setup" className="mx-auto max-w-6xl px-6 py-20">
-        <h2 className="mb-4 text-center text-3xl font-bold tracking-tight">{t('setup.title')}</h2>
-        <p className="mx-auto mb-14 max-w-xl text-center text-muted">{t('setup.subtitle')}</p>
+      <section id="setup" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">{t('setup.title')}</h2>
+        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-xl text-center text-muted">{t('setup.subtitle')}</p>
         <div className="grid gap-6 md:grid-cols-3">
           {setupSteps.map((step, index) => (
             <SetupStep
@@ -198,9 +163,9 @@ export default function N8nPage() {
       </section>
 
       {/* Workflow Examples */}
-      <section id="examples" className="mx-auto max-w-6xl px-6 py-20">
-        <h2 className="mb-4 text-center text-3xl font-bold tracking-tight">{t('examples.title')}</h2>
-        <p className="mx-auto mb-14 max-w-xl text-center text-muted">{t('examples.subtitle')}</p>
+      <section id="examples" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">{t('examples.title')}</h2>
+        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-xl text-center text-muted">{t('examples.subtitle')}</p>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {exampleItems.map((item) => (
             <WorkflowCard
@@ -214,11 +179,11 @@ export default function N8nPage() {
       </section>
 
       {/* AI Tools */}
-      <section className="mx-auto max-w-6xl px-6 py-20">
-        <h2 className="mb-4 text-center text-3xl font-bold tracking-tight">{t('aiTools.title')}</h2>
-        <p className="mx-auto mb-14 max-w-xl text-center text-muted">{t('aiTools.subtitle')}</p>
+      <section className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">{t('aiTools.title')}</h2>
+        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-xl text-center text-muted">{t('aiTools.subtitle')}</p>
         <div className="mx-auto max-w-2xl">
-          <div className="rounded-2xl border border-border/50 bg-surface p-8">
+          <div className="rounded-2xl border border-border/50 bg-surface p-5 sm:p-8 shadow-card">
             <p className="mb-8 text-center text-muted leading-relaxed">{t('aiTools.description')}</p>
             <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start sm:justify-center">
               {/* AI Agent box */}
@@ -257,10 +222,12 @@ export default function N8nPage() {
       </section>
 
       {/* Event Types */}
-      <section className="mx-auto max-w-6xl px-6 py-20">
-        <h2 className="mb-4 text-center text-3xl font-bold tracking-tight">{t('eventTypes.title')}</h2>
-        <p className="mx-auto mb-14 max-w-xl text-center text-muted">{t('eventTypes.subtitle')}</p>
-        <div className="overflow-x-auto rounded-2xl border border-border/50 bg-surface">
+      <section className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">{t('eventTypes.title')}</h2>
+        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-xl text-center text-muted">{t('eventTypes.subtitle')}</p>
+
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto rounded-2xl border border-border/50 bg-surface shadow-card">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-border/50">
@@ -282,15 +249,28 @@ export default function N8nPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile cards */}
+        <div className="space-y-3 md:hidden">
+          {eventItems.map((item) => (
+            <div key={item.event} className="rounded-2xl border border-border/50 bg-surface p-4 shadow-card">
+              <div className="mb-2">
+                <code className="rounded bg-accent/10 px-2 py-0.5 font-mono text-xs text-accent">{item.event}</code>
+              </div>
+              <div className="text-sm text-muted mb-1">{item.description}</div>
+              <div className="text-xs text-muted">{item.source}</div>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* CTA Installation */}
-      <section id="install" className="mx-auto max-w-6xl px-6 py-20">
-        <h2 className="mb-4 text-center text-3xl font-bold tracking-tight">{t('install.title')}</h2>
-        <p className="mx-auto mb-14 max-w-xl text-center text-muted">{t('install.subtitle')}</p>
+      <section id="install" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">{t('install.title')}</h2>
+        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-xl text-center text-muted">{t('install.subtitle')}</p>
         <div className="grid gap-6 md:grid-cols-2">
           {/* npm CLI */}
-          <div className="rounded-2xl border border-border/50 bg-surface p-8">
+          <div className="rounded-2xl border border-border/50 bg-surface p-5 sm:p-8 shadow-card">
             <div className="mb-4 flex items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
                 <CommandLineIcon className="h-5 w-5" />
@@ -317,7 +297,7 @@ export default function N8nPage() {
           </div>
 
           {/* n8n UI */}
-          <div className="rounded-2xl border border-border/50 bg-surface p-8">
+          <div className="rounded-2xl border border-border/50 bg-surface p-5 sm:p-8 shadow-card">
             <div className="mb-4 flex items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
                 <PlusCircleIcon className="h-5 w-5" />
@@ -343,30 +323,27 @@ export default function N8nPage() {
             href="https://github.com/AgiMateIo/n8n-nodes-agimate"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-lg border border-border px-7 py-3.5 font-medium text-foreground hover:bg-surface-secondary transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg border border-border px-7 py-3.5 font-medium text-foreground hover:bg-surface-secondary transition-colors w-full sm:w-auto justify-center"
           >
             {t('install.github')}
           </a>
           <a
             href="#"
-            className="inline-flex items-center gap-2 rounded-lg border border-border px-7 py-3.5 font-medium text-foreground hover:bg-surface-secondary transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg border border-border px-7 py-3.5 font-medium text-foreground hover:bg-surface-secondary transition-colors w-full sm:w-auto justify-center"
           >
             {t('install.docs')}
           </a>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border/40">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 sm:flex-row">
-          <span className="text-sm text-muted">{t('footer.copyright')}</span>
-          <div className="flex items-center gap-6 text-sm text-muted">
-            <a href="https://github.com/AgiMateIo/n8n-nodes-agimate" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">{t('footer.github')}</a>
-            <a href="#" className="hover:text-foreground transition-colors">{t('footer.telegram')}</a>
-            <a href="#" className="hover:text-foreground transition-colors">{t('footer.docs')}</a>
-          </div>
-        </div>
-      </footer>
+      <LandingFooter
+        copyright={t('footer.copyright')}
+        links={[
+          { label: t('footer.github'), href: 'https://github.com/AgiMateIo/n8n-nodes-agimate', external: true },
+          { label: t('footer.telegram'), href: '#' },
+          { label: t('footer.docs'), href: '#' },
+        ]}
+      />
     </div>
   );
 }
@@ -393,7 +370,7 @@ function NodeCard({
   useCase: string[];
 }) {
   return (
-    <div className={`rounded-2xl border border-border/50 border-t-4 ${borderColor} bg-surface p-6 transition-colors hover:border-accent/30`}>
+    <div className={`rounded-2xl border border-border/50 border-t-4 ${borderColor} bg-surface p-4 sm:p-6 shadow-card transition-colors hover:border-accent/30`}>
       <div className="mb-4 flex items-center gap-3">
         <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${iconBg}`}>
           {icon}
@@ -411,9 +388,9 @@ function NodeCard({
       </ul>
       <div>
         <div className="mb-2 text-xs font-medium uppercase tracking-wider text-muted">{useCaseLabel}</div>
-        <div className="flex flex-wrap items-center gap-2 font-mono text-xs text-muted">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 font-mono text-xs text-muted">
           {useCase.map((step, i) => (
-            <span key={step} className="flex items-center gap-2">
+            <span key={step} className="flex items-center gap-1.5 sm:gap-2">
               <span className="rounded bg-accent/10 px-2 py-1 text-accent">{step}</span>
               {i < useCase.length - 1 && <span className="text-accent/60">&rarr;</span>}
             </span>
@@ -438,7 +415,7 @@ function SetupStep({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-border/50 bg-surface p-6 transition-colors hover:border-accent/30">
+    <div className="rounded-2xl border border-border/50 bg-surface p-4 sm:p-6 shadow-card transition-colors hover:border-accent/30">
       <div className="mb-4 flex items-center gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground font-bold text-sm">
           {number}
@@ -464,12 +441,12 @@ function WorkflowCard({
   flow: string[];
 }) {
   return (
-    <div className="group rounded-2xl border border-border/50 bg-surface p-6 transition-colors hover:border-accent/30">
+    <div className="group rounded-2xl border border-border/50 bg-surface p-4 sm:p-6 shadow-card transition-colors hover:border-accent/30">
       <h3 className="mb-2 text-lg font-semibold">{title}</h3>
       <p className="mb-4 text-sm leading-relaxed text-muted">{description}</p>
-      <div className="flex flex-wrap items-center gap-2 font-mono text-xs text-muted">
+      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 font-mono text-xs text-muted">
         {flow.map((step, i) => (
-          <span key={step} className="flex items-center gap-2">
+          <span key={step} className="flex items-center gap-1.5 sm:gap-2">
             <span className="rounded bg-accent/10 px-2 py-1 text-accent">{step}</span>
             {i < flow.length - 1 && <span className="text-accent/60">&rarr;</span>}
           </span>

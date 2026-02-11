@@ -13,6 +13,7 @@
   --error: #ef4444;
   --surface: #1a1715;
   --surface-secondary: #231f1c;
+  --card-shadow: none;
 }
 
 @media (prefers-color-scheme: light) {
@@ -20,11 +21,12 @@
     --background: #F8F7F5;
     --foreground: #1e293b;
     --muted: #64748b;
-    --border: #e2ddd7;
+    --border: #d8d3cc;
     --accent: #4f46e5;
     --accent-foreground: #ffffff;
     --surface: #ffffff;
     --surface-secondary: #F0EEE9;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   }
 }
 
@@ -40,6 +42,7 @@
   --color-error: var(--error);
   --color-surface: var(--surface);
   --color-surface-secondary: var(--surface-secondary);
+  --shadow-card: var(--card-shadow);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

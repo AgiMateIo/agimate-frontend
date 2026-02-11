@@ -376,7 +376,9 @@
       "nodes": "Nodes",
       "setup": "Setup",
       "examples": "Examples",
-      "install": "Install"
+      "install": "Install",
+      "dashboard": "Dashboard",
+      "login": "Sign in"
     },
     "hero": {
       "title": "AgiMate",
@@ -545,7 +547,9 @@
       "features": "Features",
       "plugins": "Plugins",
       "specs": "Specs",
-      "install": "Install"
+      "install": "Install",
+      "dashboard": "Dashboard",
+      "login": "Sign in"
     },
     "hero": {
       "title": "AgiMate",
@@ -804,7 +808,9 @@
       "features": "Features",
       "howItWorks": "How it works",
       "interface": "Interface",
-      "install": "Install"
+      "install": "Install",
+      "dashboard": "Dashboard",
+      "login": "Sign in"
     },
     "hero": {
       "title": "AgiMate",
