@@ -51,3 +51,12 @@ export interface WebhookDeliveriesResponse {
   size: number;
   totalElements: number;
 }
+
+export interface EventSuggestion {
+  key: string;
+  eventType: string;
+  title: string;
+  description?: string;
+  source: 'connector' | 'device';
+  deviceName?: string;
+}

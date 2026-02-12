@@ -59,6 +59,19 @@ export interface DeviceDetail {
   actions: Record<string, DeviceCapabilityEntry> | null;
 }
 
+// Device trigger info returned by GET /device/manage/triggers/
+export interface DeviceTriggerInfo {
+  name: string;
+  description: string;
+}
+
+export interface DeviceTriggerGroup {
+  deviceAuthKeyId: string;
+  deviceId: string;
+  deviceName: string;
+  triggers: DeviceTriggerInfo[];
+}
+
 // Trigger log entry returned by GET /device/manage/trigger-logs/
 export interface TriggerLog {
   id: string;

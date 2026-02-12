@@ -3,7 +3,10 @@
 import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
+import { ClipboardDocumentIcon, ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline';
 import { Tabs } from '@/components/ui/Tabs';
+import { useClipboard } from '@/hooks/useClipboard';
+import { getApiBaseUrl } from '@/utils/api-url';
 import ConnectedDevicesTab from '@/components/devices/ConnectedDevicesTab';
 import DeviceKeysTab from '@/components/devices/DeviceKeysTab';
 import TriggerLogsTab from '@/components/devices/TriggerLogsTab';
@@ -12,6 +15,8 @@ export default function DevicesPage() {
   const t = useTranslations('Devices');
   const locale = useLocale();
   const [activeTab, setActiveTab] = useState('device-keys');
+  const { copied, copy } = useClipboard();
+  const apiBaseUrl = getApiBaseUrl();
 
   const tabs = [
     {
@@ -27,7 +32,11 @@ export default function DevicesPage() {
     {
       id: 'trigger-logs',
       label: t('triggerLogsTab'),
-      content: <TriggerLogsTab />,
+      content: (
+        <div className="bg-surface rounded-xl border border-border p-6">
+          <TriggerLogsTab />
+        </div>
+      ),
     },
   ];
 
@@ -51,6 +60,23 @@ export default function DevicesPage() {
             <Link href={`/${locale}/android`} target="_blank" className="text-accent hover:underline">{t('androidApp')}</Link>
           </li>
         </ol>
+        <div className="flex items-center gap-2 pt-1">
+          <span className="text-sm text-muted shrink-0">API URL:</span>
+          <code className="flex-1 bg-surface-secondary border border-border/50 rounded-lg px-4 py-2.5 text-sm font-mono text-foreground truncate">
+            {apiBaseUrl}
+          </code>
+          <button
+            onClick={() => copy(apiBaseUrl)}
+            className="shrink-0 p-2.5 rounded-lg border border-border/50 hover:bg-surface-secondary transition-colors text-muted hover:text-foreground"
+            title="Copy API URL"
+          >
+            {copied ? (
+              <ClipboardDocumentCheckIcon className="w-5 h-5 text-success" />
+            ) : (
+              <ClipboardDocumentIcon className="w-5 h-5" />
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}

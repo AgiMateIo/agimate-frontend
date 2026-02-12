@@ -22,6 +22,7 @@ import type {
   CreateDeviceAuthKeyRequest,
   UpdateDeviceAuthKeyRequest,
   TriggerLog,
+  DeviceTriggerGroup,
   Webhook,
   CreateWebhookRequest,
   UpdateWebhookRequest,
@@ -30,6 +31,7 @@ import type {
 } from '@/types';
 
 const SERVICE_UNAVAILABLE_MESSAGE = 'SERVICE_UNAVAILABLE';
+export const ACCESS_DENIED_MESSAGE = 'ACCESS_DENIED';
 
 export class ApiError extends Error {
   details: Record<string, string> | null;
@@ -176,15 +178,18 @@ class ApiService {
     let response = await safeFetch(url, config);
 
     if (response.status === 401 || response.status === 403) {
+      const isUserMeRequest = url.includes('/user/me');
+
       // Try to refresh the token once if unauthorized
       const refreshTokenId = getRefreshTokenId();
       if (!refreshTokenId) {
-        // No refresh token available, redirect to login
-        clearTokens();
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
+        if (isUserMeRequest) {
+          clearTokens();
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
         }
-        throw new Error('No refresh token available');
+        throw new Error(isUserMeRequest ? 'No refresh token available' : ACCESS_DENIED_MESSAGE);
       }
 
       const refreshed = await this.refreshAccessToken(refreshTokenId);
@@ -200,20 +205,22 @@ class ApiService {
         response = await safeFetch(url, { ...options, headers: retryHeaders });
 
         if (response.status === 401 || response.status === 403) {
-          // Token refresh failed, clear tokens and redirect to login
+          if (isUserMeRequest) {
+            clearTokens();
+            if (typeof window !== 'undefined') {
+              window.location.href = '/login';
+            }
+          }
+          throw new Error(isUserMeRequest ? `HTTP ${response.status}: Unauthorized` : ACCESS_DENIED_MESSAGE);
+        }
+      } else {
+        if (isUserMeRequest) {
           clearTokens();
           if (typeof window !== 'undefined') {
             window.location.href = '/login';
           }
-          throw new Error(`HTTP ${response.status}: Unauthorized`);
         }
-      } else {
-        // Token refresh failed, clear tokens and redirect to login
-        clearTokens();
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
-        }
-        throw new Error(`HTTP ${response.status}: Unauthorized`);
+        throw new Error(isUserMeRequest ? `HTTP ${response.status}: Unauthorized` : ACCESS_DENIED_MESSAGE);
       }
     }
 
@@ -346,6 +353,11 @@ class ApiService {
 
   async deleteDeviceAuthKey(id: string): Promise<void> {
     return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/device-keys/${id}`);
+  }
+
+  // Device triggers
+  async getDeviceTriggers(): Promise<DeviceTriggerGroup[]> {
+    return this.get<DeviceTriggerGroup[]>(`${API.ENDPOINTS.DEVICE_API}/manage/triggers/`);
   }
 
   // Trigger logs
