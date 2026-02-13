@@ -1,53 +1,20 @@
 'use client';
 
-import { useRouter } from '@/i18n/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
-import apiService from '@/services/api';
-import { useUser } from '@/contexts/UserContext';
 import { API } from '@/config/constants';
 import { getApiBaseUrl } from '@/utils/api-url';
 
 export default function LoginPage() {
-  const router = useRouter();
-  const { fetchUser } = useUser();
   const t = useTranslations('Login');
-  const hasRun = useRef(false);
   const [redirectParams, setRedirectParams] = useState('');
   const [pendingProvider, setPendingProvider] = useState<'google' | 'yandex' | null>(null);
 
   useEffect(() => {
-    const loginUrl = window.location.origin + '/login';
-    setRedirectParams(`?redirect_to=${encodeURIComponent(loginUrl)}`);
+    const loginCheckUrl = window.location.origin + '/login-check';
+    setRedirectParams(`?redirect_to=${encodeURIComponent(loginCheckUrl)}`);
   }, []);
-
-  useEffect(() => {
-    const handleOAuthCallback = async () => {
-      if (hasRun.current) return;
-      hasRun.current = true;
-
-      if (typeof window !== 'undefined') {
-        const hash = window.location.hash.substring(1);
-
-        if (hash.startsWith('rti-')) {
-          const refreshTokenId = hash.substring(4);
-          try {
-            const success = await apiService.refreshAuthTokens(refreshTokenId);
-
-            if (success) {
-              await fetchUser();
-              router.replace('/dashboard');
-            }
-          } catch (error) {
-            console.error('OAuth callback error:', error);
-          }
-        }
-      }
-    };
-
-    handleOAuthCallback();
-  }, [router, fetchUser]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -125,7 +92,8 @@ export default function LoginPage() {
                 </svg>
               ) : (
                 <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
-                  <path fill="#FF0000" d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 15.563h-2.788V8.375h-2.063c-2.625 0-4.313-1.5-4.313-3.938 0-2.438 1.688-3.875 4.313-3.875h4.851v2.25h-4.5c-1.313 0-2.063.75-2.063 1.625 0 .875.75 1.688 2.063 1.688h1.5c.563 0 .938.375.938.938v9.5z"/>
+                  <rect width="24" height="24" rx="12" fill="#FC3F1D"/>
+                  <path d="M12.3255 13.2396C13.0267 14.7756 13.2605 15.3099 13.2605 17.1548V19.6007H10.7561V15.4769L6.0312 5.2007H8.6441L12.3255 13.2396ZM15.4142 5.2007L12.3506 12.1628H14.8966L17.9686 5.2007H15.4142Z" fill="white"/>
                 </svg>
               )}
               {pendingProvider === 'yandex' ? t('redirecting') : t('yandex')}

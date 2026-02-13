@@ -1,140 +1,179 @@
 {
   "Metadata": {
-    "title": "AgiMate — Eyes, ears, and hands for your AI agent",
-    "description": "AgiMate connects AI agents to your devices and services. Screenshots, notifications from 100+ services, command execution — let AI not just talk, but act.",
-    "ogTitle": "AgiMate — Eyes, ears, and hands for your AI agent",
-    "ogDescription": "AgiMate connects AI agents to your devices and services. Let AI not just talk — let it act."
+    "title": "AgiMate — Multi-Agent AI Platform for Business",
+    "description": "AgiMate is a platform where specialized AI agents work together: email, calendar, marketplaces. Each knows its job. Each under your control.",
+    "ogTitle": "AgiMate — AI Agent Team for Your Business",
+    "ogDescription": "Specialized AI agents work in parallel, securely, and under your control. Open-source automation platform."
   },
   "HomePage": {
     "nav": {
       "howItWorks": "How it works",
       "useCases": "Use cases",
-      "download": "Download",
+      "security": "Security",
+      "connections": "Connections",
       "dashboard": "Dashboard",
       "login": "Sign in"
     },
     "hero": {
-      "title": "Give your AI a",
-      "titleHighlight": "body",
-      "subtitle": "AgiMate connects AI agents to your devices and services.",
-      "subtitleSecond": "Let AI not just talk — let it act.",
+      "title": "Your AI assistant.",
+      "titleHighlight": "A team, not a solo act.",
+      "subtitle": "AgiMate is a platform where specialized AI agents work together: one monitors email, another handles the calendar, a third manages orders. Each knows its job. Each under your control.",
       "cta": "Try for free",
-      "secondaryCta": "How it works"
+      "secondaryCta": "See how it works"
     },
-    "problem": {
-      "badge": "Problem",
-      "text": "Your AI assistant can answer questions. But ask it to take a screenshot, track a file, or send a message — and it's helpless."
+    "heroScheme": {
+      "user": "You",
+      "telegram": "Telegram",
+      "supervisor": "Supervisor",
+      "calendarAgent": "Calendar",
+      "emailAgent": "Email",
+      "response": "Response"
     },
-    "solution": {
-      "badge": "Solution",
-      "text": "AgiMate gives AI eyes, ears, and hands. Install the app on a device — and your AI agent can see, hear, and act."
-    },
-    "capabilities": {
-      "see": {
-        "title": "See",
-        "description": "Screenshots, file tracking, device events"
-      },
-      "hear": {
-        "title": "Hear",
-        "description": "Notifications from 100+ services — Ozon, WB, Telegram and more"
-      },
-      "act": {
-        "title": "Act",
-        "description": "Execute commands, send messages, control applications"
-      }
-    },
-    "howItWorks": {
-      "title": "How it works",
-      "subtitle": "AgiMate — a bridge between AI agents and the real world",
-      "aiBox": {
-        "title": "Your AI (any)",
-        "items": ["Claude", "ChatGPT", "Your bot"]
-      },
-      "platformBox": {
-        "title": "AgiMate Platform",
-        "subtitle": "\"Bridge\""
-      },
-      "devicesBox": {
-        "title": "Devices & Services",
-        "phone": "Phone",
-        "computer": "Computer",
-        "marketplace": "Ozon, WB",
-        "messenger": "Telegram"
-      },
-      "caption": "Works with any AI via MCP protocol or n8n.",
-      "captionSecond": "Connect once — use everywhere."
-    },
-    "useCases": {
-      "title": "What you can automate",
-      "subtitle": "Real tasks that AgiMate solves for business",
+    "problems": {
+      "title": "Sound familiar?",
       "items": [
         {
-          "title": "AI Secretary",
-          "description": "Monitoring incoming messages in Email, Telegram, WhatsApp. AI analyzes, categorizes, and responds to common questions.",
-          "flow": ["Incoming message", "AI analysis", "Auto-reply or escalation"]
+          "title": "One agent — one task",
+          "description": "While your AI checks the calendar, it misses an incoming email. You get an outdated answer."
         },
         {
-          "title": "Document Automation",
-          "description": "Tracking new files, recognizing document types, extracting data, and uploading to 1C or CRM.",
-          "flow": ["New file", "Recognition", "Upload to 1C/CRM"]
+          "title": "All or nothing",
+          "description": "Your AI assistant has access to everything — email, files, banking. One malicious plugin and the entire system is compromised."
         },
         {
-          "title": "Monitoring & Alerts",
-          "description": "Tracking device events — screenshots, notifications, changes. AI analyzes and sends alerts.",
-          "flow": ["Device event", "AI analysis", "Alert to Telegram"]
-        },
-        {
-          "title": "E-commerce Assistant",
-          "description": "Monitoring orders on Ozon and Wildberries, automatic status updates, customer responses.",
-          "flow": ["New order", "Status update", "Customer response"]
-        },
-        {
-          "title": "Competitor Price Monitoring",
-          "description": "Tracking competitor product prices on marketplaces. AI analyzes changes and suggests adjustments.",
-          "flow": ["Price change", "AI analysis", "Recommendation + alert"]
-        },
-        {
-          "title": "Legacy Software Bridge",
-          "description": "AI controls desktop apps without APIs — 1C, Excel, specialized software. Integration with modern services.",
-          "flow": ["AI command", "App action", "Result to cloud"]
-        },
-        {
-          "title": "Voice Notifications",
-          "description": "Important events are voiced via TTS on the device. Don't miss critical alerts, even if you're not looking at the screen.",
-          "flow": ["Critical event", "AI prioritization", "Voice notification"]
-        },
-        {
-          "title": "Data Collection & Reports",
-          "description": "Automatic data collection from various sources, aggregation, and scheduled report generation.",
-          "flow": ["Collect from sources", "AI aggregation", "Report to Notion/Sheets"]
+          "title": "Black box",
+          "description": "You don't know what AI does behind the scenes. Which APIs did it call? What did it read? Where did it send your data?"
         }
       ]
     },
-    "download": {
-      "title": "Try it now",
-      "subtitle": "Open-source. Free. Community plugins.",
-      "cta": "Sign up for free",
-      "android": {
-        "title": "Android",
-        "description": "Install the agent on your phone",
-        "button": "Download APK"
+    "solution": {
+      "title": "A team of AI specialists, each in their place",
+      "columns": [
+        {
+          "title": "Work in parallel",
+          "description": "While one agent checks the calendar, another reads email. Results are combined instantly."
+        },
+        {
+          "title": "Each — only their own",
+          "description": "The email agent can't access files. The analytics agent can't send messages. Security is built in, not bolted on."
+        },
+        {
+          "title": "Everything under control",
+          "description": "Every action of every agent is logged. You see who did what and can set the rules."
+        }
+      ]
+    },
+    "howItWorks": {
+      "title": "How it works",
+      "tabs": [
+        {
+          "label": "Event",
+          "title": "An event starts the process",
+          "description": "You write in Telegram. Or an email arrives. Or stock runs low. AgiMate receives the event and gets to work.",
+          "sources": ["Telegram", "Email", "Ozon"]
+        },
+        {
+          "label": "Team works",
+          "title": "Agents work in parallel",
+          "description": "AgiMate routes the event to the right agents. The Supervisor coordinates. Agents share context and work simultaneously.",
+          "agents": ["Calendar", "Email", "CRM", "Analytics"]
+        },
+        {
+          "label": "Result",
+          "title": "Response and audit log",
+          "description": "The Supervisor collects agent responses and sends you the result. Every action is recorded in the log."
+        }
+      ]
+    },
+    "useCases": {
+      "title": "What it looks like in practice",
+      "subtitle": "Real scenarios where a team of agents outperforms a solo AI",
+      "items": [
+        {
+          "title": "\"Am I free today?\"",
+          "description": "You ask in Telegram: \"Am I free from 5 to 6?\" The calendar agent starts checking. But the email agent spots a message from your boss: \"Meeting at 5 PM.\" The Supervisor responds: \"No — a meeting email just came in.\"",
+          "flow": ["Telegram", "Supervisor", "Calendar + Email", "Response"]
+        },
+        {
+          "title": "Smart procurement",
+          "description": "A product is running low on Ozon. The marketplace agent reports it. The Supervisor asks to check supplier prices. But the analytics agent notices: 3 returns this week. The Supervisor asks you: \"Should we reorder? Here are the numbers.\"",
+          "flow": ["Ozon trigger", "Supervisor", "Procurement + Analytics", "Recommendation"]
+        },
+        {
+          "title": "Meeting prep",
+          "description": "An hour before a call, the calendar agent alerts you. The Supervisor simultaneously requests recent correspondence and deal status. In a minute you get a brief: \"Ivanov wants to discuss a discount. Deal at $50K, negotiation stage.\"",
+          "flow": ["Calendar", "Supervisor", "Email + CRM", "Brief"]
+        },
+        {
+          "title": "AI secretary",
+          "description": "While you're busy, email and messenger agents monitor incoming messages. Routine questions — they answer themselves. Important ones go to the Supervisor, who sends you a prioritized summary.",
+          "flow": ["Email + Telegram", "Agents", "Supervisor", "Summary"]
+        },
+        {
+          "title": "E-commerce control",
+          "description": "New order on Wildberries. The marketplace agent updates the status. Meanwhile, the warehouse agent checks stock and the logistics agent checks delivery times. You only get an alert if something's wrong.",
+          "flow": ["WB trigger", "3 agents", "Supervisor", "Alert"]
+        }
+      ]
+    },
+    "security": {
+      "title": "Security is architecture, not configuration",
+      "items": [
+        {
+          "title": "Each agent — within its boundaries",
+          "description": "The email agent only works with email. It physically cannot access files, banking, or messengers. Even if something goes wrong — damage is contained."
+        },
+        {
+          "title": "Every action logged",
+          "description": "Who called what, when, with what result. You always know what's happening."
+        },
+        {
+          "title": "You decide what's allowed",
+          "description": "Simple rules: this agent gets read-only email access. This one can send, but only with your confirmation. No surprises."
+        }
+      ]
+    },
+    "connections": {
+      "channels": {
+        "title": "Where your assistant lives",
+        "subtitle": "Chat with your assistant wherever is convenient",
+        "items": ["Telegram", "WhatsApp", "Web UI"]
       },
-      "desktop": {
-        "title": "Desktop",
-        "description": "Install the agent on your computer",
-        "button": "Learn more"
+      "integrations": {
+        "title": "What agents connect to",
+        "subtitle": "100+ services. Open-source community plugins.",
+        "items": ["Email", "Google Calendar", "Ozon", "Wildberries", "1C", "Telegram", "WhatsApp", "Notion", "Google Sheets", "CRM"]
       },
-      "n8n": {
-        "title": "n8n node",
-        "description": "Connect to your workflows",
-        "button": "Documentation"
+      "install": {
+        "title": "Installation",
+        "items": [
+          { "title": "Android", "description": "An agent on your phone: intercepts notifications, calls, and events — and passes them to your AI agents for processing", "button": "Learn more" },
+          { "title": "Desktop", "description": "An agent on your computer: monitors files, events, and desktop notifications, executes commands from AI", "button": "Learn more" },
+          { "title": "n8n", "description": "Build an AI agent with the AgiMate n8n node — it will work for you autonomously", "button": "Learn more" }
+        ]
       }
+    },
+    "openSource": {
+      "title": "Open-source & self-hosted",
+      "description": "The server-side of AgiMate will become fully open-source after passing all testing — including security audits. You'll be able to deploy the platform on your own server and maintain full control over your data.",
+      "selfHosted": "Self-hosted — your data stays on your server",
+      "audit": "Publishing after security audit",
+      "github": "Follow our progress on GitHub"
+    },
+    "cta": {
+      "title": "Build your AI team",
+      "subtitle": "Start with two agents — email and calendar. Add more as needed.",
+      "button": "Start for free",
+      "docsLink": "Documentation",
+      "finePrint": "Open-source · Your data on your server · No subscription"
     },
     "footer": {
       "copyright": "AgiMate © 2025",
       "github": "GitHub",
       "telegram": "Telegram",
-      "docs": "Documentation"
+      "telegramChat": "Community chat",
+      "docs": "Documentation",
+      "blog": "Blog"
     }
   },
   "Login": {
@@ -147,6 +186,10 @@
     "and": "and",
     "privacyLink": "Privacy Policy",
     "redirecting": "Redirecting..."
+  },
+  "LoginCheck": {
+    "authorizing": "Authorizing...",
+    "pleaseWait": "Please wait while we complete the sign-in"
   },
   "Logout": {
     "title": "Sign out",
@@ -415,7 +458,7 @@
       },
       "mobile": {
         "title": "AgiMate Mobile",
-        "description": "Controls mobile devices — screenshots, notifications, command execution. AI gets eyes and hands.",
+        "description": "Controls mobile devices — screenshots, notifications, command execution. The agent acts autonomously.",
         "features": [
           "Device screenshots",
           "Send notifications and TTS",
@@ -539,9 +582,9 @@
   "DesktopPage": {
     "meta": {
       "title": "AgiMate Desktop — AI agent for your computer",
-      "description": "Free open-source app that gives AI agents access to files, notifications, and commands on your computer. Windows, macOS, Linux.",
+      "description": "Free open-source app — a specialized AI agent that monitors files, notifications, and executes commands on your computer. Windows, macOS, Linux.",
       "ogTitle": "AgiMate Desktop — AI agent for your computer",
-      "ogDescription": "Bridge between AI and your computer. File watching, notifications, text-to-speech, plugin system."
+      "ogDescription": "AI agent on your computer. File watching, notifications, text-to-speech, plugin system."
     },
     "nav": {
       "features": "Features",
@@ -554,12 +597,12 @@
     "hero": {
       "title": "AgiMate",
       "titleHighlight": "Desktop",
-      "subtitle": "A background agent that gives your AI access to files, notifications, and system commands. Install once — and forget.",
+      "subtitle": "A specialized AI agent on your computer: monitors files, events, and notifications, executes commands. Install once — and forget.",
       "cta": "Download for free"
     },
     "howItWorks": {
-      "title": "Bridge between AI and your computer",
-      "subtitle": "AgiMate Desktop lives in the system tray and connects computer events with your AI agent.",
+      "title": "How the Desktop agent works",
+      "subtitle": "AgiMate Desktop lives in the system tray — monitors events on your computer and passes them to your AI agents.",
       "boxes": {
         "pc": "PC Events",
         "pcSubtitle": "Files, buttons, timers",
@@ -774,7 +817,7 @@
         },
         {
           "title": "Done!",
-          "description": "The agent runs in the background. Enable the plugins you need — and your AI gets access to your computer."
+          "description": "The agent runs in the background. Enable the plugins you need — and the Desktop agent will start monitoring events and executing commands."
         }
       ],
       "platforms": {
@@ -785,7 +828,7 @@
     },
     "download": {
       "title": "Open Source. Free. Extensible.",
-      "subtitle": "Download AgiMate Desktop and give your AI access to the real world.",
+      "subtitle": "Download AgiMate Desktop — add a specialized agent to your computer.",
       "downloadButton": "Download",
       "github": "GitHub",
       "docs": "Documentation"
@@ -815,7 +858,7 @@
     "hero": {
       "title": "AgiMate",
       "titleHighlight": "for Android",
-      "subtitle": "Turn your phone into a sensor and remote control for your AI agent. Device event triggers + remote actions.",
+      "subtitle": "An agent on your phone: intercepts notifications, calls, and device events — and passes them to your AI agents for processing.",
       "cta": "Download APK"
     },
     "features": {

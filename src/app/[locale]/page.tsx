@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Link } from '@/i18n/navigation';
 import { useUser } from '@/contexts/UserContext';
 import { useTranslations } from 'next-intl';
@@ -7,45 +8,63 @@ import LandingHeader from '@/components/landing/LandingHeader';
 import LandingBackground from '@/components/landing/LandingBackground';
 import LandingFooter from '@/components/landing/LandingFooter';
 import {
-  EyeIcon,
-  HandRaisedIcon,
   ArrowRightIcon,
+  ClockIcon,
+  ShieldExclamationIcon,
+  EyeSlashIcon,
+  ArrowsPointingOutIcon,
+  ShieldCheckIcon,
+  ClipboardDocumentListIcon,
+  BoltIcon,
+  UserGroupIcon,
+  CheckCircleIcon,
+  AdjustmentsHorizontalIcon,
+  GlobeAltIcon,
   DevicePhoneMobileIcon,
   ComputerDesktopIcon,
-  DocumentTextIcon,
-  BellAlertIcon,
-  ShoppingCartIcon,
-  CpuChipIcon,
   ChatBubbleLeftRightIcon,
-  ChartBarIcon,
-  MegaphoneIcon,
-  SpeakerWaveIcon,
+  ServerIcon,
 } from '@heroicons/react/24/outline';
 
-const useCaseIcons = [
-  ChatBubbleLeftRightIcon,
-  DocumentTextIcon,
-  BellAlertIcon,
-  ShoppingCartIcon,
-  ChartBarIcon,
-  CpuChipIcon,
-  SpeakerWaveIcon,
-  MegaphoneIcon,
-];
+const problemIcons = [ClockIcon, ShieldExclamationIcon, EyeSlashIcon];
+const solutionIcons = [ArrowsPointingOutIcon, ShieldCheckIcon, ClipboardDocumentListIcon];
+const tabIcons = [BoltIcon, UserGroupIcon, CheckCircleIcon];
+const securityIcons = [ShieldCheckIcon, ClipboardDocumentListIcon, AdjustmentsHorizontalIcon];
 
 export default function HomePage() {
   const { user } = useUser();
   const t = useTranslations('HomePage');
+  const [activeTab, setActiveTab] = useState(0);
 
+  const problemItems = t.raw('problems.items') as Array<{ title: string; description: string }>;
+  const solutionColumns = t.raw('solution.columns') as Array<{ title: string; description: string }>;
+  const howItWorksTabs = t.raw('howItWorks.tabs') as Array<{
+    label: string;
+    title: string;
+    description: string;
+    sources?: string[];
+    agents?: string[];
+  }>;
   const useCaseItems = t.raw('useCases.items') as Array<{
     title: string;
     description: string;
     flow: string[];
   }>;
+  const securityItems = t.raw('security.items') as Array<{ title: string; description: string }>;
+  const channelItems = t.raw('connections.channels.items') as string[];
+  const integrationItems = t.raw('connections.integrations.items') as string[];
+  const installItems = t.raw('connections.install.items') as Array<{
+    title: string;
+    description?: string;
+    button: string;
+  }>;
+
+  const channelIcons = [ChatBubbleLeftRightIcon, ChatBubbleLeftRightIcon, GlobeAltIcon];
+  const installIcons = [DevicePhoneMobileIcon, ComputerDesktopIcon, BoltIcon];
+  const installHrefs = ['/android', '/desktop', '/n8n'];
 
   return (
     <div className="min-h-screen text-foreground">
-      {/* Background gradient mesh */}
       <LandingBackground />
 
       {/* Header */}
@@ -53,14 +72,15 @@ export default function HomePage() {
         navLinks={[
           { href: '#how-it-works', label: t('nav.howItWorks') },
           { href: '#use-cases', label: t('nav.useCases') },
-          { href: '#download', label: t('nav.download') },
+          { href: '#security', label: t('nav.security') },
+          { href: '#connections', label: t('nav.connections') },
         ]}
         loginLabel={t('nav.login')}
         dashboardLabel={t('nav.dashboard')}
       />
 
       {/* Hero */}
-      <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-16 pt-14 sm:pb-20 sm:pt-16 md:pt-28 md:pb-24 text-center">
+      <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-12 pt-14 sm:pb-16 sm:pt-16 md:pt-28 md:pb-20 text-center">
         <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl md:text-6xl">
           {t('hero.title')}{' '}
           <span className="bg-gradient-to-r from-accent to-purple-400 bg-clip-text text-transparent">
@@ -69,8 +89,6 @@ export default function HomePage() {
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted">
           {t('hero.subtitle')}
-          <br className="hidden sm:block" />
-          {t('hero.subtitleSecond')}
         </p>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link
@@ -87,115 +105,314 @@ export default function HomePage() {
             {t('hero.secondaryCta')}
           </a>
         </div>
-      </section>
 
-      {/* Problem / Solution */}
-      <section className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
-        <div className="grid gap-8 md:grid-cols-2">
-          <div className="rounded-2xl border border-border/50 bg-surface shadow-card p-5 sm:p-8">
-            <div className="mb-4 inline-block rounded-full bg-error/10 px-3 py-1 text-xs font-medium text-error">
-              {t('problem.badge')}
-            </div>
-            <p className="text-lg leading-relaxed text-muted">{t('problem.text')}</p>
-          </div>
-          <div className="rounded-2xl border border-accent/30 bg-surface shadow-card p-5 sm:p-8 shadow-lg shadow-accent/5">
-            <div className="mb-4 inline-block rounded-full bg-accent/10 px-3 py-1 text-xs font-medium text-accent">
-              {t('solution.badge')}
-            </div>
-            <p className="text-lg leading-relaxed text-muted">{t('solution.text')}</p>
-          </div>
-        </div>
-        <div className="mt-12 grid gap-6 sm:grid-cols-3">
-          <CapabilityCard icon={<EyeIcon className="h-7 w-7" />} title={t('capabilities.see.title')} description={t('capabilities.see.description')} />
-          <CapabilityCard
-            icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-7 w-7"><path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" /></svg>}
-            title={t('capabilities.hear.title')} description={t('capabilities.hear.description')}
+        {/* Hero Scheme */}
+        <div className="mt-12 sm:mt-16">
+          <HeroScheme
+            labels={{
+              user: t('heroScheme.user'),
+              telegram: t('heroScheme.telegram'),
+              supervisor: t('heroScheme.supervisor'),
+              calendarAgent: t('heroScheme.calendarAgent'),
+              emailAgent: t('heroScheme.emailAgent'),
+              response: t('heroScheme.response'),
+            }}
           />
-          <CapabilityCard icon={<HandRaisedIcon className="h-7 w-7" />} title={t('capabilities.act.title')} description={t('capabilities.act.description')} />
         </div>
       </section>
 
-      {/* How it works */}
-      <section id="how-it-works" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
-        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">{t('howItWorks.title')}</h2>
-        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-xl text-center text-muted">{t('howItWorks.subtitle')}</p>
-        <div className="grid items-stretch gap-4 md:grid-cols-[1fr_auto_1fr_auto_1fr]">
-          <div className="rounded-2xl border border-border/50 bg-surface shadow-card p-6 text-center">
-            <div className="mb-3 text-xs font-medium uppercase tracking-wider text-muted">{t('howItWorks.aiBox.title')}</div>
-            <div className="space-y-1 text-sm text-muted">
-              {(t.raw('howItWorks.aiBox.items') as string[]).map((item: string) => (<div key={item}>{item}</div>))}
-            </div>
-          </div>
-          <div className="hidden items-center justify-center md:flex"><div className="flex items-center gap-1 text-accent"><div className="h-px w-8 bg-accent" /><ArrowRightIcon className="h-5 w-5" /></div></div>
-          <div className="flex items-center justify-center py-2 md:hidden"><svg className="h-6 w-6 text-accent" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m0 0l6.75-6.75M12 19.5l-6.75-6.75" /></svg></div>
-          <div className="rounded-2xl border border-accent/40 bg-accent/5 p-6 text-center shadow-lg shadow-accent/10">
-            <div className="mb-3 text-xs font-medium uppercase tracking-wider text-accent">{t('howItWorks.platformBox.title')}</div>
-            <div className="text-sm font-medium text-muted">{t('howItWorks.platformBox.subtitle')}</div>
-          </div>
-          <div className="hidden items-center justify-center md:flex"><div className="flex items-center gap-1 text-accent"><div className="h-px w-8 bg-accent" /><ArrowRightIcon className="h-5 w-5" /></div></div>
-          <div className="flex items-center justify-center py-2 md:hidden"><svg className="h-6 w-6 text-accent" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m0 0l6.75-6.75M12 19.5l-6.75-6.75" /></svg></div>
-          <div className="rounded-2xl border border-border/50 bg-surface shadow-card p-6 text-center">
-            <div className="mb-3 text-xs font-medium uppercase tracking-wider text-muted">{t('howItWorks.devicesBox.title')}</div>
-            <div className="grid grid-cols-2 gap-2 text-sm text-muted">
-              <span className="flex items-center justify-center gap-1.5"><DevicePhoneMobileIcon className="h-4 w-4 text-accent" />{t('howItWorks.devicesBox.phone')}</span>
-              <span className="flex items-center justify-center gap-1.5"><ComputerDesktopIcon className="h-4 w-4 text-accent" />{t('howItWorks.devicesBox.computer')}</span>
-              <span className="flex items-center justify-center gap-1.5"><ShoppingCartIcon className="h-4 w-4 text-accent" />{t('howItWorks.devicesBox.marketplace')}</span>
-              <span className="flex items-center justify-center gap-1.5"><ChatBubbleLeftRightIcon className="h-4 w-4 text-accent" />{t('howItWorks.devicesBox.messenger')}</span>
-            </div>
-          </div>
-        </div>
-        <p className="mt-10 text-center text-muted">
-          {t('howItWorks.caption')}
-          <br className="hidden sm:block" />
-          {t('howItWorks.captionSecond')}
-        </p>
-      </section>
-
-      {/* Use-cases */}
-      <section id="use-cases" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
-        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">{t('useCases.title')}</h2>
-        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-xl text-center text-muted">{t('useCases.subtitle')}</p>
-        <div className="grid gap-6 md:grid-cols-2">
-          {useCaseItems.map((uc, index) => {
-            const Icon = useCaseIcons[index];
+      {/* Problems */}
+      <section className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <h2 className="mb-8 sm:mb-10 md:mb-14 text-center text-2xl sm:text-3xl font-bold tracking-tight">
+          {t('problems.title')}
+        </h2>
+        <div className="grid gap-6 sm:grid-cols-3">
+          {problemItems.map((item, i) => {
+            const Icon = problemIcons[i];
             return (
-              <div key={uc.title} className="group rounded-2xl border border-border/50 bg-surface shadow-card p-6 transition-colors hover:border-accent/30">
-                <div className="mb-3 flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent"><Icon className="h-5 w-5" /></div>
-                  <h3 className="text-lg font-semibold">{uc.title}</h3>
+              <div
+                key={item.title}
+                className="rounded-2xl border border-error/20 bg-surface shadow-card p-6"
+              >
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-error/10 text-error">
+                  <Icon className="h-6 w-6" />
                 </div>
-                <p className="mb-4 text-sm leading-relaxed text-muted">{uc.description}</p>
-                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 font-mono text-xs text-muted">
-                  {uc.flow.map((step: string, i: number) => (
-                    <span key={step} className="flex items-center gap-1.5 sm:gap-2">
-                      <span className="rounded bg-accent/10 px-2 py-1 text-accent">{step}</span>
-                      {i < uc.flow.length - 1 && <span className="text-accent/60">&rarr;</span>}
-                    </span>
-                  ))}
-                </div>
+                <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
+                <p className="text-sm leading-relaxed text-muted">{item.description}</p>
               </div>
             );
           })}
         </div>
       </section>
 
-      {/* Download */}
-      <section id="download" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
-        <div className="text-center">
-          <h2 className="mb-4 text-2xl sm:text-3xl font-bold tracking-tight">{t('download.title')}</h2>
-          <p className="mx-auto mb-6 max-w-md text-muted">{t('download.subtitle')}</p>
-          <Link
-            href={user ? '/dashboard' : '/login'}
-            className="mb-8 sm:mb-10 md:mb-14 inline-flex items-center gap-2 rounded-lg bg-accent px-8 py-4 text-lg font-medium text-accent-foreground shadow-lg shadow-accent/25 hover:bg-accent/90 transition-colors"
-          >
-            {t('download.cta')}
-            <ArrowRightIcon className="h-5 w-5" />
-          </Link>
+      {/* Solution */}
+      <section className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <h2 className="mb-8 sm:mb-10 md:mb-14 text-center text-2xl sm:text-3xl font-bold tracking-tight">
+          {t('solution.title')}
+        </h2>
+        <div className="grid gap-6 sm:grid-cols-3">
+          {solutionColumns.map((col, i) => {
+            const Icon = solutionIcons[i];
+            return (
+              <div
+                key={col.title}
+                className="rounded-2xl border border-accent/20 bg-surface shadow-card p-6 text-center"
+              >
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                  <Icon className="h-6 w-6" />
+                </div>
+                <h3 className="mb-2 text-lg font-semibold">{col.title}</h3>
+                <p className="text-sm leading-relaxed text-muted">{col.description}</p>
+              </div>
+            );
+          })}
         </div>
-        <div className="mt-8 sm:mt-10 md:mt-14 grid gap-6 sm:grid-cols-3">
-          <DownloadCard icon={<DevicePhoneMobileIcon className="h-8 w-8" />} title={t('download.android.title')} description={t('download.android.description')} buttonLabel={t('download.android.button')} href="/android" />
-          <DownloadCard icon={<ComputerDesktopIcon className="h-8 w-8" />} title={t('download.desktop.title')} description={t('download.desktop.description')} buttonLabel={t('download.desktop.button')} href="/desktop" />
-          <DownloadCard icon={<svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" /></svg>} title={t('download.n8n.title')} description={t('download.n8n.description')} buttonLabel={t('download.n8n.button')} href="/n8n" />
+      </section>
+
+      {/* How It Works */}
+      <section id="how-it-works" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <h2 className="mb-8 sm:mb-10 md:mb-14 text-center text-2xl sm:text-3xl font-bold tracking-tight">
+          {t('howItWorks.title')}
+        </h2>
+
+        {/* Tab buttons */}
+        <div className="mx-auto mb-8 flex max-w-xl justify-center gap-2">
+          {howItWorksTabs.map((tab, i) => {
+            const Icon = tabIcons[i];
+            return (
+              <button
+                key={tab.label}
+                onClick={() => setActiveTab(i)}
+                className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
+                  activeTab === i
+                    ? 'bg-accent text-accent-foreground shadow-lg shadow-accent/25'
+                    : 'border border-border text-muted hover:text-foreground hover:bg-surface-secondary'
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Tab content */}
+        <div className="rounded-2xl border border-border/50 bg-surface shadow-card p-6 sm:p-8 md:p-10">
+          <h3 className="mb-3 text-xl font-semibold">{howItWorksTabs[activeTab].title}</h3>
+          <p className="mb-8 max-w-2xl text-muted">{howItWorksTabs[activeTab].description}</p>
+
+          {activeTab === 0 && <HowItWorksStep1 sources={howItWorksTabs[0].sources || []} />}
+          {activeTab === 1 && <HowItWorksStep2 agents={howItWorksTabs[1].agents || []} />}
+          {activeTab === 2 && <HowItWorksStep3 />}
+        </div>
+      </section>
+
+      {/* Use Cases */}
+      <section id="use-cases" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">
+          {t('useCases.title')}
+        </h2>
+        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-xl text-center text-muted">
+          {t('useCases.subtitle')}
+        </p>
+        <div className="grid gap-6 md:grid-cols-2">
+          {useCaseItems.map((uc, index) => (
+            <div
+              key={uc.title}
+              className={`group rounded-2xl border border-border/50 bg-surface shadow-card p-6 transition-colors hover:border-accent/30${
+                index === useCaseItems.length - 1 && useCaseItems.length % 2 === 1
+                  ? ' last:md:col-span-2'
+                  : ''
+              }`}
+            >
+              <h3 className="mb-2 text-lg font-semibold">{uc.title}</h3>
+              <p className="mb-4 text-sm leading-relaxed text-muted">{uc.description}</p>
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 font-mono text-xs text-muted">
+                {uc.flow.map((step: string, i: number) => (
+                  <span key={step} className="flex items-center gap-1.5 sm:gap-2">
+                    <span className="rounded bg-accent/10 px-2 py-1 text-accent">{step}</span>
+                    {i < uc.flow.length - 1 && <span className="text-accent/60">&rarr;</span>}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Security */}
+      <section id="security" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <h2 className="mb-8 sm:mb-10 md:mb-14 text-center text-2xl sm:text-3xl font-bold tracking-tight">
+          {t('security.title')}
+        </h2>
+        <div className="grid gap-6 sm:grid-cols-3">
+          {securityItems.map((item, i) => {
+            const Icon = securityIcons[i];
+            return (
+              <div
+                key={item.title}
+                className="rounded-2xl border border-accent/20 bg-surface shadow-card p-6"
+              >
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                  <Icon className="h-6 w-6" />
+                </div>
+                <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
+                <p className="text-sm leading-relaxed text-muted">{item.description}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Connections */}
+      <section id="connections" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        {/* Channels */}
+        <div className="mb-12 sm:mb-16 text-center">
+          <h2 className="mb-2 text-2xl sm:text-3xl font-bold tracking-tight">
+            {t('connections.channels.title')}
+          </h2>
+          <p className="mx-auto mb-8 max-w-md text-muted">{t('connections.channels.subtitle')}</p>
+          <div className="mx-auto flex max-w-sm justify-center gap-8">
+            {channelItems.map((ch, i) => {
+              const Icon = channelIcons[i];
+              return (
+                <div key={ch} className="flex flex-col items-center gap-2">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                    <Icon className="h-7 w-7" />
+                  </div>
+                  <span className="text-sm font-medium">{ch}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Integrations */}
+        <div className="mb-12 sm:mb-16 text-center">
+          <h3 className="mb-2 text-xl sm:text-2xl font-bold tracking-tight">
+            {t('connections.integrations.title')}
+          </h3>
+          <p className="mx-auto mb-8 max-w-md text-muted">{t('connections.integrations.subtitle')}</p>
+          <div className="mx-auto flex max-w-2xl flex-wrap justify-center gap-2">
+            {integrationItems.map((svc) => (
+              <span
+                key={svc}
+                className="rounded-lg border border-border/50 bg-surface-secondary px-3 py-1.5 text-sm font-medium text-muted"
+              >
+                {svc}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Install */}
+        <div className="text-center">
+          <h3 className="mb-6 text-xl sm:text-2xl font-bold tracking-tight">
+            {t('connections.install.title')}
+          </h3>
+          <div className="mx-auto grid max-w-3xl gap-4 sm:grid-cols-3">
+            {installItems.map((item, i) => {
+              const Icon = installIcons[i];
+              const href = installHrefs[i];
+              return (
+                <div
+                  key={item.title}
+                  className="flex flex-col items-center rounded-2xl border border-border/50 bg-surface shadow-card p-5"
+                >
+                  <div className="mb-3 text-accent">
+                    <Icon className="h-8 w-8" />
+                  </div>
+                  <h4 className="mb-3 font-semibold">{item.title}</h4>
+                  {item.description && (
+                    <p className="mb-3 text-xs leading-relaxed text-muted text-center">{item.description}</p>
+                  )}
+                  {href !== '#' ? (
+                    <Link
+                      href={href}
+                      className="mt-auto rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted transition-colors hover:border-accent hover:text-accent"
+                    >
+                      {item.button}
+                    </Link>
+                  ) : (
+                    <button
+                      disabled
+                      className="mt-auto rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted cursor-not-allowed opacity-40"
+                    >
+                      {item.button}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Open Source & Self-hosted */}
+      <section className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <div className="rounded-2xl border border-accent/20 bg-surface shadow-card p-6 sm:p-8 md:p-10">
+          <h2 className="mb-4 text-2xl sm:text-3xl font-bold tracking-tight">
+            {t('openSource.title')}
+          </h2>
+          <p className="mb-8 max-w-2xl text-muted leading-relaxed">
+            {t('openSource.description')}
+          </p>
+          <ul className="space-y-4">
+            <li className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                <ServerIcon className="h-5 w-5" />
+              </div>
+              <span className="text-sm font-medium">{t('openSource.selfHosted')}</span>
+            </li>
+            <li className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                <ShieldCheckIcon className="h-5 w-5" />
+              </div>
+              <span className="text-sm font-medium">{t('openSource.audit')}</span>
+            </li>
+            <li className="flex items-center gap-3">
+              <a
+                href="https://github.com/AgiMateIo"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
+              >
+                <ArrowRightIcon className="h-5 w-5" />
+              </a>
+              <a
+                href="https://github.com/AgiMateIo"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-medium text-accent hover:underline"
+              >
+                {t('openSource.github')}
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <div className="rounded-2xl border border-accent/20 bg-accent/5 p-8 sm:p-12 text-center">
+          <h2 className="mb-4 text-2xl sm:text-3xl font-bold tracking-tight">{t('cta.title')}</h2>
+          <p className="mx-auto mb-8 max-w-md text-muted">{t('cta.subtitle')}</p>
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+            <Link
+              href={user ? '/dashboard' : '/login'}
+              className="inline-flex items-center gap-2 rounded-lg bg-accent px-8 py-4 text-lg font-medium text-accent-foreground shadow-lg shadow-accent/25 hover:bg-accent/90 transition-colors"
+            >
+              {t('cta.button')}
+              <ArrowRightIcon className="h-5 w-5" />
+            </Link>
+            <a
+              href="#"
+              className="text-sm font-medium text-muted hover:text-accent transition-colors"
+            >
+              {t('cta.docsLink')}
+            </a>
+          </div>
+          <p className="mt-6 text-xs text-muted">{t('cta.finePrint')}</p>
         </div>
       </section>
 
@@ -205,38 +422,215 @@ export default function HomePage() {
         links={[
           { label: t('footer.github'), href: 'https://github.com/AgiMateIo', external: true },
           { label: t('footer.telegram'), href: '#' },
+          { label: t('footer.telegramChat'), href: '#' },
           { label: t('footer.docs'), href: '#' },
+          { label: t('footer.blog'), href: '#' },
         ]}
       />
     </div>
   );
 }
 
-function CapabilityCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
+/* ── Hero Scheme ── */
+function HeroScheme({
+  labels,
+}: {
+  labels: {
+    user: string;
+    telegram: string;
+    supervisor: string;
+    calendarAgent: string;
+    emailAgent: string;
+    response: string;
+  };
+}) {
   return (
-    <div className="rounded-2xl border border-border/50 bg-surface shadow-card p-6 text-center transition-colors hover:border-accent/30">
-      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-accent/10 text-accent">{icon}</div>
-      <h3 className="mb-2 text-lg font-semibold">{title}</h3>
-      <p className="text-sm leading-relaxed text-muted">{description}</p>
+    <div className="mx-auto max-w-2xl">
+      {/* Horizontal layout (sm+) */}
+      <div className="hidden sm:flex items-center justify-center gap-3">
+        {/* User */}
+        <SchemeNode label={labels.user} variant="default" />
+        <SchemeArrow direction="right" />
+        {/* Telegram */}
+        <SchemeNode label={labels.telegram} variant="default" />
+        <SchemeArrow direction="right" />
+        {/* Supervisor */}
+        <SchemeNode label={labels.supervisor} variant="supervisor" />
+        {/* Fork to agents */}
+        <div className="flex flex-col items-start gap-3">
+          <div className="flex items-center gap-3">
+            <SchemeArrow direction="right" />
+            <SchemeNode label={labels.calendarAgent} variant="agent" delay={0} />
+          </div>
+          <div className="flex items-center gap-3">
+            <SchemeArrow direction="right" />
+            <SchemeNode label={labels.emailAgent} variant="agent" delay={1} />
+          </div>
+        </div>
+        <SchemeArrow direction="right" />
+        {/* Response */}
+        <SchemeNode label={labels.response} variant="default" />
+      </div>
+
+      {/* Vertical layout (mobile) */}
+      <div className="flex sm:hidden flex-col items-center gap-2">
+        <SchemeNode label={labels.user} variant="default" />
+        <SchemeArrow direction="down" />
+        <SchemeNode label={labels.telegram} variant="default" />
+        <SchemeArrow direction="down" />
+        <SchemeNode label={labels.supervisor} variant="supervisor" />
+        <div className="flex items-start gap-4 mt-1">
+          <div className="flex flex-col items-center gap-2">
+            <SchemeArrow direction="down" />
+            <SchemeNode label={labels.calendarAgent} variant="agent" delay={0} />
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <SchemeArrow direction="down" />
+            <SchemeNode label={labels.emailAgent} variant="agent" delay={1} />
+          </div>
+        </div>
+        <SchemeArrow direction="down" />
+        <SchemeNode label={labels.response} variant="default" />
+      </div>
     </div>
   );
 }
 
-function DownloadCard({ icon, title, description, buttonLabel, buttons, disabled, href }: { icon: React.ReactNode; title: string; description: string; buttonLabel?: string; buttons?: string[]; disabled?: boolean; href?: string }) {
+function SchemeNode({
+  label,
+  variant,
+  delay,
+}: {
+  label: string;
+  variant: 'default' | 'supervisor' | 'agent';
+  delay?: number;
+}) {
+  const base = 'flex items-center justify-center rounded-xl px-4 py-2.5 text-xs font-medium whitespace-nowrap';
+  if (variant === 'supervisor') {
+    return (
+      <div className={`${base} border-2 border-accent bg-accent/10 text-accent animate-pulse-dot`}>
+        {label}
+      </div>
+    );
+  }
+  if (variant === 'agent') {
+    const animClass = delay === 1 ? 'animate-agent-activate-delay-1' : 'animate-agent-activate';
+    return (
+      <div className={`${base} rounded-full border border-accent/40 bg-accent/5 text-accent ${animClass}`}>
+        {label}
+      </div>
+    );
+  }
   return (
-    <div className="flex flex-col items-center rounded-2xl border border-border/50 bg-surface shadow-card p-5 sm:p-8 text-center">
-      <div className="mb-4 text-accent">{icon}</div>
-      <h3 className="mb-1 text-lg font-semibold">{title}</h3>
-      <p className="mb-6 text-sm text-muted">{description}</p>
-      {buttons ? (
-        <div className="flex flex-wrap justify-center gap-2">
-          {buttons.map((label) => (<button key={label} disabled={disabled} className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:text-muted">{label}</button>))}
+    <div className={`${base} border border-border/50 bg-surface-secondary text-muted`}>
+      {label}
+    </div>
+  );
+}
+
+function SchemeArrow({ direction }: { direction: 'right' | 'down' }) {
+  if (direction === 'right') {
+    return (
+      <div className="flex items-center text-accent animate-flow-right">
+        <div className="h-px w-4 bg-accent" />
+        <ArrowRightIcon className="h-3 w-3" />
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-col items-center text-accent animate-flow-down">
+      <div className="w-px h-4 bg-accent" />
+      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m0 0l6.75-6.75M12 19.5l-6.75-6.75" />
+      </svg>
+    </div>
+  );
+}
+
+/* ── How It Works Steps ── */
+function HowItWorksStep1({ sources }: { sources: string[] }) {
+  return (
+    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+      <div className="flex flex-col gap-3">
+        {sources.map((src) => (
+          <div key={src} className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 text-accent">
+              <BoltIcon className="h-5 w-5 animate-pulse-dot" />
+            </div>
+            <span className="text-sm font-medium">{src}</span>
+          </div>
+        ))}
+      </div>
+      <div className="text-accent animate-flow-right hidden sm:block">
+        <div className="flex items-center gap-1">
+          <div className="h-px w-12 bg-accent" />
+          <ArrowRightIcon className="h-5 w-5" />
         </div>
-      ) : href ? (
-        <Link href={href} className="rounded-lg border border-border px-5 py-2 text-sm font-medium text-muted transition-colors hover:border-accent hover:text-accent">{buttonLabel}</Link>
-      ) : (
-        <button disabled={disabled} className="rounded-lg border border-border px-5 py-2 text-sm font-medium text-muted transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:text-muted">{buttonLabel}</button>
-      )}
+      </div>
+      <div className="text-accent animate-flow-down sm:hidden">
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m0 0l6.75-6.75M12 19.5l-6.75-6.75" />
+        </svg>
+      </div>
+      <div className="flex h-16 items-center justify-center rounded-xl border-2 border-accent bg-accent/10 px-6 text-accent font-semibold">
+        AgiMate
+      </div>
+    </div>
+  );
+}
+
+function HowItWorksStep2({ agents }: { agents: string[] }) {
+  return (
+    <div className="flex flex-col items-center gap-6">
+      {/* Supervisor */}
+      <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-accent bg-accent/10 text-accent font-bold text-xs animate-pulse-dot">
+        S
+      </div>
+      {/* Connection lines (visual) */}
+      <div className="flex flex-wrap justify-center gap-4">
+        {agents.map((agent, i) => {
+          const delays = ['animate-agent-activate', 'animate-agent-activate-delay-1', 'animate-agent-activate-delay-2', 'animate-agent-activate'];
+          return (
+            <div
+              key={agent}
+              className={`flex h-12 items-center justify-center rounded-full border border-accent/40 bg-accent/5 px-4 text-xs font-medium text-accent ${delays[i % delays.length]}`}
+            >
+              {agent}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function HowItWorksStep3() {
+  return (
+    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+      <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-accent bg-accent/10 text-accent font-bold text-xs animate-pulse-dot">
+        S
+      </div>
+      <div className="text-accent animate-flow-right hidden sm:block">
+        <div className="flex items-center gap-1">
+          <div className="h-px w-12 bg-accent" />
+          <ArrowRightIcon className="h-5 w-5" />
+        </div>
+      </div>
+      <div className="text-accent animate-flow-down sm:hidden">
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m0 0l6.75-6.75M12 19.5l-6.75-6.75" />
+        </svg>
+      </div>
+      <div className="flex items-center gap-4">
+        <div className="flex h-12 items-center justify-center rounded-lg border border-border/50 bg-surface-secondary px-4 text-sm font-medium text-muted">
+          <UserGroupIcon className="mr-2 h-5 w-5 text-accent" />
+          User
+        </div>
+        <div className="flex h-12 items-center justify-center rounded-lg border border-border/50 bg-surface-secondary px-4 text-sm font-medium text-muted">
+          <ClipboardDocumentListIcon className="mr-2 h-5 w-5 text-accent" />
+          Log
+        </div>
+      </div>
     </div>
   );
 }
