@@ -223,7 +223,10 @@
     "promptPreview": "Промпт",
     "triggerCount": "{count, plural, one {# триггер} few {# триггера} many {# триггеров} other {# триггеров}}",
     "toolCount": "{count, plural, one {# инструмент} few {# инструмента} many {# инструментов} other {# инструментов}}",
-    "allTriggers": "Все триггеры"
+    "allTriggers": "Все триггеры",
+    "backToAgents": "Назад к агентам",
+    "createAgentTitle": "Создание конфигурации агента",
+    "cancel": "Отмена"
   },
   "Settings": {
     "title": "Настройки",

@@ -223,7 +223,10 @@
     "promptPreview": "Prompt",
     "triggerCount": "{count, plural, one {# trigger} other {# triggers}}",
     "toolCount": "{count, plural, one {# tool} other {# tools}}",
-    "allTriggers": "All triggers"
+    "allTriggers": "All triggers",
+    "backToAgents": "Back to Agents",
+    "createAgentTitle": "Create Agent Configuration",
+    "cancel": "Cancel"
   },
   "Settings": {
     "title": "Settings",
