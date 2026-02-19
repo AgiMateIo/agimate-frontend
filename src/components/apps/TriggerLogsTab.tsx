@@ -15,7 +15,7 @@ const REFRESH_OPTIONS = [
 ] as const;
 
 export default function TriggerLogsTab() {
-  const t = useTranslations('Devices');
+  const t = useTranslations('Apps');
   const [logs, setLogs] = useState<TriggerLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -196,7 +196,7 @@ export default function TriggerLogsTab() {
                       <span className="max-w-[200px] truncate font-mono">
                         {JSON.stringify(log.triggerData)}
                       </span>
-                      <span className="shrink-0">{expandedIds.has(log.id) ? '▲' : '▼'}</span>
+                      <span className="shrink-0">{expandedIds.has(log.id) ? '\u25B2' : '\u25BC'}</span>
                     </button>
                     {expandedIds.has(log.id) && (
                       <pre className="mt-2 p-3 bg-background rounded-lg text-xs font-mono text-foreground/80 overflow-x-auto max-w-md">
@@ -205,7 +205,7 @@ export default function TriggerLogsTab() {
                     )}
                   </div>
                 ) : (
-                  <span className="text-muted text-xs">—</span>
+                  <span className="text-muted text-xs">&mdash;</span>
                 )}
               </td>
             </tr>

@@ -1,66 +1,62 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { DeviceAuthKeyResponse } from '@/types';
+import { AppResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input, TextArea } from '@/components/ui/FormField';
-import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 
-interface EditDeviceKeyModalProps {
-  deviceKey: DeviceAuthKeyResponse;
+interface EditAppModalProps {
+  app: AppResponse;
   onClose: () => void;
-  onSuccess: (deviceKey: DeviceAuthKeyResponse) => void;
+  onSuccess: (app: AppResponse) => void;
 }
 
-export default function EditDeviceKeyModal({ deviceKey, onClose, onSuccess }: EditDeviceKeyModalProps) {
-  const [name, setName] = useState(deviceKey.name);
-  const [description, setDescription] = useState(deviceKey.description || '');
+export default function EditAppModal({ app, onClose, onSuccess }: EditAppModalProps) {
+  const t = useTranslations('Apps');
+  const [name, setName] = useState(app.name);
+  const [description, setDescription] = useState(app.description || '');
 
-  const { loading, error, handleSubmit } = useAsyncForm<DeviceAuthKeyResponse>({
+  const { loading, error, handleSubmit } = useAsyncForm<AppResponse>({
     onSuccess,
-    defaultError: 'Failed to update device key',
+    defaultError: 'Failed to update app',
   });
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
-      apiService.updateDeviceAuthKey(deviceKey.id, {
+      apiService.updateApp(app.id, {
         name,
         description: description || undefined,
       })
     );
 
   return (
-    <Modal isOpen={true} onClose={onClose} title="Edit Device Key">
+    <Modal isOpen={true} onClose={onClose} title={t('editApp')}>
       <form onSubmit={onSubmit} className="space-y-4">
-        <FormField label="Name" required>
+        <FormField label={t('name')} required>
           <Input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="My Device"
+            placeholder={t('appNamePlaceholder')}
             required
             maxLength={100}
           />
         </FormField>
 
-        <FormField label="Description">
+        <FormField label={t('description')}>
           <TextArea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Optional description"
+            placeholder={t('descriptionPlaceholder')}
             maxLength={500}
             rows={2}
           />
         </FormField>
-
-        <Alert variant="info">
-          Note: The device key itself cannot be viewed or edited for security reasons.
-          To get a new key, you need to delete this one and create a new device key.
-        </Alert>
 
         {error && <ErrorAlert>{error}</ErrorAlert>}
 
@@ -72,7 +68,7 @@ export default function EditDeviceKeyModal({ deviceKey, onClose, onSuccess }: Ed
             disabled={loading}
             className="flex-1"
           >
-            Cancel
+            {t('cancel')}
           </Button>
           <Button
             type="submit"
@@ -80,7 +76,7 @@ export default function EditDeviceKeyModal({ deviceKey, onClose, onSuccess }: Ed
             loading={loading}
             className="flex-1"
           >
-            Save
+            {t('save')}
           </Button>
         </div>
       </form>

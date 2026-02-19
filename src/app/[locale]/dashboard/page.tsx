@@ -25,7 +25,7 @@ export default function DashboardPage() {
   const t = useTranslations('DashboardHome');
   const [resources, setResources] = useState<ResourceCard[]>([
     { key: 'credentials', nameKey: 'credentials', emptyKey: 'noCredentials', icon: PuzzlePieceIcon, href: '/dashboard/connectors', count: null, error: null },
-    { key: 'devices', nameKey: 'devices', emptyKey: 'noDevices', icon: DevicePhoneMobileIcon, href: '/dashboard/devices', count: null, error: null },
+    { key: 'apps', nameKey: 'apps', emptyKey: 'noApps', icon: DevicePhoneMobileIcon, href: '/dashboard/apps', count: null, error: null },
     { key: 'webhooks', nameKey: 'webhooks', emptyKey: 'noWebhooks', icon: BellAlertIcon, href: '/dashboard/webhooks', count: null, error: null },
     { key: 'apiKeys', nameKey: 'apiKeys', emptyKey: 'noApiKeys', icon: KeyIcon, href: '/dashboard/api-keys', count: null, error: null },
   ]);
@@ -36,7 +36,7 @@ export default function DashboardPage() {
       apiService.getCredentialsSummary().then(summaries =>
         summaries.reduce((sum, s) => sum + s.credentialCount, 0)
       ),
-      apiService.getConnectedDevices().then(d => d.length),
+      apiService.getApps().then(d => d.length),
       apiService.getWebhooks().then(w => w.length),
       apiService.getConnectorsApiKeys().then(k => k.length),
     ]);

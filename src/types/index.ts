@@ -7,5 +7,7 @@
 
 // Re-export all types from domain files
 export * from './connectors';
-export * from './devices';
+export * from './apps';
+export * from './agents';
+export * from './tool-use-logs';
 export * from './webhooks';

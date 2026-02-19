@@ -7,27 +7,22 @@ import { ClipboardDocumentIcon, ClipboardDocumentCheckIcon } from '@heroicons/re
 import { Tabs } from '@/components/ui/Tabs';
 import { useClipboard } from '@/hooks/useClipboard';
 import { getApiBaseUrl } from '@/utils/api-url';
-import ConnectedDevicesTab from '@/components/devices/ConnectedDevicesTab';
-import DeviceKeysTab from '@/components/devices/DeviceKeysTab';
-import TriggerLogsTab from '@/components/devices/TriggerLogsTab';
+import AppsTab from '@/components/apps/AppsTab';
+import TriggerLogsTab from '@/components/apps/TriggerLogsTab';
+import ToolUseLogsTab from '@/components/apps/ToolUseLogsTab';
 
-export default function DevicesPage() {
-  const t = useTranslations('Devices');
+export default function AppsPage() {
+  const t = useTranslations('Apps');
   const locale = useLocale();
-  const [activeTab, setActiveTab] = useState('device-keys');
+  const [activeTab, setActiveTab] = useState('apps');
   const { copied, copy } = useClipboard();
   const apiBaseUrl = getApiBaseUrl();
 
   const tabs = [
     {
-      id: 'device-keys',
-      label: t('deviceKeysTab'),
-      content: <DeviceKeysTab />,
-    },
-    {
-      id: 'devices',
-      label: t('devicesTab'),
-      content: <ConnectedDevicesTab />,
+      id: 'apps',
+      label: t('appsTab'),
+      content: <AppsTab />,
     },
     {
       id: 'trigger-logs',
@@ -35,6 +30,15 @@ export default function DevicesPage() {
       content: (
         <div className="bg-surface rounded-xl border border-border p-6">
           <TriggerLogsTab />
+        </div>
+      ),
+    },
+    {
+      id: 'tool-use-logs',
+      label: t('toolUseLogsTab'),
+      content: (
+        <div className="bg-surface rounded-xl border border-border p-6">
+          <ToolUseLogsTab />
         </div>
       ),
     },

@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ClipboardDocumentIcon, CheckIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
-import { DeviceAuthKeyCreatedResponse } from '@/types';
+import { AppCreatedResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input, TextArea } from '@/components/ui/FormField';
@@ -12,62 +13,62 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { useClipboard } from '@/hooks/useClipboard';
 
-interface AddDeviceKeyModalProps {
+interface AddAppModalProps {
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export default function AddDeviceKeyModal({ onClose, onSuccess }: AddDeviceKeyModalProps) {
+export default function AddAppModal({ onClose, onSuccess }: AddAppModalProps) {
+  const t = useTranslations('Apps');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [createdKey, setCreatedKey] = useState<DeviceAuthKeyCreatedResponse | null>(null);
+  const [createdApp, setCreatedApp] = useState<AppCreatedResponse | null>(null);
   const { copied, copy } = useClipboard();
 
-  const { loading, error, handleSubmit } = useAsyncForm<DeviceAuthKeyCreatedResponse>({
-    onSuccess: setCreatedKey,
-    defaultError: 'Failed to create device key',
+  const { loading, error, handleSubmit } = useAsyncForm<AppCreatedResponse>({
+    onSuccess: setCreatedApp,
+    defaultError: 'Failed to create app',
   });
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
-      apiService.createDeviceAuthKey({
+      apiService.createApp({
         name,
         description: description || undefined,
       })
     );
 
   const handleClose = () => {
-    if (createdKey) {
+    if (createdApp) {
       onSuccess();
     }
     onClose();
   };
 
   const handleCopy = () => {
-    if (createdKey) {
-      copy(createdKey.key);
+    if (createdApp) {
+      copy(createdApp.key);
     }
   };
 
-  // If key was created, show the key display screen
-  if (createdKey) {
+  if (createdApp) {
     return (
-      <Modal isOpen={true} onClose={handleClose} title="Device Key Created">
+      <Modal isOpen={true} onClose={handleClose} title={t('appKeyCreated')}>
         <div className="space-y-4">
           <Alert variant="warning">
             <p className="font-medium">
-              Save this key now! It will only be shown once.
+              {t('saveKeyWarning')}
             </p>
             <p className="text-xs mt-1">
-              After closing this dialog, you will not be able to retrieve this key again.
+              {t('saveKeyWarningDetail')}
             </p>
           </Alert>
 
-          <FormField label="Device Key">
+          <FormField label={t('appKey')}>
             <div className="flex gap-2">
               <Input
                 type="text"
-                value={createdKey.key}
+                value={createdApp.key}
                 readOnly
                 className="flex-1 font-mono text-sm select-all"
               />
@@ -75,12 +76,12 @@ export default function AddDeviceKeyModal({ onClose, onSuccess }: AddDeviceKeyMo
                 {copied ? (
                   <>
                     <CheckIcon className="h-5 w-5" />
-                    Copied
+                    {t('copied')}
                   </>
                 ) : (
                   <>
                     <ClipboardDocumentIcon className="h-5 w-5" />
-                    Copy
+                    {t('copy')}
                   </>
                 )}
               </Button>
@@ -89,43 +90,42 @@ export default function AddDeviceKeyModal({ onClose, onSuccess }: AddDeviceKeyMo
 
           <Alert variant="info">
             <p className="text-sm">
-              <strong>Name:</strong> {createdKey.name}
+              <strong>{t('name')}:</strong> {createdApp.name}
             </p>
-            {createdKey.description && createdKey.description.trim() && (
+            {createdApp.description && createdApp.description.trim() && (
               <p className="text-sm mt-1">
-                <strong>Description:</strong> {createdKey.description}
+                <strong>{t('description')}:</strong> {createdApp.description}
               </p>
             )}
           </Alert>
 
           <Button onClick={handleClose} className="w-full">
-            Done
+            {t('done')}
           </Button>
         </div>
       </Modal>
     );
   }
 
-  // Form screen
   return (
-    <Modal isOpen={true} onClose={onClose} title="Create Device Key">
+    <Modal isOpen={true} onClose={onClose} title={t('createApp')}>
       <form onSubmit={onSubmit} className="space-y-4">
-        <FormField label="Name" required>
+        <FormField label={t('name')} required>
           <Input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="My Device"
+            placeholder={t('appNamePlaceholder')}
             required
             maxLength={100}
           />
         </FormField>
 
-        <FormField label="Description">
+        <FormField label={t('description')}>
           <TextArea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Optional description"
+            placeholder={t('descriptionPlaceholder')}
             maxLength={500}
             rows={2}
           />
@@ -141,7 +141,7 @@ export default function AddDeviceKeyModal({ onClose, onSuccess }: AddDeviceKeyMo
             disabled={loading}
             className="flex-1"
           >
-            Cancel
+            {t('cancel')}
           </Button>
           <Button
             type="submit"
@@ -149,7 +149,7 @@ export default function AddDeviceKeyModal({ onClose, onSuccess }: AddDeviceKeyMo
             loading={loading}
             className="flex-1"
           >
-            Create
+            {t('create')}
           </Button>
         </div>
       </form>

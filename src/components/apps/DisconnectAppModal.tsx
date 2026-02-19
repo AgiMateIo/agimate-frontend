@@ -3,21 +3,20 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { ConnectedDevice } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 
-interface DisconnectDeviceModalProps {
-  device: ConnectedDevice;
+interface DisconnectAppModalProps {
+  appId: string;
+  appName: string;
   onClose: () => void;
-  onSuccess: (linkedDeviceId: string) => void;
+  onSuccess: () => void;
 }
 
-export default function DisconnectDeviceModal({ device, onClose, onSuccess }: DisconnectDeviceModalProps) {
-  const t = useTranslations('Devices');
-  const tCommon = useTranslations('Common');
+export default function DisconnectAppModal({ appId, appName, onClose, onSuccess }: DisconnectAppModalProps) {
+  const t = useTranslations('Apps');
   const [disconnecting, setDisconnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,20 +25,20 @@ export default function DisconnectDeviceModal({ device, onClose, onSuccess }: Di
     setError(null);
 
     try {
-      await apiService.disconnectDevice(device.linkedDeviceId!);
-      onSuccess(device.linkedDeviceId!);
+      await apiService.disconnectApp(appId);
+      onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to disconnect device');
+      setError(err instanceof Error ? err.message : 'Failed to disconnect app');
     } finally {
       setDisconnecting(false);
     }
   };
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={t('disconnectDevice')} size="sm">
+    <Modal isOpen={true} onClose={onClose} title={t('disconnectApp')} size="sm">
       <div className="space-y-4">
         <p className="text-foreground">
-          {t('disconnectConfirm', { name: device.deviceAuthKeyName })}
+          {t('disconnectConfirm', { name: appName })}
         </p>
 
         <Alert variant="warning">
@@ -55,7 +54,7 @@ export default function DisconnectDeviceModal({ device, onClose, onSuccess }: Di
             disabled={disconnecting}
             className="flex-1"
           >
-            {tCommon('cancel')}
+            {t('cancel')}
           </Button>
           <Button
             variant="danger"

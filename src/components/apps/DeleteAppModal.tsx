@@ -1,20 +1,22 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { DeviceAuthKeyResponse } from '@/types';
+import { AppResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 
-interface DeleteDeviceKeyModalProps {
-  deviceKey: DeviceAuthKeyResponse;
+interface DeleteAppModalProps {
+  app: AppResponse;
   onClose: () => void;
-  onSuccess: (keyId: string) => void;
+  onSuccess: (appId: string) => void;
 }
 
-export default function DeleteDeviceKeyModal({ deviceKey, onClose, onSuccess }: DeleteDeviceKeyModalProps) {
+export default function DeleteAppModal({ app, onClose, onSuccess }: DeleteAppModalProps) {
+  const t = useTranslations('Apps');
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,24 +25,24 @@ export default function DeleteDeviceKeyModal({ deviceKey, onClose, onSuccess }: 
     setError(null);
 
     try {
-      await apiService.deleteDeviceAuthKey(deviceKey.id);
-      onSuccess(deviceKey.id);
+      await apiService.deleteApp(app.id);
+      onSuccess(app.id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete device key');
+      setError(err instanceof Error ? err.message : 'Failed to delete app');
     } finally {
       setDeleting(false);
     }
   };
 
   return (
-    <Modal isOpen={true} onClose={onClose} title="Delete Device Key" size="sm">
+    <Modal isOpen={true} onClose={onClose} title={t('deleteApp')} size="sm">
       <div className="space-y-4">
         <p className="text-foreground">
-          Are you sure you want to delete device key <strong>"{deviceKey.name}"</strong>?
+          {t('deleteConfirm', { name: app.name })}
         </p>
 
         <Alert variant="warning">
-          This action cannot be undone. Devices using this key will no longer be able to connect.
+          {t('deleteWarning')}
         </Alert>
 
         {error && <ErrorAlert>{error}</ErrorAlert>}
@@ -52,7 +54,7 @@ export default function DeleteDeviceKeyModal({ deviceKey, onClose, onSuccess }: 
             disabled={deleting}
             className="flex-1"
           >
-            Cancel
+            {t('cancel')}
           </Button>
           <Button
             variant="danger"
@@ -60,7 +62,7 @@ export default function DeleteDeviceKeyModal({ deviceKey, onClose, onSuccess }: 
             loading={deleting}
             className="flex-1"
           >
-            Delete
+            {t('delete')}
           </Button>
         </div>
       </div>

@@ -15,14 +15,19 @@ import type {
   ConnectorsApiKeyWithSecret,
   CreateConnectorsApiKeyRequest,
   UpdateConnectorsApiKeyRequest,
-  ConnectedDevice,
-  DeviceDetail,
-  DeviceAuthKeyResponse,
-  DeviceAuthKeyCreatedResponse,
-  CreateDeviceAuthKeyRequest,
-  UpdateDeviceAuthKeyRequest,
+  AppResponse,
+  AppCreatedResponse,
+  AppDetailResponse,
+  CreateAppRequest,
+  UpdateAppRequest,
   TriggerLog,
   DeviceTriggerGroup,
+  DeviceToolGroup,
+  AgentSettingsResponse,
+  CreateAgentSettingsRequest,
+  UpdateAgentSettingsRequest,
+  ToolUseLogResponse,
+  PagedResponse,
   Webhook,
   CreateWebhookRequest,
   UpdateWebhookRequest,
@@ -325,34 +330,68 @@ class ApiService {
 
   // ========== DEVICE API METHODS ==========
 
-  // Connected devices
-  async getConnectedDevices(): Promise<ConnectedDevice[]> {
-    return this.get<ConnectedDevice[]>(`${API.ENDPOINTS.DEVICE_API}/manage/devices/`);
+  // Apps
+  async getApps(): Promise<AppResponse[]> {
+    return this.get<AppResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/apps/`);
   }
 
-  async getDeviceDetail(deviceId: string): Promise<DeviceDetail> {
-    return this.get<DeviceDetail>(`${API.ENDPOINTS.DEVICE_API}/manage/devices/${deviceId}`);
+  async createApp(data: CreateAppRequest): Promise<AppCreatedResponse> {
+    return this.post<AppCreatedResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/apps/`, data);
   }
 
-  async disconnectDevice(deviceId: string): Promise<void> {
-    return this.post(`${API.ENDPOINTS.DEVICE_API}/manage/devices/${deviceId}/disconnect`, {});
+  async getApp(id: string): Promise<AppResponse> {
+    return this.get<AppResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/apps/${id}`);
   }
 
-  // Device auth keys
-  async getDeviceAuthKeys(): Promise<DeviceAuthKeyResponse[]> {
-    return this.get<DeviceAuthKeyResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/device-keys/`);
+  async getAppDetail(id: string): Promise<AppDetailResponse> {
+    return this.get<AppDetailResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/apps/${id}/detail`);
   }
 
-  async createDeviceAuthKey(data: CreateDeviceAuthKeyRequest): Promise<DeviceAuthKeyCreatedResponse> {
-    return this.post<DeviceAuthKeyCreatedResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/device-keys/`, data);
+  async updateApp(id: string, data: UpdateAppRequest): Promise<AppResponse> {
+    return this.put<AppResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/apps/${id}`, data);
   }
 
-  async updateDeviceAuthKey(id: string, data: UpdateDeviceAuthKeyRequest): Promise<DeviceAuthKeyResponse> {
-    return this.put<DeviceAuthKeyResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/device-keys/${id}`, data);
+  async deleteApp(id: string): Promise<void> {
+    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/apps/${id}`);
   }
 
-  async deleteDeviceAuthKey(id: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/device-keys/${id}`);
+  async regenerateAppKey(id: string): Promise<AppCreatedResponse> {
+    return this.post<AppCreatedResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/apps/${id}/regenerate`, {});
+  }
+
+  async disconnectApp(id: string): Promise<void> {
+    return this.post(`${API.ENDPOINTS.DEVICE_API}/manage/apps/${id}/disconnect`, {});
+  }
+
+  // Agent Settings
+  async getAgentSettingsList(): Promise<AgentSettingsResponse[]> {
+    return this.get<AgentSettingsResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-settings/`);
+  }
+
+  async createAgentSettings(data: CreateAgentSettingsRequest): Promise<AgentSettingsResponse> {
+    return this.post<AgentSettingsResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-settings/`, data);
+  }
+
+  async getAgentSettings(apiKeyPubId: string): Promise<AgentSettingsResponse> {
+    return this.get<AgentSettingsResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-settings/${apiKeyPubId}`);
+  }
+
+  async updateAgentSettings(apiKeyPubId: string, data: UpdateAgentSettingsRequest): Promise<AgentSettingsResponse> {
+    return this.put<AgentSettingsResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-settings/${apiKeyPubId}`, data);
+  }
+
+  async deleteAgentSettings(apiKeyPubId: string): Promise<void> {
+    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-settings/${apiKeyPubId}`);
+  }
+
+  // Tool Use Logs (paginated)
+  async getToolUseLogs(params?: { apiKeyPubId?: string; page?: number; size?: number }): Promise<PagedResponse<ToolUseLogResponse>> {
+    const searchParams = new URLSearchParams();
+    if (params?.apiKeyPubId) searchParams.set('apiKeyPubId', params.apiKeyPubId);
+    searchParams.set('page', String(params?.page ?? 0));
+    searchParams.set('size', String(params?.size ?? 20));
+    const query = searchParams.toString();
+    return this.get<PagedResponse<ToolUseLogResponse>>(`${API.ENDPOINTS.DEVICE_API}/manage/tool-use-logs/?${query}`);
   }
 
   // Device triggers
@@ -360,11 +399,16 @@ class ApiService {
     return this.get<DeviceTriggerGroup[]>(`${API.ENDPOINTS.DEVICE_API}/manage/triggers/`);
   }
 
+  // Device tools
+  async getDeviceTools(): Promise<DeviceToolGroup[]> {
+    return this.get<DeviceToolGroup[]>(`${API.ENDPOINTS.DEVICE_API}/manage/tools/`);
+  }
+
   // Trigger logs
-  async getTriggerLogs(params?: { deviceId?: string; deviceAuthKeyId?: string }): Promise<TriggerLog[]> {
+  async getTriggerLogs(params?: { deviceId?: string; appPubId?: string }): Promise<TriggerLog[]> {
     const searchParams = new URLSearchParams();
     if (params?.deviceId) searchParams.set('deviceId', params.deviceId);
-    if (params?.deviceAuthKeyId) searchParams.set('deviceAuthKeyId', params.deviceAuthKeyId);
+    if (params?.appPubId) searchParams.set('appPubId', params.appPubId);
     const query = searchParams.toString();
     return this.get<TriggerLog[]>(`${API.ENDPOINTS.DEVICE_API}/manage/trigger-logs/${query ? `?${query}` : ''}`);
   }
