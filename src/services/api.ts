@@ -410,7 +410,8 @@ class ApiService {
     if (params?.deviceId) searchParams.set('deviceId', params.deviceId);
     if (params?.appPubId) searchParams.set('appPubId', params.appPubId);
     const query = searchParams.toString();
-    return this.get<TriggerLog[]>(`${API.ENDPOINTS.DEVICE_API}/manage/trigger-logs/${query ? `?${query}` : ''}`);
+    const page = await this.get<PagedResponse<TriggerLog>>(`${API.ENDPOINTS.DEVICE_API}/manage/trigger-logs/${query ? `?${query}` : ''}`);
+    return page.content;
   }
 
   // ========== WEBHOOKS API METHODS ==========

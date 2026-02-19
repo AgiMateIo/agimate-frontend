@@ -8,6 +8,7 @@ import apiService from '@/services/api';
 import { AppResponse } from '@/types';
 import { TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { Toggle } from '@/components/ui/Toggle';
+import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import AddAppModal from './AddAppModal';
 import EditAppModal from './EditAppModal';
 import DeleteAppModal from './DeleteAppModal';
@@ -96,11 +97,7 @@ export default function AppsTab() {
   }
 
   if (error) {
-    return (
-      <div className="bg-error/10 border border-error/20 rounded-lg p-4">
-        <p className="text-error">{error}</p>
-      </div>
-    );
+    return <ErrorAlert>{error}</ErrorAlert>;
   }
 
   return (
