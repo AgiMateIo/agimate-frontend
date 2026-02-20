@@ -11,3 +11,4 @@ export * from './apps';
 export * from './agents';
 export * from './tool-use-logs';
 export * from './webhooks';
+export * from './agentic-teams';

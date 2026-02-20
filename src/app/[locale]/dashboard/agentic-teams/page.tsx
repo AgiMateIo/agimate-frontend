@@ -1,0 +1,77 @@
+'use client';
+
+import { useState, Suspense } from 'react';
+import { useTranslations } from 'next-intl';
+import { PlusIcon } from '@heroicons/react/24/outline';
+import { Alert } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
+import { AgenticTeam } from '@/types/agentic-teams';
+import { usePromiseCache } from '@/hooks/usePromiseCache';
+import apiService from '@/services/api';
+import AgenticTeamsList from '@/components/agentic-teams/AgenticTeamsList';
+import CreateTeamModal from '@/components/agentic-teams/CreateTeamModal';
+import DeleteTeamModal from '@/components/agentic-teams/DeleteTeamModal';
+
+export default function AgenticTeamsPage() {
+  const t = useTranslations('AgenticTeams');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [teamToDelete, setTeamToDelete] = useState<AgenticTeam | null>(null);
+
+  const { promise, invalidate } = usePromiseCache(
+    () => apiService.getAgenticTeams(),
+    []
+  );
+
+  const handleCreated = () => {
+    invalidate();
+    setShowCreateModal(false);
+  };
+
+  const handleDeleted = () => {
+    invalidate();
+    setTeamToDelete(null);
+  };
+
+  return (
+    <div className="space-y-6 max-w-4xl">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
+          <p className="text-muted mt-1">{t('subtitle')}</p>
+        </div>
+        <Button onClick={() => setShowCreateModal(true)}>
+          <PlusIcon className="h-4 w-4 mr-1.5" />
+          {t('createTeam')}
+        </Button>
+      </div>
+
+      {/* Info banner */}
+      <Alert variant="info">{t('description')}</Alert>
+
+      {/* Teams grid */}
+      <Suspense fallback={<div className="text-muted">{t('loading')}</div>}>
+        <AgenticTeamsList
+          teamsPromise={promise}
+          onDelete={setTeamToDelete}
+        />
+      </Suspense>
+
+      {/* Modals */}
+      {showCreateModal && (
+        <CreateTeamModal
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={handleCreated}
+        />
+      )}
+
+      {teamToDelete && (
+        <DeleteTeamModal
+          team={teamToDelete}
+          onClose={() => setTeamToDelete(null)}
+          onSuccess={handleDeleted}
+        />
+      )}
+    </div>
+  );
+}

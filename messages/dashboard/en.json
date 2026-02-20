@@ -4,6 +4,7 @@
     "connectors": "Connectors",
     "apps": "Apps",
     "agents": "Agents",
+    "agenticTeams": "Agentic Teams",
     "apiKeys": "API Keys",
     "settings": "Settings"
   },
@@ -16,6 +17,7 @@
       "triggers": "Triggers",
       "actions": "Actions",
       "deliveries": "Deliveries",
+      "agenticTeams": "Agentic Teams",
       "apiKeys": "API Keys",
       "settings": "Settings"
     },
@@ -229,6 +231,24 @@
     "autoRefresh": "Auto",
     "autoRefreshOff": "Off",
     "refresh": "Refresh"
+  },
+  "AgenticTeams": {
+    "title": "Agentic Teams",
+    "subtitle": "Create and manage AI agent teams",
+    "description": "This is a demo section. Create teams of AI agents to collaborate on tasks.",
+    "createTeam": "Create Team",
+    "loading": "Loading teams...",
+    "noTeams": "No teams created yet",
+    "teamName": "Team Name",
+    "teamDescription": "Description",
+    "teamNamePlaceholder": "Enter team name",
+    "teamDescriptionPlaceholder": "Describe the team's purpose",
+    "deleteTeam": "Delete Team",
+    "deleteTeamConfirm": "Are you sure you want to delete \"{name}\"?",
+    "cancel": "Cancel",
+    "create": "Create",
+    "delete": "Delete",
+    "created": "Created"
   },
   "Settings": {
     "title": "Settings",

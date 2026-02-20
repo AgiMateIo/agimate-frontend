@@ -9,6 +9,7 @@ import {
   KeyIcon,
   DevicePhoneMobileIcon,
   SparklesIcon,
+  UserGroupIcon,
   Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 
@@ -17,6 +18,7 @@ const getNavItems = (t: ReturnType<typeof useTranslations>) => [
   { label: t('connectors'), icon: PuzzlePieceIcon, href: '/dashboard/connectors' },
   { label: t('apps'), icon: DevicePhoneMobileIcon, href: '/dashboard/apps' },
   { label: t('agents'), icon: SparklesIcon, href: '/dashboard/agents' },
+  { label: t('agenticTeams'), icon: UserGroupIcon, href: '/dashboard/agentic-teams' },
   { label: t('apiKeys'), icon: KeyIcon, href: '/dashboard/api-keys' },
   { label: t('settings'), icon: Cog6ToothIcon, href: '/dashboard/settings' },
 ];

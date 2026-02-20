@@ -29,6 +29,9 @@ import type {
   ToolUseLogResponse,
   PagedResponse,
   WebhookDeliveryLogsResponse,
+  AgenticTeam,
+  CreateAgenticTeamRequest,
+  UpdateAgenticTeamRequest,
 } from '@/types';
 
 const SERVICE_UNAVAILABLE_MESSAGE = 'SERVICE_UNAVAILABLE';
@@ -420,6 +423,27 @@ class ApiService {
     return this.get<WebhookDeliveryLogsResponse>(
       `${API.ENDPOINTS.DEVICE_API}/manage/webhook-deliveries/${query ? `?${query}` : ''}`
     );
+  }
+
+  // Agentic Teams
+  async getAgenticTeams(): Promise<AgenticTeam[]> {
+    return this.get<AgenticTeam[]>(`${API.ENDPOINTS.DEVICE_API}/manage/agentic-teams/`);
+  }
+
+  async getAgenticTeam(id: string): Promise<AgenticTeam> {
+    return this.get<AgenticTeam>(`${API.ENDPOINTS.DEVICE_API}/manage/agentic-teams/${id}`);
+  }
+
+  async createAgenticTeam(data: CreateAgenticTeamRequest): Promise<AgenticTeam> {
+    return this.post<AgenticTeam>(`${API.ENDPOINTS.DEVICE_API}/manage/agentic-teams/`, data);
+  }
+
+  async updateAgenticTeam(id: string, data: UpdateAgenticTeamRequest): Promise<AgenticTeam> {
+    return this.put<AgenticTeam>(`${API.ENDPOINTS.DEVICE_API}/manage/agentic-teams/${id}`, data);
+  }
+
+  async deleteAgenticTeam(id: string): Promise<void> {
+    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agentic-teams/${id}`);
   }
 
   // Method to refresh authentication tokens from URL fragment - uses the same refreshAccessToken method

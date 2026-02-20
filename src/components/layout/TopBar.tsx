@@ -25,6 +25,7 @@ export default function TopBar() {
     apps: t('breadcrumbs.apps'),
     agents: t('breadcrumbs.agents'),
     webhooks: t('breadcrumbs.webhooks'),
+    'agentic-teams': t('breadcrumbs.agenticTeams'),
     'api-keys': t('breadcrumbs.apiKeys'),
     settings: t('breadcrumbs.settings'),
   };

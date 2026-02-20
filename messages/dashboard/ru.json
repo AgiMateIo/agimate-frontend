@@ -4,6 +4,7 @@
     "connectors": "Коннекторы",
     "apps": "Приложения",
     "agents": "Агенты",
+    "agenticTeams": "Команды агентов",
     "apiKeys": "API ключи",
     "settings": "Настройки"
   },
@@ -13,9 +14,11 @@
       "connectors": "Коннекторы",
       "apps": "Приложения",
       "agents": "Агенты",
+      "webhooks": "Вебхуки",
       "triggers": "Триггеры",
       "actions": "Действия",
       "deliveries": "Доставки",
+      "agenticTeams": "Команды агентов",
       "apiKeys": "API ключи",
       "settings": "Настройки"
     },
@@ -229,6 +232,24 @@
     "autoRefresh": "Авто",
     "autoRefreshOff": "Выкл",
     "refresh": "Обновить"
+  },
+  "AgenticTeams": {
+    "title": "Команды агентов",
+    "subtitle": "Создание и управление командами AI-агентов",
+    "description": "Это демо-раздел. Создавайте команды AI-агентов для совместной работы над задачами.",
+    "createTeam": "Создать команду",
+    "loading": "Загрузка команд...",
+    "noTeams": "Команд пока нет",
+    "teamName": "Название команды",
+    "teamDescription": "Описание",
+    "teamNamePlaceholder": "Введите название команды",
+    "teamDescriptionPlaceholder": "Опишите назначение команды",
+    "deleteTeam": "Удалить команду",
+    "deleteTeamConfirm": "Вы уверены, что хотите удалить \"{name}\"?",
+    "cancel": "Отмена",
+    "create": "Создать",
+    "delete": "Удалить",
+    "created": "Создано"
   },
   "Settings": {
     "title": "Настройки",
