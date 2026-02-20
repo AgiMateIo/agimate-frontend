@@ -4,9 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { AgentSettingsResponse, ConnectorsApiKey } from '@/types';
+import { AgenticTeam } from '@/types/agentic-teams';
+import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import AgentsList from '@/components/agents/AgentsList';
 
@@ -18,18 +19,23 @@ export default function TeamAgentsPage() {
 
   const [agents, setAgents] = useState<AgentSettingsResponse[]>([]);
   const [apiKeys, setApiKeys] = useState<ConnectorsApiKey[]>([]);
+  const [team, setTeam] = useState<AgenticTeam | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useSetBreadcrumb(teamId, team?.name);
 
   const fetchData = useCallback(async () => {
     try {
       setError(null);
-      const [agentsData, apiKeysData] = await Promise.all([
+      const [agentsData, apiKeysData, teamData] = await Promise.all([
         apiService.getAgentSettingsList(teamId),
         apiService.getConnectorsApiKeys(),
+        apiService.getAgenticTeam(teamId),
       ]);
       setAgents(agentsData);
       setApiKeys(apiKeysData);
+      setTeam(teamData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load agents');
     } finally {
@@ -44,13 +50,6 @@ export default function TeamAgentsPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <Link
-          href={`/dashboard/agentic-teams/${teamId}`}
-          className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors"
-        >
-          <ArrowLeftIcon className="h-4 w-4" />
-          {t('backToTeam')}
-        </Link>
         <h1 className="text-2xl font-bold text-foreground">{t('teamAgents')}</h1>
         <div className="text-center py-12 text-muted">{t('loadingAgents')}</div>
       </div>
@@ -59,14 +58,6 @@ export default function TeamAgentsPage() {
 
   return (
     <div className="space-y-6">
-      <Link
-        href={`/dashboard/agentic-teams/${teamId}`}
-        className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors"
-      >
-        <ArrowLeftIcon className="h-4 w-4" />
-        {t('backToTeam')}
-      </Link>
-
       <div>
         <h1 className="text-2xl font-bold text-foreground">{t('teamAgents')}</h1>
       </div>

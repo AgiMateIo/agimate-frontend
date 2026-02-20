@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import {
-  ArrowLeftIcon,
   PencilIcon,
   UserGroupIcon,
   ClipboardDocumentListIcon,
@@ -13,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';
 import { usePromiseCache } from '@/hooks/usePromiseCache';
+import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import apiService from '@/services/api';
 import { AgenticTeam } from '@/types/agentic-teams';
 import EditTeamModal from '@/components/agentic-teams/EditTeamModal';
@@ -29,6 +29,7 @@ function TeamDetail({
   const t = useTranslations('AgenticTeams');
   const teams = use(teamsPromise);
   const team = teams.find((t) => t.id === teamId);
+  useSetBreadcrumb(teamId, team?.name);
 
   if (!team) {
     return (
@@ -119,14 +120,6 @@ export default function AgenticTeamDetailPage() {
 
   return (
     <div className="space-y-6">
-      <Link
-        href="/dashboard/agentic-teams"
-        className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors"
-      >
-        <ArrowLeftIcon className="h-4 w-4" />
-        {t('backToTeams')}
-      </Link>
-
       <Suspense fallback={<div className="text-muted">{t('loading')}</div>}>
         <TeamDetail teamsPromise={promise} teamId={teamId} onEdit={setTeamToEdit} />
       </Suspense>

@@ -4,6 +4,7 @@ import { usePathname } from '@/i18n/navigation';
 import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useUser } from '@/contexts/UserContext';
+import { useBreadcrumbOverrides } from '@/contexts/BreadcrumbContext';
 import LocaleSwitcher from '@/components/ui/LocaleSwitcher';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
@@ -14,6 +15,7 @@ export default function TopBar() {
   const t = useTranslations('TopBar');
 
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const breadcrumbOverrides = useBreadcrumbOverrides();
 
   // Build breadcrumbs from pathname
   const segments = pathname.split('/').filter(Boolean);
@@ -32,7 +34,7 @@ export default function TopBar() {
 
   const breadcrumbs = segments.map((segment, index) => {
     const href = '/' + segments.slice(0, index + 1).join('/');
-    const label = breadcrumbSegmentNames[segment] || segment.charAt(0).toUpperCase() + segment.slice(1);
+    const label = breadcrumbOverrides[segment] || breadcrumbSegmentNames[segment] || segment.charAt(0).toUpperCase() + segment.slice(1);
     const isLast = index === segments.length - 1;
     return { href, label, isLast };
   });

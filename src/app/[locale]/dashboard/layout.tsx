@@ -5,6 +5,7 @@ import { useRouter } from '@/i18n/navigation';
 import { useEffect } from 'react';
 import SidebarNav from '@/components/layout/SidebarNav';
 import TopBar from '@/components/layout/TopBar';
+import { BreadcrumbProvider } from '@/contexts/BreadcrumbContext';
 
 export default function DashboardLayout({
   children,
@@ -33,14 +34,16 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen bg-background">
-      <SidebarNav />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <TopBar />
-        <main className="flex-1 overflow-y-auto p-6">
-          {children}
-        </main>
+    <BreadcrumbProvider>
+      <div className="flex h-screen bg-background">
+        <SidebarNav />
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <TopBar />
+          <main className="flex-1 overflow-y-auto p-6">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </BreadcrumbProvider>
   );
 }
