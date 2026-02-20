@@ -13,12 +13,25 @@ import {
   Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 
-const getNavItems = (t: ReturnType<typeof useTranslations>) => [
+type NavItem = {
+  label: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  href: string;
+  activePaths?: string[];
+  children?: NavItem[];
+};
+
+const getNavItems = (t: ReturnType<typeof useTranslations>): NavItem[] => [
   { label: t('dashboard'), icon: HomeIcon, href: '/dashboard' },
   { label: t('connectors'), icon: PuzzlePieceIcon, href: '/dashboard/connectors' },
   { label: t('apps'), icon: DevicePhoneMobileIcon, href: '/dashboard/apps' },
-  { label: t('agents'), icon: SparklesIcon, href: '/dashboard/agents' },
-  { label: t('agenticTeams'), icon: UserGroupIcon, href: '/dashboard/agentic-teams' },
+  {
+    label: t('agenticTeams'), icon: UserGroupIcon, href: '/dashboard/agentic-teams',
+    activePaths: ['/dashboard/agentic-teams', '/dashboard/agents'],
+    children: [
+      { label: t('agents'), icon: SparklesIcon, href: '/dashboard/agents' },
+    ],
+  },
   { label: t('apiKeys'), icon: KeyIcon, href: '/dashboard/api-keys' },
   { label: t('settings'), icon: Cog6ToothIcon, href: '/dashboard/settings' },
 ];
@@ -40,22 +53,50 @@ export default function SidebarNav() {
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1">
         {navItems.map((item) => {
-          const isActive = pathname === item.href ||
-            (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'));
+          const hasActiveChild = item.children?.some(child =>
+            pathname === child.href || pathname.startsWith(child.href + '/'));
+          const isActive = !hasActiveChild && (
+            pathname === item.href ||
+            (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'))
+          );
 
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium
-                ${isActive
-                  ? 'bg-accent text-accent-foreground'
-                  : 'text-muted hover:bg-surface-secondary hover:text-foreground'
-                }`}
-            >
-              <item.icon className="h-5 w-5" />
-              <span>{item.label}</span>
-            </Link>
+            <div key={item.href}>
+              <Link
+                href={item.href}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium
+                  ${isActive
+                    ? 'bg-accent text-accent-foreground'
+                    : 'text-muted hover:bg-surface-secondary hover:text-foreground'
+                  }`}
+              >
+                <item.icon className="h-5 w-5" />
+                <span>{item.label}</span>
+              </Link>
+              {item.children && (
+                <div className="mt-1 space-y-1">
+                  {item.children.map((child) => {
+                    const isChildActive = pathname === child.href ||
+                      pathname.startsWith(child.href + '/');
+
+                    return (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        className={`flex items-center gap-3 pl-8 pr-3 py-2 rounded-lg transition-colors text-sm
+                          ${isChildActive
+                            ? 'bg-accent text-accent-foreground font-medium'
+                            : 'text-muted hover:bg-surface-secondary hover:text-foreground'
+                          }`}
+                      >
+                        <child.icon className="h-4 w-4" />
+                        <span>{child.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           );
         })}
       </nav>

@@ -363,8 +363,9 @@ class ApiService {
   }
 
   // Agent Settings
-  async getAgentSettingsList(): Promise<AgentSettingsResponse[]> {
-    return this.get<AgentSettingsResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-settings/`);
+  async getAgentSettingsList(agenticTeamPubId?: string): Promise<AgentSettingsResponse[]> {
+    const query = agenticTeamPubId ? `?agenticTeamPubId=${encodeURIComponent(agenticTeamPubId)}` : '';
+    return this.get<AgentSettingsResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-settings/${query}`);
   }
 
   async createAgentSettings(data: CreateAgentSettingsRequest): Promise<AgentSettingsResponse> {

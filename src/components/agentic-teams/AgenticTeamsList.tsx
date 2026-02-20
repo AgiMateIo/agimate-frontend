@@ -2,15 +2,14 @@
 
 import { use } from 'react';
 import { useTranslations } from 'next-intl';
-import { TrashIcon } from '@heroicons/react/24/outline';
+import Link from 'next/link';
 import { AgenticTeam } from '@/types/agentic-teams';
 
 interface AgenticTeamsListProps {
   teamsPromise: Promise<AgenticTeam[]>;
-  onDelete: (team: AgenticTeam) => void;
 }
 
-export default function AgenticTeamsList({ teamsPromise, onDelete }: AgenticTeamsListProps) {
+export default function AgenticTeamsList({ teamsPromise }: AgenticTeamsListProps) {
   const t = useTranslations('AgenticTeams');
   const teams = use(teamsPromise);
 
@@ -25,22 +24,14 @@ export default function AgenticTeamsList({ teamsPromise, onDelete }: AgenticTeam
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {teams.map((team) => (
-        <div
+        <Link
           key={team.id}
-          className="bg-surface rounded-xl border border-border p-5 space-y-3 hover:border-border-hover transition-colors"
+          href={`/dashboard/agentic-teams/${team.id}`}
+          className="bg-surface rounded-xl border border-border p-5 space-y-3 hover:border-accent/30 transition-colors block"
         >
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="text-base font-semibold text-foreground truncate">
-              {team.name}
-            </h3>
-            <button
-              onClick={() => onDelete(team)}
-              className="shrink-0 p-1.5 rounded-lg text-muted hover:text-error hover:bg-error/10 transition-colors"
-              title={t('deleteTeam')}
-            >
-              <TrashIcon className="h-4 w-4" />
-            </button>
-          </div>
+          <h3 className="text-base font-semibold text-foreground truncate">
+            {team.name}
+          </h3>
           {team.description && (
             <p className="text-sm text-muted line-clamp-2">
               {team.description}
@@ -49,7 +40,7 @@ export default function AgenticTeamsList({ teamsPromise, onDelete }: AgenticTeam
           <p className="text-xs text-muted">
             {t('created')}: {new Date(team.createdAt).toLocaleDateString()}
           </p>
-        </div>
+        </Link>
       ))}
     </div>
   );
