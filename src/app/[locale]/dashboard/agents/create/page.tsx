@@ -149,6 +149,22 @@ export default function CreateAgentPage() {
             />
           </FormField>
 
+          <FormField label={t('skills')}>
+            <select
+              disabled
+              className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-muted opacity-60 cursor-not-allowed"
+            >
+              <option value="">{t('skillsPlaceholder')}</option>
+            </select>
+          </FormField>
+
+          <FormField label="Tools" error={getFieldError('tools')}>
+            <ToolPicker
+              selectedTools={tools}
+              onChange={setTools}
+            />
+          </FormField>
+
           <FormField label="Trigger Destination" required error={getFieldError('triggersTo')}>
             <div className="space-y-2">
               {triggerDestinationOptions.map((option) => (
@@ -211,13 +227,6 @@ export default function CreateAgentPage() {
               />
             </FormField>
           )}
-
-          <FormField label="Tools" error={getFieldError('tools')}>
-            <ToolPicker
-              selectedTools={tools}
-              onChange={setTools}
-            />
-          </FormField>
 
           {error && <ErrorAlert>{error}</ErrorAlert>}
 

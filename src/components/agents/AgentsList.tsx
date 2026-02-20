@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { AgentSettingsResponse, ConnectorsApiKey } from '@/types';
 import { TrashIcon, PencilIcon, LockClosedIcon } from '@heroicons/react/24/outline';
-import EditAgentModal from './EditAgentModal';
+import { Link } from '@/i18n/navigation';
 import DeleteAgentModal from './DeleteAgentModal';
 
 interface AgentsListProps {
@@ -14,7 +14,6 @@ interface AgentsListProps {
 
 export default function AgentsList({ agents: agentsProp, apiKeys, onUpdate }: AgentsListProps) {
   const [agents, setAgents] = useState<AgentSettingsResponse[]>(agentsProp);
-  const [editingAgent, setEditingAgent] = useState<AgentSettingsResponse | null>(null);
   const [deletingAgent, setDeletingAgent] = useState<AgentSettingsResponse | null>(null);
 
   useEffect(() => {
@@ -41,11 +40,6 @@ export default function AgentsList({ agents: agentsProp, apiKeys, onUpdate }: Ag
       default:
         return 'bg-muted/10 text-muted';
     }
-  };
-
-  const handleEditSuccess = () => {
-    setEditingAgent(null);
-    onUpdate?.();
   };
 
   const handleDeleteSuccess = (apiKeyPubId: string) => {
@@ -110,13 +104,13 @@ export default function AgentsList({ agents: agentsProp, apiKeys, onUpdate }: Ag
               </div>
 
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setEditingAgent(agent)}
+                <Link
+                  href={`/dashboard/agents/${agent.apiKeyPubId}/edit`}
                   className="p-2 text-muted hover:text-foreground transition-colors rounded-lg"
                   title="Edit agent"
                 >
                   <PencilIcon className="h-5 w-5" />
-                </button>
+                </Link>
                 <button
                   onClick={() => setDeletingAgent(agent)}
                   className="p-2 text-muted hover:text-error transition-colors rounded-lg"
@@ -129,15 +123,6 @@ export default function AgentsList({ agents: agentsProp, apiKeys, onUpdate }: Ag
           </div>
         ))}
       </div>
-
-      {editingAgent && (
-        <EditAgentModal
-          agent={editingAgent}
-          apiKeyName={getApiKeyName(editingAgent.apiKeyPubId)}
-          onClose={() => setEditingAgent(null)}
-          onSuccess={handleEditSuccess}
-        />
-      )}
 
       {deletingAgent && (
         <DeleteAgentModal
