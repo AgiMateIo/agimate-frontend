@@ -14,12 +14,12 @@ import ToolPicker from './ToolPicker';
 
 interface EditAgentModalProps {
   agent: AgentSettingsResponse;
-  appName: string;
+  apiKeyName: string;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export default function EditAgentModal({ agent, appName, onClose, onSuccess }: EditAgentModalProps) {
+export default function EditAgentModal({ agent, apiKeyName, onClose, onSuccess }: EditAgentModalProps) {
   const [prompt, setPrompt] = useState(agent.prompt);
   const [triggersTo, setTriggersTo] = useState<TriggerDestination>(agent.triggersTo);
   const [triggersAllowAll, setTriggersAllowAll] = useState(agent.triggersAllowAll);
@@ -60,9 +60,9 @@ export default function EditAgentModal({ agent, appName, onClose, onSuccess }: E
   return (
     <Modal isOpen={true} onClose={onClose} title="Edit Agent Configuration" size="lg">
       <form onSubmit={onSubmit} className="space-y-4">
-        <FormField label="App">
+        <FormField label="API Key">
           <div className="px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-muted">
-            {appName}
+            {apiKeyName}
           </div>
         </FormField>
 

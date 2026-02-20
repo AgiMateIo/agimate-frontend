@@ -4,26 +4,26 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import apiService from '@/services/api';
-import { AgentSettingsResponse, AppResponse } from '@/types';
+import { AgentSettingsResponse, ConnectorsApiKey } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import AgentsList from '@/components/agents/AgentsList';
 
 export default function AgentsPage() {
   const t = useTranslations('Agents');
   const [agents, setAgents] = useState<AgentSettingsResponse[]>([]);
-  const [apps, setApps] = useState<AppResponse[]>([]);
+  const [apiKeys, setApiKeys] = useState<ConnectorsApiKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
       setError(null);
-      const [agentsData, appsData] = await Promise.all([
+      const [agentsData, apiKeysData] = await Promise.all([
         apiService.getAgentSettingsList(),
-        apiService.getApps(),
+        apiService.getConnectorsApiKeys(),
       ]);
       setAgents(agentsData);
-      setApps(appsData);
+      setApiKeys(apiKeysData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load agents');
     } finally {
@@ -68,7 +68,7 @@ export default function AgentsPage() {
 
         <AgentsList
           agents={agents}
-          apps={apps}
+          apiKeys={apiKeys}
           onUpdate={fetchData}
         />
       </div>

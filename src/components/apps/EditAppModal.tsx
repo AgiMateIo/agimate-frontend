@@ -28,7 +28,7 @@ export default function EditAppModal({ app, onClose, onSuccess }: EditAppModalPr
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
-      apiService.updateApp(app.id, {
+      apiService.updateApp(app.pubId, {
         name,
         description: description || undefined,
       })

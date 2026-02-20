@@ -1,18 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AgentSettingsResponse, AppResponse } from '@/types';
+import { AgentSettingsResponse, ConnectorsApiKey } from '@/types';
 import { TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
 import EditAgentModal from './EditAgentModal';
 import DeleteAgentModal from './DeleteAgentModal';
 
 interface AgentsListProps {
   agents: AgentSettingsResponse[];
-  apps: AppResponse[];
+  apiKeys: ConnectorsApiKey[];
   onUpdate?: () => void;
 }
 
-export default function AgentsList({ agents: agentsProp, apps, onUpdate }: AgentsListProps) {
+export default function AgentsList({ agents: agentsProp, apiKeys, onUpdate }: AgentsListProps) {
   const [agents, setAgents] = useState<AgentSettingsResponse[]>(agentsProp);
   const [editingAgent, setEditingAgent] = useState<AgentSettingsResponse | null>(null);
   const [deletingAgent, setDeletingAgent] = useState<AgentSettingsResponse | null>(null);
@@ -21,9 +21,9 @@ export default function AgentsList({ agents: agentsProp, apps, onUpdate }: Agent
     setAgents(agentsProp);
   }, [agentsProp]);
 
-  const getAppName = (apiKeyPubId: string): string => {
-    const app = apps.find((a) => a.id === apiKeyPubId);
-    return app ? app.name : apiKeyPubId;
+  const getApiKeyName = (apiKeyPubId: string): string => {
+    const key = apiKeys.find((k) => k.pubId === apiKeyPubId);
+    return key ? key.name : apiKeyPubId;
   };
 
   const truncatePrompt = (prompt: string, maxLength = 100) => {
@@ -72,7 +72,7 @@ export default function AgentsList({ agents: agentsProp, apps, onUpdate }: Agent
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-foreground">{getAppName(agent.apiKeyPubId)}</h3>
+                <h3 className="font-medium text-foreground">{getApiKeyName(agent.apiKeyPubId)}</h3>
                 <p className="text-sm text-muted mt-1 font-mono">
                   {truncatePrompt(agent.prompt)}
                 </p>
@@ -122,7 +122,7 @@ export default function AgentsList({ agents: agentsProp, apps, onUpdate }: Agent
       {editingAgent && (
         <EditAgentModal
           agent={editingAgent}
-          appName={getAppName(editingAgent.apiKeyPubId)}
+          apiKeyName={getApiKeyName(editingAgent.apiKeyPubId)}
           onClose={() => setEditingAgent(null)}
           onSuccess={handleEditSuccess}
         />
@@ -131,7 +131,7 @@ export default function AgentsList({ agents: agentsProp, apps, onUpdate }: Agent
       {deletingAgent && (
         <DeleteAgentModal
           agent={deletingAgent}
-          appName={getAppName(deletingAgent.apiKeyPubId)}
+          apiKeyName={getApiKeyName(deletingAgent.apiKeyPubId)}
           onClose={() => setDeletingAgent(null)}
           onSuccess={handleDeleteSuccess}
         />

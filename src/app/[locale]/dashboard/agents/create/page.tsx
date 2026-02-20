@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
-import { AppResponse, AgentSettingsResponse, TriggerDestination } from '@/types';
+import { ConnectorsApiKey, AgentSettingsResponse, TriggerDestination } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { FormField, TextArea } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
@@ -18,7 +18,7 @@ export default function CreateAgentPage() {
   const t = useTranslations('Agents');
   const router = useRouter();
 
-  const [apps, setApps] = useState<AppResponse[]>([]);
+  const [apiKeys, setApiKeys] = useState<ConnectorsApiKey[]>([]);
   const [existingAgents, setExistingAgents] = useState<AgentSettingsResponse[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [dataError, setDataError] = useState<string | null>(null);
@@ -33,12 +33,12 @@ export default function CreateAgentPage() {
   const fetchData = useCallback(async () => {
     try {
       setDataError(null);
-      const [agentsData, appsData] = await Promise.all([
+      const [agentsData, apiKeysData] = await Promise.all([
         apiService.getAgentSettingsList(),
-        apiService.getApps(),
+        apiService.getConnectorsApiKeys(),
       ]);
       setExistingAgents(agentsData);
-      setApps(appsData);
+      setApiKeys(apiKeysData);
     } catch (err) {
       setDataError(err instanceof Error ? err.message : 'Failed to load data');
     } finally {
@@ -51,7 +51,7 @@ export default function CreateAgentPage() {
   }, [fetchData]);
 
   const existingPubIds = new Set(existingAgents.map((a) => a.apiKeyPubId));
-  const availableApps = apps.filter((app) => !existingPubIds.has(app.id));
+  const availableApiKeys = apiKeys.filter((key) => !existingPubIds.has(key.pubId));
 
   const { loading, error, fieldErrors, handleSubmit } = useAsyncForm<AgentSettingsResponse>({
     onSuccess: () => {
@@ -114,23 +114,23 @@ export default function CreateAgentPage() {
       {/* Form Card */}
       <div className="bg-surface rounded-xl border border-border p-6">
         <form onSubmit={onSubmit} className="space-y-4">
-          <FormField label="App" required error={getFieldError('apiKeyPubId')}>
+          <FormField label="API Key" required error={getFieldError('apiKeyPubId')}>
             <select
               value={apiKeyPubId}
               onChange={(e) => setApiKeyPubId(e.target.value)}
               required
               className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground"
             >
-              <option value="">Select an app...</option>
-              {availableApps.map((app) => (
-                <option key={app.id} value={app.id}>
-                  {app.name} ({app.maskedKeyId})
+              <option value="">Select an API key...</option>
+              {availableApiKeys.map((key) => (
+                <option key={key.pubId} value={key.pubId}>
+                  {key.name} ({key.maskedKeyId})
                 </option>
               ))}
             </select>
-            {availableApps.length === 0 && (
+            {availableApiKeys.length === 0 && (
               <p className="text-xs text-muted mt-1">
-                All apps already have agent configurations.
+                All API keys already have agent configurations.
               </p>
             )}
           </FormField>

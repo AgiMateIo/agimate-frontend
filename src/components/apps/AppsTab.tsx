@@ -47,37 +47,37 @@ export default function AppsTab() {
   };
 
   const handleToggleEnabled = async (app: AppResponse) => {
-    setUpdatingIds(prev => new Set(prev).add(app.id));
+    setUpdatingIds(prev => new Set(prev).add(app.pubId));
 
     setApps(prev =>
-      prev.map(a => a.id === app.id ? { ...a, enabled: !a.enabled } : a)
+      prev.map(a => a.pubId === app.pubId ? { ...a, enabled: !a.enabled } : a)
     );
 
     try {
-      await apiService.updateApp(app.id, {
+      await apiService.updateApp(app.pubId, {
         enabled: !app.enabled,
       });
     } catch (err) {
       console.error('Failed to update app:', err);
       setApps(prev =>
-        prev.map(a => a.id === app.id ? { ...a, enabled: app.enabled } : a)
+        prev.map(a => a.pubId === app.pubId ? { ...a, enabled: app.enabled } : a)
       );
     } finally {
       setUpdatingIds(prev => {
         const next = new Set(prev);
-        next.delete(app.id);
+        next.delete(app.pubId);
         return next;
       });
     }
   };
 
   const handleDeleteSuccess = (appId: string) => {
-    setApps(prev => prev.filter(a => a.id !== appId));
+    setApps(prev => prev.filter(a => a.pubId !== appId));
     setDeletingApp(null);
   };
 
   const handleEditSuccess = (updated: AppResponse) => {
-    setApps(prev => prev.map(a => a.id === updated.id ? updated : a));
+    setApps(prev => prev.map(a => a.pubId === updated.pubId ? updated : a));
     setEditingApp(null);
   };
 
@@ -121,8 +121,8 @@ export default function AppsTab() {
           <div className="space-y-3">
             {apps.map((app) => (
               <Link
-                key={app.id}
-                href={`/dashboard/apps/${app.id}`}
+                key={app.pubId}
+                href={`/dashboard/apps/${app.pubId}`}
                 className="block bg-surface-secondary rounded-lg p-4 border border-border hover:border-accent/30 transition-colors"
               >
                 <div className="flex items-start justify-between gap-4">
@@ -141,7 +141,7 @@ export default function AppsTab() {
                     <Toggle
                       checked={app.enabled}
                       onChange={() => handleToggleEnabled(app)}
-                      disabled={updatingIds.has(app.id)}
+                      disabled={updatingIds.has(app.pubId)}
                     />
 
                     <button

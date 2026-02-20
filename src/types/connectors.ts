@@ -37,6 +37,7 @@ export interface ConnectorsApiKey {
   pubId: string;
   name: string;
   description: string;
+  maskedKeyId: string;
   enabled: boolean;
   createdAt: string;
   updatedAt: string;

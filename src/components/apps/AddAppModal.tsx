@@ -47,7 +47,7 @@ export default function AddAppModal({ onClose, onSuccess }: AddAppModalProps) {
 
   const handleCopy = () => {
     if (createdApp) {
-      copy(createdApp.key);
+      copy(createdApp.fullKey);
     }
   };
 
@@ -68,7 +68,7 @@ export default function AddAppModal({ onClose, onSuccess }: AddAppModalProps) {
             <div className="flex gap-2">
               <Input
                 type="text"
-                value={createdApp.key}
+                value={createdApp.fullKey}
                 readOnly
                 className="flex-1 font-mono text-sm select-all"
               />

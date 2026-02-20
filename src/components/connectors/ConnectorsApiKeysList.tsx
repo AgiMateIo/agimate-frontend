@@ -102,6 +102,7 @@ export default function ConnectorsApiKeysList({ apiKeys: apiKeysProp, onUpdate }
                   <p className="text-sm text-muted mt-1">{apiKey.description}</p>
                 )}
                 <div className="text-xs text-muted mt-2 space-y-1">
+                  <p>Key: <span className="font-mono">{apiKey.maskedKeyId}</span></p>
                   <p>Created: {formatDate(apiKey.createdAt)}</p>
                   <p>Updated: {formatDate(apiKey.updatedAt)}</p>
                 </div>

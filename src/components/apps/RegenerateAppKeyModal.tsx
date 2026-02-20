@@ -42,7 +42,7 @@ export default function RegenerateAppKeyModal({ appId, appName, onClose, onSucce
 
   const handleCopy = () => {
     if (regeneratedKey) {
-      copy(regeneratedKey.key);
+      copy(regeneratedKey.fullKey);
     }
   };
 
@@ -63,7 +63,7 @@ export default function RegenerateAppKeyModal({ appId, appName, onClose, onSucce
             <div className="flex gap-2">
               <Input
                 type="text"
-                value={regeneratedKey.key}
+                value={regeneratedKey.fullKey}
                 readOnly
                 className="flex-1 font-mono text-sm select-all"
               />

@@ -10,12 +10,12 @@ import { useAsyncForm } from '@/hooks/useAsyncForm';
 
 interface DeleteAgentModalProps {
   agent: AgentSettingsResponse;
-  appName: string;
+  apiKeyName: string;
   onClose: () => void;
   onSuccess: (apiKeyPubId: string) => void;
 }
 
-export default function DeleteAgentModal({ agent, appName, onClose, onSuccess }: DeleteAgentModalProps) {
+export default function DeleteAgentModal({ agent, apiKeyName, onClose, onSuccess }: DeleteAgentModalProps) {
   const { loading, error, handleSubmit } = useAsyncForm<void>({
     onSuccess: () => {
       onSuccess(agent.apiKeyPubId);
@@ -32,7 +32,7 @@ export default function DeleteAgentModal({ agent, appName, onClose, onSuccess }:
     <Modal isOpen={true} onClose={onClose} title="Delete Agent Configuration">
       <form onSubmit={onSubmit} className="space-y-4">
         <p className="text-foreground">
-          Are you sure you want to delete the agent configuration for <strong>{appName}</strong>?
+          Are you sure you want to delete the agent configuration for <strong>{apiKeyName}</strong>?
         </p>
 
         <Alert variant="warning">

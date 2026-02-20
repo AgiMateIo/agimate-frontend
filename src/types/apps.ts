@@ -1,20 +1,23 @@
 // Apps types (replaces device auth keys)
 
 export interface AppResponse {
-  id: string;
+  pubId: string;
   name: string;
   description: string;
   maskedKeyId: string;
   enabled: boolean;
   createdAt: string;
+  updatedAt: string;
+  features: Record<string, unknown> | null;
 }
 
 export interface AppCreatedResponse {
-  id: string;
+  pubId: string;
   name: string;
-  key: string;
+  fullKey: string;
   description: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface AppDetailResponse {

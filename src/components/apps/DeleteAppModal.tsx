@@ -25,8 +25,8 @@ export default function DeleteAppModal({ app, onClose, onSuccess }: DeleteAppMod
     setError(null);
 
     try {
-      await apiService.deleteApp(app.id);
-      onSuccess(app.id);
+      await apiService.deleteApp(app.pubId);
+      onSuccess(app.pubId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete app');
     } finally {
