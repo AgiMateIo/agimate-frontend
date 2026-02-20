@@ -5,6 +5,8 @@
     "apps": "Приложения",
     "agents": "Агенты",
     "agenticTeams": "Команды агентов",
+    "triggerLogs": "Логи триггеров",
+    "toolUseLogs": "Логи инструментов",
     "apiKeys": "API ключи",
     "settings": "Настройки"
   },
@@ -19,6 +21,8 @@
       "actions": "Действия",
       "deliveries": "Доставки",
       "agenticTeams": "Команды агентов",
+      "triggerLogs": "Логи триггеров",
+      "toolUseLogs": "Логи инструментов",
       "apiKeys": "API ключи",
       "settings": "Настройки"
     },

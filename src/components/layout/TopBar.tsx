@@ -29,6 +29,8 @@ export default function TopBar() {
     webhooks: t('breadcrumbs.webhooks'),
     'agentic-teams': t('breadcrumbs.agenticTeams'),
     'api-keys': t('breadcrumbs.apiKeys'),
+    'trigger-logs': t('breadcrumbs.triggerLogs'),
+    'tool-use-logs': t('breadcrumbs.toolUseLogs'),
     settings: t('breadcrumbs.settings'),
   };
 

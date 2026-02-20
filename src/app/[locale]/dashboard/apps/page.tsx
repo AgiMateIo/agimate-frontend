@@ -1,48 +1,17 @@
 'use client';
 
-import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
 import { ClipboardDocumentIcon, ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline';
-import { Tabs } from '@/components/ui/Tabs';
 import { useClipboard } from '@/hooks/useClipboard';
 import { getApiBaseUrl } from '@/utils/api-url';
 import AppsTab from '@/components/apps/AppsTab';
-import TriggerLogsTab from '@/components/apps/TriggerLogsTab';
-import ToolUseLogsTab from '@/components/apps/ToolUseLogsTab';
 
 export default function AppsPage() {
   const t = useTranslations('Apps');
   const locale = useLocale();
-  const [activeTab, setActiveTab] = useState('apps');
   const { copied, copy } = useClipboard();
   const apiBaseUrl = getApiBaseUrl();
-
-  const tabs = [
-    {
-      id: 'apps',
-      label: t('appsTab'),
-      content: <AppsTab />,
-    },
-    {
-      id: 'trigger-logs',
-      label: t('triggerLogsTab'),
-      content: (
-        <div className="bg-surface rounded-xl border border-border p-6">
-          <TriggerLogsTab />
-        </div>
-      ),
-    },
-    {
-      id: 'tool-use-logs',
-      label: t('toolUseLogsTab'),
-      content: (
-        <div className="bg-surface rounded-xl border border-border p-6">
-          <ToolUseLogsTab />
-        </div>
-      ),
-    },
-  ];
 
   return (
     <div className="space-y-6">
@@ -83,8 +52,8 @@ export default function AppsPage() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+      {/* Apps */}
+      <AppsTab />
     </div>
   );
 }

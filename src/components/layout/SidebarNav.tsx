@@ -11,6 +11,8 @@ import {
   SparklesIcon,
   UserGroupIcon,
   Cog6ToothIcon,
+  BoltIcon,
+  WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline';
 
 type NavItem = {
@@ -23,8 +25,15 @@ type NavItem = {
 
 const getNavItems = (t: ReturnType<typeof useTranslations>): NavItem[] => [
   { label: t('dashboard'), icon: HomeIcon, href: '/dashboard' },
-  { label: t('connectors'), icon: PuzzlePieceIcon, href: '/dashboard/connectors' },
-  { label: t('apps'), icon: DevicePhoneMobileIcon, href: '/dashboard/apps' },
+  {
+    label: t('connectors'), icon: PuzzlePieceIcon, href: '/dashboard/connectors',
+    activePaths: ['/dashboard/connectors', '/dashboard/apps', '/dashboard/trigger-logs', '/dashboard/tool-use-logs'],
+    children: [
+      { label: t('apps'), icon: DevicePhoneMobileIcon, href: '/dashboard/apps' },
+      { label: t('triggerLogs'), icon: BoltIcon, href: '/dashboard/trigger-logs' },
+      { label: t('toolUseLogs'), icon: WrenchScrewdriverIcon, href: '/dashboard/tool-use-logs' },
+    ],
+  },
   {
     label: t('agenticTeams'), icon: UserGroupIcon, href: '/dashboard/agentic-teams',
     activePaths: ['/dashboard/agentic-teams', '/dashboard/agents'],

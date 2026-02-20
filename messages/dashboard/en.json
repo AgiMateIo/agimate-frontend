@@ -5,6 +5,8 @@
     "apps": "Apps",
     "agents": "Agents",
     "agenticTeams": "Agentic Teams",
+    "triggerLogs": "Trigger Logs",
+    "toolUseLogs": "Tool Use Logs",
     "apiKeys": "API Keys",
     "settings": "Settings"
   },
@@ -18,6 +20,8 @@
       "actions": "Actions",
       "deliveries": "Deliveries",
       "agenticTeams": "Agentic Teams",
+      "triggerLogs": "Trigger Logs",
+      "toolUseLogs": "Tool Use Logs",
       "apiKeys": "API Keys",
       "settings": "Settings"
     },
