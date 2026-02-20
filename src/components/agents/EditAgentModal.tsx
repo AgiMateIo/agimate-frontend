@@ -5,7 +5,7 @@ import apiService from '@/services/api';
 import { AgentSettingsResponse, TriggerDestination } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { FormField, TextArea } from '@/components/ui/FormField';
+import { FormField, TextArea, Input } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Toggle } from '@/components/ui/Toggle';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
@@ -25,6 +25,8 @@ export default function EditAgentModal({ agent, apiKeyName, onClose, onSuccess }
   const [triggersAllowAll, setTriggersAllowAll] = useState(agent.triggersAllowAll);
   const [triggers, setTriggers] = useState<string[]>(agent.triggers);
   const [tools, setTools] = useState<string[]>(agent.tools);
+  const [webhookUrl, setWebhookUrl] = useState(agent.webhookUrl ?? '');
+  const [webhookAuthHeader, setWebhookAuthHeader] = useState('');
 
   const { loading, error, fieldErrors, handleSubmit } = useAsyncForm<AgentSettingsResponse>({
     onSuccess: () => {
@@ -48,6 +50,8 @@ export default function EditAgentModal({ agent, apiKeyName, onClose, onSuccess }
         triggersTo,
         tools,
         triggers: triggersAllowAll ? [] : triggers,
+        webhookUrl: triggersTo === 'webhook' ? webhookUrl : null,
+        webhookAuthHeader: triggersTo === 'webhook' && webhookAuthHeader ? webhookAuthHeader : null,
       })
     );
 
@@ -85,7 +89,13 @@ export default function EditAgentModal({ agent, apiKeyName, onClose, onSuccess }
                   name="triggersTo"
                   value={option.value}
                   checked={triggersTo === option.value}
-                  onChange={() => setTriggersTo(option.value)}
+                  onChange={() => {
+                    setTriggersTo(option.value);
+                    if (option.value !== 'webhook') {
+                      setWebhookUrl('');
+                      setWebhookAuthHeader('');
+                    }
+                  }}
                   className="accent-accent"
                 />
                 <span className={`text-sm ${option.color}`}>{option.label}</span>
@@ -93,6 +103,31 @@ export default function EditAgentModal({ agent, apiKeyName, onClose, onSuccess }
             ))}
           </div>
         </FormField>
+
+        {triggersTo === 'webhook' && (
+          <>
+            <FormField label="Webhook URL" required error={getFieldError('webhookUrl')}>
+              <Input
+                value={webhookUrl}
+                onChange={(e) => setWebhookUrl(e.target.value)}
+                placeholder="https://example.com/webhook"
+                pattern="^https?://.+"
+                required
+              />
+            </FormField>
+
+            <FormField label="Auth Header" error={getFieldError('webhookAuthHeader')}>
+              <Input
+                value={webhookAuthHeader}
+                onChange={(e) => setWebhookAuthHeader(e.target.value)}
+                placeholder="Bearer token..."
+              />
+              {agent.hasWebhookAuth && (
+                <p className="text-xs text-muted mt-1">Auth header is configured. Leave empty to keep existing.</p>
+              )}
+            </FormField>
+          </>
+        )}
 
         <FormField label="Allow All Triggers" error={getFieldError('triggersAllowAll')}>
           <Toggle

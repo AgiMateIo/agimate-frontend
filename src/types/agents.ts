@@ -10,6 +10,8 @@ export interface AgentSettingsResponse {
   triggersTo: TriggerDestination;
   tools: string[];
   triggers: string[];
+  webhookUrl: string | null;
+  hasWebhookAuth: boolean;
   createdAt: string;
 }
 
@@ -20,6 +22,8 @@ export interface CreateAgentSettingsRequest {
   triggersTo: TriggerDestination;
   tools: string[];
   triggers: string[];
+  webhookUrl?: string | null;
+  webhookAuthHeader?: string | null;
 }
 
 export interface UpdateAgentSettingsRequest {
@@ -28,4 +32,6 @@ export interface UpdateAgentSettingsRequest {
   triggersTo?: TriggerDestination;
   tools?: string[];
   triggers?: string[];
+  webhookUrl?: string | null;
+  webhookAuthHeader?: string | null;
 }

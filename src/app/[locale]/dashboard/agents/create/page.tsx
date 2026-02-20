@@ -7,7 +7,7 @@ import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { ConnectorsApiKey, AgentSettingsResponse, TriggerDestination } from '@/types';
 import { Button } from '@/components/ui/Button';
-import { FormField, TextArea } from '@/components/ui/FormField';
+import { FormField, TextArea, Input } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Toggle } from '@/components/ui/Toggle';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
@@ -29,6 +29,8 @@ export default function CreateAgentPage() {
   const [triggersAllowAll, setTriggersAllowAll] = useState(true);
   const [triggers, setTriggers] = useState<string[]>([]);
   const [tools, setTools] = useState<string[]>([]);
+  const [webhookUrl, setWebhookUrl] = useState('');
+  const [webhookAuthHeader, setWebhookAuthHeader] = useState('');
 
   const fetchData = useCallback(async () => {
     try {
@@ -76,6 +78,8 @@ export default function CreateAgentPage() {
         triggersTo,
         tools,
         triggers: triggersAllowAll ? [] : triggers,
+        webhookUrl: triggersTo === 'webhook' ? webhookUrl : null,
+        webhookAuthHeader: triggersTo === 'webhook' && webhookAuthHeader ? webhookAuthHeader : null,
       })
     );
 
@@ -154,7 +158,13 @@ export default function CreateAgentPage() {
                     name="triggersTo"
                     value={option.value}
                     checked={triggersTo === option.value}
-                    onChange={() => setTriggersTo(option.value)}
+                    onChange={() => {
+                      setTriggersTo(option.value);
+                      if (option.value !== 'webhook') {
+                        setWebhookUrl('');
+                        setWebhookAuthHeader('');
+                      }
+                    }}
                     className="accent-accent"
                   />
                   <span className={`text-sm ${option.color}`}>{option.label}</span>
@@ -162,6 +172,28 @@ export default function CreateAgentPage() {
               ))}
             </div>
           </FormField>
+
+          {triggersTo === 'webhook' && (
+            <>
+              <FormField label={t('webhookUrl')} required error={getFieldError('webhookUrl')} hint={t('webhookUrlHint')}>
+                <Input
+                  value={webhookUrl}
+                  onChange={(e) => setWebhookUrl(e.target.value)}
+                  placeholder={t('webhookUrlPlaceholder')}
+                  pattern="^https?://.+"
+                  required
+                />
+              </FormField>
+
+              <FormField label={t('webhookAuthHeader')} error={getFieldError('webhookAuthHeader')}>
+                <Input
+                  value={webhookAuthHeader}
+                  onChange={(e) => setWebhookAuthHeader(e.target.value)}
+                  placeholder={t('webhookAuthHeaderPlaceholder')}
+                />
+              </FormField>
+            </>
+          )}
 
           <FormField label="Allow All Triggers" error={getFieldError('triggersAllowAll')}>
             <Toggle

@@ -6,8 +6,8 @@ import { Link } from '@/i18n/navigation';
 import {
   PuzzlePieceIcon,
   DevicePhoneMobileIcon,
-  BellAlertIcon,
   KeyIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 
@@ -26,7 +26,7 @@ export default function DashboardPage() {
   const [resources, setResources] = useState<ResourceCard[]>([
     { key: 'credentials', nameKey: 'credentials', emptyKey: 'noCredentials', icon: PuzzlePieceIcon, href: '/dashboard/connectors', count: null, error: null },
     { key: 'apps', nameKey: 'apps', emptyKey: 'noApps', icon: DevicePhoneMobileIcon, href: '/dashboard/apps', count: null, error: null },
-    { key: 'webhooks', nameKey: 'webhooks', emptyKey: 'noWebhooks', icon: BellAlertIcon, href: '/dashboard/webhooks', count: null, error: null },
+    { key: 'agents', nameKey: 'agents', emptyKey: 'noAgents', icon: SparklesIcon, href: '/dashboard/agents', count: null, error: null },
     { key: 'apiKeys', nameKey: 'apiKeys', emptyKey: 'noApiKeys', icon: KeyIcon, href: '/dashboard/api-keys', count: null, error: null },
   ]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +37,7 @@ export default function DashboardPage() {
         summaries.reduce((sum, s) => sum + s.credentialCount, 0)
       ),
       apiService.getApps().then(d => d.length),
-      apiService.getWebhooks().then(w => w.length),
+      apiService.getAgentSettingsList().then(a => a.length),
       apiService.getConnectorsApiKeys().then(k => k.length),
     ]);
 

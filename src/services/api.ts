@@ -28,11 +28,7 @@ import type {
   UpdateAgentSettingsRequest,
   ToolUseLogResponse,
   PagedResponse,
-  Webhook,
-  CreateWebhookRequest,
-  UpdateWebhookRequest,
-  WebhookEventType,
-  WebhookDeliveriesResponse,
+  WebhookDeliveryLogsResponse,
 } from '@/types';
 
 const SERVICE_UNAVAILABLE_MESSAGE = 'SERVICE_UNAVAILABLE';
@@ -414,44 +410,15 @@ class ApiService {
     return page.content;
   }
 
-  // ========== WEBHOOKS API METHODS ==========
-
-  // Get all webhooks (with optional event type filter)
-  async getWebhooks(eventType?: string): Promise<Webhook[]> {
-    const query = eventType ? `?eventType=${encodeURIComponent(eventType)}` : '';
-    return this.get<Webhook[]>(`${API.ENDPOINTS.CONNECTORS_API}/manage/webhooks/${query}`);
-  }
-
-  // Get webhook by ID
-  async getWebhook(webhookId: string): Promise<Webhook> {
-    return this.get<Webhook>(`${API.ENDPOINTS.CONNECTORS_API}/manage/webhooks/${webhookId}`);
-  }
-
-  // Create new webhook
-  async createWebhook(data: CreateWebhookRequest): Promise<Webhook> {
-    return this.post<Webhook>(`${API.ENDPOINTS.CONNECTORS_API}/manage/webhooks`, data);
-  }
-
-  // Update webhook
-  async updateWebhook(webhookId: string, data: UpdateWebhookRequest): Promise<Webhook> {
-    return this.put<Webhook>(`${API.ENDPOINTS.CONNECTORS_API}/manage/webhooks/${webhookId}`, data);
-  }
-
-  // Delete webhook
-  async deleteWebhook(webhookId: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.CONNECTORS_API}/manage/webhooks/${webhookId}`);
-  }
-
-  // Get available event types (with optional filter)
-  async getEventTypes(eventTypeLike?: string): Promise<WebhookEventType[]> {
-    const query = eventTypeLike ? `?event_type_like=${encodeURIComponent(eventTypeLike)}` : '';
-    return this.get<WebhookEventType[]>(`${API.ENDPOINTS.CONNECTORS_API}/manage/events/${query}`);
-  }
-
-  // Get webhook deliveries (history)
-  async getWebhookDeliveries(webhookId: string, page = 0, size = 20): Promise<WebhookDeliveriesResponse> {
-    return this.get<WebhookDeliveriesResponse>(
-      `${API.ENDPOINTS.CONNECTORS_API}/manage/webhooks/${webhookId}/deliveries?page=${page}&size=${size}`
+  // Webhook Delivery Logs
+  async getWebhookDeliveryLogs(params?: { apiKeyPubId?: string; page?: number; size?: number }): Promise<WebhookDeliveryLogsResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.apiKeyPubId) searchParams.set('apiKeyPubId', params.apiKeyPubId);
+    if (params?.page !== undefined) searchParams.set('page', String(params.page));
+    if (params?.size !== undefined) searchParams.set('size', String(params.size));
+    const query = searchParams.toString();
+    return this.get<WebhookDeliveryLogsResponse>(
+      `${API.ENDPOINTS.DEVICE_API}/manage/webhook-deliveries/${query ? `?${query}` : ''}`
     );
   }
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { AgentSettingsResponse, ConnectorsApiKey } from '@/types';
-import { TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { TrashIcon, PencilIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 import EditAgentModal from './EditAgentModal';
 import DeleteAgentModal from './DeleteAgentModal';
 
@@ -80,6 +80,17 @@ export default function AgentsList({ agents: agentsProp, apiKeys, onUpdate }: Ag
                   <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${getTriggersToColor(agent.triggersTo)}`}>
                     {agent.triggersTo}
                   </span>
+                  {agent.triggersTo === 'webhook' && agent.webhookUrl && (
+                    <span className="inline-block bg-surface border border-border rounded px-2 py-0.5 text-xs text-muted font-mono truncate max-w-[200px]" title={agent.webhookUrl}>
+                      {agent.webhookUrl}
+                    </span>
+                  )}
+                  {agent.hasWebhookAuth && (
+                    <span className="inline-flex items-center gap-1 bg-surface border border-border rounded px-2 py-0.5 text-xs text-muted">
+                      <LockClosedIcon className="h-3 w-3" />
+                      Auth
+                    </span>
+                  )}
                   {agent.triggersAllowAll && (
                     <span className="inline-block bg-warning/10 text-warning rounded px-2 py-0.5 text-xs font-medium">
                       All triggers
