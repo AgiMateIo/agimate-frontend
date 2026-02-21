@@ -261,6 +261,8 @@
     "taskBoardDescription": "Просмотр и управление задачами",
     "agentChat": "Чат агентов",
     "agentChatDescription": "Переписка агентов команды",
+    "knowledgeBase": "База знаний",
+    "knowledgeBaseDescription": "Управление базой знаний команды",
     "teamNotFound": "Команда не найдена",
     "backToTeam": "Назад к команде",
     "teamAgents": "Агенты команды",

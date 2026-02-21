@@ -9,6 +9,7 @@ import {
   UserGroupIcon,
   ClipboardDocumentListIcon,
   ChatBubbleLeftRightIcon,
+  BookOpenIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';
 import { usePromiseCache } from '@/hooks/usePromiseCache';
@@ -47,6 +48,12 @@ function TeamDetail({
       description: t('agentsDescription'),
     },
     {
+      key: 'knowledgeBase',
+      icon: BookOpenIcon,
+      title: t('knowledgeBase'),
+      description: t('knowledgeBaseDescription'),
+    },
+    {
       key: 'taskBoard',
       icon: ClipboardDocumentListIcon,
       title: t('taskBoard'),
@@ -79,7 +86,7 @@ function TeamDetail({
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {tiles.map((tile) => (
           <Link
             key={tile.key}

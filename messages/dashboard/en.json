@@ -260,6 +260,8 @@
     "taskBoardDescription": "View and manage tasks",
     "agentChat": "Agent Chat",
     "agentChatDescription": "Team agent conversations",
+    "knowledgeBase": "Knowledge Base",
+    "knowledgeBaseDescription": "Manage team knowledge base",
     "teamNotFound": "Team not found",
     "backToTeam": "Back to team",
     "teamAgents": "Team Agents",
