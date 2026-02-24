@@ -204,6 +204,8 @@
     "triggerCount": "{count, plural, one {# trigger} other {# triggers}}",
     "toolCount": "{count, plural, one {# tool} other {# tools}}",
     "allTriggers": "All triggers",
+    "nameLabel": "Name",
+    "namePlaceholder": "Enter agent name",
     "backToAgents": "Back to Agents",
     "createAgentTitle": "Create Agent Configuration",
     "editAgentPageTitle": "Edit Agent Configuration",

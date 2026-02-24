@@ -23,9 +23,9 @@ import type {
   TriggerLog,
   DeviceTriggerGroup,
   DeviceToolGroup,
-  AgentSettingsResponse,
-  CreateAgentSettingsRequest,
-  UpdateAgentSettingsRequest,
+  AgentResponse,
+  CreateAgentRequest,
+  UpdateAgentRequest,
   ToolUseLogResponse,
   PagedResponse,
   WebhookDeliveryLogsResponse,
@@ -362,26 +362,26 @@ class ApiService {
     return this.post(`${API.ENDPOINTS.DEVICE_API}/manage/apps/${id}/disconnect`, {});
   }
 
-  // Agent Settings
-  async getAgentSettingsList(agenticTeamPubId?: string): Promise<AgentSettingsResponse[]> {
+  // Agents
+  async getAgentsList(agenticTeamPubId?: string): Promise<AgentResponse[]> {
     const query = agenticTeamPubId ? `?agenticTeamPubId=${encodeURIComponent(agenticTeamPubId)}` : '';
-    return this.get<AgentSettingsResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-settings/${query}`);
+    return this.get<AgentResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${query}`);
   }
 
-  async createAgentSettings(data: CreateAgentSettingsRequest): Promise<AgentSettingsResponse> {
-    return this.post<AgentSettingsResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-settings/`, data);
+  async createAgent(data: CreateAgentRequest): Promise<AgentResponse> {
+    return this.post<AgentResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/`, data);
   }
 
-  async getAgentSettings(apiKeyPubId: string): Promise<AgentSettingsResponse> {
-    return this.get<AgentSettingsResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-settings/${apiKeyPubId}`);
+  async getAgent(id: string): Promise<AgentResponse> {
+    return this.get<AgentResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${id}`);
   }
 
-  async updateAgentSettings(apiKeyPubId: string, data: UpdateAgentSettingsRequest): Promise<AgentSettingsResponse> {
-    return this.put<AgentSettingsResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-settings/${apiKeyPubId}`, data);
+  async updateAgent(id: string, data: UpdateAgentRequest): Promise<AgentResponse> {
+    return this.put<AgentResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${id}`, data);
   }
 
-  async deleteAgentSettings(apiKeyPubId: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-settings/${apiKeyPubId}`);
+  async deleteAgent(id: string): Promise<void> {
+    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${id}`);
   }
 
   // Tool Use Logs (paginated)

@@ -6,12 +6,13 @@ import { useTranslations } from 'next-intl';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
-import { ConnectorsApiKey, AgentSettingsResponse, TriggerDestination } from '@/types';
+import { ConnectorsApiKey, AgentResponse, TriggerDestination } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { FormField, TextArea, Input } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Toggle } from '@/components/ui/Toggle';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
+import { getAgentAvatarUrl } from '@/utils/avatar';
 import TriggerPicker from '@/components/agents/TriggerPicker';
 import ToolPicker from '@/components/agents/ToolPicker';
 
@@ -21,11 +22,12 @@ export default function EditAgentPage() {
   const params = useParams();
   const apiKeyPubId = params.id as string;
 
-  const [agent, setAgent] = useState<AgentSettingsResponse | null>(null);
+  const [agent, setAgent] = useState<AgentResponse | null>(null);
   const [apiKeyName, setApiKeyName] = useState('');
   const [dataLoading, setDataLoading] = useState(true);
   const [dataError, setDataError] = useState<string | null>(null);
 
+  const [name, setName] = useState('');
   const [prompt, setPrompt] = useState('');
   const [triggersTo, setTriggersTo] = useState<TriggerDestination>('centrifugo');
   const [triggersAllowAll, setTriggersAllowAll] = useState(true);
@@ -38,11 +40,11 @@ export default function EditAgentPage() {
     try {
       setDataError(null);
       const [agentsData, apiKeysData] = await Promise.all([
-        apiService.getAgentSettingsList(),
+        apiService.getAgentsList(),
         apiService.getConnectorsApiKeys(),
       ]);
 
-      const foundAgent = agentsData.find((a: AgentSettingsResponse) => a.apiKeyPubId === apiKeyPubId);
+      const foundAgent = agentsData.find((a: AgentResponse) => a.apiKeyPubId === apiKeyPubId);
       if (!foundAgent) {
         setDataError('Agent not found');
         setDataLoading(false);
@@ -53,6 +55,7 @@ export default function EditAgentPage() {
       setApiKeyName(foundKey ? foundKey.name : apiKeyPubId);
 
       setAgent(foundAgent);
+      setName(foundAgent.name);
       setPrompt(foundAgent.prompt);
       setTriggersTo(foundAgent.triggersTo);
       setTriggersAllowAll(foundAgent.triggersAllowAll);
@@ -70,7 +73,7 @@ export default function EditAgentPage() {
     fetchData();
   }, [fetchData]);
 
-  const { loading, error, fieldErrors, handleSubmit } = useAsyncForm<AgentSettingsResponse>({
+  const { loading, error, fieldErrors, handleSubmit } = useAsyncForm<AgentResponse>({
     onSuccess: () => {
       router.push('/dashboard/agents');
     },
@@ -86,7 +89,8 @@ export default function EditAgentPage() {
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
-      apiService.updateAgentSettings(apiKeyPubId, {
+      apiService.updateAgent(apiKeyPubId, {
+        name,
         prompt,
         triggersAllowAll,
         triggersTo,
@@ -148,6 +152,25 @@ export default function EditAgentPage() {
           <FormField label="API Key">
             <div className="px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-muted">
               {apiKeyName}
+            </div>
+          </FormField>
+
+          <FormField label={t('nameLabel')} required error={getFieldError('name')}>
+            <div className="flex items-center gap-3">
+              {name && (
+                <img
+                  src={getAgentAvatarUrl(name)}
+                  alt={name}
+                  className="w-10 h-10 rounded-lg flex-shrink-0"
+                />
+              )}
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={t('namePlaceholder')}
+                required
+                maxLength={100}
+              />
             </div>
           </FormField>
 
@@ -257,7 +280,7 @@ export default function EditAgentPage() {
             </Button>
             <Button
               type="submit"
-              disabled={loading || !prompt.trim()}
+              disabled={loading || !name.trim() || !prompt.trim()}
               loading={loading}
               className="flex-1"
             >

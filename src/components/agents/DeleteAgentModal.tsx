@@ -1,7 +1,7 @@
 'use client';
 
 import apiService from '@/services/api';
-import { AgentSettingsResponse } from '@/types';
+import { AgentResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
@@ -9,13 +9,12 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 
 interface DeleteAgentModalProps {
-  agent: AgentSettingsResponse;
-  apiKeyName: string;
+  agent: AgentResponse;
   onClose: () => void;
   onSuccess: (apiKeyPubId: string) => void;
 }
 
-export default function DeleteAgentModal({ agent, apiKeyName, onClose, onSuccess }: DeleteAgentModalProps) {
+export default function DeleteAgentModal({ agent, onClose, onSuccess }: DeleteAgentModalProps) {
   const { loading, error, handleSubmit } = useAsyncForm<void>({
     onSuccess: () => {
       onSuccess(agent.apiKeyPubId);
@@ -25,14 +24,14 @@ export default function DeleteAgentModal({ agent, apiKeyName, onClose, onSuccess
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, async () => {
-      await apiService.deleteAgentSettings(agent.apiKeyPubId);
+      await apiService.deleteAgent(agent.apiKeyPubId);
     });
 
   return (
     <Modal isOpen={true} onClose={onClose} title="Delete Agent Configuration">
       <form onSubmit={onSubmit} className="space-y-4">
         <p className="text-foreground">
-          Are you sure you want to delete the agent configuration for <strong>{apiKeyName}</strong>?
+          Are you sure you want to delete the agent <strong>{agent.name}</strong>?
         </p>
 
         <Alert variant="warning">

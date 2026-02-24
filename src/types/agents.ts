@@ -1,10 +1,11 @@
-// Agent settings types
+// Agent types
 
 export type TriggerDestination = 'centrifugo' | 'webhook' | 'ignore';
 
-export interface AgentSettingsResponse {
+export interface AgentResponse {
   id: string;
   apiKeyPubId: string;
+  name: string;
   prompt: string;
   triggersAllowAll: boolean;
   triggersTo: TriggerDestination;
@@ -15,8 +16,9 @@ export interface AgentSettingsResponse {
   createdAt: string;
 }
 
-export interface CreateAgentSettingsRequest {
+export interface CreateAgentRequest {
   apiKeyPubId: string;
+  name: string;
   prompt: string;
   triggersAllowAll: boolean;
   triggersTo: TriggerDestination;
@@ -26,7 +28,8 @@ export interface CreateAgentSettingsRequest {
   webhookAuthHeader?: string | null;
 }
 
-export interface UpdateAgentSettingsRequest {
+export interface UpdateAgentRequest {
+  name?: string;
   prompt?: string;
   triggersAllowAll?: boolean;
   triggersTo?: TriggerDestination;

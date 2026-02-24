@@ -1,29 +1,25 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AgentSettingsResponse, ConnectorsApiKey } from '@/types';
+import { AgentResponse, ConnectorsApiKey } from '@/types';
 import { TrashIcon, PencilIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 import { Link } from '@/i18n/navigation';
+import { getAgentAvatarUrl } from '@/utils/avatar';
 import DeleteAgentModal from './DeleteAgentModal';
 
 interface AgentsListProps {
-  agents: AgentSettingsResponse[];
+  agents: AgentResponse[];
   apiKeys: ConnectorsApiKey[];
   onUpdate?: () => void;
 }
 
 export default function AgentsList({ agents: agentsProp, apiKeys, onUpdate }: AgentsListProps) {
-  const [agents, setAgents] = useState<AgentSettingsResponse[]>(agentsProp);
-  const [deletingAgent, setDeletingAgent] = useState<AgentSettingsResponse | null>(null);
+  const [agents, setAgents] = useState<AgentResponse[]>(agentsProp);
+  const [deletingAgent, setDeletingAgent] = useState<AgentResponse | null>(null);
 
   useEffect(() => {
     setAgents(agentsProp);
   }, [agentsProp]);
-
-  const getApiKeyName = (apiKeyPubId: string): string => {
-    const key = apiKeys.find((k) => k.pubId === apiKeyPubId);
-    return key ? key.name : apiKeyPubId;
-  };
 
   const truncatePrompt = (prompt: string, maxLength = 100) => {
     return prompt.length > maxLength ? prompt.slice(0, maxLength) + '...' : prompt;
@@ -65,41 +61,48 @@ export default function AgentsList({ agents: agentsProp, apiKeys, onUpdate }: Ag
             className="bg-surface-secondary rounded-lg p-4 border border-border"
           >
             <div className="flex items-start justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-foreground">{getApiKeyName(agent.apiKeyPubId)}</h3>
-                <p className="text-sm text-muted mt-1 font-mono">
-                  {truncatePrompt(agent.prompt)}
-                </p>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${getTriggersToColor(agent.triggersTo)}`}>
-                    {agent.triggersTo}
-                  </span>
-                  {agent.triggersTo === 'webhook' && agent.webhookUrl && (
-                    <span className="inline-block bg-surface border border-border rounded px-2 py-0.5 text-xs text-muted font-mono truncate max-w-[200px]" title={agent.webhookUrl}>
-                      {agent.webhookUrl}
+              <div className="flex items-start gap-3 flex-1 min-w-0">
+                <img
+                  src={getAgentAvatarUrl(agent.name)}
+                  alt={agent.name}
+                  className="w-10 h-10 rounded-lg flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium text-foreground">{agent.name}</h3>
+                  <p className="text-sm text-muted mt-1 font-mono">
+                    {truncatePrompt(agent.prompt)}
+                  </p>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${getTriggersToColor(agent.triggersTo)}`}>
+                      {agent.triggersTo}
                     </span>
-                  )}
-                  {agent.hasWebhookAuth && (
-                    <span className="inline-flex items-center gap-1 bg-surface border border-border rounded px-2 py-0.5 text-xs text-muted">
-                      <LockClosedIcon className="h-3 w-3" />
-                      Auth
-                    </span>
-                  )}
-                  {agent.triggersAllowAll && (
-                    <span className="inline-block bg-warning/10 text-warning rounded px-2 py-0.5 text-xs font-medium">
-                      All triggers
-                    </span>
-                  )}
-                  {agent.triggers.length > 0 && (
-                    <span className="inline-block bg-surface border border-border rounded px-2 py-0.5 text-xs text-foreground">
-                      {agent.triggers.length} trigger{agent.triggers.length !== 1 ? 's' : ''}
-                    </span>
-                  )}
-                  {agent.tools.length > 0 && (
-                    <span className="inline-block bg-surface border border-border rounded px-2 py-0.5 text-xs text-foreground">
-                      {agent.tools.length} tool{agent.tools.length !== 1 ? 's' : ''}
-                    </span>
-                  )}
+                    {agent.triggersTo === 'webhook' && agent.webhookUrl && (
+                      <span className="inline-block bg-surface border border-border rounded px-2 py-0.5 text-xs text-muted font-mono truncate max-w-[200px]" title={agent.webhookUrl}>
+                        {agent.webhookUrl}
+                      </span>
+                    )}
+                    {agent.hasWebhookAuth && (
+                      <span className="inline-flex items-center gap-1 bg-surface border border-border rounded px-2 py-0.5 text-xs text-muted">
+                        <LockClosedIcon className="h-3 w-3" />
+                        Auth
+                      </span>
+                    )}
+                    {agent.triggersAllowAll && (
+                      <span className="inline-block bg-warning/10 text-warning rounded px-2 py-0.5 text-xs font-medium">
+                        All triggers
+                      </span>
+                    )}
+                    {agent.triggers.length > 0 && (
+                      <span className="inline-block bg-surface border border-border rounded px-2 py-0.5 text-xs text-foreground">
+                        {agent.triggers.length} trigger{agent.triggers.length !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                    {agent.tools.length > 0 && (
+                      <span className="inline-block bg-surface border border-border rounded px-2 py-0.5 text-xs text-foreground">
+                        {agent.tools.length} tool{agent.tools.length !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -127,7 +130,6 @@ export default function AgentsList({ agents: agentsProp, apiKeys, onUpdate }: Ag
       {deletingAgent && (
         <DeleteAgentModal
           agent={deletingAgent}
-          apiKeyName={getApiKeyName(deletingAgent.apiKeyPubId)}
           onClose={() => setDeletingAgent(null)}
           onSuccess={handleDeleteSuccess}
         />

@@ -5,12 +5,13 @@ import { useTranslations } from 'next-intl';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
-import { ConnectorsApiKey, AgentSettingsResponse, TriggerDestination } from '@/types';
+import { ConnectorsApiKey, AgentResponse, TriggerDestination } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { FormField, TextArea, Input } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Toggle } from '@/components/ui/Toggle';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
+import { getAgentAvatarUrl } from '@/utils/avatar';
 import TriggerPicker from '@/components/agents/TriggerPicker';
 import ToolPicker from '@/components/agents/ToolPicker';
 
@@ -19,11 +20,12 @@ export default function CreateAgentPage() {
   const router = useRouter();
 
   const [apiKeys, setApiKeys] = useState<ConnectorsApiKey[]>([]);
-  const [existingAgents, setExistingAgents] = useState<AgentSettingsResponse[]>([]);
+  const [existingAgents, setExistingAgents] = useState<AgentResponse[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [dataError, setDataError] = useState<string | null>(null);
 
   const [apiKeyPubId, setApiKeyPubId] = useState('');
+  const [name, setName] = useState('');
   const [prompt, setPrompt] = useState('');
   const [triggersTo, setTriggersTo] = useState<TriggerDestination>('centrifugo');
   const [triggersAllowAll, setTriggersAllowAll] = useState(true);
@@ -36,7 +38,7 @@ export default function CreateAgentPage() {
     try {
       setDataError(null);
       const [agentsData, apiKeysData] = await Promise.all([
-        apiService.getAgentSettingsList(),
+        apiService.getAgentsList(),
         apiService.getConnectorsApiKeys(),
       ]);
       setExistingAgents(agentsData);
@@ -55,7 +57,7 @@ export default function CreateAgentPage() {
   const existingPubIds = new Set(existingAgents.map((a) => a.apiKeyPubId));
   const availableApiKeys = apiKeys.filter((key) => !existingPubIds.has(key.pubId));
 
-  const { loading, error, fieldErrors, handleSubmit } = useAsyncForm<AgentSettingsResponse>({
+  const { loading, error, fieldErrors, handleSubmit } = useAsyncForm<AgentResponse>({
     onSuccess: () => {
       router.push('/dashboard/agents');
     },
@@ -71,8 +73,9 @@ export default function CreateAgentPage() {
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
-      apiService.createAgentSettings({
+      apiService.createAgent({
         apiKeyPubId,
+        name,
         prompt,
         triggersAllowAll,
         triggersTo,
@@ -137,6 +140,25 @@ export default function CreateAgentPage() {
                 All API keys already have agent configurations.
               </p>
             )}
+          </FormField>
+
+          <FormField label={t('nameLabel')} required error={getFieldError('name')}>
+            <div className="flex items-center gap-3">
+              {name && (
+                <img
+                  src={getAgentAvatarUrl(name)}
+                  alt={name}
+                  className="w-10 h-10 rounded-lg flex-shrink-0"
+                />
+              )}
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={t('namePlaceholder')}
+                required
+                maxLength={100}
+              />
+            </div>
           </FormField>
 
           <FormField label="Prompt" required error={getFieldError('prompt')}>
@@ -242,7 +264,7 @@ export default function CreateAgentPage() {
             </Button>
             <Button
               type="submit"
-              disabled={loading || !apiKeyPubId || !prompt.trim()}
+              disabled={loading || !apiKeyPubId || !name.trim() || !prompt.trim()}
               loading={loading}
               className="flex-1"
             >

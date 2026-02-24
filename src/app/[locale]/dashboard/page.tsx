@@ -37,7 +37,7 @@ export default function DashboardPage() {
         summaries.reduce((sum, s) => sum + s.credentialCount, 0)
       ),
       apiService.getApps().then(d => d.length),
-      apiService.getAgentSettingsList().then(a => a.length),
+      apiService.getAgentsList().then(a => a.length),
       apiService.getConnectorsApiKeys().then(k => k.length),
     ]);
 
