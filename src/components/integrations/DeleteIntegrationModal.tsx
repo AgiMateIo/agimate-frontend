@@ -1,26 +1,26 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { Credential } from '@/types';
+import { IntegrationResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 
-interface DeleteCredentialModalProps {
-  connectorCode: string;
-  credential: Credential;
+interface DeleteIntegrationModalProps {
+  integration: IntegrationResponse;
   onClose: () => void;
-  onSuccess: (credentialId: string) => void;
+  onSuccess: (integrationId: string) => void;
 }
 
-export default function DeleteCredentialModal({
-  connectorCode,
-  credential,
+export default function DeleteIntegrationModal({
+  integration,
   onClose,
   onSuccess,
-}: DeleteCredentialModalProps) {
+}: DeleteIntegrationModalProps) {
+  const t = useTranslations('Integrations');
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,24 +29,24 @@ export default function DeleteCredentialModal({
     setError(null);
 
     try {
-      await apiService.deleteCredential(connectorCode, credential.id);
-      onSuccess(credential.id);
+      await apiService.deleteIntegration(integration.id);
+      onSuccess(integration.id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete credential');
+      setError(err instanceof Error ? err.message : t('deleteError'));
     } finally {
       setDeleting(false);
     }
   };
 
   return (
-    <Modal isOpen={true} onClose={onClose} title="Delete Credential" size="sm">
+    <Modal isOpen={true} onClose={onClose} title={t('deleteIntegration')} size="sm">
       <div className="space-y-4">
         <p className="text-foreground">
-          Are you sure you want to delete credential <strong>"{credential.name}"</strong>?
+          {t('deleteConfirm', { name: integration.name || integration.platformIdentifier })}
         </p>
 
         <Alert variant="warning">
-          This action cannot be undone. Any integrations using this credential will stop working.
+          {t('deleteWarning')}
         </Alert>
 
         {error && <ErrorAlert>{error}</ErrorAlert>}
@@ -58,7 +58,7 @@ export default function DeleteCredentialModal({
             disabled={deleting}
             className="flex-1"
           >
-            Cancel
+            {t('cancel')}
           </Button>
           <Button
             variant="danger"
@@ -66,7 +66,7 @@ export default function DeleteCredentialModal({
             loading={deleting}
             className="flex-1"
           >
-            Delete
+            {t('delete')}
           </Button>
         </div>
       </div>

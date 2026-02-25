@@ -3,18 +3,10 @@ import { User } from './types';
 import { API } from '@/config/constants';
 import { getApiBaseUrl } from '@/utils/api-url';
 import type {
-  ConnectorInfo,
-  MethodDefinition,
-  ConnectorSummary,
-  Credential,
-  CreateCredentialRequest,
-  UpdateCredentialRequest,
-  CallMethodRequest,
-  CallResult,
-  ConnectorsApiKey,
-  ConnectorsApiKeyWithSecret,
-  CreateConnectorsApiKeyRequest,
-  UpdateConnectorsApiKeyRequest,
+  ApiKey,
+  ApiKeyWithSecret,
+  CreateApiKeyRequest,
+  UpdateApiKeyRequest,
   AppResponse,
   AppCreatedResponse,
   AppDetailResponse,
@@ -32,6 +24,11 @@ import type {
   AgenticTeam,
   CreateAgenticTeamRequest,
   UpdateAgenticTeamRequest,
+  PlatformResponse,
+  IntegrationResponse,
+  CreateIntegrationRequest,
+  UpdateIntegrationRequest,
+  UpdateIntegrationCredentialsRequest,
 } from '@/types';
 
 const SERVICE_UNAVAILABLE_MESSAGE = 'SERVICE_UNAVAILABLE';
@@ -269,6 +266,14 @@ class ApiService {
     });
   }
 
+  async patch<T>(endpoint: string, data: unknown): Promise<T> {
+    const url = `${getApiBaseUrl()}${endpoint}`;
+    return this.makeRequest<T>(url, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
   async delete<T>(endpoint: string): Promise<T> {
     const url = `${getApiBaseUrl()}${endpoint}`;
     return this.makeRequest<T>(url, {
@@ -280,52 +285,23 @@ class ApiService {
     return this.get<User>(`${API.ENDPOINTS.USER_API}/user/me`);
   }
 
-  // ========== CONNECTORS API METHODS ==========
+  // ========== API KEY METHODS ==========
 
-  // Connectors
-  async getConnectors(): Promise<ConnectorInfo[]> {
-    return this.get<ConnectorInfo[]>(`${API.ENDPOINTS.CONNECTORS_API}/manage/connectors/`);
+  async getApiKeys(): Promise<ApiKey[]> {
+    return this.get<ApiKey[]>(`${API.ENDPOINTS.USER_API}/manage/api-keys/`);
   }
 
-  // Credentials
-  async getCredentialsSummary(): Promise<ConnectorSummary[]> {
-    return this.get<ConnectorSummary[]>(`${API.ENDPOINTS.CONNECTORS_API}/manage/credentials/`);
+  async createApiKey(data: CreateApiKeyRequest): Promise<ApiKeyWithSecret> {
+    return this.post<ApiKeyWithSecret>(`${API.ENDPOINTS.USER_API}/manage/api-keys/`, data);
   }
 
-  async getCredentials(connectorCode: string): Promise<Credential[]> {
-    return this.get<Credential[]>(`${API.ENDPOINTS.CONNECTORS_API}/manage/credentials/${connectorCode}/`);
+  async updateApiKey(keyId: string, data: UpdateApiKeyRequest): Promise<ApiKey> {
+    return this.put<ApiKey>(`${API.ENDPOINTS.USER_API}/manage/api-keys/${keyId}`, data);
   }
 
-  async createCredential(connectorCode: string, data: CreateCredentialRequest): Promise<Credential> {
-    return this.post<Credential>(`${API.ENDPOINTS.CONNECTORS_API}/manage/credentials/${connectorCode}`, data);
-  }
-
-  async updateCredential(connectorCode: string, credentialId: string, data: UpdateCredentialRequest): Promise<Credential> {
-    return this.put<Credential>(`${API.ENDPOINTS.CONNECTORS_API}/manage/credentials/${connectorCode}/${credentialId}`, data);
-  }
-
-  async deleteCredential(connectorCode: string, credentialId: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.CONNECTORS_API}/manage/credentials/${connectorCode}/${credentialId}`);
-  }
-
-
-  // ConnectorsApiKey Management
-  async getConnectorsApiKeys(): Promise<ConnectorsApiKey[]> {
-    return this.get<ConnectorsApiKey[]>(`${API.ENDPOINTS.USER_API}/manage/api-keys/`);
-  }
-
-  async createConnectorsApiKey(data: CreateConnectorsApiKeyRequest): Promise<ConnectorsApiKeyWithSecret> {
-    return this.post<ConnectorsApiKeyWithSecret>(`${API.ENDPOINTS.USER_API}/manage/api-keys/`, data);
-  }
-
-  async updateConnectorsApiKey(keyId: string, data: UpdateConnectorsApiKeyRequest): Promise<ConnectorsApiKey> {
-    return this.put<ConnectorsApiKey>(`${API.ENDPOINTS.USER_API}/manage/api-keys/${keyId}`, data);
-  }
-
-  async deleteConnectorsApiKey(keyId: string): Promise<void> {
+  async deleteApiKey(keyId: string): Promise<void> {
     return this.delete<void>(`${API.ENDPOINTS.USER_API}/manage/api-keys/${keyId}`);
   }
-
 
   // ========== DEVICE API METHODS ==========
 
@@ -445,6 +421,40 @@ class ApiService {
 
   async deleteAgenticTeam(id: string): Promise<void> {
     return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agentic-teams/${id}`);
+  }
+
+  // ========== PLATFORM INTEGRATIONS ==========
+
+  async getPlatforms(): Promise<PlatformResponse[]> {
+    return this.get<PlatformResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/platforms/`);
+  }
+
+  async getPlatform(code: string): Promise<PlatformResponse> {
+    return this.get<PlatformResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/platforms/${code}`);
+  }
+
+  async getIntegrations(): Promise<IntegrationResponse[]> {
+    return this.get<IntegrationResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/`);
+  }
+
+  async getIntegration(id: string): Promise<IntegrationResponse> {
+    return this.get<IntegrationResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/${id}`);
+  }
+
+  async createIntegration(data: CreateIntegrationRequest): Promise<IntegrationResponse> {
+    return this.post<IntegrationResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/`, data);
+  }
+
+  async updateIntegration(id: string, data: UpdateIntegrationRequest): Promise<IntegrationResponse> {
+    return this.patch<IntegrationResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/${id}`, data);
+  }
+
+  async updateIntegrationCredentials(id: string, data: UpdateIntegrationCredentialsRequest): Promise<IntegrationResponse> {
+    return this.put<IntegrationResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/${id}/credentials`, data);
+  }
+
+  async deleteIntegration(id: string): Promise<void> {
+    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/${id}`);
   }
 
   // Method to refresh authentication tokens from URL fragment - uses the same refreshAccessToken method

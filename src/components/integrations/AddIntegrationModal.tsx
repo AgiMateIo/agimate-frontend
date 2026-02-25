@@ -1,0 +1,170 @@
+'use client';
+
+import { useState } from 'react';
+import { useTranslations } from 'next-intl';
+import apiService from '@/services/api';
+import { PlatformResponse, IntegrationResponse } from '@/types';
+import { Modal } from '@/components/ui/Modal';
+import { Button } from '@/components/ui/Button';
+import { FormField, Input } from '@/components/ui/FormField';
+import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { useAsyncForm } from '@/hooks/useAsyncForm';
+
+interface AddIntegrationModalProps {
+  platforms: PlatformResponse[];
+  onClose: () => void;
+  onSuccess: (integration: IntegrationResponse) => void;
+}
+
+export default function AddIntegrationModal({
+  platforms,
+  onClose,
+  onSuccess,
+}: AddIntegrationModalProps) {
+  const t = useTranslations('Integrations');
+  const [step, setStep] = useState<1 | 2>(1);
+  const [selectedPlatform, setSelectedPlatform] = useState<PlatformResponse | null>(null);
+  const [name, setName] = useState('');
+  const [credentials, setCredentials] = useState<Record<string, string>>({});
+
+  const { loading, error, fieldErrors, handleSubmit, clearError } = useAsyncForm<IntegrationResponse>({
+    onSuccess,
+    defaultError: t('createError'),
+  });
+
+  const handlePlatformSelect = (platform: PlatformResponse) => {
+    setSelectedPlatform(platform);
+    setCredentials({});
+    setName('');
+    clearError();
+    setStep(2);
+  };
+
+  const handleBack = () => {
+    setStep(1);
+    setSelectedPlatform(null);
+    clearError();
+  };
+
+  const handleFieldChange = (fieldName: string, value: string) => {
+    setCredentials(prev => ({ ...prev, [fieldName]: value }));
+  };
+
+  const allFieldsFilled = selectedPlatform
+    ? selectedPlatform.credentialFields.every(field => credentials[field]?.trim())
+    : false;
+
+  const onSubmit = (e: React.FormEvent) =>
+    handleSubmit(e, () =>
+      apiService.createIntegration({
+        platformCode: selectedPlatform!.code,
+        credentials,
+        name: name.trim() || undefined,
+      })
+    );
+
+  return (
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title={step === 1 ? t('selectPlatform') : t('configureIntegration')}
+      size={step === 1 ? 'lg' : 'md'}
+    >
+      {step === 1 ? (
+        <div className="space-y-4">
+          <p className="text-sm text-muted">{t('selectPlatformSubtitle')}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {platforms.map((platform) => (
+              <button
+                key={platform.id}
+                onClick={() => handlePlatformSelect(platform)}
+                className="flex items-start gap-3 p-4 rounded-lg border border-border bg-surface-secondary hover:bg-surface-secondary/80 hover:border-accent transition-colors text-left"
+              >
+                {platform.iconUrl ? (
+                  <img
+                    src={platform.iconUrl}
+                    alt={platform.name}
+                    className="h-10 w-10 rounded-lg object-contain shrink-0"
+                  />
+                ) : (
+                  <div className="h-10 w-10 rounded-lg bg-accent/20 flex items-center justify-center text-accent font-bold text-lg shrink-0">
+                    {platform.name.charAt(0)}
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <div className="font-medium text-foreground">{platform.name}</div>
+                  <div className="text-xs text-muted mt-0.5 line-clamp-2">{platform.description}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <form onSubmit={onSubmit} className="space-y-4">
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-secondary border border-border">
+            {selectedPlatform!.iconUrl ? (
+              <img
+                src={selectedPlatform!.iconUrl}
+                alt={selectedPlatform!.name}
+                className="h-8 w-8 rounded-lg object-contain"
+              />
+            ) : (
+              <div className="h-8 w-8 rounded-lg bg-accent/20 flex items-center justify-center text-accent font-bold">
+                {selectedPlatform!.name.charAt(0)}
+              </div>
+            )}
+            <div className="font-medium text-foreground">{selectedPlatform!.name}</div>
+          </div>
+
+          <FormField label={t('name')}>
+            <Input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={t('namePlaceholder')}
+              maxLength={100}
+            />
+          </FormField>
+
+          {selectedPlatform!.credentialFields.map(fieldName => (
+            <FormField
+              key={fieldName}
+              label={fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}
+              required
+              error={fieldErrors[fieldName]}
+            >
+              <Input
+                type="password"
+                value={credentials[fieldName] || ''}
+                onChange={(e) => handleFieldChange(fieldName, e.target.value)}
+                placeholder={`Enter ${fieldName}`}
+                required
+              />
+            </FormField>
+          ))}
+
+          {error && <ErrorAlert>{error}</ErrorAlert>}
+
+          <div className="flex gap-3 pt-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleBack}
+              disabled={loading}
+            >
+              {t('back')}
+            </Button>
+            <Button
+              type="submit"
+              disabled={loading || !allFieldsFilled}
+              loading={loading}
+              className="flex-1"
+            >
+              {t('create')}
+            </Button>
+          </div>
+        </form>
+      )}
+    </Modal>
+  );
+}

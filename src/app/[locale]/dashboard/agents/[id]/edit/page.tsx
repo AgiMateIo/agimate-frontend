@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
-import { ConnectorsApiKey, AgentResponse, TriggerDestination } from '@/types';
+import { ApiKey, AgentResponse, TriggerDestination } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { FormField, TextArea, Input } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
@@ -41,7 +41,7 @@ export default function EditAgentPage() {
       setDataError(null);
       const [agentsData, apiKeysData] = await Promise.all([
         apiService.getAgentsList(),
-        apiService.getConnectorsApiKeys(),
+        apiService.getApiKeys(),
       ]);
 
       const foundAgent = agentsData.find((a: AgentResponse) => a.apiKeyPubId === apiKeyPubId);
@@ -51,7 +51,7 @@ export default function EditAgentPage() {
         return;
       }
 
-      const foundKey = apiKeysData.find((k: ConnectorsApiKey) => k.pubId === apiKeyPubId);
+      const foundKey = apiKeysData.find((k: ApiKey) => k.pubId === apiKeyPubId);
       setApiKeyName(foundKey ? foundKey.name : apiKeyPubId);
 
       setAgent(foundAgent);

@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import apiService from '@/services/api';
-import { AgentResponse, ConnectorsApiKey } from '@/types';
+import { AgentResponse, ApiKey } from '@/types';
 import { AgenticTeam } from '@/types/agentic-teams';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
@@ -18,7 +18,7 @@ export default function TeamAgentsPage() {
   const teamId = params.id as string;
 
   const [agents, setAgents] = useState<AgentResponse[]>([]);
-  const [apiKeys, setApiKeys] = useState<ConnectorsApiKey[]>([]);
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [team, setTeam] = useState<AgenticTeam | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +30,7 @@ export default function TeamAgentsPage() {
       setError(null);
       const [agentsData, apiKeysData, teamData] = await Promise.all([
         apiService.getAgentsList(teamId),
-        apiService.getConnectorsApiKeys(),
+        apiService.getApiKeys(),
         apiService.getAgenticTeam(teamId),
       ]);
       setAgents(agentsData);

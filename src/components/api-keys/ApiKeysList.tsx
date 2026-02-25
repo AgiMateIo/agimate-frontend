@@ -4,28 +4,28 @@ import { useLocale } from 'next-intl';
 import { localeMap } from '@/i18n/routing';
 import { useState, useEffect } from 'react';
 import apiService from '@/services/api';
-import { ConnectorsApiKey } from '@/types';
+import { ApiKey } from '@/types';
 import { TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
 import DeleteApiKeyModal from './DeleteApiKeyModal';
 import EditApiKeyModal from './EditApiKeyModal';
 import { Toggle } from '@/components/ui/Toggle';
 
-interface ConnectorsApiKeysListProps {
-  apiKeys: ConnectorsApiKey[];
+interface ApiKeysListProps {
+  apiKeys: ApiKey[];
   onUpdate?: () => void;
 }
 
-export default function ConnectorsApiKeysList({ apiKeys: apiKeysProp, onUpdate }: ConnectorsApiKeysListProps) {
+export default function ApiKeysList({ apiKeys: apiKeysProp, onUpdate }: ApiKeysListProps) {
   const locale = useLocale();
   const bcp47Locale = localeMap[locale];
-  const [apiKeys, setApiKeys] = useState<ConnectorsApiKey[]>(apiKeysProp);
-  const [editingApiKey, setEditingApiKey] = useState<ConnectorsApiKey | null>(null);
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>(apiKeysProp);
+  const [editingApiKey, setEditingApiKey] = useState<ApiKey | null>(null);
 
   // Sync state when prop changes (after parent refetch)
   useEffect(() => {
     setApiKeys(apiKeysProp);
   }, [apiKeysProp]);
-  const [deletingApiKey, setDeletingApiKey] = useState<ConnectorsApiKey | null>(null);
+  const [deletingApiKey, setDeletingApiKey] = useState<ApiKey | null>(null);
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
 
   const formatDate = (dateString: string) => {
@@ -39,7 +39,7 @@ export default function ConnectorsApiKeysList({ apiKeys: apiKeysProp, onUpdate }
     }).format(date);
   };
 
-  const handleToggleEnabled = async (apiKey: ConnectorsApiKey) => {
+  const handleToggleEnabled = async (apiKey: ApiKey) => {
     setUpdatingIds(prev => new Set(prev).add(apiKey.pubId));
 
     // Optimistic update
@@ -48,10 +48,9 @@ export default function ConnectorsApiKeysList({ apiKeys: apiKeysProp, onUpdate }
     );
 
     try {
-      await apiService.updateConnectorsApiKey(apiKey.pubId, {
+      await apiService.updateApiKey(apiKey.pubId, {
         enabled: !apiKey.enabled,
       });
-      // Cache will be cleared on unmount
     } catch (error) {
       console.error('Failed to update API key:', error);
       // Revert on error
@@ -73,10 +72,9 @@ export default function ConnectorsApiKeysList({ apiKeys: apiKeysProp, onUpdate }
     onUpdate?.();
   };
 
-  const handleEditSuccess = (updated: ConnectorsApiKey) => {
+  const handleEditSuccess = (updated: ApiKey) => {
     setApiKeys(prev => prev.map(k => k.pubId === updated.pubId ? updated : k));
     setEditingApiKey(null);
-    // Cache will be cleared on unmount
   };
 
   if (apiKeys.length === 0) {

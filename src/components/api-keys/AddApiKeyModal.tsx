@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { ClipboardDocumentIcon, CheckIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
-import { ConnectorsApiKeyWithSecret } from '@/types';
+import { ApiKeyWithSecret } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input, TextArea } from '@/components/ui/FormField';
@@ -14,23 +14,23 @@ import { useClipboard } from '@/hooks/useClipboard';
 
 interface AddApiKeyModalProps {
   onClose: () => void;
-  onSuccess: (apiKey: ConnectorsApiKeyWithSecret) => void;
+  onSuccess: (apiKey: ApiKeyWithSecret) => void;
 }
 
 export default function AddApiKeyModal({ onClose, onSuccess }: AddApiKeyModalProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [createdKey, setCreatedKey] = useState<ConnectorsApiKeyWithSecret | null>(null);
+  const [createdKey, setCreatedKey] = useState<ApiKeyWithSecret | null>(null);
   const { copied, copy } = useClipboard();
 
-  const { loading, error, handleSubmit } = useAsyncForm<ConnectorsApiKeyWithSecret>({
+  const { loading, error, handleSubmit } = useAsyncForm<ApiKeyWithSecret>({
     onSuccess: setCreatedKey,
     defaultError: 'Failed to create API key',
   });
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
-      apiService.createConnectorsApiKey({
+      apiService.createApiKey({
         name,
         description: description || undefined,
       })

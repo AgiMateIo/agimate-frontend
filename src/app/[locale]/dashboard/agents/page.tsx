@@ -4,14 +4,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import apiService from '@/services/api';
-import { AgentResponse, ConnectorsApiKey } from '@/types';
+import { AgentResponse, ApiKey } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import AgentsList from '@/components/agents/AgentsList';
 
 export default function AgentsPage() {
   const t = useTranslations('Agents');
   const [agents, setAgents] = useState<AgentResponse[]>([]);
-  const [apiKeys, setApiKeys] = useState<ConnectorsApiKey[]>([]);
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,7 +20,7 @@ export default function AgentsPage() {
       setError(null);
       const [agentsData, apiKeysData] = await Promise.all([
         apiService.getAgentsList(),
-        apiService.getConnectorsApiKeys(),
+        apiService.getApiKeys(),
       ]);
       setAgents(agentsData);
       setApiKeys(apiKeysData);

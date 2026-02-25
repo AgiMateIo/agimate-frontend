@@ -2,14 +2,14 @@
 
 import { useState } from 'react';
 import apiService from '@/services/api';
-import { ConnectorsApiKey } from '@/types';
+import { ApiKey } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 
 interface DeleteApiKeyModalProps {
-  apiKey: ConnectorsApiKey;
+  apiKey: ApiKey;
   onClose: () => void;
   onSuccess: (keyId: string) => void;
 }
@@ -23,7 +23,7 @@ export default function DeleteApiKeyModal({ apiKey, onClose, onSuccess }: Delete
     setError(null);
 
     try {
-      await apiService.deleteConnectorsApiKey(apiKey.pubId);
+      await apiService.deleteApiKey(apiKey.pubId);
       onSuccess(apiKey.pubId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete API key');
@@ -36,11 +36,11 @@ export default function DeleteApiKeyModal({ apiKey, onClose, onSuccess }: Delete
     <Modal isOpen={true} onClose={onClose} title="Delete API Key" size="sm">
       <div className="space-y-4">
         <p className="text-foreground">
-          Are you sure you want to delete API key <strong>"{apiKey.name}"</strong>?
+          Are you sure you want to delete API key <strong>&quot;{apiKey.name}&quot;</strong>?
         </p>
 
         <Alert variant="warning">
-          This action cannot be undone. Any applications using this API key will no longer be able to access the Connectors API.
+          This action cannot be undone. Any applications using this API key will no longer be able to access the API.
         </Alert>
 
         {error && <ErrorAlert>{error}</ErrorAlert>}

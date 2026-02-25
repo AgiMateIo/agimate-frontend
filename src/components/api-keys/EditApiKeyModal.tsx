@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import apiService from '@/services/api';
-import { ConnectorsApiKey } from '@/types';
+import { ApiKey } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input, TextArea } from '@/components/ui/FormField';
@@ -11,23 +11,23 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 
 interface EditApiKeyModalProps {
-  apiKey: ConnectorsApiKey;
+  apiKey: ApiKey;
   onClose: () => void;
-  onSuccess: (apiKey: ConnectorsApiKey) => void;
+  onSuccess: (apiKey: ApiKey) => void;
 }
 
 export default function EditApiKeyModal({ apiKey, onClose, onSuccess }: EditApiKeyModalProps) {
   const [name, setName] = useState(apiKey.name);
   const [description, setDescription] = useState(apiKey.description || '');
 
-  const { loading, error, handleSubmit } = useAsyncForm<ConnectorsApiKey>({
+  const { loading, error, handleSubmit } = useAsyncForm<ApiKey>({
     onSuccess,
     defaultError: 'Failed to update API key',
   });
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
-      apiService.updateConnectorsApiKey(apiKey.pubId, {
+      apiService.updateApiKey(apiKey.pubId, {
         name,
         description: description || undefined,
       })

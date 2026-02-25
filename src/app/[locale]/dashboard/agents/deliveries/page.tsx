@@ -6,7 +6,7 @@ import { localeMap } from '@/i18n/routing';
 import { Link } from '@/i18n/navigation';
 import { ArrowLeftIcon, ArrowPathIcon, ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
-import { WebhookDeliveryLog, ConnectorsApiKey } from '@/types';
+import { WebhookDeliveryLog, ApiKey } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 
 const REFRESH_OPTIONS = [
@@ -21,7 +21,7 @@ export default function WebhookDeliveriesPage() {
   const locale = useLocale();
   const bcp47Locale = localeMap[locale];
 
-  const [apiKeys, setApiKeys] = useState<ConnectorsApiKey[]>([]);
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [selectedApiKey, setSelectedApiKey] = useState<string>('');
   const [deliveries, setDeliveries] = useState<WebhookDeliveryLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,7 +36,7 @@ export default function WebhookDeliveriesPage() {
 
   // Load API keys on mount
   useEffect(() => {
-    apiService.getConnectorsApiKeys().then(setApiKeys).catch(() => {});
+    apiService.getApiKeys().then(setApiKeys).catch(() => {});
   }, []);
 
   const fetchDeliveries = useCallback(async (silent = false) => {

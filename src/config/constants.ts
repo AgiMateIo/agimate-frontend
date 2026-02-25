@@ -37,7 +37,6 @@ export const API = {
   // API endpoint prefixes
   ENDPOINTS: {
     USER_API: 'user',
-    CONNECTORS_API: 'connectors',
     DEVICE_API: 'device',
   },
 

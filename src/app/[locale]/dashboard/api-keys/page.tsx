@@ -3,15 +3,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ClipboardDocumentIcon, ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
-import { ConnectorsApiKey, ConnectorsApiKeyWithSecret } from '@/types';
-import ConnectorsApiKeysList from '@/components/connectors/ConnectorsApiKeysList';
-import AddApiKeyModal from '@/components/connectors/AddApiKeyModal';
+import { ApiKey, ApiKeyWithSecret } from '@/types';
+import ApiKeysList from '@/components/api-keys/ApiKeysList';
+import AddApiKeyModal from '@/components/api-keys/AddApiKeyModal';
 import { useClipboard } from '@/hooks/useClipboard';
 import { getApiBaseUrl } from '@/utils/api-url';
 
 export default function ApiKeysPage() {
   const [showAddModal, setShowAddModal] = useState(false);
-  const [apiKeys, setApiKeys] = useState<ConnectorsApiKey[]>([]);
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { copied, copy } = useClipboard();
@@ -20,7 +20,7 @@ export default function ApiKeysPage() {
   const fetchData = useCallback(async () => {
     try {
       setError(null);
-      const data = await apiService.getConnectorsApiKeys();
+      const data = await apiService.getApiKeys();
       setApiKeys(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load API keys');
@@ -33,7 +33,7 @@ export default function ApiKeysPage() {
     fetchData();
   }, [fetchData]);
 
-  const handleApiKeyAdded = (apiKey: ConnectorsApiKeyWithSecret) => {
+  const handleApiKeyAdded = (apiKey: ApiKeyWithSecret) => {
     fetchData();
     setShowAddModal(false);
   };
@@ -104,7 +104,7 @@ export default function ApiKeysPage() {
           </button>
         </div>
 
-        <ConnectorsApiKeysList
+        <ApiKeysList
           apiKeys={apiKeys}
           onUpdate={fetchData}
         />

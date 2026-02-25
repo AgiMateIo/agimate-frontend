@@ -6,9 +6,10 @@
  */
 
 // Re-export all types from domain files
-export * from './connectors';
+export * from './api-keys';
 export * from './apps';
 export * from './agents';
 export * from './tool-use-logs';
 export * from './webhooks';
 export * from './agentic-teams';
+export * from './integrations';

@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import {
-  PuzzlePieceIcon,
   DevicePhoneMobileIcon,
   KeyIcon,
   SparklesIcon,
@@ -24,7 +23,6 @@ interface ResourceCard {
 export default function DashboardPage() {
   const t = useTranslations('DashboardHome');
   const [resources, setResources] = useState<ResourceCard[]>([
-    { key: 'credentials', nameKey: 'credentials', emptyKey: 'noCredentials', icon: PuzzlePieceIcon, href: '/dashboard/connectors', count: null, error: null },
     { key: 'apps', nameKey: 'apps', emptyKey: 'noApps', icon: DevicePhoneMobileIcon, href: '/dashboard/apps', count: null, error: null },
     { key: 'agents', nameKey: 'agents', emptyKey: 'noAgents', icon: SparklesIcon, href: '/dashboard/agents', count: null, error: null },
     { key: 'apiKeys', nameKey: 'apiKeys', emptyKey: 'noApiKeys', icon: KeyIcon, href: '/dashboard/api-keys', count: null, error: null },
@@ -33,12 +31,9 @@ export default function DashboardPage() {
 
   const fetchCounts = useCallback(async () => {
     const results = await Promise.allSettled([
-      apiService.getCredentialsSummary().then(summaries =>
-        summaries.reduce((sum, s) => sum + s.credentialCount, 0)
-      ),
       apiService.getApps().then(d => d.length),
       apiService.getAgentsList().then(a => a.length),
-      apiService.getConnectorsApiKeys().then(k => k.length),
+      apiService.getApiKeys().then(k => k.length),
     ]);
 
     setResources(prev =>
@@ -64,7 +59,7 @@ export default function DashboardPage() {
         <p className="text-muted mt-1">{t('subtitle')}</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {resources.map((card) => {
           const Icon = card.icon;
 

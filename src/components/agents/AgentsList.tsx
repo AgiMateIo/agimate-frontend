@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AgentResponse, ConnectorsApiKey } from '@/types';
+import { AgentResponse, ApiKey } from '@/types';
 import { TrashIcon, PencilIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 import { Link } from '@/i18n/navigation';
 import { getAgentAvatarUrl } from '@/utils/avatar';
@@ -9,7 +9,7 @@ import DeleteAgentModal from './DeleteAgentModal';
 
 interface AgentsListProps {
   agents: AgentResponse[];
-  apiKeys: ConnectorsApiKey[];
+  apiKeys: ApiKey[];
   onUpdate?: () => void;
 }
 
