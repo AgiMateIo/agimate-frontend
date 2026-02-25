@@ -26,6 +26,7 @@ export interface CreateAgentRequest {
   triggers: string[];
   webhookUrl?: string | null;
   webhookAuthHeader?: string | null;
+  agenticTeamPubId?: string | null;
 }
 
 export interface UpdateAgentRequest {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
@@ -18,6 +19,8 @@ import ToolPicker from '@/components/agents/ToolPicker';
 export default function CreateAgentPage() {
   const t = useTranslations('Agents');
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const teamId = searchParams.get('teamId');
 
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [existingAgents, setExistingAgents] = useState<AgentResponse[]>([]);
@@ -59,7 +62,7 @@ export default function CreateAgentPage() {
 
   const { loading, error, fieldErrors, handleSubmit } = useAsyncForm<AgentResponse>({
     onSuccess: () => {
-      router.push('/dashboard/agents');
+      router.push(teamId ? `/dashboard/agentic-teams/${teamId}/agents` : '/dashboard/agents');
     },
     defaultError: 'Failed to create agent configuration',
   });
@@ -83,6 +86,7 @@ export default function CreateAgentPage() {
         triggers: triggersAllowAll ? [] : triggers,
         webhookUrl: triggersTo === 'webhook' ? webhookUrl : null,
         webhookAuthHeader: triggersTo === 'webhook' && webhookAuthHeader ? webhookAuthHeader : null,
+        agenticTeamPubId: teamId || null,
       })
     );
 
@@ -104,7 +108,7 @@ export default function CreateAgentPage() {
     <div className="space-y-6">
       {/* Back Button */}
       <button
-        onClick={() => router.push('/dashboard/agents')}
+        onClick={() => router.push(teamId ? `/dashboard/agentic-teams/${teamId}/agents` : '/dashboard/agents')}
         className="flex items-center gap-2 text-muted hover:text-foreground transition-colors"
       >
         <ArrowLeftIcon className="h-4 w-4" />
@@ -256,7 +260,7 @@ export default function CreateAgentPage() {
             <Button
               type="button"
               variant="secondary"
-              onClick={() => router.push('/dashboard/agents')}
+              onClick={() => router.push(teamId ? `/dashboard/agentic-teams/${teamId}/agents` : '/dashboard/agents')}
               disabled={loading}
               className="flex-1"
             >
