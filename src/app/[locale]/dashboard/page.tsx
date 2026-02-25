@@ -23,7 +23,7 @@ interface ResourceCard {
 export default function DashboardPage() {
   const t = useTranslations('DashboardHome');
   const [resources, setResources] = useState<ResourceCard[]>([
-    { key: 'apps', nameKey: 'apps', emptyKey: 'noApps', icon: DevicePhoneMobileIcon, href: '/dashboard/apps', count: null, error: null },
+    { key: 'connectors', nameKey: 'connectors', emptyKey: 'noConnectors', icon: DevicePhoneMobileIcon, href: '/dashboard/connectors', count: null, error: null },
     { key: 'agents', nameKey: 'agents', emptyKey: 'noAgents', icon: SparklesIcon, href: '/dashboard/agents', count: null, error: null },
     { key: 'apiKeys', nameKey: 'apiKeys', emptyKey: 'noApiKeys', icon: KeyIcon, href: '/dashboard/api-keys', count: null, error: null },
   ]);
@@ -31,7 +31,7 @@ export default function DashboardPage() {
 
   const fetchCounts = useCallback(async () => {
     const results = await Promise.allSettled([
-      apiService.getApps().then(d => d.length),
+      apiService.getConnectors().then(d => d.length),
       apiService.getAgentsList().then(a => a.length),
       apiService.getApiKeys().then(k => k.length),
     ]);

@@ -16,7 +16,7 @@ export interface IntegrationResponse {
   platformName: string;
   platformIdentifier: string;
   name: string;
-  appPubId: string;
+  connectorPubId: string;
   enabled: boolean;
   lastUsedAt: string | null;
   createdAt: string;

@@ -3,46 +3,46 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { AppResponse } from '@/types';
+import { ConnectorResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input, TextArea } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 
-interface EditAppModalProps {
-  app: AppResponse;
+interface EditConnectorModalProps {
+  connector: ConnectorResponse;
   onClose: () => void;
-  onSuccess: (app: AppResponse) => void;
+  onSuccess: (connector: ConnectorResponse) => void;
 }
 
-export default function EditAppModal({ app, onClose, onSuccess }: EditAppModalProps) {
-  const t = useTranslations('Apps');
-  const [name, setName] = useState(app.name);
-  const [description, setDescription] = useState(app.description || '');
+export default function EditConnectorModal({ connector, onClose, onSuccess }: EditConnectorModalProps) {
+  const t = useTranslations('Connectors');
+  const [name, setName] = useState(connector.name);
+  const [description, setDescription] = useState(connector.description || '');
 
-  const { loading, error, handleSubmit } = useAsyncForm<AppResponse>({
+  const { loading, error, handleSubmit } = useAsyncForm<ConnectorResponse>({
     onSuccess,
-    defaultError: 'Failed to update app',
+    defaultError: 'Failed to update connector',
   });
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
-      apiService.updateApp(app.pubId, {
+      apiService.updateConnector(connector.pubId, {
         name,
         description: description || undefined,
       })
     );
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={t('editApp')}>
+    <Modal isOpen={true} onClose={onClose} title={t('editConnector')}>
       <form onSubmit={onSubmit} className="space-y-4">
         <FormField label={t('name')} required>
           <Input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={t('appNamePlaceholder')}
+            placeholder={t('connectorNamePlaceholder')}
             required
             maxLength={100}
           />

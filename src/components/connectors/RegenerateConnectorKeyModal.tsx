@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ClipboardDocumentIcon, CheckIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
-import { AppCreatedResponse } from '@/types';
+import { ConnectorCreatedResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input } from '@/components/ui/FormField';
@@ -13,25 +13,25 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { useClipboard } from '@/hooks/useClipboard';
 
-interface RegenerateAppKeyModalProps {
-  appId: string;
-  appName: string;
+interface RegenerateConnectorKeyModalProps {
+  connectorId: string;
+  connectorName: string;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export default function RegenerateAppKeyModal({ appId, appName, onClose, onSuccess }: RegenerateAppKeyModalProps) {
-  const t = useTranslations('Apps');
-  const [regeneratedKey, setRegeneratedKey] = useState<AppCreatedResponse | null>(null);
+export default function RegenerateConnectorKeyModal({ connectorId, connectorName, onClose, onSuccess }: RegenerateConnectorKeyModalProps) {
+  const t = useTranslations('Connectors');
+  const [regeneratedKey, setRegeneratedKey] = useState<ConnectorCreatedResponse | null>(null);
   const { copied, copy } = useClipboard();
 
-  const { loading, error, handleSubmit } = useAsyncForm<AppCreatedResponse>({
+  const { loading, error, handleSubmit } = useAsyncForm<ConnectorCreatedResponse>({
     onSuccess: setRegeneratedKey,
-    defaultError: 'Failed to regenerate app key',
+    defaultError: 'Failed to regenerate connector key',
   });
 
   const handleRegenerate = (e: React.FormEvent) =>
-    handleSubmit(e, () => apiService.regenerateAppKey(appId));
+    handleSubmit(e, () => apiService.regenerateConnectorKey(connectorId));
 
   const handleClose = () => {
     if (regeneratedKey) {
@@ -59,7 +59,7 @@ export default function RegenerateAppKeyModal({ appId, appName, onClose, onSucce
             </p>
           </Alert>
 
-          <FormField label={t('appKey')}>
+          <FormField label={t('connectorKey')}>
             <div className="flex gap-2">
               <Input
                 type="text"
@@ -95,7 +95,7 @@ export default function RegenerateAppKeyModal({ appId, appName, onClose, onSucce
     <Modal isOpen={true} onClose={onClose} title={t('regenerateKey')} size="sm">
       <form onSubmit={handleRegenerate} className="space-y-4">
         <p className="text-foreground">
-          {t('regenerateConfirm', { name: appName })}
+          {t('regenerateConfirm', { name: connectorName })}
         </p>
 
         <Alert variant="warning">

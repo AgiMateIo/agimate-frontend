@@ -1,6 +1,6 @@
-// Apps types (replaces device auth keys)
+// Connector types (replaces apps)
 
-export interface AppResponse {
+export interface ConnectorResponse {
   pubId: string;
   name: string;
   description: string;
@@ -11,7 +11,7 @@ export interface AppResponse {
   features: Record<string, unknown> | null;
 }
 
-export interface AppCreatedResponse {
+export interface ConnectorCreatedResponse {
   pubId: string;
   name: string;
   fullKey: string;
@@ -20,9 +20,9 @@ export interface AppCreatedResponse {
   updatedAt: string;
 }
 
-export interface AppDetailResponse {
-  appId: string;
-  appName: string;
+export interface ConnectorDetailResponse {
+  connectorId: string;
+  connectorName: string;
   deviceId: string | null;
   deviceFeatures: Record<string, unknown> | null;
   connected: boolean;
@@ -30,12 +30,12 @@ export interface AppDetailResponse {
   tools: Record<string, unknown> | null;
 }
 
-export interface CreateAppRequest {
+export interface CreateConnectorRequest {
   name: string;
   description?: string;
 }
 
-export interface UpdateAppRequest {
+export interface UpdateConnectorRequest {
   name?: string;
   description?: string;
   enabled?: boolean;
@@ -48,7 +48,7 @@ export interface DeviceTriggerInfo {
 }
 
 export interface DeviceTriggerGroup {
-  deviceAuthKeyId: string;
+  connectorPubId: string;
   deviceId: string;
   deviceName: string;
   triggers: DeviceTriggerInfo[];
@@ -61,7 +61,7 @@ export interface DeviceToolInfo {
 }
 
 export interface DeviceToolGroup {
-  deviceAuthKeyId: string;
+  connectorPubId: string;
   deviceId: string;
   deviceName: string;
   tools: DeviceToolInfo[];
@@ -70,7 +70,7 @@ export interface DeviceToolGroup {
 // Trigger log entry returned by GET /device/manage/trigger-logs/
 export interface TriggerLog {
   id: string;
-  appPubId: string;
+  connectorPubId: string;
   triggerId: string;
   triggerType: string;
   triggerName: string;

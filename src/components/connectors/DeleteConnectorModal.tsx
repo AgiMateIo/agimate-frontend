@@ -3,46 +3,46 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
+import { ConnectorResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 
-interface DisconnectAppModalProps {
-  appId: string;
-  appName: string;
+interface DeleteConnectorModalProps {
+  connector: ConnectorResponse;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (connectorId: string) => void;
 }
 
-export default function DisconnectAppModal({ appId, appName, onClose, onSuccess }: DisconnectAppModalProps) {
-  const t = useTranslations('Apps');
-  const [disconnecting, setDisconnecting] = useState(false);
+export default function DeleteConnectorModal({ connector, onClose, onSuccess }: DeleteConnectorModalProps) {
+  const t = useTranslations('Connectors');
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleDisconnect = async () => {
-    setDisconnecting(true);
+  const handleDelete = async () => {
+    setDeleting(true);
     setError(null);
 
     try {
-      await apiService.disconnectApp(appId);
-      onSuccess();
+      await apiService.deleteConnector(connector.pubId);
+      onSuccess(connector.pubId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to disconnect app');
+      setError(err instanceof Error ? err.message : 'Failed to delete connector');
     } finally {
-      setDisconnecting(false);
+      setDeleting(false);
     }
   };
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={t('disconnectApp')} size="sm">
+    <Modal isOpen={true} onClose={onClose} title={t('deleteConnector')} size="sm">
       <div className="space-y-4">
         <p className="text-foreground">
-          {t('disconnectConfirm', { name: appName })}
+          {t('deleteConfirm', { name: connector.name })}
         </p>
 
         <Alert variant="warning">
-          {t('disconnectWarning')}
+          {t('deleteWarning')}
         </Alert>
 
         {error && <ErrorAlert>{error}</ErrorAlert>}
@@ -51,18 +51,18 @@ export default function DisconnectAppModal({ appId, appName, onClose, onSuccess 
           <Button
             variant="secondary"
             onClick={onClose}
-            disabled={disconnecting}
+            disabled={deleting}
             className="flex-1"
           >
             {t('cancel')}
           </Button>
           <Button
             variant="danger"
-            onClick={handleDisconnect}
-            loading={disconnecting}
+            onClick={handleDelete}
+            loading={deleting}
             className="flex-1"
           >
-            {t('disconnect')}
+            {t('delete')}
           </Button>
         </div>
       </div>

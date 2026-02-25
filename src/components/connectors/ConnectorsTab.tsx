@@ -5,33 +5,33 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { localeMap } from '@/i18n/routing';
 import apiService from '@/services/api';
-import { AppResponse } from '@/types';
+import { ConnectorResponse } from '@/types';
 import { TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { Toggle } from '@/components/ui/Toggle';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
-import AddAppModal from './AddAppModal';
-import EditAppModal from './EditAppModal';
-import DeleteAppModal from './DeleteAppModal';
+import AddConnectorModal from './AddConnectorModal';
+import EditConnectorModal from './EditConnectorModal';
+import DeleteConnectorModal from './DeleteConnectorModal';
 
-export default function AppsTab() {
-  const t = useTranslations('Apps');
+export default function ConnectorsTab() {
+  const t = useTranslations('Connectors');
   const locale = useLocale();
   const bcp47Locale = localeMap[locale];
   const [showAddModal, setShowAddModal] = useState(false);
-  const [apps, setApps] = useState<AppResponse[]>([]);
+  const [connectors, setConnectors] = useState<ConnectorResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [editingApp, setEditingApp] = useState<AppResponse | null>(null);
-  const [deletingApp, setDeletingApp] = useState<AppResponse | null>(null);
+  const [editingConnector, setEditingConnector] = useState<ConnectorResponse | null>(null);
+  const [deletingConnector, setDeletingConnector] = useState<ConnectorResponse | null>(null);
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
 
   const fetchData = useCallback(async () => {
     try {
       setError(null);
-      const data = await apiService.getApps();
-      setApps(data);
+      const data = await apiService.getConnectors();
+      setConnectors(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load apps');
+      setError(err instanceof Error ? err.message : 'Failed to load connectors');
     } finally {
       setLoading(false);
     }
@@ -41,44 +41,44 @@ export default function AppsTab() {
     fetchData();
   }, [fetchData]);
 
-  const handleAppAdded = () => {
+  const handleConnectorAdded = () => {
     fetchData();
     setShowAddModal(false);
   };
 
-  const handleToggleEnabled = async (app: AppResponse) => {
-    setUpdatingIds(prev => new Set(prev).add(app.pubId));
+  const handleToggleEnabled = async (connector: ConnectorResponse) => {
+    setUpdatingIds(prev => new Set(prev).add(connector.pubId));
 
-    setApps(prev =>
-      prev.map(a => a.pubId === app.pubId ? { ...a, enabled: !a.enabled } : a)
+    setConnectors(prev =>
+      prev.map(a => a.pubId === connector.pubId ? { ...a, enabled: !a.enabled } : a)
     );
 
     try {
-      await apiService.updateApp(app.pubId, {
-        enabled: !app.enabled,
+      await apiService.updateConnector(connector.pubId, {
+        enabled: !connector.enabled,
       });
     } catch (err) {
-      console.error('Failed to update app:', err);
-      setApps(prev =>
-        prev.map(a => a.pubId === app.pubId ? { ...a, enabled: app.enabled } : a)
+      console.error('Failed to update connector:', err);
+      setConnectors(prev =>
+        prev.map(a => a.pubId === connector.pubId ? { ...a, enabled: connector.enabled } : a)
       );
     } finally {
       setUpdatingIds(prev => {
         const next = new Set(prev);
-        next.delete(app.pubId);
+        next.delete(connector.pubId);
         return next;
       });
     }
   };
 
-  const handleDeleteSuccess = (appId: string) => {
-    setApps(prev => prev.filter(a => a.pubId !== appId));
-    setDeletingApp(null);
+  const handleDeleteSuccess = (connectorId: string) => {
+    setConnectors(prev => prev.filter(a => a.pubId !== connectorId));
+    setDeletingConnector(null);
   };
 
-  const handleEditSuccess = (updated: AppResponse) => {
-    setApps(prev => prev.map(a => a.pubId === updated.pubId ? updated : a));
-    setEditingApp(null);
+  const handleEditSuccess = (updated: ConnectorResponse) => {
+    setConnectors(prev => prev.map(a => a.pubId === updated.pubId ? updated : a));
+    setEditingConnector(null);
   };
 
   const formatDate = (dateString: string) => {
@@ -93,7 +93,7 @@ export default function AppsTab() {
   };
 
   if (loading) {
-    return <div className="text-center py-12 text-muted">{t('loadingApps')}</div>;
+    return <div className="text-center py-12 text-muted">{t('loadingConnectors')}</div>;
   }
 
   if (error) {
@@ -104,50 +104,50 @@ export default function AppsTab() {
     <>
       <div className="bg-surface rounded-xl border border-border p-6 space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">{t('apps')}</h2>
+          <h2 className="text-lg font-semibold text-foreground">{t('connectors')}</h2>
           <button
             onClick={() => setShowAddModal(true)}
             className="bg-accent text-accent-foreground px-4 py-2 rounded-lg font-medium hover:bg-accent/90 transition-colors"
           >
-            {t('createApp')}
+            {t('createConnector')}
           </button>
         </div>
 
-        {apps.length === 0 ? (
+        {connectors.length === 0 ? (
           <div className="text-center py-8 text-muted">
-            {t('noApps')}
+            {t('noConnectors')}
           </div>
         ) : (
           <div className="space-y-3">
-            {apps.map((app) => (
+            {connectors.map((connector) => (
               <Link
-                key={app.pubId}
-                href={`/dashboard/apps/${app.pubId}`}
+                key={connector.pubId}
+                href={`/dashboard/connectors/${connector.pubId}`}
                 className="block bg-surface-secondary rounded-lg p-4 border border-border hover:border-accent/30 transition-colors"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-foreground">{app.name}</h3>
-                    {app.description && (
-                      <p className="text-sm text-muted mt-1">{app.description}</p>
+                    <h3 className="font-medium text-foreground">{connector.name}</h3>
+                    {connector.description && (
+                      <p className="text-sm text-muted mt-1">{connector.description}</p>
                     )}
                     <div className="text-xs text-muted mt-2 space-y-1">
-                      <p>{t('key')}: <span className="font-mono">{app.maskedKeyId}</span></p>
-                      <p>{t('created')}: {formatDate(app.createdAt)}</p>
+                      <p>{t('key')}: <span className="font-mono">{connector.maskedKeyId}</span></p>
+                      <p>{t('created')}: {formatDate(connector.createdAt)}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2" onClick={(e) => e.preventDefault()}>
                     <Toggle
-                      checked={app.enabled}
-                      onChange={() => handleToggleEnabled(app)}
-                      disabled={updatingIds.has(app.pubId)}
+                      checked={connector.enabled}
+                      onChange={() => handleToggleEnabled(connector)}
+                      disabled={updatingIds.has(connector.pubId)}
                     />
 
                     <button
                       onClick={(e) => {
                         e.preventDefault();
-                        setEditingApp(app);
+                        setEditingConnector(connector);
                       }}
                       className="p-2 text-muted hover:text-foreground transition-colors rounded-lg"
                     >
@@ -157,7 +157,7 @@ export default function AppsTab() {
                     <button
                       onClick={(e) => {
                         e.preventDefault();
-                        setDeletingApp(app);
+                        setDeletingConnector(connector);
                       }}
                       className="p-2 text-muted hover:text-error transition-colors rounded-lg"
                     >
@@ -172,24 +172,24 @@ export default function AppsTab() {
       </div>
 
       {showAddModal && (
-        <AddAppModal
+        <AddConnectorModal
           onClose={() => setShowAddModal(false)}
-          onSuccess={handleAppAdded}
+          onSuccess={handleConnectorAdded}
         />
       )}
 
-      {editingApp && (
-        <EditAppModal
-          app={editingApp}
-          onClose={() => setEditingApp(null)}
+      {editingConnector && (
+        <EditConnectorModal
+          connector={editingConnector}
+          onClose={() => setEditingConnector(null)}
           onSuccess={handleEditSuccess}
         />
       )}
 
-      {deletingApp && (
-        <DeleteAppModal
-          app={deletingApp}
-          onClose={() => setDeletingApp(null)}
+      {deletingConnector && (
+        <DeleteConnectorModal
+          connector={deletingConnector}
+          onClose={() => setDeletingConnector(null)}
           onSuccess={handleDeleteSuccess}
         />
       )}

@@ -7,11 +7,11 @@ import type {
   ApiKeyWithSecret,
   CreateApiKeyRequest,
   UpdateApiKeyRequest,
-  AppResponse,
-  AppCreatedResponse,
-  AppDetailResponse,
-  CreateAppRequest,
-  UpdateAppRequest,
+  ConnectorResponse,
+  ConnectorCreatedResponse,
+  ConnectorDetailResponse,
+  CreateConnectorRequest,
+  UpdateConnectorRequest,
   TriggerLog,
   DeviceTriggerGroup,
   DeviceToolGroup,
@@ -305,37 +305,37 @@ class ApiService {
 
   // ========== DEVICE API METHODS ==========
 
-  // Apps
-  async getApps(): Promise<AppResponse[]> {
-    return this.get<AppResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/apps/`);
+  // Connectors
+  async getConnectors(): Promise<ConnectorResponse[]> {
+    return this.get<ConnectorResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/connectors/`);
   }
 
-  async createApp(data: CreateAppRequest): Promise<AppCreatedResponse> {
-    return this.post<AppCreatedResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/apps/`, data);
+  async createConnector(data: CreateConnectorRequest): Promise<ConnectorCreatedResponse> {
+    return this.post<ConnectorCreatedResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/connectors/`, data);
   }
 
-  async getApp(id: string): Promise<AppResponse> {
-    return this.get<AppResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/apps/${id}`);
+  async getConnector(id: string): Promise<ConnectorResponse> {
+    return this.get<ConnectorResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/connectors/${id}`);
   }
 
-  async getAppDetail(id: string): Promise<AppDetailResponse> {
-    return this.get<AppDetailResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/apps/${id}/detail`);
+  async getConnectorDetail(id: string): Promise<ConnectorDetailResponse> {
+    return this.get<ConnectorDetailResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/connectors/${id}/detail`);
   }
 
-  async updateApp(id: string, data: UpdateAppRequest): Promise<AppResponse> {
-    return this.put<AppResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/apps/${id}`, data);
+  async updateConnector(id: string, data: UpdateConnectorRequest): Promise<ConnectorResponse> {
+    return this.put<ConnectorResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/connectors/${id}`, data);
   }
 
-  async deleteApp(id: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/apps/${id}`);
+  async deleteConnector(id: string): Promise<void> {
+    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/connectors/${id}`);
   }
 
-  async regenerateAppKey(id: string): Promise<AppCreatedResponse> {
-    return this.post<AppCreatedResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/apps/${id}/regenerate`, {});
+  async regenerateConnectorKey(id: string): Promise<ConnectorCreatedResponse> {
+    return this.post<ConnectorCreatedResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/connectors/${id}/regenerate`, {});
   }
 
-  async disconnectApp(id: string): Promise<void> {
-    return this.post(`${API.ENDPOINTS.DEVICE_API}/manage/apps/${id}/disconnect`, {});
+  async disconnectConnector(id: string): Promise<void> {
+    return this.post(`${API.ENDPOINTS.DEVICE_API}/manage/connectors/${id}/disconnect`, {});
   }
 
   // Agents
@@ -381,10 +381,10 @@ class ApiService {
   }
 
   // Trigger logs
-  async getTriggerLogs(params?: { deviceId?: string; appPubId?: string }): Promise<TriggerLog[]> {
+  async getTriggerLogs(params?: { deviceId?: string; connectorPubId?: string }): Promise<TriggerLog[]> {
     const searchParams = new URLSearchParams();
     if (params?.deviceId) searchParams.set('deviceId', params.deviceId);
-    if (params?.appPubId) searchParams.set('appPubId', params.appPubId);
+    if (params?.connectorPubId) searchParams.set('connectorPubId', params.connectorPubId);
     const query = searchParams.toString();
     const page = await this.get<PagedResponse<TriggerLog>>(`${API.ENDPOINTS.DEVICE_API}/manage/trigger-logs/${query ? `?${query}` : ''}`);
     return page.content;

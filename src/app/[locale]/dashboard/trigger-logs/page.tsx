@@ -1,10 +1,10 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import TriggerLogsTab from '@/components/apps/TriggerLogsTab';
+import TriggerLogsTab from '@/components/connectors/TriggerLogsTab';
 
 export default function TriggerLogsPage() {
-  const t = useTranslations('Apps');
+  const t = useTranslations('Connectors');
 
   return (
     <div className="space-y-6">

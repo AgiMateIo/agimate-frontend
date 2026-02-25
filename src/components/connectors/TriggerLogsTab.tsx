@@ -15,7 +15,7 @@ const REFRESH_OPTIONS = [
 ] as const;
 
 export default function TriggerLogsTab() {
-  const t = useTranslations('Apps');
+  const t = useTranslations('Connectors');
   const [logs, setLogs] = useState<TriggerLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');

@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { ClipboardDocumentIcon, ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline';
 import { useClipboard } from '@/hooks/useClipboard';
 import { getApiBaseUrl } from '@/utils/api-url';
-import AppsTab from '@/components/apps/AppsTab';
+import ConnectorsTab from '@/components/connectors/ConnectorsTab';
 
-export default function AppsPage() {
-  const t = useTranslations('Apps');
+export default function ConnectorsPage() {
+  const t = useTranslations('Connectors');
   const locale = useLocale();
   const { copied, copy } = useClipboard();
   const apiBaseUrl = getApiBaseUrl();
@@ -52,8 +52,8 @@ export default function AppsPage() {
         </div>
       </div>
 
-      {/* Apps */}
-      <AppsTab />
+      {/* Connectors */}
+      <ConnectorsTab />
     </div>
   );
 }

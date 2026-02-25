@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ClipboardDocumentIcon, CheckIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
-import { AppCreatedResponse } from '@/types';
+import { ConnectorCreatedResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input, TextArea } from '@/components/ui/FormField';
@@ -13,47 +13,47 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { useClipboard } from '@/hooks/useClipboard';
 
-interface AddAppModalProps {
+interface AddConnectorModalProps {
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export default function AddAppModal({ onClose, onSuccess }: AddAppModalProps) {
-  const t = useTranslations('Apps');
+export default function AddConnectorModal({ onClose, onSuccess }: AddConnectorModalProps) {
+  const t = useTranslations('Connectors');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [createdApp, setCreatedApp] = useState<AppCreatedResponse | null>(null);
+  const [createdConnector, setCreatedConnector] = useState<ConnectorCreatedResponse | null>(null);
   const { copied, copy } = useClipboard();
 
-  const { loading, error, handleSubmit } = useAsyncForm<AppCreatedResponse>({
-    onSuccess: setCreatedApp,
-    defaultError: 'Failed to create app',
+  const { loading, error, handleSubmit } = useAsyncForm<ConnectorCreatedResponse>({
+    onSuccess: setCreatedConnector,
+    defaultError: 'Failed to create connector',
   });
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
-      apiService.createApp({
+      apiService.createConnector({
         name,
         description: description || undefined,
       })
     );
 
   const handleClose = () => {
-    if (createdApp) {
+    if (createdConnector) {
       onSuccess();
     }
     onClose();
   };
 
   const handleCopy = () => {
-    if (createdApp) {
-      copy(createdApp.fullKey);
+    if (createdConnector) {
+      copy(createdConnector.fullKey);
     }
   };
 
-  if (createdApp) {
+  if (createdConnector) {
     return (
-      <Modal isOpen={true} onClose={handleClose} title={t('appKeyCreated')}>
+      <Modal isOpen={true} onClose={handleClose} title={t('connectorKeyCreated')}>
         <div className="space-y-4">
           <Alert variant="warning">
             <p className="font-medium">
@@ -64,11 +64,11 @@ export default function AddAppModal({ onClose, onSuccess }: AddAppModalProps) {
             </p>
           </Alert>
 
-          <FormField label={t('appKey')}>
+          <FormField label={t('connectorKey')}>
             <div className="flex gap-2">
               <Input
                 type="text"
-                value={createdApp.fullKey}
+                value={createdConnector.fullKey}
                 readOnly
                 className="flex-1 font-mono text-sm select-all"
               />
@@ -90,11 +90,11 @@ export default function AddAppModal({ onClose, onSuccess }: AddAppModalProps) {
 
           <Alert variant="info">
             <p className="text-sm">
-              <strong>{t('name')}:</strong> {createdApp.name}
+              <strong>{t('name')}:</strong> {createdConnector.name}
             </p>
-            {createdApp.description && createdApp.description.trim() && (
+            {createdConnector.description && createdConnector.description.trim() && (
               <p className="text-sm mt-1">
-                <strong>{t('description')}:</strong> {createdApp.description}
+                <strong>{t('description')}:</strong> {createdConnector.description}
               </p>
             )}
           </Alert>
@@ -108,14 +108,14 @@ export default function AddAppModal({ onClose, onSuccess }: AddAppModalProps) {
   }
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={t('createApp')}>
+    <Modal isOpen={true} onClose={onClose} title={t('createConnector')}>
       <form onSubmit={onSubmit} className="space-y-4">
         <FormField label={t('name')} required>
           <Input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={t('appNamePlaceholder')}
+            placeholder={t('connectorNamePlaceholder')}
             required
             maxLength={100}
           />

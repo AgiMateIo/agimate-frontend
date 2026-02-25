@@ -1,10 +1,10 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import ToolUseLogsTab from '@/components/apps/ToolUseLogsTab';
+import ToolUseLogsTab from '@/components/connectors/ToolUseLogsTab';
 
 export default function ToolUseLogsPage() {
-  const t = useTranslations('Apps');
+  const t = useTranslations('Connectors');
 
   return (
     <div className="space-y-6">

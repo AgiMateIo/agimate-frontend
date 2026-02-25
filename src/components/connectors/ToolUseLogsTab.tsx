@@ -15,7 +15,7 @@ const REFRESH_OPTIONS = [
 ] as const;
 
 export default function ToolUseLogsTab() {
-  const t = useTranslations('Apps');
+  const t = useTranslations('Connectors');
   const [logs, setLogs] = useState<ToolUseLogResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');

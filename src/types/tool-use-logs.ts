@@ -3,7 +3,7 @@
 export interface ToolUseLogResponse {
   id: string;
   apiKeyPubId: string;
-  appPubId: string;
+  connectorPubId: string;
   toolUseId: string;
   toolName: string;
   toolParams: Record<string, unknown>;
