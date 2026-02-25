@@ -2,6 +2,7 @@
   "Sidebar": {
     "dashboard": "Dashboard",
     "connectors": "Коннекторы",
+    "apps": "Приложения",
     "agents": "Агенты",
     "agenticTeams": "Команды агентов",
     "triggerLogs": "Логи триггеров",
@@ -49,8 +50,8 @@
     "noApiKeys": "API ключи не созданы"
   },
   "Connectors": {
-    "title": "Коннекторы",
-    "subtitle": "Управление коннекторами и подключёнными устройствами",
+    "title": "Приложения",
+    "subtitle": "Управление приложениями и подключёнными устройствами",
     "connectors": "Коннекторы",
     "connectorsTab": "Коннекторы",
     "triggerLogsTab": "Логи триггеров",

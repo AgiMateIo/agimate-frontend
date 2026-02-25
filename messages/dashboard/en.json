@@ -2,6 +2,7 @@
   "Sidebar": {
     "dashboard": "Dashboard",
     "connectors": "Connectors",
+    "apps": "Apps",
     "agents": "Agents",
     "agenticTeams": "Agentic Teams",
     "triggerLogs": "Trigger Logs",
@@ -49,8 +50,8 @@
     "noApiKeys": "No API keys created yet"
   },
   "Connectors": {
-    "title": "Connectors",
-    "subtitle": "Manage your connectors and connected devices",
+    "title": "Apps",
+    "subtitle": "Manage your apps and connected devices",
     "connectors": "Connectors",
     "connectorsTab": "Connectors",
     "triggerLogsTab": "Trigger Logs",
