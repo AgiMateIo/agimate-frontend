@@ -31,6 +31,7 @@ export default function TopBar() {
     'tool-use-logs': t('breadcrumbs.toolUseLogs'),
     integrations: t('breadcrumbs.integrations'),
     settings: t('breadcrumbs.settings'),
+    board: t('breadcrumbs.board'),
   };
 
   const breadcrumbs = segments.map((segment, index) => {

@@ -13,3 +13,4 @@ export * from './tool-use-logs';
 export * from './webhooks';
 export * from './agentic-teams';
 export * from './integrations';
+export * from './boards';

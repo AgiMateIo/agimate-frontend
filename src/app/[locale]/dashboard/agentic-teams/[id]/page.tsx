@@ -90,7 +90,11 @@ function TeamDetail({
         {tiles.map((tile) => (
           <Link
             key={tile.key}
-            href={tile.key === 'agents' ? `/dashboard/agentic-teams/${teamId}/agents` : '#'}
+            href={
+              tile.key === 'agents' ? `/dashboard/agentic-teams/${teamId}/agents`
+              : tile.key === 'taskBoard' ? `/dashboard/agentic-teams/${teamId}/board`
+              : '#'
+            }
             className="bg-surface rounded-xl border border-border p-6 hover:border-accent/30 transition-colors block"
           >
             <tile.icon className="h-8 w-8 text-accent mb-3" />

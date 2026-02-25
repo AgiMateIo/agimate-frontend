@@ -29,6 +29,14 @@ import type {
   CreateIntegrationRequest,
   UpdateIntegrationRequest,
   UpdateIntegrationCredentialsRequest,
+  Board,
+  BoardTask,
+  BoardTaskComment,
+  TasksByStatus,
+  CreateBoardRequest,
+  CreateTaskRequest,
+  ChangeTaskStatusRequest,
+  CreateCommentRequest,
 } from '@/types';
 
 const SERVICE_UNAVAILABLE_MESSAGE = 'SERVICE_UNAVAILABLE';
@@ -421,6 +429,40 @@ class ApiService {
 
   async deleteAgenticTeam(id: string): Promise<void> {
     return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agentic-teams/${id}`);
+  }
+
+  // ========== BOARDS ==========
+
+  async getBoards(): Promise<Board[]> {
+    return this.get<Board[]>(`${API.ENDPOINTS.DEVICE_API}/manage/boards/`);
+  }
+
+  async createBoard(data: CreateBoardRequest): Promise<Board> {
+    return this.post<Board>(`${API.ENDPOINTS.DEVICE_API}/manage/boards/`, data);
+  }
+
+  async getBoard(boardPubId: string): Promise<Board> {
+    return this.get<Board>(`${API.ENDPOINTS.DEVICE_API}/manage/boards/${boardPubId}`);
+  }
+
+  async getBoardTasks(boardPubId: string): Promise<TasksByStatus> {
+    return this.get<TasksByStatus>(`${API.ENDPOINTS.DEVICE_API}/manage/boards/${boardPubId}/tasks/`);
+  }
+
+  async createBoardTask(boardPubId: string, data: CreateTaskRequest): Promise<BoardTask> {
+    return this.post<BoardTask>(`${API.ENDPOINTS.DEVICE_API}/manage/boards/${boardPubId}/tasks/`, data);
+  }
+
+  async changeTaskStatus(taskPubId: string, data: ChangeTaskStatusRequest): Promise<BoardTask> {
+    return this.patch<BoardTask>(`${API.ENDPOINTS.DEVICE_API}/manage/boards/tasks/${taskPubId}/status`, data);
+  }
+
+  async getTaskComments(taskPubId: string): Promise<BoardTaskComment[]> {
+    return this.get<BoardTaskComment[]>(`${API.ENDPOINTS.DEVICE_API}/manage/boards/tasks/${taskPubId}/comments/`);
+  }
+
+  async createTaskComment(taskPubId: string, data: CreateCommentRequest): Promise<BoardTaskComment> {
+    return this.post<BoardTaskComment>(`${API.ENDPOINTS.DEVICE_API}/manage/boards/tasks/${taskPubId}/comments/`, data);
   }
 
   // ========== PLATFORM INTEGRATIONS ==========
