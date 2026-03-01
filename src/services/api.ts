@@ -186,7 +186,12 @@ class ApiService {
 
     let response = await safeFetch(url, config);
 
-    if (response.status === 401 || response.status === 403) {
+    // 403 Forbidden — permission denied, token refresh won't help
+    if (response.status === 403) {
+      return handleErrorResponse(response);
+    }
+
+    if (response.status === 401) {
       const isUserMeRequest = url.includes('/user/me');
 
       // Try to refresh the token once if unauthorized
@@ -213,7 +218,11 @@ class ApiService {
 
         response = await safeFetch(url, { ...options, headers: retryHeaders });
 
-        if (response.status === 401 || response.status === 403) {
+        if (response.status === 403) {
+          return handleErrorResponse(response);
+        }
+
+        if (response.status === 401) {
           if (isUserMeRequest) {
             clearTokens();
             if (typeof window !== 'undefined') {

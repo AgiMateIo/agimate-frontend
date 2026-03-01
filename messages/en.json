@@ -212,7 +212,8 @@
     "yesterday": "Yesterday",
     "daysAgo": "{count, plural, one {# day ago} other {# days ago}}",
     "errors": {
-      "SERVICE_UNAVAILABLE": "Service temporarily unavailable"
+      "SERVICE_UNAVAILABLE": "Service temporarily unavailable",
+      "ACCESS_DENIED": "Access denied"
     }
   },
   "LocaleSwitcher": {

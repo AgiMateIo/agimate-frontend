@@ -212,7 +212,8 @@
     "yesterday": "Вчера",
     "daysAgo": "{count, plural, one {# день назад} few {# дня назад} other {# дней назад}}",
     "errors": {
-      "SERVICE_UNAVAILABLE": "Сервис временно недоступен"
+      "SERVICE_UNAVAILABLE": "Сервис временно недоступен",
+      "ACCESS_DENIED": "Доступ запрещён"
     }
   },
   "LocaleSwitcher": {
