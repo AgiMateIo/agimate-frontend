@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, Suspense, use } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { localeMap } from '@/i18n/routing';
@@ -8,41 +8,38 @@ import apiService from '@/services/api';
 import { ConnectorResponse } from '@/types';
 import { TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { Toggle } from '@/components/ui/Toggle';
-import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { usePromiseCache } from '@/hooks/usePromiseCache';
 import AddConnectorModal from './AddConnectorModal';
 import EditConnectorModal from './EditConnectorModal';
 import DeleteConnectorModal from './DeleteConnectorModal';
 
-export default function ConnectorsTab() {
+function ConnectorsListView({
+  connectorsPromise,
+  onUpdate,
+}: {
+  connectorsPromise: Promise<ConnectorResponse[]>;
+  onUpdate: () => void;
+}) {
   const t = useTranslations('Connectors');
   const locale = useLocale();
   const bcp47Locale = localeMap[locale];
+  const initialConnectors = use(connectorsPromise);
+  const [connectors, setConnectors] = useState(initialConnectors);
+  const [lastInitial, setLastInitial] = useState(initialConnectors);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [connectors, setConnectors] = useState<ConnectorResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [editingConnector, setEditingConnector] = useState<ConnectorResponse | null>(null);
   const [deletingConnector, setDeletingConnector] = useState<ConnectorResponse | null>(null);
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
 
-  const fetchData = useCallback(async () => {
-    try {
-      setError(null);
-      const data = await apiService.getConnectors();
-      setConnectors(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load connectors');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  // Sync local state when fresh data arrives after invalidation
+  if (initialConnectors !== lastInitial) {
+    setLastInitial(initialConnectors);
+    setConnectors(initialConnectors);
+  }
 
   const handleConnectorAdded = () => {
-    fetchData();
+    onUpdate();
     setShowAddModal(false);
   };
 
@@ -91,14 +88,6 @@ export default function ConnectorsTab() {
       minute: '2-digit',
     }).format(date);
   };
-
-  if (loading) {
-    return <div className="text-center py-12 text-muted">{t('loadingConnectors')}</div>;
-  }
-
-  if (error) {
-    return <ErrorAlert>{error}</ErrorAlert>;
-  }
 
   return (
     <>
@@ -194,5 +183,22 @@ export default function ConnectorsTab() {
         />
       )}
     </>
+  );
+}
+
+export default function ConnectorsTab() {
+  const t = useTranslations('Connectors');
+  const { promise, invalidate } = usePromiseCache(
+    () => apiService.getConnectors(),
+    [],
+    'connectors-tab'
+  );
+
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<div className="text-center py-12 text-muted">{t('loadingConnectors')}</div>}>
+        <ConnectorsListView connectorsPromise={promise} onUpdate={invalidate} />
+      </Suspense>
+    </ErrorBoundary>
   );
 }

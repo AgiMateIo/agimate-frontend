@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, Suspense, use } from 'react';
 import { ClipboardDocumentIcon, ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { ApiKey, ApiKeyWithSecret } from '@/types';
@@ -8,55 +8,61 @@ import ApiKeysList from '@/components/api-keys/ApiKeysList';
 import AddApiKeyModal from '@/components/api-keys/AddApiKeyModal';
 import { useClipboard } from '@/hooks/useClipboard';
 import { getApiBaseUrl } from '@/utils/api-url';
+import { usePromiseCache } from '@/hooks/usePromiseCache';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
-export default function ApiKeysPage() {
+function ApiKeysContent({
+  apiKeysPromise,
+  onUpdate,
+}: {
+  apiKeysPromise: Promise<ApiKey[]>;
+  onUpdate: () => void;
+}) {
+  const apiKeys = use(apiKeysPromise);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { copied, copy } = useClipboard();
-  const apiBaseUrl = getApiBaseUrl();
 
-  const fetchData = useCallback(async () => {
-    try {
-      setError(null);
-      const data = await apiService.getApiKeys();
-      setApiKeys(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load API keys');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  const handleApiKeyAdded = (apiKey: ApiKeyWithSecret) => {
-    fetchData();
+  const handleApiKeyAdded = () => {
+    onUpdate();
     setShowAddModal(false);
   };
 
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-foreground">API Keys</h1>
-        <div className="text-center py-12 text-muted">Loading API keys...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-foreground">API Keys</h1>
-        <div className="bg-error/10 border border-error/20 rounded-lg p-4">
-          <p className="text-error">{error}</p>
+  return (
+    <>
+      <div className="bg-surface rounded-xl border border-border p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-foreground">Active Keys</h2>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="bg-accent text-accent-foreground px-4 py-2 rounded-lg font-medium hover:bg-accent/90 transition-colors"
+          >
+            Create API Key
+          </button>
         </div>
+
+        <ApiKeysList
+          apiKeys={apiKeys}
+          onUpdate={onUpdate}
+        />
       </div>
-    );
-  }
+
+      {showAddModal && (
+        <AddApiKeyModal
+          onClose={() => setShowAddModal(false)}
+          onSuccess={handleApiKeyAdded}
+        />
+      )}
+    </>
+  );
+}
+
+export default function ApiKeysPage() {
+  const { copied, copy } = useClipboard();
+  const apiBaseUrl = getApiBaseUrl();
+  const { promise, invalidate } = usePromiseCache(
+    () => apiService.getApiKeys(),
+    [],
+    'api-keys'
+  );
 
   return (
     <div className="space-y-6">
@@ -93,30 +99,11 @@ export default function ApiKeysPage() {
       </div>
 
       {/* API Keys Section */}
-      <div className="bg-surface rounded-xl border border-border p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">Active Keys</h2>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="bg-accent text-accent-foreground px-4 py-2 rounded-lg font-medium hover:bg-accent/90 transition-colors"
-          >
-            Create API Key
-          </button>
-        </div>
-
-        <ApiKeysList
-          apiKeys={apiKeys}
-          onUpdate={fetchData}
-        />
-      </div>
-
-      {/* Add API Key Modal */}
-      {showAddModal && (
-        <AddApiKeyModal
-          onClose={() => setShowAddModal(false)}
-          onSuccess={handleApiKeyAdded}
-        />
-      )}
+      <ErrorBoundary>
+        <Suspense fallback={<div className="text-center py-12 text-muted">Loading API keys...</div>}>
+          <ApiKeysContent apiKeysPromise={promise} onUpdate={invalidate} />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 }

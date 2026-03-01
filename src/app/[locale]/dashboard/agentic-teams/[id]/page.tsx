@@ -12,6 +12,7 @@ import {
   BookOpenIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { usePromiseCache } from '@/hooks/usePromiseCache';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import apiService from '@/services/api';
@@ -131,9 +132,11 @@ export default function AgenticTeamDetailPage() {
 
   return (
     <div className="space-y-6">
-      <Suspense fallback={<div className="text-muted">{t('loading')}</div>}>
-        <TeamDetail teamsPromise={promise} teamId={teamId} onEdit={setTeamToEdit} />
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={<div className="text-muted">{t('loading')}</div>}>
+          <TeamDetail teamsPromise={promise} teamId={teamId} onEdit={setTeamToEdit} />
+        </Suspense>
+      </ErrorBoundary>
 
       {teamToEdit && (
         <EditTeamModal

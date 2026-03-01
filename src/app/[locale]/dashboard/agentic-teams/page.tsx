@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { usePromiseCache } from '@/hooks/usePromiseCache';
 import apiService from '@/services/api';
 import AgenticTeamsList from '@/components/agentic-teams/AgenticTeamsList';
@@ -42,9 +43,11 @@ export default function AgenticTeamsPage() {
       <Alert variant="info">{t('description')}</Alert>
 
       {/* Teams grid */}
-      <Suspense fallback={<div className="text-muted">{t('loading')}</div>}>
-        <AgenticTeamsList teamsPromise={promise} />
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={<div className="text-muted">{t('loading')}</div>}>
+          <AgenticTeamsList teamsPromise={promise} />
+        </Suspense>
+      </ErrorBoundary>
 
       {/* Modals */}
       {showCreateModal && (

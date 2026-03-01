@@ -1,78 +1,39 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, Suspense, use } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import type { ConnectorDetailResponse } from '@/types';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { usePromiseCache } from '@/hooks/usePromiseCache';
 import DisconnectConnectorModal from '@/components/connectors/DisconnectConnectorModal';
 import RegenerateConnectorKeyModal from '@/components/connectors/RegenerateConnectorKeyModal';
 
-export default function ConnectorDetailPage() {
-  const { id } = useParams<{ id: string }>();
+function ConnectorContent({
+  connectorPromise,
+  onUpdate,
+}: {
+  connectorPromise: Promise<ConnectorDetailResponse>;
+  onUpdate: () => void;
+}) {
   const t = useTranslations('Connectors');
-  const [connector, setConnector] = useState<ConnectorDetailResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const connector = use(connectorPromise);
   const [showDisconnect, setShowDisconnect] = useState(false);
   const [showRegenerate, setShowRegenerate] = useState(false);
 
-  const fetchConnector = useCallback(async () => {
-    try {
-      setError(null);
-      const data = await apiService.getConnectorDetail(id);
-      setConnector(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load connector');
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
-  useEffect(() => {
-    fetchConnector();
-  }, [fetchConnector]);
-
   const handleDisconnectSuccess = () => {
     setShowDisconnect(false);
-    fetchConnector();
+    onUpdate();
   };
 
   const handleRegenerateSuccess = () => {
     setShowRegenerate(false);
   };
 
-  if (loading) {
-    return <div className="text-center py-12 text-muted">{t('loadingConnector')}</div>;
-  }
-
-  if (error || !connector) {
-    return (
-      <div className="space-y-4">
-        <Link
-          href="/dashboard/connectors"
-          className="text-sm text-primary hover:text-primary/80 transition-colors"
-        >
-          &larr; {t('backToConnectors')}
-        </Link>
-        <div className="bg-error/10 border border-error/20 rounded-lg p-4">
-          <p className="text-error">{error || t('connectorNotFound')}</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6">
-      {/* Back link */}
-      <Link
-        href="/dashboard/connectors"
-        className="text-sm text-primary hover:text-primary/80 transition-colors"
-      >
-        &larr; {t('backToConnectors')}
-      </Link>
-
+    <>
       {/* Header */}
       <div className="flex items-center gap-3">
         <h1 className="text-2xl font-bold text-foreground">{connector.connectorName}</h1>
@@ -242,6 +203,34 @@ export default function ConnectorDetailPage() {
           onSuccess={handleRegenerateSuccess}
         />
       )}
+    </>
+  );
+}
+
+export default function ConnectorDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const t = useTranslations('Connectors');
+  const { promise, invalidate } = usePromiseCache(
+    () => apiService.getConnectorDetail(id),
+    [id],
+    'connector-detail'
+  );
+
+  return (
+    <div className="space-y-6">
+      {/* Back link — always visible */}
+      <Link
+        href="/dashboard/connectors"
+        className="text-sm text-primary hover:text-primary/80 transition-colors"
+      >
+        &larr; {t('backToConnectors')}
+      </Link>
+
+      <ErrorBoundary>
+        <Suspense fallback={<div className="text-center py-12 text-muted">{t('loadingConnector')}</div>}>
+          <ConnectorContent connectorPromise={promise} onUpdate={invalidate} />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 }
