@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import LandingHeader from '@/components/landing/LandingHeader';
 import LandingBackground from '@/components/landing/LandingBackground';
 import LandingFooter from '@/components/landing/LandingFooter';
+import WaitlistModal from '@/components/landing/WaitlistModal';
 import {
   ArrowRightIcon,
   ClockIcon,
@@ -35,6 +36,7 @@ export default function HomePage() {
   const { user } = useUser();
   const t = useTranslations('HomePage');
   const [activeTab, setActiveTab] = useState(0);
+  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
 
   const problemItems = t.raw('problems.items') as Array<{ title: string; description: string }>;
   const solutionColumns = t.raw('solution.columns') as Array<{ title: string; description: string }>;
@@ -67,6 +69,9 @@ export default function HomePage() {
     <div className="min-h-screen text-foreground">
       <LandingBackground />
 
+      {/* Waitlist Modal */}
+      <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
+
       {/* Header */}
       <LandingHeader
         navLinks={[
@@ -77,6 +82,8 @@ export default function HomePage() {
         ]}
         loginLabel={t('nav.login')}
         dashboardLabel={t('nav.dashboard')}
+        onWaitlistClick={() => setIsWaitlistOpen(true)}
+        waitlistLabel={t('nav.waitlist')}
       />
 
       {/* Hero */}
@@ -91,13 +98,23 @@ export default function HomePage() {
           {t('hero.subtitle')}
         </p>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link
-            href={user ? '/dashboard' : '/login'}
-            className="w-full sm:w-auto justify-center inline-flex items-center gap-2 rounded-lg bg-accent px-7 py-3.5 font-medium text-accent-foreground shadow-lg shadow-accent/25 hover:bg-accent/90 transition-colors"
-          >
-            {t('hero.cta')}
-            <ArrowRightIcon className="h-4 w-4" />
-          </Link>
+          {user ? (
+            <Link
+              href="/dashboard"
+              className="w-full sm:w-auto justify-center inline-flex items-center gap-2 rounded-lg bg-accent px-7 py-3.5 font-medium text-accent-foreground shadow-lg shadow-accent/25 hover:bg-accent/90 transition-colors"
+            >
+              {t('nav.dashboard')}
+              <ArrowRightIcon className="h-4 w-4" />
+            </Link>
+          ) : (
+            <button
+              onClick={() => setIsWaitlistOpen(true)}
+              className="w-full sm:w-auto justify-center inline-flex items-center gap-2 rounded-lg bg-accent px-7 py-3.5 font-medium text-accent-foreground shadow-lg shadow-accent/25 hover:bg-accent/90 transition-colors"
+            >
+              {t('hero.cta')}
+              <ArrowRightIcon className="h-4 w-4" />
+            </button>
+          )}
           <a
             href="#how-it-works"
             className="w-full sm:w-auto justify-center inline-flex items-center gap-2 rounded-lg border border-border px-7 py-3.5 font-medium text-foreground hover:bg-surface-secondary transition-colors"
@@ -398,13 +415,23 @@ export default function HomePage() {
           <h2 className="mb-4 text-2xl sm:text-3xl font-bold tracking-tight">{t('cta.title')}</h2>
           <p className="mx-auto mb-8 max-w-md text-muted">{t('cta.subtitle')}</p>
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <Link
-              href={user ? '/dashboard' : '/login'}
-              className="inline-flex items-center gap-2 rounded-lg bg-accent px-8 py-4 text-lg font-medium text-accent-foreground shadow-lg shadow-accent/25 hover:bg-accent/90 transition-colors"
-            >
-              {t('cta.button')}
-              <ArrowRightIcon className="h-5 w-5" />
-            </Link>
+            {user ? (
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-2 rounded-lg bg-accent px-8 py-4 text-lg font-medium text-accent-foreground shadow-lg shadow-accent/25 hover:bg-accent/90 transition-colors"
+              >
+                {t('nav.dashboard')}
+                <ArrowRightIcon className="h-5 w-5" />
+              </Link>
+            ) : (
+              <button
+                onClick={() => setIsWaitlistOpen(true)}
+                className="inline-flex items-center gap-2 rounded-lg bg-accent px-8 py-4 text-lg font-medium text-accent-foreground shadow-lg shadow-accent/25 hover:bg-accent/90 transition-colors"
+              >
+                {t('cta.button')}
+                <ArrowRightIcon className="h-5 w-5" />
+              </button>
+            )}
             <a
               href="#"
               className="text-sm font-medium text-muted hover:text-accent transition-colors"

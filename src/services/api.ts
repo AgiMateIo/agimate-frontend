@@ -508,6 +508,24 @@ class ApiService {
     return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/${id}`);
   }
 
+  // ========== PUBLIC (UNAUTHENTICATED) METHODS ==========
+
+  async joinWaitlist(data: { email: string; name: string; message?: string }): Promise<{ registrationCode: string }> {
+    const url = `${getApiBaseUrl()}${API.ENDPOINTS.USER_API}/waitlist`;
+    const response = await safeFetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      return handleErrorResponse(response);
+    }
+
+    const jsonData = await response.json();
+    return extractResponseData<{ registrationCode: string }>(jsonData);
+  }
+
   // Method to refresh authentication tokens from URL fragment - uses the same refreshAccessToken method
   async refreshAuthTokens(refreshTokenId: string): Promise<boolean> {
     // Use the same refresh method for consistency
