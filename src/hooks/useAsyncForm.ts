@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { ApiError } from '@/services/api';
 
 interface UseAsyncFormOptions<T> {
@@ -12,6 +12,9 @@ export function useAsyncForm<T = void>(options: UseAsyncFormOptions<T> = {}) {
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
+  const optionsRef = useRef(options);
+  useEffect(() => { optionsRef.current = options; });
+
   const handleSubmit = useCallback(
     async (e: React.FormEvent, action: () => Promise<T>) => {
       e.preventDefault();
@@ -21,7 +24,7 @@ export function useAsyncForm<T = void>(options: UseAsyncFormOptions<T> = {}) {
 
       try {
         const result = await action();
-        options.onSuccess?.(result);
+        optionsRef.current.onSuccess?.(result);
         return result;
       } catch (err) {
         if (err instanceof ApiError && err.details) {
@@ -30,16 +33,16 @@ export function useAsyncForm<T = void>(options: UseAsyncFormOptions<T> = {}) {
           const errorMessage =
             err instanceof Error
               ? err.message
-              : options.defaultError || 'An error occurred';
+              : optionsRef.current.defaultError || 'An error occurred';
           setError(errorMessage);
         }
-        options.onError?.(err instanceof Error ? err : new Error(options.defaultError || 'An error occurred'));
+        optionsRef.current.onError?.(err instanceof Error ? err : new Error(optionsRef.current.defaultError || 'An error occurred'));
         throw err;
       } finally {
         setLoading(false);
       }
     },
-    [options]
+    []
   );
 
   const clearError = useCallback(() => {

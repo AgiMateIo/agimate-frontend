@@ -96,6 +96,10 @@ export default function BoardPage() {
       const task = columns[fromStatus].find((t) => t.pubId === taskPubId);
       if (!task) return;
 
+      // Use the first available agent for the status change
+      const agentPubId = agents[0]?.id;
+      if (!agentPubId) return;
+
       // Optimistic update
       const updated = { ...columns };
       updated[fromStatus] = updated[fromStatus].filter((t) => t.pubId !== taskPubId);
@@ -103,9 +107,6 @@ export default function BoardPage() {
       setColumns(updated);
 
       try {
-        // Use the first available agent for the status change
-        const agentPubId = agents[0]?.id;
-        if (!agentPubId) return;
         await apiService.changeTaskStatus(taskPubId, { status: toStatus, agentPubId });
       } catch {
         setColumns(snapshot); // revert on failure

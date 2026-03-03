@@ -1,4 +1,4 @@
-import { use, useMemo, useCallback, useState } from 'react';
+import { use, useMemo, useCallback, useState, useEffect } from 'react';
 
 // Global cache for promises to survive Strict Mode double mounting
 const promiseCache = new Map<string, Promise<unknown>>();
@@ -61,6 +61,13 @@ export function usePromiseCache<T>(
     },
     [cacheKey, fetchFn]
   );
+
+  // Clean up cache entry on unmount
+  useEffect(() => {
+    return () => {
+      promiseCache.delete(cacheKey);
+    };
+  }, [cacheKey]);
 
   // Invalidate the cache by incrementing version
   const invalidate = useCallback(() => {
