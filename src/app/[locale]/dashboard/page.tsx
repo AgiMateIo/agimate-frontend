@@ -31,7 +31,7 @@ export default function DashboardPage() {
 
   const fetchCounts = useCallback(async () => {
     const results = await Promise.allSettled([
-      apiService.getConnectors().then(d => d.length),
+      apiService.getApps().then(d => d.totalElements),
       apiService.getAgentsList().then(a => a.length),
       apiService.getApiKeys().then(k => k.length),
     ]);

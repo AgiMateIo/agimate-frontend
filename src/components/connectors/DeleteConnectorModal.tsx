@@ -3,14 +3,14 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { ConnectorResponse } from '@/types';
+import { AppResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 
 interface DeleteConnectorModalProps {
-  connector: ConnectorResponse;
+  connector: AppResponse;
   onClose: () => void;
   onSuccess: (connectorId: string) => void;
 }
@@ -25,7 +25,7 @@ export default function DeleteConnectorModal({ connector, onClose, onSuccess }: 
     setError(null);
 
     try {
-      await apiService.deleteConnector(connector.pubId);
+      await apiService.deleteApp(connector.pubId);
       onSuccess(connector.pubId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete connector');

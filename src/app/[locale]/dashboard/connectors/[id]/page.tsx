@@ -5,28 +5,19 @@ import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import apiService from '@/services/api';
-import type { ConnectorDetailResponse } from '@/types';
+import type { UserAppDetailResponse } from '@/types';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { usePromiseCache } from '@/hooks/usePromiseCache';
-import DisconnectConnectorModal from '@/components/connectors/DisconnectConnectorModal';
 import RegenerateConnectorKeyModal from '@/components/connectors/RegenerateConnectorKeyModal';
 
 function ConnectorContent({
   connectorPromise,
-  onUpdate,
 }: {
-  connectorPromise: Promise<ConnectorDetailResponse>;
-  onUpdate: () => void;
+  connectorPromise: Promise<UserAppDetailResponse>;
 }) {
   const t = useTranslations('Connectors');
   const connector = use(connectorPromise);
-  const [showDisconnect, setShowDisconnect] = useState(false);
   const [showRegenerate, setShowRegenerate] = useState(false);
-
-  const handleDisconnectSuccess = () => {
-    setShowDisconnect(false);
-    onUpdate();
-  };
 
   const handleRegenerateSuccess = () => {
     setShowRegenerate(false);
@@ -36,7 +27,7 @@ function ConnectorContent({
     <>
       {/* Header */}
       <div className="flex items-center gap-3">
-        <h1 className="text-2xl font-bold text-foreground">{connector.connectorName}</h1>
+        <h1 className="text-2xl font-bold text-foreground">{connector.appName}</h1>
         <span
           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
             connector.connected
@@ -54,11 +45,11 @@ function ConnectorContent({
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
           <div>
             <dt className="text-sm text-muted">{t('connectorName')}</dt>
-            <dd className="text-foreground mt-0.5">{connector.connectorName}</dd>
+            <dd className="text-foreground mt-0.5">{connector.appName}</dd>
           </div>
           <div>
             <dt className="text-sm text-muted">{t('connectorId')}</dt>
-            <dd className="text-foreground mt-0.5 font-mono text-sm">{connector.connectorId}</dd>
+            <dd className="text-foreground mt-0.5 font-mono text-sm">{connector.appId}</dd>
           </div>
           {connector.deviceId && (
             <div>
@@ -76,14 +67,6 @@ function ConnectorContent({
           >
             {t('regenerateKey')}
           </button>
-          {connector.connected && (
-            <button
-              onClick={() => setShowDisconnect(true)}
-              className="px-4 py-2 text-sm font-medium rounded-lg text-error hover:bg-error/10 transition-colors"
-            >
-              {t('disconnect')}
-            </button>
-          )}
         </div>
       </div>
 
@@ -186,19 +169,10 @@ function ConnectorContent({
       </div>
 
       {/* Modals */}
-      {showDisconnect && (
-        <DisconnectConnectorModal
-          connectorId={connector.connectorId}
-          connectorName={connector.connectorName}
-          onClose={() => setShowDisconnect(false)}
-          onSuccess={handleDisconnectSuccess}
-        />
-      )}
-
       {showRegenerate && (
         <RegenerateConnectorKeyModal
-          connectorId={connector.connectorId}
-          connectorName={connector.connectorName}
+          connectorId={connector.appId}
+          connectorName={connector.appName}
           onClose={() => setShowRegenerate(false)}
           onSuccess={handleRegenerateSuccess}
         />
@@ -211,7 +185,7 @@ export default function ConnectorDetailPage() {
   const { id } = useParams<{ id: string }>();
   const t = useTranslations('Connectors');
   const { promise, invalidate } = usePromiseCache(
-    () => apiService.getConnectorDetail(id),
+    () => apiService.getApp(id),
     [id],
     'connector-detail'
   );
@@ -228,7 +202,7 @@ export default function ConnectorDetailPage() {
 
       <ErrorBoundary>
         <Suspense fallback={<div className="text-center py-12 text-muted">{t('loadingConnector')}</div>}>
-          <ConnectorContent connectorPromise={promise} onUpdate={invalidate} />
+          <ConnectorContent connectorPromise={promise} />
         </Suspense>
       </ErrorBoundary>
     </div>

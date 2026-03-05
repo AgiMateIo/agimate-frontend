@@ -9,8 +9,6 @@ export interface AgentResponse {
   prompt: string;
   triggersAllowAll: boolean;
   triggersTo: TriggerDestination;
-  tools: string[];
-  triggers: string[];
   webhookUrl: string | null;
   hasWebhookAuth: boolean;
   createdAt: string;
@@ -22,8 +20,6 @@ export interface CreateAgentRequest {
   prompt: string;
   triggersAllowAll: boolean;
   triggersTo: TriggerDestination;
-  tools: string[];
-  triggers: string[];
   webhookUrl?: string | null;
   webhookAuthHeader?: string | null;
   agenticTeamPubId?: string | null;
@@ -34,8 +30,6 @@ export interface UpdateAgentRequest {
   prompt?: string;
   triggersAllowAll?: boolean;
   triggersTo?: TriggerDestination;
-  tools?: string[];
-  triggers?: string[];
   webhookUrl?: string | null;
   webhookAuthHeader?: string | null;
 }

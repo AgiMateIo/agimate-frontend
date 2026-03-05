@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { IntegrationResponse, PlatformResponse } from '@/types';
+import { IntegrationResponse, IntegrationPlatformInfo } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input } from '@/components/ui/FormField';
@@ -13,7 +13,7 @@ import { useAsyncForm } from '@/hooks/useAsyncForm';
 
 interface UpdateCredentialsModalProps {
   integration: IntegrationResponse;
-  platform: PlatformResponse;
+  platform: IntegrationPlatformInfo;
   onClose: () => void;
   onSuccess: (integration: IntegrationResponse) => void;
 }

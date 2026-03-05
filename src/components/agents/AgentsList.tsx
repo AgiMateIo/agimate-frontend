@@ -92,16 +92,6 @@ export default function AgentsList({ agents: agentsProp, apiKeys, onUpdate }: Ag
                         All triggers
                       </span>
                     )}
-                    {agent.triggers.length > 0 && (
-                      <span className="inline-block bg-surface border border-border rounded px-2 py-0.5 text-xs text-foreground">
-                        {agent.triggers.length} trigger{agent.triggers.length !== 1 ? 's' : ''}
-                      </span>
-                    )}
-                    {agent.tools.length > 0 && (
-                      <span className="inline-block bg-surface border border-border rounded px-2 py-0.5 text-xs text-foreground">
-                        {agent.tools.length} tool{agent.tools.length !== 1 ? 's' : ''}
-                      </span>
-                    )}
                   </div>
                 </div>
               </div>

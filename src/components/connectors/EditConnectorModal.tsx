@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { ConnectorResponse } from '@/types';
+import { AppResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input, TextArea } from '@/components/ui/FormField';
@@ -11,9 +11,9 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 
 interface EditConnectorModalProps {
-  connector: ConnectorResponse;
+  connector: AppResponse;
   onClose: () => void;
-  onSuccess: (connector: ConnectorResponse) => void;
+  onSuccess: (connector: AppResponse) => void;
 }
 
 export default function EditConnectorModal({ connector, onClose, onSuccess }: EditConnectorModalProps) {
@@ -21,14 +21,14 @@ export default function EditConnectorModal({ connector, onClose, onSuccess }: Ed
   const [name, setName] = useState(connector.name);
   const [description, setDescription] = useState(connector.description || '');
 
-  const { loading, error, handleSubmit } = useAsyncForm<ConnectorResponse>({
+  const { loading, error, handleSubmit } = useAsyncForm<AppResponse>({
     onSuccess,
     defaultError: 'Failed to update connector',
   });
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
-      apiService.updateConnector(connector.pubId, {
+      apiService.updateApp(connector.pubId, {
         name,
         description: description || undefined,
       })

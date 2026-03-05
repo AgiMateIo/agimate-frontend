@@ -5,7 +5,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { localeMap } from '@/i18n/routing';
 import apiService from '@/services/api';
-import { ConnectorResponse } from '@/types';
+import { AppResponse, PagedResponse } from '@/types';
 import { TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { Toggle } from '@/components/ui/Toggle';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
@@ -18,24 +18,27 @@ function ConnectorsListView({
   connectorsPromise,
   onUpdate,
 }: {
-  connectorsPromise: Promise<ConnectorResponse[]>;
+  connectorsPromise: Promise<PagedResponse<AppResponse>>;
   onUpdate: () => void;
 }) {
   const t = useTranslations('Connectors');
   const locale = useLocale();
   const bcp47Locale = localeMap[locale];
-  const initialConnectors = use(connectorsPromise);
-  const [connectors, setConnectors] = useState(initialConnectors);
-  const [lastInitial, setLastInitial] = useState(initialConnectors);
+  const initialData = use(connectorsPromise);
+  const [connectors, setConnectors] = useState(initialData.content);
+  const [pageInfo, setPageInfo] = useState(initialData);
+  const [lastInitial, setLastInitial] = useState(initialData);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [editingConnector, setEditingConnector] = useState<ConnectorResponse | null>(null);
-  const [deletingConnector, setDeletingConnector] = useState<ConnectorResponse | null>(null);
+  const [editingConnector, setEditingConnector] = useState<AppResponse | null>(null);
+  const [deletingConnector, setDeletingConnector] = useState<AppResponse | null>(null);
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
+  const [page, setPage] = useState(0);
 
   // Sync local state when fresh data arrives after invalidation
-  if (initialConnectors !== lastInitial) {
-    setLastInitial(initialConnectors);
-    setConnectors(initialConnectors);
+  if (initialData !== lastInitial) {
+    setLastInitial(initialData);
+    setConnectors(initialData.content);
+    setPageInfo(initialData);
   }
 
   const handleConnectorAdded = () => {
@@ -43,7 +46,7 @@ function ConnectorsListView({
     setShowAddModal(false);
   };
 
-  const handleToggleEnabled = async (connector: ConnectorResponse) => {
+  const handleToggleEnabled = async (connector: AppResponse) => {
     setUpdatingIds(prev => new Set(prev).add(connector.pubId));
 
     setConnectors(prev =>
@@ -51,11 +54,11 @@ function ConnectorsListView({
     );
 
     try {
-      await apiService.updateConnector(connector.pubId, {
+      await apiService.updateApp(connector.pubId, {
         enabled: !connector.enabled,
       });
     } catch (err) {
-      console.error('Failed to update connector:', err);
+      console.error('Failed to update app:', err);
       setConnectors(prev =>
         prev.map(a => a.pubId === connector.pubId ? { ...a, enabled: connector.enabled } : a)
       );
@@ -73,9 +76,20 @@ function ConnectorsListView({
     setDeletingConnector(null);
   };
 
-  const handleEditSuccess = (updated: ConnectorResponse) => {
+  const handleEditSuccess = (updated: AppResponse) => {
     setConnectors(prev => prev.map(a => a.pubId === updated.pubId ? updated : a));
     setEditingConnector(null);
+  };
+
+  const handlePageChange = async (newPage: number) => {
+    try {
+      const data = await apiService.getApps({ page: newPage });
+      setConnectors(data.content);
+      setPageInfo(data);
+      setPage(newPage);
+    } catch (err) {
+      console.error('Failed to load page:', err);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -158,6 +172,30 @@ function ConnectorsListView({
             ))}
           </div>
         )}
+
+        {pageInfo.totalPages > 1 && (
+          <div className="flex items-center justify-between pt-2">
+            <div className="text-xs text-muted">
+              {t('page')} {page + 1} / {pageInfo.totalPages}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handlePageChange(page - 1)}
+                disabled={pageInfo.first}
+                className="px-3 py-1 text-xs font-medium rounded-lg bg-surface-secondary text-muted hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {t('previous')}
+              </button>
+              <button
+                onClick={() => handlePageChange(page + 1)}
+                disabled={pageInfo.last}
+                className="px-3 py-1 text-xs font-medium rounded-lg bg-surface-secondary text-muted hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {t('next')}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {showAddModal && (
@@ -189,7 +227,7 @@ function ConnectorsListView({
 export default function ConnectorsTab() {
   const t = useTranslations('Connectors');
   const { promise, invalidate } = usePromiseCache(
-    () => apiService.getConnectors(),
+    () => apiService.getApps(),
     [],
     'connectors-tab'
   );

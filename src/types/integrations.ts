@@ -1,10 +1,6 @@
-export interface PlatformResponse {
-  id: string;
+export interface IntegrationPlatformInfo {
   code: string;
   name: string;
-  description: string;
-  iconUrl: string;
-  category: string;
   credentialFields: string[];
   supportsWebhooks: boolean;
 }
@@ -16,7 +12,7 @@ export interface IntegrationResponse {
   platformName: string;
   platformIdentifier: string;
   name: string;
-  connectorPubId: string;
+  connectorCode: string;
   enabled: boolean;
   lastUsedAt: string | null;
   createdAt: string;

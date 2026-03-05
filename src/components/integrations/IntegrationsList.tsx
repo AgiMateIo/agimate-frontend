@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { localeMap } from '@/i18n/routing';
 import apiService from '@/services/api';
-import { IntegrationResponse, PlatformResponse } from '@/types';
+import { IntegrationResponse, IntegrationPlatformInfo } from '@/types';
 import { TrashIcon, PencilIcon, KeyIcon } from '@heroicons/react/24/outline';
 import { Toggle } from '@/components/ui/Toggle';
 import DeleteIntegrationModal from './DeleteIntegrationModal';
@@ -13,7 +13,7 @@ import UpdateCredentialsModal from './UpdateCredentialsModal';
 
 interface IntegrationsListProps {
   integrations: IntegrationResponse[];
-  platforms: PlatformResponse[];
+  platforms: IntegrationPlatformInfo[];
   onUpdate: (integrations: IntegrationResponse[]) => void;
 }
 

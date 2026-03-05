@@ -13,8 +13,6 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Toggle } from '@/components/ui/Toggle';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { getAgentAvatarUrl } from '@/utils/avatar';
-import TriggerPicker from '@/components/agents/TriggerPicker';
-import ToolPicker from '@/components/agents/ToolPicker';
 
 export default function EditAgentPage() {
   const t = useTranslations('Agents');
@@ -31,8 +29,6 @@ export default function EditAgentPage() {
   const [prompt, setPrompt] = useState('');
   const [triggersTo, setTriggersTo] = useState<TriggerDestination>('centrifugo');
   const [triggersAllowAll, setTriggersAllowAll] = useState(true);
-  const [triggers, setTriggers] = useState<string[]>([]);
-  const [tools, setTools] = useState<string[]>([]);
   const [webhookUrl, setWebhookUrl] = useState('');
   const [webhookAuthHeader, setWebhookAuthHeader] = useState('');
 
@@ -59,8 +55,6 @@ export default function EditAgentPage() {
       setPrompt(foundAgent.prompt);
       setTriggersTo(foundAgent.triggersTo);
       setTriggersAllowAll(foundAgent.triggersAllowAll);
-      setTriggers(foundAgent.triggers);
-      setTools(foundAgent.tools);
       setWebhookUrl(foundAgent.webhookUrl ?? '');
     } catch (err) {
       setDataError(err instanceof Error ? err.message : 'Failed to load data');
@@ -94,8 +88,6 @@ export default function EditAgentPage() {
         prompt,
         triggersAllowAll,
         triggersTo,
-        tools,
-        triggers: triggersAllowAll ? [] : triggers,
         webhookUrl: triggersTo === 'webhook' ? webhookUrl : null,
         webhookAuthHeader: triggersTo === 'webhook' && webhookAuthHeader ? webhookAuthHeader : null,
       })
@@ -193,13 +185,6 @@ export default function EditAgentPage() {
             </select>
           </FormField>
 
-          <FormField label="Tools" error={getFieldError('tools')}>
-            <ToolPicker
-              selectedTools={tools}
-              onChange={setTools}
-            />
-          </FormField>
-
           <FormField label="Trigger Destination" required error={getFieldError('triggersTo')}>
             <div className="space-y-2">
               {triggerDestinationOptions.map((option) => (
@@ -256,15 +241,6 @@ export default function EditAgentPage() {
               label="Accept all triggers from connected devices"
             />
           </FormField>
-
-          {!triggersAllowAll && (
-            <FormField label="Triggers" error={getFieldError('triggers')}>
-              <TriggerPicker
-                selectedTriggers={triggers}
-                onChange={setTriggers}
-              />
-            </FormField>
-          )}
 
           {error && <ErrorAlert>{error}</ErrorAlert>}
 

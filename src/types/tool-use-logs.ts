@@ -3,10 +3,12 @@
 export interface ToolUseLogResponse {
   id: string;
   apiKeyPubId: string;
-  connectorPubId: string;
+  connectorCode: string;
+  identity: string;
   toolUseId: string;
   toolName: string;
   toolParams: Record<string, unknown>;
+  accessEffect: 'ALLOW' | 'DENY';
   resultAt: string | null;
   result: string | null;
   error: string | null;

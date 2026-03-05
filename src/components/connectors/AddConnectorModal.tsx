@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ClipboardDocumentIcon, CheckIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
-import { ConnectorCreatedResponse } from '@/types';
+import { AppCreatedResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input, TextArea } from '@/components/ui/FormField';
@@ -22,19 +22,20 @@ export default function AddConnectorModal({ onClose, onSuccess }: AddConnectorMo
   const t = useTranslations('Connectors');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [createdConnector, setCreatedConnector] = useState<ConnectorCreatedResponse | null>(null);
+  const [createdConnector, setCreatedConnector] = useState<AppCreatedResponse | null>(null);
   const { copied, copy } = useClipboard();
 
-  const { loading, error, handleSubmit } = useAsyncForm<ConnectorCreatedResponse>({
+  const { loading, error, handleSubmit } = useAsyncForm<AppCreatedResponse>({
     onSuccess: setCreatedConnector,
     defaultError: 'Failed to create connector',
   });
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
-      apiService.createConnector({
+      apiService.createApp({
         name,
         description: description || undefined,
+        connectorCode: 'app',
       })
     );
 

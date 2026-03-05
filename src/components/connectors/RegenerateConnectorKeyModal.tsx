@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ClipboardDocumentIcon, CheckIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
-import { ConnectorCreatedResponse } from '@/types';
+import { AppCreatedResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input } from '@/components/ui/FormField';
@@ -22,16 +22,16 @@ interface RegenerateConnectorKeyModalProps {
 
 export default function RegenerateConnectorKeyModal({ connectorId, connectorName, onClose, onSuccess }: RegenerateConnectorKeyModalProps) {
   const t = useTranslations('Connectors');
-  const [regeneratedKey, setRegeneratedKey] = useState<ConnectorCreatedResponse | null>(null);
+  const [regeneratedKey, setRegeneratedKey] = useState<AppCreatedResponse | null>(null);
   const { copied, copy } = useClipboard();
 
-  const { loading, error, handleSubmit } = useAsyncForm<ConnectorCreatedResponse>({
+  const { loading, error, handleSubmit } = useAsyncForm<AppCreatedResponse>({
     onSuccess: setRegeneratedKey,
     defaultError: 'Failed to regenerate connector key',
   });
 
   const handleRegenerate = (e: React.FormEvent) =>
-    handleSubmit(e, () => apiService.regenerateConnectorKey(connectorId));
+    handleSubmit(e, () => apiService.regenerateAppKey(connectorId));
 
   const handleClose = () => {
     if (regeneratedKey) {
