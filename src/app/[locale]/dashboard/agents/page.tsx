@@ -4,7 +4,7 @@ import { Suspense, use } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import apiService from '@/services/api';
-import { AgentResponse } from '@/types';
+import { AgentResponse, PagedResponse } from '@/types';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { usePromiseCache } from '@/hooks/usePromiseCache';
 import AgentsList from '@/components/agents/AgentsList';
@@ -13,11 +13,11 @@ function AgentsContent({
   dataPromise,
   onUpdate,
 }: {
-  dataPromise: Promise<AgentResponse[]>;
+  dataPromise: Promise<PagedResponse<AgentResponse>>;
   onUpdate: () => void;
 }) {
   const t = useTranslations('Agents');
-  const agents = use(dataPromise);
+  const { content: agents } = use(dataPromise);
 
   return (
     <div className="bg-surface rounded-xl border border-border p-6 space-y-6">

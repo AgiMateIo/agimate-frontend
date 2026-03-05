@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import apiService from '@/services/api';
-import { AgentResponse } from '@/types';
+import { AgentResponse, PagedResponse } from '@/types';
 import { AgenticTeam } from '@/types/agentic-teams';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
@@ -17,13 +17,13 @@ function TeamAgentsContent({
   onUpdate,
   teamId,
 }: {
-  dataPromise: Promise<[AgentResponse[], AgenticTeam]>;
+  dataPromise: Promise<[PagedResponse<AgentResponse>, AgenticTeam]>;
   onUpdate: () => void;
   teamId: string;
 }) {
   const t = useTranslations('AgenticTeams');
   const tAgents = useTranslations('Agents');
-  const [agents, team] = use(dataPromise);
+  const [{ content: agents }, team] = use(dataPromise);
 
   useSetBreadcrumb(teamId, team?.name);
 
@@ -54,7 +54,7 @@ export default function TeamAgentsPage() {
 
   const { promise, invalidate } = usePromiseCache(
     () => Promise.all([
-      apiService.getAgentsList(teamId),
+      apiService.getAgentsList({ agenticTeamPubId: teamId }),
       apiService.getAgenticTeam(teamId),
     ]),
     [teamId],

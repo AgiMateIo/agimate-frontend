@@ -331,9 +331,12 @@ class ApiService {
   }
 
   // Agents
-  async getAgentsList(agenticTeamPubId?: string): Promise<AgentResponse[]> {
-    const query = agenticTeamPubId ? `?agenticTeamPubId=${encodeURIComponent(agenticTeamPubId)}` : '';
-    return this.get<AgentResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${query}`);
+  async getAgentsList(params?: { agenticTeamPubId?: string; page?: number; size?: number }): Promise<PagedResponse<AgentResponse>> {
+    const query = new URLSearchParams();
+    if (params?.agenticTeamPubId) query.set('agenticTeamPubId', params.agenticTeamPubId);
+    query.set('page', String(params?.page ?? 0));
+    query.set('size', String(params?.size ?? 20));
+    return this.get<PagedResponse<AgentResponse>>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/?${query}`);
   }
 
   async createAgent(data: CreateAgentRequest): Promise<AgentCreatedResponse> {

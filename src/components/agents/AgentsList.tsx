@@ -67,7 +67,9 @@ export default function AgentsList({ agents: agentsProp, onUpdate }: AgentsListP
                   className="w-10 h-10 rounded-lg flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-foreground">{agent.name}</h3>
+                  <Link href={`/dashboard/agents/${agent.id}`} className="font-medium text-foreground hover:text-accent transition-colors">
+                    {agent.name}
+                  </Link>
                   <p className="text-sm text-muted mt-1 font-mono">
                     {truncatePrompt(agent.prompt)}
                   </p>

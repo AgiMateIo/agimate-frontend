@@ -244,7 +244,15 @@
     "next": "Next",
     "autoRefresh": "Auto",
     "autoRefreshOff": "Off",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "tabGeneral": "General",
+    "tabTriggerRules": "Trigger Rules",
+    "tabToolRules": "Tool Rules",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "createdAt": "Created",
+    "triggerRulesComingSoon": "Trigger rules will be available soon",
+    "toolRulesComingSoon": "Tool rules will be available soon"
   },
   "AgenticTeams": {
     "title": "Agentic Teams",

@@ -10,8 +10,9 @@ export interface AgentResponse {
   triggersTo: TriggerDestination;
   webhookUrl: string | null;
   hasWebhookAuth: boolean;
-  teamId: string | null;
-  teamName: string | null;
+  agenticTeamId: string | null;
+  agenticTeamName: string | null;
+  enabled: boolean;
   createdAt: string;
 }
 
@@ -33,8 +34,9 @@ export interface CreateAgentRequest {
 export interface UpdateAgentRequest {
   name?: string;
   prompt?: string;
-  triggersAllowAll?: boolean;
-  triggersTo?: TriggerDestination;
+  triggersAllowAll: boolean;
+  triggersTo: TriggerDestination;
   webhookUrl?: string | null;
   webhookAuthHeader?: string | null;
+  enabled?: boolean;
 }

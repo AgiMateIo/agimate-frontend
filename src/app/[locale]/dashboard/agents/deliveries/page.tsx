@@ -36,7 +36,7 @@ export default function WebhookDeliveriesPage() {
 
   // Load agents on mount
   useEffect(() => {
-    apiService.getAgentsList().then(setAgents).catch(() => {});
+    apiService.getAgentsList().then(r => setAgents(r.content)).catch(() => {});
   }, []);
 
   const fetchDeliveries = useCallback(async (silent = false) => {

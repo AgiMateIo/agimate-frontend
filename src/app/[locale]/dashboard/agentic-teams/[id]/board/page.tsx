@@ -51,10 +51,10 @@ export default function BoardPage() {
       setLoading(true);
       const [boards, agentsList] = await Promise.all([
         apiService.getBoards(),
-        apiService.getAgentsList(teamId),
+        apiService.getAgentsList({ agenticTeamPubId: teamId }),
       ]);
 
-      setAgents(agentsList);
+      setAgents(agentsList.content);
 
       const teamBoard = boards.find((b) => b.agenticTeamPubId === teamId) ?? null;
       if (!teamBoard) {

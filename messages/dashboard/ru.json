@@ -244,7 +244,15 @@
     "next": "Далее",
     "autoRefresh": "Авто",
     "autoRefreshOff": "Выкл",
-    "refresh": "Обновить"
+    "refresh": "Обновить",
+    "tabGeneral": "Общая информация",
+    "tabTriggerRules": "Trigger Rules",
+    "tabToolRules": "Tool Rules",
+    "enabled": "Включен",
+    "disabled": "Отключен",
+    "createdAt": "Создан",
+    "triggerRulesComingSoon": "Правила триггеров будут доступны в ближайшее время",
+    "toolRulesComingSoon": "Правила инструментов будут доступны в ближайшее время"
   },
   "AgenticTeams": {
     "title": "Команды агентов",
