@@ -1,18 +1,18 @@
 // Agent types
 
-export type TriggerDestination = 'centrifugo' | 'webhook' | 'ignore';
+export type TriggerDestination = 'CENTRIFUGO' | 'WEBHOOK';
 
 export interface AgentResponse {
   id: string;
   name: string;
+  maskedKeyId: string;
   prompt: string;
-  triggersAllowAll: boolean;
-  triggersTo: TriggerDestination;
+  triggerDestination: TriggerDestination;
   webhookUrl: string | null;
   hasWebhookAuth: boolean;
+  enabled: boolean;
   agenticTeamId: string | null;
   agenticTeamName: string | null;
-  enabled: boolean;
   createdAt: string;
 }
 
@@ -23,9 +23,8 @@ export interface AgentCreatedResponse {
 
 export interface CreateAgentRequest {
   name: string;
-  prompt: string;
-  triggersAllowAll: boolean;
-  triggersTo: TriggerDestination;
+  prompt?: string;
+  triggerDestination?: TriggerDestination;
   webhookUrl?: string | null;
   webhookAuthHeader?: string | null;
   agenticTeamPubId?: string | null;
@@ -34,8 +33,7 @@ export interface CreateAgentRequest {
 export interface UpdateAgentRequest {
   name?: string;
   prompt?: string;
-  triggersAllowAll: boolean;
-  triggersTo: TriggerDestination;
+  triggerDestination?: TriggerDestination;
   webhookUrl?: string | null;
   webhookAuthHeader?: string | null;
   enabled?: boolean;

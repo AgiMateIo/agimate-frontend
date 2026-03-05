@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/Button';
 import { FormField, TextArea, Input } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Alert } from '@/components/ui/Alert';
-import { Toggle } from '@/components/ui/Toggle';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { useClipboard } from '@/hooks/useClipboard';
 import { getAgentAvatarUrl } from '@/utils/avatar';
@@ -28,8 +27,7 @@ export default function EditAgentPage() {
 
   const [name, setName] = useState('');
   const [prompt, setPrompt] = useState('');
-  const [triggersTo, setTriggersTo] = useState<TriggerDestination>('centrifugo');
-  const [triggersAllowAll, setTriggersAllowAll] = useState(true);
+  const [triggerDestination, setTriggerDestination] = useState<TriggerDestination>('CENTRIFUGO');
   const [webhookUrl, setWebhookUrl] = useState('');
   const [webhookAuthHeader, setWebhookAuthHeader] = useState('');
 
@@ -46,8 +44,7 @@ export default function EditAgentPage() {
       setAgent(agentData);
       setName(agentData.name);
       setPrompt(agentData.prompt);
-      setTriggersTo(agentData.triggersTo);
-      setTriggersAllowAll(agentData.triggersAllowAll);
+      setTriggerDestination(agentData.triggerDestination);
       setWebhookUrl(agentData.webhookUrl ?? '');
     } catch (err) {
       setDataError(err instanceof Error ? err.message : 'Failed to load data');
@@ -79,10 +76,9 @@ export default function EditAgentPage() {
       apiService.updateAgent(agentId, {
         name,
         prompt,
-        triggersAllowAll,
-        triggersTo,
-        webhookUrl: triggersTo === 'webhook' ? webhookUrl : null,
-        webhookAuthHeader: triggersTo === 'webhook' && webhookAuthHeader ? webhookAuthHeader : null,
+        triggerDestination,
+        webhookUrl: triggerDestination === 'WEBHOOK' ? webhookUrl : null,
+        webhookAuthHeader: triggerDestination === 'WEBHOOK' && webhookAuthHeader ? webhookAuthHeader : null,
       })
     );
 
@@ -100,9 +96,8 @@ export default function EditAgentPage() {
   };
 
   const triggerDestinationOptions: { value: TriggerDestination; label: string; color: string }[] = [
-    { value: 'centrifugo', label: 'Centrifugo (Real-time)', color: 'text-accent' },
-    { value: 'webhook', label: 'Webhook', color: 'text-success' },
-    { value: 'ignore', label: 'Ignore', color: 'text-muted' },
+    { value: 'CENTRIFUGO', label: 'Centrifugo (Real-time)', color: 'text-accent' },
+    { value: 'WEBHOOK', label: 'Webhook', color: 'text-success' },
   ];
 
   if (dataLoading) {
@@ -211,13 +206,12 @@ export default function EditAgentPage() {
             </div>
           </FormField>
 
-          <FormField label="Prompt" required error={getFieldError('prompt')}>
+          <FormField label="Prompt" error={getFieldError('prompt')}>
             <TextArea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Enter instructions for the agent..."
               rows={6}
-              required
             />
           </FormField>
 
@@ -230,18 +224,18 @@ export default function EditAgentPage() {
             </select>
           </FormField>
 
-          <FormField label="Trigger Destination" required error={getFieldError('triggersTo')}>
+          <FormField label="Trigger Destination" required error={getFieldError('triggerDestination')}>
             <div className="space-y-2">
               {triggerDestinationOptions.map((option) => (
                 <label key={option.value} className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="radio"
-                    name="triggersTo"
+                    name="triggerDestination"
                     value={option.value}
-                    checked={triggersTo === option.value}
+                    checked={triggerDestination === option.value}
                     onChange={() => {
-                      setTriggersTo(option.value);
-                      if (option.value !== 'webhook') {
+                      setTriggerDestination(option.value);
+                      if (option.value !== 'WEBHOOK') {
                         setWebhookUrl('');
                         setWebhookAuthHeader('');
                       }
@@ -254,7 +248,7 @@ export default function EditAgentPage() {
             </div>
           </FormField>
 
-          {triggersTo === 'webhook' && (
+          {triggerDestination === 'WEBHOOK' && (
             <>
               <FormField label={t('webhookUrl')} required error={getFieldError('webhookUrl')} hint={t('webhookUrlHint')}>
                 <Input
@@ -279,14 +273,6 @@ export default function EditAgentPage() {
             </>
           )}
 
-          <FormField label="Allow All Triggers" error={getFieldError('triggersAllowAll')}>
-            <Toggle
-              checked={triggersAllowAll}
-              onChange={setTriggersAllowAll}
-              label="Accept all triggers from connected devices"
-            />
-          </FormField>
-
           {error && <ErrorAlert>{error}</ErrorAlert>}
 
           <div className="flex gap-3 pt-2">
@@ -301,7 +287,7 @@ export default function EditAgentPage() {
             </Button>
             <Button
               type="submit"
-              disabled={loading || !name.trim() || !prompt.trim()}
+              disabled={loading || !name.trim()}
               loading={loading}
               className="flex-1"
             >

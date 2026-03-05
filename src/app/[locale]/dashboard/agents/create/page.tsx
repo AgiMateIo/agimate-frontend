@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/Button';
 import { FormField, TextArea, Input } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Alert } from '@/components/ui/Alert';
-import { Toggle } from '@/components/ui/Toggle';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { useClipboard } from '@/hooks/useClipboard';
 import { getAgentAvatarUrl } from '@/utils/avatar';
@@ -24,8 +23,7 @@ export default function CreateAgentPage() {
 
   const [name, setName] = useState('');
   const [prompt, setPrompt] = useState('');
-  const [triggersTo, setTriggersTo] = useState<TriggerDestination>('centrifugo');
-  const [triggersAllowAll, setTriggersAllowAll] = useState(true);
+  const [triggerDestination, setTriggerDestination] = useState<TriggerDestination>('CENTRIFUGO');
   const [webhookUrl, setWebhookUrl] = useState('');
   const [webhookAuthHeader, setWebhookAuthHeader] = useState('');
   const [createdResult, setCreatedResult] = useState<AgentCreatedResponse | null>(null);
@@ -49,19 +47,17 @@ export default function CreateAgentPage() {
     handleSubmit(e, () =>
       apiService.createAgent({
         name,
-        prompt,
-        triggersAllowAll,
-        triggersTo,
-        webhookUrl: triggersTo === 'webhook' ? webhookUrl : null,
-        webhookAuthHeader: triggersTo === 'webhook' && webhookAuthHeader ? webhookAuthHeader : null,
+        prompt: prompt || undefined,
+        triggerDestination,
+        webhookUrl: triggerDestination === 'WEBHOOK' ? webhookUrl : null,
+        webhookAuthHeader: triggerDestination === 'WEBHOOK' && webhookAuthHeader ? webhookAuthHeader : null,
         agenticTeamPubId: teamId || null,
       })
     );
 
   const triggerDestinationOptions: { value: TriggerDestination; label: string; color: string }[] = [
-    { value: 'centrifugo', label: 'Centrifugo (Real-time)', color: 'text-accent' },
-    { value: 'webhook', label: 'Webhook', color: 'text-success' },
-    { value: 'ignore', label: 'Ignore', color: 'text-muted' },
+    { value: 'CENTRIFUGO', label: 'Centrifugo (Real-time)', color: 'text-accent' },
+    { value: 'WEBHOOK', label: 'Webhook', color: 'text-success' },
   ];
 
   const backPath = teamId ? `/dashboard/agentic-teams/${teamId}/agents` : '/dashboard/agents';
@@ -164,13 +160,12 @@ export default function CreateAgentPage() {
             </div>
           </FormField>
 
-          <FormField label="Prompt" required error={getFieldError('prompt')}>
+          <FormField label="Prompt" error={getFieldError('prompt')}>
             <TextArea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Enter instructions for the agent..."
               rows={6}
-              required
             />
           </FormField>
 
@@ -183,18 +178,18 @@ export default function CreateAgentPage() {
             </select>
           </FormField>
 
-          <FormField label="Trigger Destination" required error={getFieldError('triggersTo')}>
+          <FormField label="Trigger Destination" required error={getFieldError('triggerDestination')}>
             <div className="space-y-2">
               {triggerDestinationOptions.map((option) => (
                 <label key={option.value} className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="radio"
-                    name="triggersTo"
+                    name="triggerDestination"
                     value={option.value}
-                    checked={triggersTo === option.value}
+                    checked={triggerDestination === option.value}
                     onChange={() => {
-                      setTriggersTo(option.value);
-                      if (option.value !== 'webhook') {
+                      setTriggerDestination(option.value);
+                      if (option.value !== 'WEBHOOK') {
                         setWebhookUrl('');
                         setWebhookAuthHeader('');
                       }
@@ -207,7 +202,7 @@ export default function CreateAgentPage() {
             </div>
           </FormField>
 
-          {triggersTo === 'webhook' && (
+          {triggerDestination === 'WEBHOOK' && (
             <>
               <FormField label={t('webhookUrl')} required error={getFieldError('webhookUrl')} hint={t('webhookUrlHint')}>
                 <Input
@@ -229,14 +224,6 @@ export default function CreateAgentPage() {
             </>
           )}
 
-          <FormField label="Allow All Triggers" error={getFieldError('triggersAllowAll')}>
-            <Toggle
-              checked={triggersAllowAll}
-              onChange={setTriggersAllowAll}
-              label="Accept all triggers from connected devices"
-            />
-          </FormField>
-
           {error && <ErrorAlert>{error}</ErrorAlert>}
 
           <div className="flex gap-3 pt-2">
@@ -251,7 +238,7 @@ export default function CreateAgentPage() {
             </Button>
             <Button
               type="submit"
-              disabled={loading || !name.trim() || !prompt.trim()}
+              disabled={loading || !name.trim()}
               loading={loading}
               className="flex-1"
             >

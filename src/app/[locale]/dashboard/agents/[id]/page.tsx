@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
-import { ArrowLeftIcon, PencilIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, PencilIcon, LockClosedIcon, KeyIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { AgentResponse } from '@/types';
@@ -49,14 +49,12 @@ export default function AgentDetailPage() {
     { key: 'tool-rules', label: t('tabToolRules') },
   ];
 
-  const getTriggersToColor = (triggersTo: string) => {
-    switch (triggersTo) {
-      case 'centrifugo':
+  const getTriggerDestinationColor = (dest: string) => {
+    switch (dest) {
+      case 'CENTRIFUGO':
         return 'bg-accent/10 text-accent';
-      case 'webhook':
+      case 'WEBHOOK':
         return 'bg-success/10 text-success';
-      case 'ignore':
-        return 'bg-muted/10 text-muted';
       default:
         return 'bg-muted/10 text-muted';
     }
@@ -142,13 +140,17 @@ export default function AgentDetailPage() {
       {/* Tab Content */}
       {activeTab === 'general' && (
         <div className="bg-surface rounded-xl border border-border p-6 space-y-6">
-          {/* Status */}
+          {/* Status & Key ID */}
           <div className="flex items-center gap-3">
             <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
               agent.enabled ? 'bg-success/10 text-success' : 'bg-muted/10 text-muted'
             }`}>
               <span className={`w-1.5 h-1.5 rounded-full ${agent.enabled ? 'bg-success' : 'bg-muted'}`} />
               {agent.enabled ? t('enabled') : t('disabled')}
+            </span>
+            <span className="inline-flex items-center gap-1.5 bg-surface-secondary border border-border/50 rounded-full px-3 py-1 text-xs text-muted font-mono">
+              <KeyIcon className="h-3 w-3" />
+              {agent.maskedKeyId}
             </span>
           </div>
 
@@ -164,10 +166,10 @@ export default function AgentDetailPage() {
           <div>
             <h3 className="text-sm font-medium text-muted mb-2">{t('triggerDestination')}</h3>
             <div className="flex flex-wrap items-center gap-2">
-              <span className={`inline-block rounded px-2.5 py-1 text-xs font-medium ${getTriggersToColor(agent.triggersTo)}`}>
-                {agent.triggersTo}
+              <span className={`inline-block rounded px-2.5 py-1 text-xs font-medium ${getTriggerDestinationColor(agent.triggerDestination)}`}>
+                {agent.triggerDestination}
               </span>
-              {agent.triggersTo === 'webhook' && agent.webhookUrl && (
+              {agent.triggerDestination === 'WEBHOOK' && agent.webhookUrl && (
                 <span className="inline-block bg-surface-secondary border border-border/50 rounded px-2.5 py-1 text-xs text-muted font-mono">
                   {agent.webhookUrl}
                 </span>
@@ -179,16 +181,6 @@ export default function AgentDetailPage() {
                 </span>
               )}
             </div>
-          </div>
-
-          {/* Allow All Triggers */}
-          <div>
-            <h3 className="text-sm font-medium text-muted mb-2">{t('triggersAllowAll')}</h3>
-            <span className={`inline-block rounded px-2.5 py-1 text-xs font-medium ${
-              agent.triggersAllowAll ? 'bg-warning/10 text-warning' : 'bg-muted/10 text-muted'
-            }`}>
-              {agent.triggersAllowAll ? t('allTriggers') : t('disabled')}
-            </span>
           </div>
 
           {/* Created At */}

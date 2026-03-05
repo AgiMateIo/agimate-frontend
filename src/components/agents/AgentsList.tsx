@@ -24,14 +24,12 @@ export default function AgentsList({ agents: agentsProp, onUpdate }: AgentsListP
     return prompt.length > maxLength ? prompt.slice(0, maxLength) + '...' : prompt;
   };
 
-  const getTriggersToColor = (triggersTo: string) => {
-    switch (triggersTo) {
-      case 'centrifugo':
+  const getTriggerDestinationColor = (dest: string) => {
+    switch (dest) {
+      case 'CENTRIFUGO':
         return 'bg-accent/10 text-accent';
-      case 'webhook':
+      case 'WEBHOOK':
         return 'bg-success/10 text-success';
-      case 'ignore':
-        return 'bg-muted/10 text-muted';
       default:
         return 'bg-muted/10 text-muted';
     }
@@ -74,10 +72,10 @@ export default function AgentsList({ agents: agentsProp, onUpdate }: AgentsListP
                     {truncatePrompt(agent.prompt)}
                   </p>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${getTriggersToColor(agent.triggersTo)}`}>
-                      {agent.triggersTo}
+                    <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${getTriggerDestinationColor(agent.triggerDestination)}`}>
+                      {agent.triggerDestination}
                     </span>
-                    {agent.triggersTo === 'webhook' && agent.webhookUrl && (
+                    {agent.triggerDestination === 'WEBHOOK' && agent.webhookUrl && (
                       <span className="inline-block bg-surface border border-border rounded px-2 py-0.5 text-xs text-muted font-mono truncate max-w-[200px]" title={agent.webhookUrl}>
                         {agent.webhookUrl}
                       </span>
@@ -86,11 +84,6 @@ export default function AgentsList({ agents: agentsProp, onUpdate }: AgentsListP
                       <span className="inline-flex items-center gap-1 bg-surface border border-border rounded px-2 py-0.5 text-xs text-muted">
                         <LockClosedIcon className="h-3 w-3" />
                         Auth
-                      </span>
-                    )}
-                    {agent.triggersAllowAll && (
-                      <span className="inline-block bg-warning/10 text-warning rounded px-2 py-0.5 text-xs font-medium">
-                        All triggers
                       </span>
                     )}
                   </div>
