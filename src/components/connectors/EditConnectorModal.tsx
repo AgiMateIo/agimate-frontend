@@ -35,14 +35,14 @@ export default function EditConnectorModal({ connector, onClose, onSuccess }: Ed
     );
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={t('editConnector')}>
+    <Modal isOpen={true} onClose={onClose} title={t('editApp')}>
       <form onSubmit={onSubmit} className="space-y-4">
         <FormField label={t('name')} required>
           <Input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={t('connectorNamePlaceholder')}
+            placeholder={t('appNamePlaceholder')}
             required
             maxLength={100}
           />

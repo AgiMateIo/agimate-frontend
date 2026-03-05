@@ -41,14 +41,14 @@ function ConnectorContent({
 
       {/* Connector Info */}
       <div className="bg-surface rounded-xl border border-border p-5">
-        <h2 className="text-lg font-semibold text-foreground mb-4">{t('connectorInfo')}</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">{t('appInfo')}</h2>
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
           <div>
-            <dt className="text-sm text-muted">{t('connectorName')}</dt>
+            <dt className="text-sm text-muted">{t('appName')}</dt>
             <dd className="text-foreground mt-0.5">{connector.appName}</dd>
           </div>
           <div>
-            <dt className="text-sm text-muted">{t('connectorId')}</dt>
+            <dt className="text-sm text-muted">{t('appId')}</dt>
             <dd className="text-foreground mt-0.5 font-mono text-sm">{connector.appId}</dd>
           </div>
           {connector.deviceId && (
@@ -194,14 +194,14 @@ export default function ConnectorDetailPage() {
     <div className="space-y-6">
       {/* Back link — always visible */}
       <Link
-        href="/dashboard/connectors"
+        href="/dashboard/apps"
         className="text-sm text-primary hover:text-primary/80 transition-colors"
       >
-        &larr; {t('backToConnectors')}
+        &larr; {t('backToApps')}
       </Link>
 
       <ErrorBoundary>
-        <Suspense fallback={<div className="text-center py-12 text-muted">{t('loadingConnector')}</div>}>
+        <Suspense fallback={<div className="text-center py-12 text-muted">{t('loadingApp')}</div>}>
           <ConnectorContent connectorPromise={promise} />
         </Suspense>
       </ErrorBoundary>

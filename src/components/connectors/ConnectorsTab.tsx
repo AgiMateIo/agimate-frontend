@@ -107,25 +107,25 @@ function ConnectorsListView({
     <>
       <div className="bg-surface rounded-xl border border-border p-6 space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">{t('connectors')}</h2>
+          <h2 className="text-lg font-semibold text-foreground">{t('apps')}</h2>
           <button
             onClick={() => setShowAddModal(true)}
             className="bg-accent text-accent-foreground px-4 py-2 rounded-lg font-medium hover:bg-accent/90 transition-colors"
           >
-            {t('createConnector')}
+            {t('createApp')}
           </button>
         </div>
 
         {connectors.length === 0 ? (
           <div className="text-center py-8 text-muted">
-            {t('noConnectors')}
+            {t('noApps')}
           </div>
         ) : (
           <div className="space-y-3">
             {connectors.map((connector) => (
               <Link
                 key={connector.pubId}
-                href={`/dashboard/connectors/${connector.pubId}`}
+                href={`/dashboard/apps/${connector.pubId}`}
                 className="block bg-surface-secondary rounded-lg p-4 border border-border hover:border-accent/30 transition-colors"
               >
                 <div className="flex items-start justify-between gap-4">
@@ -234,9 +234,10 @@ export default function ConnectorsTab() {
 
   return (
     <ErrorBoundary>
-      <Suspense fallback={<div className="text-center py-12 text-muted">{t('loadingConnectors')}</div>}>
+      <Suspense fallback={<div className="text-center py-12 text-muted">{t('loadingApps')}</div>}>
         <ConnectorsListView connectorsPromise={promise} onUpdate={invalidate} />
       </Suspense>
+
     </ErrorBoundary>
   );
 }

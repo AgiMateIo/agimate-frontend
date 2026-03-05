@@ -35,7 +35,7 @@ export default function DeleteConnectorModal({ connector, onClose, onSuccess }: 
   };
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={t('deleteConnector')} size="sm">
+    <Modal isOpen={true} onClose={onClose} title={t('deleteApp')} size="sm">
       <div className="space-y-4">
         <p className="text-foreground">
           {t('deleteConfirm', { name: connector.name })}

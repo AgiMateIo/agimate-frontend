@@ -59,7 +59,7 @@ export default function RegenerateConnectorKeyModal({ connectorId, connectorName
             </p>
           </Alert>
 
-          <FormField label={t('connectorKey')}>
+          <FormField label={t('appKey')}>
             <div className="flex gap-2">
               <Input
                 type="text"

@@ -54,7 +54,7 @@ export default function AddConnectorModal({ onClose, onSuccess }: AddConnectorMo
 
   if (createdConnector) {
     return (
-      <Modal isOpen={true} onClose={handleClose} title={t('connectorKeyCreated')}>
+      <Modal isOpen={true} onClose={handleClose} title={t('appKeyCreated')}>
         <div className="space-y-4">
           <Alert variant="warning">
             <p className="font-medium">
@@ -65,7 +65,7 @@ export default function AddConnectorModal({ onClose, onSuccess }: AddConnectorMo
             </p>
           </Alert>
 
-          <FormField label={t('connectorKey')}>
+          <FormField label={t('appKey')}>
             <div className="flex gap-2">
               <Input
                 type="text"
@@ -109,14 +109,14 @@ export default function AddConnectorModal({ onClose, onSuccess }: AddConnectorMo
   }
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={t('createConnector')}>
+    <Modal isOpen={true} onClose={onClose} title={t('createApp')}>
       <form onSubmit={onSubmit} className="space-y-4">
         <FormField label={t('name')} required>
           <Input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={t('connectorNamePlaceholder')}
+            placeholder={t('appNamePlaceholder')}
             required
             maxLength={100}
           />

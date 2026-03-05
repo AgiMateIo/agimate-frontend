@@ -7,8 +7,8 @@ const nextConfig: NextConfig = {
     output: 'standalone',
     async redirects() {
         return [
-            { source: '/dashboard/apps', destination: '/dashboard/connectors', permanent: true },
-            { source: '/dashboard/apps/:id', destination: '/dashboard/connectors/:id', permanent: true },
+            { source: '/dashboard/connectors', destination: '/dashboard/apps', permanent: true },
+            { source: '/dashboard/connectors/:id', destination: '/dashboard/apps/:id', permanent: true },
         ];
     },
 };
