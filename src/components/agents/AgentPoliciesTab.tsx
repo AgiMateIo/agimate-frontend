@@ -3,29 +3,32 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { AgentToolPolicyResponse, PagedResponse } from '@/types';
+import { AgentPolicyResponse, PagedResponse, PolicyKind } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Button } from '@/components/ui/Button';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
-import AddToolPolicyModal from './AddToolPolicyModal';
-import EditToolPolicyModal from './EditToolPolicyModal';
-import DeleteToolPolicyModal from './DeleteToolPolicyModal';
+import AddPolicyModal from './AddPolicyModal';
+import EditPolicyModal from './EditPolicyModal';
+import DeletePolicyModal from './DeletePolicyModal';
+import { getPolicyLabels } from './policyLabels';
 
-interface ToolPoliciesTabProps {
+interface AgentPoliciesTabProps {
+  kind: PolicyKind;
   agentPubId: string;
 }
 
-export default function ToolPoliciesTab({ agentPubId }: ToolPoliciesTabProps) {
+export default function AgentPoliciesTab({ kind, agentPubId }: AgentPoliciesTabProps) {
   const t = useTranslations('Agents');
-  const [policies, setPolicies] = useState<AgentToolPolicyResponse[]>([]);
+  const labels = getPolicyLabels(kind);
+  const [policies, setPolicies] = useState<AgentPolicyResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [page, setPage] = useState(0);
-  const [pageInfo, setPageInfo] = useState<Omit<PagedResponse<AgentToolPolicyResponse>, 'content'> | null>(null);
+  const [pageInfo, setPageInfo] = useState<Omit<PagedResponse<AgentPolicyResponse>, 'content'> | null>(null);
 
   const [showAdd, setShowAdd] = useState(false);
-  const [editingPolicy, setEditingPolicy] = useState<AgentToolPolicyResponse | null>(null);
-  const [deletingPolicy, setDeletingPolicy] = useState<AgentToolPolicyResponse | null>(null);
+  const [editingPolicy, setEditingPolicy] = useState<AgentPolicyResponse | null>(null);
+  const [deletingPolicy, setDeletingPolicy] = useState<AgentPolicyResponse | null>(null);
 
   const fetchData = useCallback(async (silent: boolean = false) => {
     if (!silent) {
@@ -33,7 +36,10 @@ export default function ToolPoliciesTab({ agentPubId }: ToolPoliciesTabProps) {
       setError('');
     }
     try {
-      const data = await apiService.getAgentToolPolicies({ agentPubId, page, size: 20 });
+      const fetcher = kind === 'tool'
+        ? apiService.getAgentToolPolicies
+        : apiService.getAgentTriggerPolicies;
+      const data = await fetcher.call(apiService, { agentPubId, page, size: 20 });
       setPolicies(data.content);
       setPageInfo({
         totalElements: data.totalElements,
@@ -48,12 +54,12 @@ export default function ToolPoliciesTab({ agentPubId }: ToolPoliciesTabProps) {
       if (silent) setError('');
     } catch (err) {
       if (!silent) {
-        setError(err instanceof Error ? err.message : 'Failed to load tool policies');
+        setError(err instanceof Error ? err.message : 'Failed to load policies');
       }
     } finally {
       if (!silent) setLoading(false);
     }
-  }, [agentPubId, page]);
+  }, [kind, agentPubId, page]);
 
   useEffect(() => {
     fetchData(false);
@@ -73,7 +79,7 @@ export default function ToolPoliciesTab({ agentPubId }: ToolPoliciesTabProps) {
   }
 
   if (loading) {
-    return <div className="text-center py-12 text-muted">{t('loadingToolPolicies')}</div>;
+    return <div className="text-center py-12 text-muted">{t(labels.loadingPolicies)}</div>;
   }
 
   return (
@@ -84,12 +90,12 @@ export default function ToolPoliciesTab({ agentPubId }: ToolPoliciesTabProps) {
         </div>
         <Button onClick={() => setShowAdd(true)} className="flex items-center gap-2">
           <PlusIcon className="h-4 w-4" />
-          {t('addToolPolicy')}
+          {t(labels.addPolicy)}
         </Button>
       </div>
 
       {policies.length === 0 ? (
-        <div className="text-center py-12 text-muted">{t('noToolPolicies')}</div>
+        <div className="text-center py-12 text-muted">{t(labels.noPolicies)}</div>
       ) : (
         <>
           <div className="overflow-x-auto">
@@ -98,7 +104,7 @@ export default function ToolPoliciesTab({ agentPubId }: ToolPoliciesTabProps) {
                 <tr className="border-b border-border">
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('connectorCode')}</th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('connectorIdentity')}</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('toolNameColumn')}</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t(labels.resourceColumn)}</th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('effect')}</th>
                   <th className="text-right py-3 px-4 text-sm font-medium text-muted"></th>
                 </tr>
@@ -108,7 +114,7 @@ export default function ToolPoliciesTab({ agentPubId }: ToolPoliciesTabProps) {
                   <tr key={policy.id} className="border-b border-border last:border-b-0 hover:bg-surface-secondary transition-colors">
                     <td className="py-3 px-4 text-sm text-foreground">{displayValue(policy.connectorCode)}</td>
                     <td className="py-3 px-4 text-sm text-foreground font-mono">{displayValue(policy.connectorIdentity)}</td>
-                    <td className="py-3 px-4 text-sm text-foreground font-mono">{displayValue(policy.toolName)}</td>
+                    <td className="py-3 px-4 text-sm text-foreground font-mono">{displayValue(policy.resourceName)}</td>
                     <td className="py-3 px-4">
                       <span className={`inline-block rounded px-2.5 py-1 text-xs font-medium ${
                         policy.effect === 'ALLOW'
@@ -167,7 +173,8 @@ export default function ToolPoliciesTab({ agentPubId }: ToolPoliciesTabProps) {
       )}
 
       {showAdd && (
-        <AddToolPolicyModal
+        <AddPolicyModal
+          kind={kind}
           agentPubId={agentPubId}
           onClose={() => setShowAdd(false)}
           onSuccess={handleMutationSuccess}
@@ -175,7 +182,8 @@ export default function ToolPoliciesTab({ agentPubId }: ToolPoliciesTabProps) {
       )}
 
       {editingPolicy && (
-        <EditToolPolicyModal
+        <EditPolicyModal
+          kind={kind}
           policy={editingPolicy}
           onClose={() => setEditingPolicy(null)}
           onSuccess={handleMutationSuccess}
@@ -183,7 +191,8 @@ export default function ToolPoliciesTab({ agentPubId }: ToolPoliciesTabProps) {
       )}
 
       {deletingPolicy && (
-        <DeleteToolPolicyModal
+        <DeletePolicyModal
+          kind={kind}
           policy={deletingPolicy}
           onClose={() => setDeletingPolicy(null)}
           onSuccess={handleMutationSuccess}

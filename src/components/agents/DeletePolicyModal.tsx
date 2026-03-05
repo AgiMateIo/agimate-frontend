@@ -2,46 +2,53 @@
 
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { AgentToolPolicyResponse } from '@/types';
+import { AgentPolicyResponse, PolicyKind } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
+import { getPolicyLabels } from './policyLabels';
 
-interface DeleteToolPolicyModalProps {
-  policy: AgentToolPolicyResponse;
+interface DeletePolicyModalProps {
+  kind: PolicyKind;
+  policy: AgentPolicyResponse;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export default function DeleteToolPolicyModal({ policy, onClose, onSuccess }: DeleteToolPolicyModalProps) {
+export default function DeletePolicyModal({ kind, policy, onClose, onSuccess }: DeletePolicyModalProps) {
   const t = useTranslations('Agents');
+  const labels = getPolicyLabels(kind);
 
   const { loading, error, handleSubmit } = useAsyncForm<void>({
     onSuccess,
-    defaultError: 'Failed to delete tool policy',
+    defaultError: 'Failed to delete policy',
   });
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, async () => {
-      await apiService.deleteAgentToolPolicy(policy.id);
+      if (kind === 'tool') {
+        await apiService.deleteAgentToolPolicy(policy.id);
+      } else {
+        await apiService.deleteAgentTriggerPolicy(policy.id);
+      }
     });
 
-  const displayName = policy.toolName || t('anyWildcard');
+  const displayName = policy.resourceName || t('anyWildcard');
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={t('deleteToolPolicy')}>
+    <Modal isOpen={true} onClose={onClose} title={t(labels.deletePolicy)}>
       <form onSubmit={onSubmit} className="space-y-4">
         <p className="text-foreground">
-          {t('deleteToolPolicyConfirm')}
+          {t(labels.deletePolicyConfirm)}
         </p>
         <div className="text-sm text-muted">
-          <strong>{t('toolNameColumn')}:</strong> {displayName}
+          <strong>{t(labels.resourceColumn)}:</strong> {displayName}
         </div>
 
         <Alert variant="warning">
-          {t('deleteToolPolicyWarning')}
+          {t(labels.deletePolicyWarning)}
         </Alert>
 
         {error && <ErrorAlert>{error}</ErrorAlert>}
@@ -63,7 +70,7 @@ export default function DeleteToolPolicyModal({ policy, onClose, onSuccess }: De
             loading={loading}
             className="flex-1"
           >
-            {t('deleteToolPolicy')}
+            {t(labels.deletePolicy)}
           </Button>
         </div>
       </form>

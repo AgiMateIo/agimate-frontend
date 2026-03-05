@@ -26,10 +26,11 @@ import type {
   CreateIntegrationRequest,
   UpdateIntegrationRequest,
   UpdateIntegrationCredentialsRequest,
-  AgentToolPolicyResponse,
-  CreateAgentToolPolicyRequest,
-  UpdateAgentToolPolicyRequest,
+  AgentPolicyResponse,
+  CreateAgentPolicyRequest,
+  UpdateAgentPolicyRequest,
   DeviceToolInfo,
+  DeviceTriggerInfo,
   Board,
   BoardTask,
   BoardTaskComment,
@@ -363,29 +364,84 @@ class ApiService {
     return this.post<AgentCreatedResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${id}/regenerate`, {});
   }
 
-  // Agent Tool Policies
-  async getAgentToolPolicies(params: { agentPubId: string; page?: number; size?: number }): Promise<PagedResponse<AgentToolPolicyResponse>> {
+  // Agent Policies (tool & trigger) — normalized to AgentPolicyResponse
+  private mapPolicyPage(
+    raw: PagedResponse<Record<string, unknown>>,
+    resourceField: string,
+  ): PagedResponse<AgentPolicyResponse> {
+    return {
+      ...raw,
+      content: raw.content.map((p) => ({
+        ...p,
+        resourceName: (p[resourceField] as string | null) ?? null,
+      })) as unknown as AgentPolicyResponse[],
+    };
+  }
+
+  private mapPolicy(raw: Record<string, unknown>, resourceField: string): AgentPolicyResponse {
+    return { ...raw, resourceName: (raw[resourceField] as string | null) ?? null } as unknown as AgentPolicyResponse;
+  }
+
+  private toRawPolicyBody(data: CreateAgentPolicyRequest | UpdateAgentPolicyRequest, resourceField: string) {
+    const { resourceName, ...rest } = data as CreateAgentPolicyRequest & { resourceName?: string | null };
+    return { ...rest, [resourceField]: resourceName };
+  }
+
+  // Tool policies
+  async getAgentToolPolicies(params: { agentPubId: string; page?: number; size?: number }): Promise<PagedResponse<AgentPolicyResponse>> {
     const searchParams = new URLSearchParams();
     searchParams.set('agentPubId', params.agentPubId);
     searchParams.set('page', String(params.page ?? 0));
     searchParams.set('size', String(params.size ?? 20));
-    return this.get<PagedResponse<AgentToolPolicyResponse>>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-tool-policies/?${searchParams}`);
+    const raw = await this.get<PagedResponse<Record<string, unknown>>>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-tool-policies/?${searchParams}`);
+    return this.mapPolicyPage(raw, 'toolName');
   }
 
-  async createAgentToolPolicy(data: CreateAgentToolPolicyRequest): Promise<AgentToolPolicyResponse> {
-    return this.post<AgentToolPolicyResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-tool-policies/`, data);
+  async createAgentToolPolicy(data: CreateAgentPolicyRequest): Promise<AgentPolicyResponse> {
+    const raw = await this.post<Record<string, unknown>>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-tool-policies/`, this.toRawPolicyBody(data, 'toolName'));
+    return this.mapPolicy(raw, 'toolName');
   }
 
-  async updateAgentToolPolicy(id: string, data: UpdateAgentToolPolicyRequest): Promise<AgentToolPolicyResponse> {
-    return this.put<AgentToolPolicyResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-tool-policies/${id}`, data);
+  async updateAgentToolPolicy(id: string, data: UpdateAgentPolicyRequest): Promise<AgentPolicyResponse> {
+    const raw = await this.put<Record<string, unknown>>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-tool-policies/${id}`, this.toRawPolicyBody(data, 'toolName'));
+    return this.mapPolicy(raw, 'toolName');
   }
 
   async deleteAgentToolPolicy(id: string): Promise<void> {
     return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-tool-policies/${id}`);
   }
 
+  // Trigger policies
+  async getAgentTriggerPolicies(params: { agentPubId: string; page?: number; size?: number }): Promise<PagedResponse<AgentPolicyResponse>> {
+    const searchParams = new URLSearchParams();
+    searchParams.set('agentPubId', params.agentPubId);
+    searchParams.set('page', String(params.page ?? 0));
+    searchParams.set('size', String(params.size ?? 20));
+    const raw = await this.get<PagedResponse<Record<string, unknown>>>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-trigger-policies/?${searchParams}`);
+    return this.mapPolicyPage(raw, 'triggerName');
+  }
+
+  async createAgentTriggerPolicy(data: CreateAgentPolicyRequest): Promise<AgentPolicyResponse> {
+    const raw = await this.post<Record<string, unknown>>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-trigger-policies/`, this.toRawPolicyBody(data, 'triggerName'));
+    return this.mapPolicy(raw, 'triggerName');
+  }
+
+  async updateAgentTriggerPolicy(id: string, data: UpdateAgentPolicyRequest): Promise<AgentPolicyResponse> {
+    const raw = await this.put<Record<string, unknown>>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-trigger-policies/${id}`, this.toRawPolicyBody(data, 'triggerName'));
+    return this.mapPolicy(raw, 'triggerName');
+  }
+
+  async deleteAgentTriggerPolicy(id: string): Promise<void> {
+    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-trigger-policies/${id}`);
+  }
+
+  // App resources
   async getAppTools(appPubId: string): Promise<DeviceToolInfo[]> {
     return this.get<DeviceToolInfo[]>(`${API.ENDPOINTS.DEVICE_API}/manage/app-tools/${appPubId}`);
+  }
+
+  async getAppTriggers(appPubId: string): Promise<DeviceTriggerInfo[]> {
+    return this.get<DeviceTriggerInfo[]>(`${API.ENDPOINTS.DEVICE_API}/manage/app-triggers/${appPubId}`);
   }
 
   // Tool Use Logs (paginated)

@@ -288,7 +288,20 @@
     "policyPage": "Page",
     "policyPrevious": "Previous",
     "policyNext": "Next",
-    "policiesTotal": "{count, plural, one {# policy} other {# policies}} total"
+    "policiesTotal": "{count, plural, one {# policy} other {# policies}} total",
+    "triggerPolicies": "Trigger Policies",
+    "addTriggerPolicy": "Add Policy",
+    "editTriggerPolicy": "Edit Policy",
+    "deleteTriggerPolicy": "Delete Policy",
+    "noTriggerPolicies": "No trigger policies configured yet",
+    "loadingTriggerPolicies": "Loading trigger policies...",
+    "triggerNameColumn": "Trigger",
+    "stepTrigger": "Trigger",
+    "selectTrigger": "Select trigger",
+    "loadingTriggers": "Loading triggers...",
+    "noTriggersFound": "No triggers registered for this app",
+    "deleteTriggerPolicyConfirm": "Are you sure you want to delete this trigger policy?",
+    "deleteTriggerPolicyWarning": "This action cannot be undone. The policy will be removed immediately."
   },
   "AgenticTeams": {
     "title": "Agentic Teams",

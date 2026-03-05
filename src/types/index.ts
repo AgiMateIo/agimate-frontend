@@ -13,4 +13,4 @@ export * from './webhooks';
 export * from './agentic-teams';
 export * from './integrations';
 export * from './boards';
-export * from './agent-tool-policies';
+export * from './agent-policies';

@@ -3,45 +3,53 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { AgentToolPolicyResponse, PolicyEffect } from '@/types';
+import { AgentPolicyResponse, PolicyEffect, PolicyKind } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input, TextArea } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
+import { getPolicyLabels } from './policyLabels';
 
-interface EditToolPolicyModalProps {
-  policy: AgentToolPolicyResponse;
+interface EditPolicyModalProps {
+  kind: PolicyKind;
+  policy: AgentPolicyResponse;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export default function EditToolPolicyModal({ policy, onClose, onSuccess }: EditToolPolicyModalProps) {
+export default function EditPolicyModal({ kind, policy, onClose, onSuccess }: EditPolicyModalProps) {
   const t = useTranslations('Agents');
+  const labels = getPolicyLabels(kind);
   const [connectorCode, setConnectorCode] = useState(policy.connectorCode || '');
   const [connectorIdentity, setConnectorIdentity] = useState(policy.connectorIdentity || '');
-  const [toolName, setToolName] = useState(policy.toolName || '');
+  const [resourceName, setResourceName] = useState(policy.resourceName || '');
   const [effect, setEffect] = useState<PolicyEffect>(policy.effect);
   const [description, setDescription] = useState(policy.description || '');
 
   const { loading, error, handleSubmit } = useAsyncForm<void>({
     onSuccess,
-    defaultError: 'Failed to update tool policy',
+    defaultError: 'Failed to update policy',
   });
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, async () => {
-      await apiService.updateAgentToolPolicy(policy.id, {
+      const data = {
         connectorCode: connectorCode.trim() || null,
         connectorIdentity: connectorIdentity.trim() || null,
-        toolName: toolName.trim() || null,
+        resourceName: resourceName.trim() || null,
         effect,
         description: description.trim() || undefined,
-      });
+      };
+      if (kind === 'tool') {
+        await apiService.updateAgentToolPolicy(policy.id, data);
+      } else {
+        await apiService.updateAgentTriggerPolicy(policy.id, data);
+      }
     });
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={t('editToolPolicy')} size="lg">
+    <Modal isOpen={true} onClose={onClose} title={t(labels.editPolicy)} size="lg">
       <form onSubmit={onSubmit} className="space-y-4">
         <FormField label={t('connectorCode')}>
           <select
@@ -63,11 +71,11 @@ export default function EditToolPolicyModal({ policy, onClose, onSuccess }: Edit
           />
         </FormField>
 
-        <FormField label={t('toolNameColumn')}>
+        <FormField label={t(labels.resourceColumn)}>
           <Input
             type="text"
-            value={toolName}
-            onChange={(e) => setToolName(e.target.value)}
+            value={resourceName}
+            onChange={(e) => setResourceName(e.target.value)}
             placeholder={t('anyWildcard')}
           />
         </FormField>

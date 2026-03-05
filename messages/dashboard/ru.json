@@ -288,7 +288,20 @@
     "policyPage": "Страница",
     "policyPrevious": "Назад",
     "policyNext": "Далее",
-    "policiesTotal": "{count, plural, one {# политика} few {# политики} many {# политик} other {# политик}} всего"
+    "policiesTotal": "{count, plural, one {# политика} few {# политики} many {# политик} other {# политик}} всего",
+    "triggerPolicies": "Политики триггеров",
+    "addTriggerPolicy": "Добавить политику",
+    "editTriggerPolicy": "Редактировать политику",
+    "deleteTriggerPolicy": "Удалить политику",
+    "noTriggerPolicies": "Политики триггеров ещё не настроены",
+    "loadingTriggerPolicies": "Загрузка политик триггеров...",
+    "triggerNameColumn": "Триггер",
+    "stepTrigger": "Триггер",
+    "selectTrigger": "Выберите триггер",
+    "loadingTriggers": "Загрузка триггеров...",
+    "noTriggersFound": "Нет зарегистрированных триггеров для этого приложения",
+    "deleteTriggerPolicyConfirm": "Вы уверены, что хотите удалить эту политику триггеров?",
+    "deleteTriggerPolicyWarning": "Это действие нельзя отменить. Политика будет удалена немедленно."
   },
   "AgenticTeams": {
     "title": "Команды агентов",

@@ -1,12 +1,15 @@
 export type PolicyEffect = 'ALLOW' | 'DENY';
+export type PolicyKind = 'tool' | 'trigger';
 
-export interface AgentToolPolicyResponse {
+// Normalized response for UI — backend returns toolName or triggerName,
+// mapped to resourceName by API service
+export interface AgentPolicyResponse {
   id: string;
   agentPubId: string;
   userPubId: string;
   connectorCode: string | null;
   connectorIdentity: string | null;
-  toolName: string | null;
+  resourceName: string | null;
   effect: PolicyEffect;
   priority: number | null;
   description: string | null;
@@ -14,19 +17,19 @@ export interface AgentToolPolicyResponse {
   updatedAt: string;
 }
 
-export interface CreateAgentToolPolicyRequest {
+export interface CreateAgentPolicyRequest {
   agentPubId: string;
   connectorCode?: string | null;
   connectorIdentity?: string | null;
-  toolName?: string | null;
+  resourceName?: string | null;
   effect: PolicyEffect;
   description?: string;
 }
 
-export interface UpdateAgentToolPolicyRequest {
+export interface UpdateAgentPolicyRequest {
   connectorCode?: string | null;
   connectorIdentity?: string | null;
-  toolName?: string | null;
+  resourceName?: string | null;
   effect?: PolicyEffect;
   description?: string;
 }

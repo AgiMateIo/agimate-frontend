@@ -3,46 +3,51 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { AppResponse, DeviceToolInfo, PolicyEffect } from '@/types';
+import { AppResponse, PolicyEffect, PolicyKind } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { TextArea } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
+import { getPolicyLabels } from './policyLabels';
 
-interface AddToolPolicyModalProps {
+interface AddPolicyModalProps {
+  kind: PolicyKind;
   agentPubId: string;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-type Step = 'connector' | 'identity' | 'tool' | 'effect';
+type Step = 'connector' | 'identity' | 'resource' | 'effect';
 
-const ALL_STEPS: Step[] = ['connector', 'identity', 'tool', 'effect'];
+const ALL_STEPS: Step[] = ['connector', 'identity', 'resource', 'effect'];
 
-// Sentinel value meaning "any / wildcard" — distinct from "not yet chosen"
 const WILDCARD = '__wildcard__';
 
-export default function AddToolPolicyModal({ agentPubId, onClose, onSuccess }: AddToolPolicyModalProps) {
+interface ResourceItem {
+  name: string;
+  description: string;
+}
+
+export default function AddPolicyModal({ kind, agentPubId, onClose, onSuccess }: AddPolicyModalProps) {
   const t = useTranslations('Agents');
+  const labels = getPolicyLabels(kind);
   const [step, setStep] = useState<Step>('connector');
 
-  // null = wildcard, string = specific value, undefined = not yet chosen
   const [connectorCode, setConnectorCode] = useState<string | undefined>(undefined);
   const [connectorIdentity, setConnectorIdentity] = useState<string | undefined>(undefined);
-  const [toolName, setToolName] = useState<string | undefined>(undefined);
+  const [resourceName, setResourceName] = useState<string | undefined>(undefined);
   const [effect, setEffect] = useState<PolicyEffect>('ALLOW');
   const [description, setDescription] = useState('');
 
-  // Data for selectors
   const [apps, setApps] = useState<AppResponse[]>([]);
   const [appsLoading, setAppsLoading] = useState(false);
-  const [tools, setTools] = useState<DeviceToolInfo[]>([]);
-  const [toolsLoading, setToolsLoading] = useState(false);
+  const [resources, setResources] = useState<ResourceItem[]>([]);
+  const [resourcesLoading, setResourcesLoading] = useState(false);
 
   const { loading, error, handleSubmit } = useAsyncForm<void>({
     onSuccess,
-    defaultError: 'Failed to create tool policy',
+    defaultError: 'Failed to create policy',
   });
 
   // Load apps when entering identity step
@@ -56,31 +61,33 @@ export default function AddToolPolicyModal({ agentPubId, onClose, onSuccess }: A
     }
   }, [step, apps.length]);
 
-  // Load tools when entering tool step with a specific identity
+  // Load resources (tools or triggers) when entering resource step with a specific identity
   useEffect(() => {
-    if (step === 'tool' && connectorIdentity && connectorIdentity !== WILDCARD) {
-      setToolsLoading(true);
-      setTools([]);
-      apiService.getAppTools(connectorIdentity)
-        .then(setTools)
+    if (step === 'resource' && connectorIdentity && connectorIdentity !== WILDCARD) {
+      setResourcesLoading(true);
+      setResources([]);
+      const fetcher = kind === 'tool'
+        ? apiService.getAppTools(connectorIdentity)
+        : apiService.getAppTriggers(connectorIdentity);
+      fetcher
+        .then(setResources)
         .catch(() => {})
-        .finally(() => setToolsLoading(false));
+        .finally(() => setResourcesLoading(false));
     }
-  }, [step, connectorIdentity]);
+  }, [step, connectorIdentity, kind]);
 
   const currentIndex = ALL_STEPS.indexOf(step);
 
-  // Cascading skip: wildcard at level N → all levels below also become wildcard, jump to effect
   const skipToEffect = (fromStep: Step) => {
     if (fromStep === 'connector') {
       setConnectorCode(WILDCARD);
       setConnectorIdentity(WILDCARD);
-      setToolName(WILDCARD);
+      setResourceName(WILDCARD);
     } else if (fromStep === 'identity') {
       setConnectorIdentity(WILDCARD);
-      setToolName(WILDCARD);
-    } else if (fromStep === 'tool') {
-      setToolName(WILDCARD);
+      setResourceName(WILDCARD);
+    } else if (fromStep === 'resource') {
+      setResourceName(WILDCARD);
     }
     setStep('effect');
   };
@@ -96,51 +103,54 @@ export default function AddToolPolicyModal({ agentPubId, onClose, onSuccess }: A
     const prevIndex = currentIndex - 1;
     if (prevIndex >= 0) {
       const prevStep = ALL_STEPS[prevIndex];
-      // When going back, clear cascaded wildcards
       if (prevStep === 'connector') {
         setConnectorCode(undefined);
         setConnectorIdentity(undefined);
-        setToolName(undefined);
+        setResourceName(undefined);
       } else if (prevStep === 'identity') {
         setConnectorIdentity(undefined);
-        setToolName(undefined);
-      } else if (prevStep === 'tool') {
-        setToolName(undefined);
+        setResourceName(undefined);
+      } else if (prevStep === 'resource') {
+        setResourceName(undefined);
       }
       setStep(prevStep);
     }
   };
 
-  // For submit: WILDCARD → null (server expects null for wildcard)
   const toApiValue = (v: string | undefined) => (v === WILDCARD || v === undefined) ? undefined : v;
 
-  const onSubmit = (e: React.FormEvent) =>
+  const onSubmit = (e: React.FormEvent) => {
+    // Guard: only allow submit on the final step
+    if (step !== 'effect') {
+      e.preventDefault();
+      return;
+    }
     handleSubmit(e, async () => {
-      await apiService.createAgentToolPolicy({
+      const data = {
         agentPubId,
         connectorCode: toApiValue(connectorCode),
         connectorIdentity: toApiValue(connectorIdentity),
-        toolName: toApiValue(toolName),
+        resourceName: toApiValue(resourceName),
         effect,
         description: description.trim() || undefined,
-      });
+      };
+      if (kind === 'tool') {
+        await apiService.createAgentToolPolicy(data);
+      } else {
+        await apiService.createAgentTriggerPolicy(data);
+      }
     });
+  };
 
   const stepLabels: Record<Step, string> = {
     connector: t('stepConnector'),
     identity: t('stepIdentity'),
-    tool: t('stepTool'),
+    resource: t(labels.stepResource),
     effect: t('stepEffect'),
   };
 
-  // Can proceed with Next only if a specific value is selected (not undefined)
-  const canGoNext =
-    (step === 'connector' && connectorCode !== undefined && connectorCode !== WILDCARD) ||
-    (step === 'identity' && connectorIdentity !== undefined && connectorIdentity !== WILDCARD) ||
-    (step === 'tool' && toolName !== undefined && toolName !== WILDCARD);
-
   return (
-    <Modal isOpen={true} onClose={onClose} title={t('addToolPolicy')} size="lg">
+    <Modal isOpen={true} onClose={onClose} title={t(labels.addPolicy)} size="lg">
       {/* Step indicators */}
       <div className="flex items-center gap-2 mb-6">
         {ALL_STEPS.map((s, i) => (
@@ -246,18 +256,18 @@ export default function AddToolPolicyModal({ agentPubId, onClose, onSuccess }: A
           </div>
         )}
 
-        {/* Step 3: Tool */}
-        {step === 'tool' && (
+        {/* Step 3: Resource (Tool or Trigger) */}
+        {step === 'resource' && (
           <div className="space-y-3">
-            <p className="text-sm text-muted">{t('selectTool')}</p>
+            <p className="text-sm text-muted">{t(labels.selectResource)}</p>
             <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-              toolName === WILDCARD ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/50'
+              resourceName === WILDCARD ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/50'
             }`}>
               <input
                 type="radio"
-                name="tool"
-                checked={toolName === WILDCARD}
-                onChange={() => setToolName(WILDCARD)}
+                name="resource"
+                checked={resourceName === WILDCARD}
+                onChange={() => setResourceName(WILDCARD)}
                 className="accent-accent"
               />
               <div>
@@ -265,27 +275,27 @@ export default function AddToolPolicyModal({ agentPubId, onClose, onSuccess }: A
                 <p className="text-xs text-muted mt-0.5">{t('skipForWildcard')}</p>
               </div>
             </label>
-            {toolsLoading ? (
-              <div className="text-center py-4 text-muted text-sm">{t('loadingTools')}</div>
-            ) : tools.length === 0 ? (
-              <div className="text-center py-4 text-muted text-sm">{t('noToolsFound')}</div>
+            {resourcesLoading ? (
+              <div className="text-center py-4 text-muted text-sm">{t(labels.loadingResources)}</div>
+            ) : resources.length === 0 ? (
+              <div className="text-center py-4 text-muted text-sm">{t(labels.noResourcesFound)}</div>
             ) : (
               <div className="space-y-2 max-h-56 overflow-y-auto">
-                {tools.map((tool) => (
-                  <label key={tool.name} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                    toolName === tool.name ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/50'
+                {resources.map((item) => (
+                  <label key={item.name} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                    resourceName === item.name ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/50'
                   }`}>
                     <input
                       type="radio"
-                      name="tool"
-                      checked={toolName === tool.name}
-                      onChange={() => setToolName(tool.name)}
+                      name="resource"
+                      checked={resourceName === item.name}
+                      onChange={() => setResourceName(item.name)}
                       className="accent-accent"
                     />
                     <div>
-                      <span className="text-sm font-medium text-foreground font-mono">{tool.name}</span>
-                      {tool.description && (
-                        <p className="text-xs text-muted mt-0.5">{tool.description}</p>
+                      <span className="text-sm font-medium text-foreground font-mono">{item.name}</span>
+                      {item.description && (
+                        <p className="text-xs text-muted mt-0.5">{item.description}</p>
                       )}
                     </div>
                   </label>
@@ -332,7 +342,7 @@ export default function AddToolPolicyModal({ agentPubId, onClose, onSuccess }: A
             <div className="bg-surface-secondary rounded-lg border border-border/50 p-3 text-xs text-muted space-y-1">
               <div><strong>{t('connectorCode')}:</strong> {connectorCode === WILDCARD ? t('anyWildcard') : connectorCode}</div>
               <div><strong>{t('connectorIdentity')}:</strong> {connectorIdentity === WILDCARD ? t('anyWildcard') : connectorIdentity}</div>
-              <div><strong>{t('toolNameColumn')}:</strong> {toolName === WILDCARD ? t('anyWildcard') : toolName}</div>
+              <div><strong>{t(labels.resourceColumn)}:</strong> {resourceName === WILDCARD ? t('anyWildcard') : resourceName}</div>
             </div>
 
             <details className="group">
@@ -374,11 +384,10 @@ export default function AddToolPolicyModal({ agentPubId, onClose, onSuccess }: A
             <Button
               type="button"
               onClick={() => {
-                // Wildcard selected → cascade skip to effect
                 if (
                   (step === 'connector' && connectorCode === WILDCARD) ||
                   (step === 'identity' && connectorIdentity === WILDCARD) ||
-                  (step === 'tool' && toolName === WILDCARD)
+                  (step === 'resource' && resourceName === WILDCARD)
                 ) {
                   skipToEffect(step);
                 } else {
@@ -389,7 +398,7 @@ export default function AddToolPolicyModal({ agentPubId, onClose, onSuccess }: A
               disabled={
                 (step === 'connector' && connectorCode === undefined) ||
                 (step === 'identity' && connectorIdentity === undefined) ||
-                (step === 'tool' && toolName === undefined)
+                (step === 'resource' && resourceName === undefined)
               }
             >
               {t('nextStep')}
