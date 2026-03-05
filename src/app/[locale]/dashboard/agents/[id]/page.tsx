@@ -12,6 +12,7 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { getAgentAvatarUrl } from '@/utils/avatar';
 import { formatDate } from '@/utils/date';
 import { Link } from '@/i18n/navigation';
+import ToolPoliciesTab from '@/components/agents/ToolPoliciesTab';
 
 type Tab = 'general' | 'trigger-rules' | 'tool-rules';
 
@@ -201,9 +202,7 @@ export default function AgentDetailPage() {
 
       {activeTab === 'tool-rules' && (
         <div className="bg-surface rounded-xl border border-border p-6">
-          <div className="text-center py-12 text-muted">
-            {t('toolRulesComingSoon')}
-          </div>
+          <ToolPoliciesTab agentPubId={agentId} />
         </div>
       )}
     </div>

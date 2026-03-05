@@ -26,6 +26,10 @@ import type {
   CreateIntegrationRequest,
   UpdateIntegrationRequest,
   UpdateIntegrationCredentialsRequest,
+  AgentToolPolicyResponse,
+  CreateAgentToolPolicyRequest,
+  UpdateAgentToolPolicyRequest,
+  DeviceToolInfo,
   Board,
   BoardTask,
   BoardTaskComment,
@@ -357,6 +361,31 @@ class ApiService {
 
   async regenerateAgentKey(id: string): Promise<AgentCreatedResponse> {
     return this.post<AgentCreatedResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${id}/regenerate`, {});
+  }
+
+  // Agent Tool Policies
+  async getAgentToolPolicies(params: { agentPubId: string; page?: number; size?: number }): Promise<PagedResponse<AgentToolPolicyResponse>> {
+    const searchParams = new URLSearchParams();
+    searchParams.set('agentPubId', params.agentPubId);
+    searchParams.set('page', String(params.page ?? 0));
+    searchParams.set('size', String(params.size ?? 20));
+    return this.get<PagedResponse<AgentToolPolicyResponse>>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-tool-policies/?${searchParams}`);
+  }
+
+  async createAgentToolPolicy(data: CreateAgentToolPolicyRequest): Promise<AgentToolPolicyResponse> {
+    return this.post<AgentToolPolicyResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-tool-policies/`, data);
+  }
+
+  async updateAgentToolPolicy(id: string, data: UpdateAgentToolPolicyRequest): Promise<AgentToolPolicyResponse> {
+    return this.put<AgentToolPolicyResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-tool-policies/${id}`, data);
+  }
+
+  async deleteAgentToolPolicy(id: string): Promise<void> {
+    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-tool-policies/${id}`);
+  }
+
+  async getAppTools(appPubId: string): Promise<DeviceToolInfo[]> {
+    return this.get<DeviceToolInfo[]>(`${API.ENDPOINTS.DEVICE_API}/manage/app-tools/${appPubId}`);
   }
 
   // Tool Use Logs (paginated)
