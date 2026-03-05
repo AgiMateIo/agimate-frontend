@@ -119,13 +119,10 @@ export default function AddPolicyModal({ kind, agentPubId, onClose, onSuccess }:
 
   const toApiValue = (v: string | undefined) => (v === WILDCARD || v === undefined) ? undefined : v;
 
-  const onSubmit = (e: React.FormEvent) => {
-    // Guard: only allow submit on the final step
-    if (step !== 'effect') {
-      e.preventDefault();
-      return;
-    }
-    handleSubmit(e, async () => {
+  const onSubmit = () => {
+    if (step !== 'effect') return;
+    const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+    handleSubmit(fakeEvent, async () => {
       const data = {
         agentPubId,
         connectorCode: toApiValue(connectorCode),
@@ -172,7 +169,7 @@ export default function AddPolicyModal({ kind, agentPubId, onClose, onSuccess }:
         ))}
       </div>
 
-      <form onSubmit={onSubmit} className="space-y-4">
+      <div className="space-y-4">
         {/* Step 1: Connector */}
         {step === 'connector' && (
           <div className="space-y-3">
@@ -377,7 +374,7 @@ export default function AddPolicyModal({ kind, agentPubId, onClose, onSuccess }:
           )}
 
           {step === 'effect' ? (
-            <Button type="submit" loading={loading} className="flex-1">
+            <Button type="button" loading={loading} className="flex-1" onClick={onSubmit}>
               {t('createPolicy')}
             </Button>
           ) : (
@@ -405,7 +402,7 @@ export default function AddPolicyModal({ kind, agentPubId, onClose, onSuccess }:
             </Button>
           )}
         </div>
-      </form>
+      </div>
     </Modal>
   );
 }
