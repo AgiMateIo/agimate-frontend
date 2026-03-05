@@ -6,7 +6,7 @@ import { localeMap } from '@/i18n/routing';
 import { Link } from '@/i18n/navigation';
 import { ArrowLeftIcon, ArrowPathIcon, ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
-import { WebhookDeliveryLog, ApiKey } from '@/types';
+import { WebhookDeliveryLog, AgentResponse } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 
 const REFRESH_OPTIONS = [
@@ -21,8 +21,8 @@ export default function WebhookDeliveriesPage() {
   const locale = useLocale();
   const bcp47Locale = localeMap[locale];
 
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
-  const [selectedApiKey, setSelectedApiKey] = useState<string>('');
+  const [agents, setAgents] = useState<AgentResponse[]>([]);
+  const [selectedAgent, setSelectedAgent] = useState<string>('');
   const [deliveries, setDeliveries] = useState<WebhookDeliveryLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -34,16 +34,16 @@ export default function WebhookDeliveriesPage() {
   const refreshRef = useRef<HTMLDivElement>(null);
   const pageSize = 20;
 
-  // Load API keys on mount
+  // Load agents on mount
   useEffect(() => {
-    apiService.getApiKeys().then(setApiKeys).catch(() => {});
+    apiService.getAgentsList().then(setAgents).catch(() => {});
   }, []);
 
   const fetchDeliveries = useCallback(async (silent = false) => {
     if (!silent) { setLoading(true); setError(''); }
     try {
       const response = await apiService.getWebhookDeliveryLogs({
-        apiKeyPubId: selectedApiKey || undefined,
+        agentPubId: selectedAgent || undefined,
         page,
         size: pageSize,
       });
@@ -59,7 +59,7 @@ export default function WebhookDeliveriesPage() {
     } finally {
       if (!silent) setLoading(false);
     }
-  }, [selectedApiKey, page]);
+  }, [selectedAgent, page]);
 
   useEffect(() => { fetchDeliveries(false); }, [fetchDeliveries]);
 
@@ -80,7 +80,7 @@ export default function WebhookDeliveriesPage() {
   }, [refreshOpen]);
 
   // Reset page when filter changes
-  useEffect(() => { setPage(0); }, [selectedApiKey]);
+  useEffect(() => { setPage(0); }, [selectedAgent]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -138,13 +138,13 @@ export default function WebhookDeliveriesPage() {
       {/* Filter + Refresh */}
       <div className="flex items-center justify-between gap-4">
         <select
-          value={selectedApiKey}
-          onChange={e => setSelectedApiKey(e.target.value)}
+          value={selectedAgent}
+          onChange={e => setSelectedAgent(e.target.value)}
           className="px-3 py-2 bg-surface-secondary border border-border rounded-lg text-sm text-foreground"
         >
-          <option value="">{t('allApiKeys')}</option>
-          {apiKeys.map(k => (
-            <option key={k.pubId} value={k.pubId}>{k.name} ({k.maskedKeyId})</option>
+          <option value="">{t('allAgents')}</option>
+          {agents.map(a => (
+            <option key={a.id} value={a.id}>{a.name}</option>
           ))}
         </select>
         {refreshControls}

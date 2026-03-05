@@ -11,20 +11,20 @@ import { useAsyncForm } from '@/hooks/useAsyncForm';
 interface DeleteAgentModalProps {
   agent: AgentResponse;
   onClose: () => void;
-  onSuccess: (apiKeyPubId: string) => void;
+  onSuccess: (agentId: string) => void;
 }
 
 export default function DeleteAgentModal({ agent, onClose, onSuccess }: DeleteAgentModalProps) {
   const { loading, error, handleSubmit } = useAsyncForm<void>({
     onSuccess: () => {
-      onSuccess(agent.apiKeyPubId);
+      onSuccess(agent.id);
     },
     defaultError: 'Failed to delete agent configuration',
   });
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, async () => {
-      await apiService.deleteAgent(agent.apiKeyPubId);
+      await apiService.deleteAgent(agent.id);
     });
 
   return (

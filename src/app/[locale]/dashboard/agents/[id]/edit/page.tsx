@@ -3,25 +3,26 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, ClipboardDocumentIcon, ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
-import { ApiKey, AgentResponse, TriggerDestination } from '@/types';
+import { AgentResponse, TriggerDestination } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { FormField, TextArea, Input } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { Alert } from '@/components/ui/Alert';
 import { Toggle } from '@/components/ui/Toggle';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
+import { useClipboard } from '@/hooks/useClipboard';
 import { getAgentAvatarUrl } from '@/utils/avatar';
 
 export default function EditAgentPage() {
   const t = useTranslations('Agents');
   const router = useRouter();
   const params = useParams();
-  const apiKeyPubId = params.id as string;
+  const agentId = params.id as string;
 
   const [agent, setAgent] = useState<AgentResponse | null>(null);
-  const [apiKeyName, setApiKeyName] = useState('');
   const [dataLoading, setDataLoading] = useState(true);
   const [dataError, setDataError] = useState<string | null>(null);
 
@@ -32,36 +33,28 @@ export default function EditAgentPage() {
   const [webhookUrl, setWebhookUrl] = useState('');
   const [webhookAuthHeader, setWebhookAuthHeader] = useState('');
 
+  // Regenerate key state
+  const [regeneratedKey, setRegeneratedKey] = useState<string | null>(null);
+  const [regenerating, setRegenerating] = useState(false);
+  const [regenerateError, setRegenerateError] = useState<string | null>(null);
+  const { copied, copy } = useClipboard();
+
   const fetchData = useCallback(async () => {
     try {
       setDataError(null);
-      const [agentsData, apiKeysData] = await Promise.all([
-        apiService.getAgentsList(),
-        apiService.getApiKeys(),
-      ]);
-
-      const foundAgent = agentsData.find((a: AgentResponse) => a.apiKeyPubId === apiKeyPubId);
-      if (!foundAgent) {
-        setDataError('Agent not found');
-        setDataLoading(false);
-        return;
-      }
-
-      const foundKey = apiKeysData.find((k: ApiKey) => k.pubId === apiKeyPubId);
-      setApiKeyName(foundKey ? foundKey.name : apiKeyPubId);
-
-      setAgent(foundAgent);
-      setName(foundAgent.name);
-      setPrompt(foundAgent.prompt);
-      setTriggersTo(foundAgent.triggersTo);
-      setTriggersAllowAll(foundAgent.triggersAllowAll);
-      setWebhookUrl(foundAgent.webhookUrl ?? '');
+      const agentData = await apiService.getAgent(agentId);
+      setAgent(agentData);
+      setName(agentData.name);
+      setPrompt(agentData.prompt);
+      setTriggersTo(agentData.triggersTo);
+      setTriggersAllowAll(agentData.triggersAllowAll);
+      setWebhookUrl(agentData.webhookUrl ?? '');
     } catch (err) {
       setDataError(err instanceof Error ? err.message : 'Failed to load data');
     } finally {
       setDataLoading(false);
     }
-  }, [apiKeyPubId]);
+  }, [agentId]);
 
   useEffect(() => {
     fetchData();
@@ -83,7 +76,7 @@ export default function EditAgentPage() {
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
-      apiService.updateAgent(apiKeyPubId, {
+      apiService.updateAgent(agentId, {
         name,
         prompt,
         triggersAllowAll,
@@ -92,6 +85,19 @@ export default function EditAgentPage() {
         webhookAuthHeader: triggersTo === 'webhook' && webhookAuthHeader ? webhookAuthHeader : null,
       })
     );
+
+  const handleRegenerateKey = async () => {
+    setRegenerating(true);
+    setRegenerateError(null);
+    try {
+      const result = await apiService.regenerateAgentKey(agentId);
+      setRegeneratedKey(result.fullKey);
+    } catch (err) {
+      setRegenerateError(err instanceof Error ? err.message : 'Failed to regenerate key');
+    } finally {
+      setRegenerating(false);
+    }
+  };
 
   const triggerDestinationOptions: { value: TriggerDestination; label: string; color: string }[] = [
     { value: 'centrifugo', label: 'Centrifugo (Real-time)', color: 'text-accent' },
@@ -138,15 +144,54 @@ export default function EditAgentPage() {
         <h1 className="text-2xl font-bold text-foreground">{t('editAgentPageTitle')}</h1>
       </div>
 
+      {/* Regenerate Key Section */}
+      <div className="bg-surface rounded-xl border border-border p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-foreground">Agent Key</h2>
+        <p className="text-sm text-muted">
+          If your key has been compromised, you can regenerate it. The old key will be invalidated immediately.
+        </p>
+
+        {regeneratedKey && (
+          <>
+            <Alert variant="warning">
+              Save this key now! It will only be shown once.
+            </Alert>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 bg-surface-secondary border border-border/50 rounded-lg px-4 py-2.5 text-sm font-mono text-foreground break-all">
+                {regeneratedKey}
+              </code>
+              <button
+                onClick={() => copy(regeneratedKey)}
+                className="shrink-0 p-2.5 rounded-lg border border-border/50 hover:bg-surface-secondary transition-colors text-muted hover:text-foreground"
+                title="Copy key"
+              >
+                {copied ? (
+                  <ClipboardDocumentCheckIcon className="w-5 h-5 text-success" />
+                ) : (
+                  <ClipboardDocumentIcon className="w-5 h-5" />
+                )}
+              </button>
+            </div>
+          </>
+        )}
+
+        {regenerateError && <ErrorAlert>{regenerateError}</ErrorAlert>}
+
+        {!regeneratedKey && (
+          <Button
+            variant="warning"
+            onClick={handleRegenerateKey}
+            loading={regenerating}
+            disabled={regenerating}
+          >
+            Regenerate Key
+          </Button>
+        )}
+      </div>
+
       {/* Form Card */}
       <div className="bg-surface rounded-xl border border-border p-6">
         <form onSubmit={onSubmit} className="space-y-4">
-          <FormField label="API Key">
-            <div className="px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-muted">
-              {apiKeyName}
-            </div>
-          </FormField>
-
           <FormField label={t('nameLabel')} required error={getFieldError('name')}>
             <div className="flex items-center gap-3">
               {name && (

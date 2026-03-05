@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AgentResponse, ApiKey } from '@/types';
+import { AgentResponse } from '@/types';
 import { TrashIcon, PencilIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 import { Link } from '@/i18n/navigation';
 import { getAgentAvatarUrl } from '@/utils/avatar';
@@ -9,11 +9,10 @@ import DeleteAgentModal from './DeleteAgentModal';
 
 interface AgentsListProps {
   agents: AgentResponse[];
-  apiKeys: ApiKey[];
   onUpdate?: () => void;
 }
 
-export default function AgentsList({ agents: agentsProp, apiKeys, onUpdate }: AgentsListProps) {
+export default function AgentsList({ agents: agentsProp, onUpdate }: AgentsListProps) {
   const [agents, setAgents] = useState<AgentResponse[]>(agentsProp);
   const [deletingAgent, setDeletingAgent] = useState<AgentResponse | null>(null);
 
@@ -38,8 +37,8 @@ export default function AgentsList({ agents: agentsProp, apiKeys, onUpdate }: Ag
     }
   };
 
-  const handleDeleteSuccess = (apiKeyPubId: string) => {
-    setAgents((prev) => prev.filter((a) => a.apiKeyPubId !== apiKeyPubId));
+  const handleDeleteSuccess = (agentId: string) => {
+    setAgents((prev) => prev.filter((a) => a.id !== agentId));
     setDeletingAgent(null);
     onUpdate?.();
   };
@@ -98,7 +97,7 @@ export default function AgentsList({ agents: agentsProp, apiKeys, onUpdate }: Ag
 
               <div className="flex items-center gap-2">
                 <Link
-                  href={`/dashboard/agents/${agent.apiKeyPubId}/edit`}
+                  href={`/dashboard/agents/${agent.id}/edit`}
                   className="p-2 text-muted hover:text-foreground transition-colors rounded-lg"
                   title="Edit agent"
                 >

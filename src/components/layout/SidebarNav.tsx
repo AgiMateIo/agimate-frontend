@@ -5,7 +5,6 @@ import { usePathname } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import {
   HomeIcon,
-  KeyIcon,
   DevicePhoneMobileIcon,
   SparklesIcon,
   UserGroupIcon,
@@ -43,7 +42,6 @@ const getNavItems = (t: ReturnType<typeof useTranslations>): NavItem[] => [
       { label: t('agents'), icon: SparklesIcon, href: '/dashboard/agents' },
     ],
   },
-  { label: t('apiKeys'), icon: KeyIcon, href: '/dashboard/api-keys' },
   { label: t('settings'), icon: Cog6ToothIcon, href: '/dashboard/settings' },
 ];
 

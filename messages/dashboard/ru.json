@@ -231,6 +231,7 @@
     "noDeliveries": "Доставок пока нет",
     "filterByApiKey": "Фильтр по API ключу",
     "allApiKeys": "Все API ключи",
+    "allAgents": "Все агенты",
     "status": "Статус",
     "url": "URL",
     "duration": "Длительность",

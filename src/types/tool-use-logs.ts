@@ -2,7 +2,7 @@
 
 export interface ToolUseLogResponse {
   id: string;
-  apiKeyPubId: string;
+  agentPubId: string;
   connectorCode: string;
   identity: string;
   toolUseId: string;

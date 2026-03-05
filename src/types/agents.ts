@@ -4,18 +4,23 @@ export type TriggerDestination = 'centrifugo' | 'webhook' | 'ignore';
 
 export interface AgentResponse {
   id: string;
-  apiKeyPubId: string;
   name: string;
   prompt: string;
   triggersAllowAll: boolean;
   triggersTo: TriggerDestination;
   webhookUrl: string | null;
   hasWebhookAuth: boolean;
+  teamId: string | null;
+  teamName: string | null;
   createdAt: string;
 }
 
+export interface AgentCreatedResponse {
+  agent: AgentResponse;
+  fullKey: string;
+}
+
 export interface CreateAgentRequest {
-  apiKeyPubId: string;
   name: string;
   prompt: string;
   triggersAllowAll: boolean;

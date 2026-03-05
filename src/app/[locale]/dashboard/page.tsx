@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import {
   DevicePhoneMobileIcon,
-  KeyIcon,
   SparklesIcon,
 } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
@@ -25,7 +24,6 @@ export default function DashboardPage() {
   const [resources, setResources] = useState<ResourceCard[]>([
     { key: 'connectors', nameKey: 'apps', emptyKey: 'noApps', icon: DevicePhoneMobileIcon, href: '/dashboard/apps', count: null, error: null },
     { key: 'agents', nameKey: 'agents', emptyKey: 'noAgents', icon: SparklesIcon, href: '/dashboard/agents', count: null, error: null },
-    { key: 'apiKeys', nameKey: 'apiKeys', emptyKey: 'noApiKeys', icon: KeyIcon, href: '/dashboard/api-keys', count: null, error: null },
   ]);
   const [loading, setLoading] = useState(true);
 
@@ -33,7 +31,6 @@ export default function DashboardPage() {
     const results = await Promise.allSettled([
       apiService.getApps().then(d => d.totalElements),
       apiService.getAgentsList().then(a => a.length),
-      apiService.getApiKeys().then(k => k.length),
     ]);
 
     setResources(prev =>

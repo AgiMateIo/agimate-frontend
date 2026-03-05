@@ -3,10 +3,6 @@ import { User } from './types';
 import { API } from '@/config/constants';
 import { getApiBaseUrl } from '@/utils/api-url';
 import type {
-  ApiKey,
-  ApiKeyWithSecret,
-  CreateApiKeyRequest,
-  UpdateApiKeyRequest,
   AppResponse,
   AppCreatedResponse,
   UserAppDetailResponse,
@@ -16,6 +12,7 @@ import type {
   DeviceTriggerGroup,
   DeviceToolGroup,
   AgentResponse,
+  AgentCreatedResponse,
   CreateAgentRequest,
   UpdateAgentRequest,
   ToolUseLogResponse,
@@ -302,24 +299,6 @@ class ApiService {
     return this.get<User>(`${API.ENDPOINTS.USER_API}/user/me`);
   }
 
-  // ========== API KEY METHODS ==========
-
-  async getApiKeys(): Promise<ApiKey[]> {
-    return this.get<ApiKey[]>(`${API.ENDPOINTS.USER_API}/manage/api-keys/`);
-  }
-
-  async createApiKey(data: CreateApiKeyRequest): Promise<ApiKeyWithSecret> {
-    return this.post<ApiKeyWithSecret>(`${API.ENDPOINTS.USER_API}/manage/api-keys/`, data);
-  }
-
-  async updateApiKey(keyId: string, data: UpdateApiKeyRequest): Promise<ApiKey> {
-    return this.put<ApiKey>(`${API.ENDPOINTS.USER_API}/manage/api-keys/${keyId}`, data);
-  }
-
-  async deleteApiKey(keyId: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.USER_API}/manage/api-keys/${keyId}`);
-  }
-
   // ========== DEVICE API METHODS ==========
 
   // Apps (formerly Connectors)
@@ -357,8 +336,8 @@ class ApiService {
     return this.get<AgentResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${query}`);
   }
 
-  async createAgent(data: CreateAgentRequest): Promise<AgentResponse> {
-    return this.post<AgentResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/`, data);
+  async createAgent(data: CreateAgentRequest): Promise<AgentCreatedResponse> {
+    return this.post<AgentCreatedResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/`, data);
   }
 
   async getAgent(id: string): Promise<AgentResponse> {
@@ -373,10 +352,14 @@ class ApiService {
     return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${id}`);
   }
 
+  async regenerateAgentKey(id: string): Promise<AgentCreatedResponse> {
+    return this.post<AgentCreatedResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${id}/regenerate`, {});
+  }
+
   // Tool Use Logs (paginated)
-  async getToolUseLogs(params?: { apiKeyPubId?: string; page?: number; size?: number }): Promise<PagedResponse<ToolUseLogResponse>> {
+  async getToolUseLogs(params?: { agentPubId?: string; page?: number; size?: number }): Promise<PagedResponse<ToolUseLogResponse>> {
     const searchParams = new URLSearchParams();
-    if (params?.apiKeyPubId) searchParams.set('apiKeyPubId', params.apiKeyPubId);
+    if (params?.agentPubId) searchParams.set('agentPubId', params.agentPubId);
     searchParams.set('page', String(params?.page ?? 0));
     searchParams.set('size', String(params?.size ?? 20));
     const query = searchParams.toString();
@@ -404,9 +387,9 @@ class ApiService {
   }
 
   // Webhook Delivery Logs
-  async getWebhookDeliveryLogs(params?: { apiKeyPubId?: string; page?: number; size?: number }): Promise<WebhookDeliveryLogsResponse> {
+  async getWebhookDeliveryLogs(params?: { agentPubId?: string; page?: number; size?: number }): Promise<WebhookDeliveryLogsResponse> {
     const searchParams = new URLSearchParams();
-    if (params?.apiKeyPubId) searchParams.set('apiKeyPubId', params.apiKeyPubId);
+    if (params?.agentPubId) searchParams.set('agentPubId', params.agentPubId);
     if (params?.page !== undefined) searchParams.set('page', String(params.page));
     if (params?.size !== undefined) searchParams.set('size', String(params.size));
     const query = searchParams.toString();

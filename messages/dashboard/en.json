@@ -231,6 +231,7 @@
     "noDeliveries": "No deliveries recorded yet",
     "filterByApiKey": "Filter by API Key",
     "allApiKeys": "All API Keys",
+    "allAgents": "All Agents",
     "status": "Status",
     "url": "URL",
     "duration": "Duration",
