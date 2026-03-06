@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
@@ -23,22 +23,22 @@ export default function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
   const [registrationCode, setRegistrationCode] = useState<string | null>(null);
-  const [savedEmail, setSavedEmail] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
 
-  useEffect(() => {
-    if (isOpen) {
-      const stored = localStorage.getItem(WAITLIST_EMAIL_KEY);
-      setSavedEmail(stored);
-      setShowForm(false);
-    }
-  }, [isOpen]);
+  // Reset showForm when modal reopens (adjust state during render pattern)
+  const [prevIsOpen, setPrevIsOpen] = useState(false);
+  if (isOpen && !prevIsOpen) {
+    setPrevIsOpen(true);
+    setShowForm(false);
+  } else if (!isOpen && prevIsOpen) {
+    setPrevIsOpen(false);
+  }
+
+  const savedEmail = isOpen ? localStorage.getItem(WAITLIST_EMAIL_KEY) : null;
 
   const { loading, error, fieldErrors, handleSubmit, clearError } = useAsyncForm<{ registrationCode: string }>({
     onSuccess: (result) => {
-      const trimmedEmail = email.trim();
-      localStorage.setItem(WAITLIST_EMAIL_KEY, trimmedEmail);
-      setSavedEmail(trimmedEmail);
+      localStorage.setItem(WAITLIST_EMAIL_KEY, email.trim());
       setRegistrationCode(result.registrationCode);
     },
   });

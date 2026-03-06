@@ -27,7 +27,7 @@ export function FormField({
   );
 }
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
 
 export function Input({ className = '', ...props }: InputProps) {
   return (
@@ -38,8 +38,7 @@ export function Input({ className = '', ...props }: InputProps) {
   );
 }
 
-interface TextAreaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
+type TextAreaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
 export function TextArea({ className = '', ...props }: TextAreaProps) {
   return (

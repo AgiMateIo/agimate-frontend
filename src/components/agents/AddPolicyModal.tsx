@@ -52,28 +52,27 @@ export default function AddPolicyModal({ kind, agentPubId, onClose, onSuccess }:
 
   // Load apps when entering identity step
   useEffect(() => {
-    if (step === 'identity' && apps.length === 0) {
-      setAppsLoading(true);
-      apiService.getApps({ size: 100 })
-        .then((data) => setApps(data.content))
-        .catch(() => {})
-        .finally(() => setAppsLoading(false));
-    }
+    if (step !== 'identity' || apps.length > 0) return;
+    let cancelled = false;
+    apiService.getApps({ size: 100 })
+      .then((data) => { if (!cancelled) setApps(data.content); })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setAppsLoading(false); });
+    return () => { cancelled = true; };
   }, [step, apps.length]);
 
   // Load resources (tools or triggers) when entering resource step with a specific identity
   useEffect(() => {
-    if (step === 'resource' && connectorIdentity && connectorIdentity !== WILDCARD) {
-      setResourcesLoading(true);
-      setResources([]);
-      const fetcher = kind === 'tool'
-        ? apiService.getAppTools(connectorIdentity)
-        : apiService.getAppTriggers(connectorIdentity);
-      fetcher
-        .then(setResources)
-        .catch(() => {})
-        .finally(() => setResourcesLoading(false));
-    }
+    if (step !== 'resource' || !connectorIdentity || connectorIdentity === WILDCARD) return;
+    let cancelled = false;
+    const fetcher = kind === 'tool'
+      ? apiService.getAppTools(connectorIdentity)
+      : apiService.getAppTriggers(connectorIdentity);
+    fetcher
+      .then((data) => { if (!cancelled) setResources(data); })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setResourcesLoading(false); });
+    return () => { cancelled = true; };
   }, [step, connectorIdentity, kind]);
 
   const currentIndex = ALL_STEPS.indexOf(step);
@@ -95,7 +94,10 @@ export default function AddPolicyModal({ kind, agentPubId, onClose, onSuccess }:
   const goNext = () => {
     const nextIndex = currentIndex + 1;
     if (nextIndex < ALL_STEPS.length) {
-      setStep(ALL_STEPS[nextIndex]);
+      const nextStep = ALL_STEPS[nextIndex];
+      if (nextStep === 'identity') setAppsLoading(true);
+      if (nextStep === 'resource') { setResourcesLoading(true); setResources([]); }
+      setStep(nextStep);
     }
   };
 

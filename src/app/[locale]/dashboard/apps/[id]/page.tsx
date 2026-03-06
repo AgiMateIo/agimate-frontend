@@ -184,7 +184,7 @@ function ConnectorContent({
 export default function ConnectorDetailPage() {
   const { id } = useParams<{ id: string }>();
   const t = useTranslations('Connectors');
-  const { promise, invalidate } = usePromiseCache(
+  const { promise } = usePromiseCache(
     () => apiService.getApp(id),
     [id],
     'connector-detail'

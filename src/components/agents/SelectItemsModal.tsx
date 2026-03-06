@@ -38,38 +38,35 @@ export default function SelectItemsModal({
   onChange,
   fetchGroups,
 }: SelectItemsModalProps) {
-  const [groups, setGroups] = useState<ItemGroup[]>([]);
+  const [groups, setGroups] = useState<ItemGroup[] | null>(null);
   const [activeSource, setActiveSource] = useState<string>('');
-  const [loading, setLoading] = useState(false);
+  const loading = isOpen && groups === null;
 
   useEffect(() => {
     if (!isOpen) return;
+    let cancelled = false;
 
-    setLoading(true);
     fetchGroups()
       .then((data) => {
+        if (cancelled) return;
         setGroups(data);
-        if (data.length > 0 && !activeSource) {
-          setActiveSource(data[0].deviceId);
+        if (data.length > 0) {
+          setActiveSource((prev) => prev || data[0].deviceId);
         }
       })
       .catch((err) => {
+        if (cancelled) return;
         console.error('Failed to fetch items:', err);
         setGroups([]);
-      })
-      .finally(() => setLoading(false));
+      });
+
+    return () => { cancelled = true; setGroups(null); };
   }, [isOpen, fetchGroups]);
 
   const sources: Source[] = groups.map((g) => ({
     id: g.deviceId,
     label: g.deviceName,
   }));
-
-  useEffect(() => {
-    if (sources.length > 0 && !sources.find((s) => s.id === activeSource)) {
-      setActiveSource(sources[0].id);
-    }
-  }, [sources, activeSource]);
 
   const getItemsForSource = (): ItemInfo[] => {
     const group = groups.find((g) => g.deviceId === activeSource);

@@ -28,7 +28,7 @@ export default function WebhookDeliveriesPage() {
   const [error, setError] = useState('');
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
+
   const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
   const [refreshOpen, setRefreshOpen] = useState(false);
   const refreshRef = useRef<HTMLDivElement>(null);
@@ -48,7 +48,6 @@ export default function WebhookDeliveriesPage() {
         size: pageSize,
       });
       setDeliveries(response.content);
-      setTotalElements(response.totalElements);
       setTotalPages(response.totalPages);
       if (silent) setError('');
     } catch (err) {

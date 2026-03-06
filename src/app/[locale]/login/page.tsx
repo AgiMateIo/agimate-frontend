@@ -1,20 +1,23 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { API } from '@/config/constants';
 import { getApiBaseUrl } from '@/utils/api-url';
 
+const subscribe = () => () => {};
+const getSnapshot = () => window.location.origin;
+const getServerSnapshot = () => '';
+
 export default function LoginPage() {
   const t = useTranslations('Login');
-  const [redirectParams, setRedirectParams] = useState('');
+  const origin = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const redirectParams = useMemo(
+    () => origin ? `?redirect_to=${encodeURIComponent(origin + '/login-check')}` : '',
+    [origin]
+  );
   const [pendingProvider, setPendingProvider] = useState<'google' | 'yandex' | null>(null);
-
-  useEffect(() => {
-    const loginCheckUrl = window.location.origin + '/login-check';
-    setRedirectParams(`?redirect_to=${encodeURIComponent(loginCheckUrl)}`);
-  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">

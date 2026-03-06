@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import {
@@ -27,27 +27,28 @@ export default function DashboardPage() {
   ]);
   const [loading, setLoading] = useState(true);
 
-  const fetchCounts = useCallback(async () => {
-    const results = await Promise.allSettled([
+  useEffect(() => {
+    let cancelled = false;
+
+    Promise.allSettled([
       apiService.getApps().then(d => d.totalElements),
       apiService.getAgentsList().then(a => a.totalElements),
-    ]);
+    ]).then(results => {
+      if (cancelled) return;
+      setResources(prev =>
+        prev.map((card, i) => ({
+          ...card,
+          count: results[i].status === 'fulfilled' ? results[i].value : null,
+          error: results[i].status === 'rejected'
+            ? (results[i].reason instanceof Error ? results[i].reason.message : 'Error')
+            : null,
+        }))
+      );
+      setLoading(false);
+    });
 
-    setResources(prev =>
-      prev.map((card, i) => ({
-        ...card,
-        count: results[i].status === 'fulfilled' ? results[i].value : null,
-        error: results[i].status === 'rejected'
-          ? (results[i].reason instanceof Error ? results[i].reason.message : 'Error')
-          : null,
-      }))
-    );
-    setLoading(false);
+    return () => { cancelled = true; };
   }, []);
-
-  useEffect(() => {
-    fetchCounts();
-  }, [fetchCounts]);
 
   return (
     <div className="space-y-6">
@@ -86,7 +87,7 @@ export default function DashboardPage() {
                     </span>
                   </div>
                   <div className="mt-4">
-                    {card.count! > 0 ? (
+                    {(card.count ?? 0) > 0 ? (
                       <Link
                         href={card.href}
                         className="text-sm text-accent hover:text-accent/80 font-medium transition-colors"
