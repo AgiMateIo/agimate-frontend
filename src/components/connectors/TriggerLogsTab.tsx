@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
 import { TriggerLog } from '@/types';
+import { PagedResponse } from '@/types/tool-use-logs';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
-import { ArrowPathIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 const REFRESH_OPTIONS = [
   { value: null, label: 'Off' },
@@ -14,24 +15,29 @@ const REFRESH_OPTIONS = [
   { value: 30, label: '30s' },
 ] as const;
 
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
+const DEFAULT_PAGE_SIZE = 20;
+
 export default function TriggerLogsTab() {
   const t = useTranslations('Connectors');
-  const [logs, setLogs] = useState<TriggerLog[]>([]);
+  const [pagedData, setPagedData] = useState<PagedResponse<TriggerLog> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
   const [refreshOpen, setRefreshOpen] = useState(false);
   const refreshRef = useRef<HTMLDivElement>(null);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
-  const fetchData = useCallback(async (silent: boolean = false) => {
+  const fetchData = useCallback(async (silent: boolean = false, p?: number, s?: number) => {
     if (!silent) {
       setLoading(true);
       setError('');
     }
     try {
-      const data = await apiService.getTriggerLogs();
-      setLogs(data);
+      const data = await apiService.getTriggerLogs({ page: p ?? page, size: s ?? pageSize });
+      setPagedData(data);
       if (silent) setError('');
     } catch (err) {
       if (!silent) {
@@ -40,7 +46,7 @@ export default function TriggerLogsTab() {
     } finally {
       if (!silent) setLoading(false);
     }
-  }, []);
+  }, [page, pageSize]);
 
   useEffect(() => {
     fetchData(false);
@@ -78,7 +84,7 @@ export default function TriggerLogsTab() {
     });
   };
 
-  const formatDateTime = (dateStr: string) => {
+  const formatDateTimeFull = (dateStr: string) => {
     try {
       const d = new Date(dateStr);
       const pad = (n: number) => String(n).padStart(2, '0');
@@ -87,6 +93,30 @@ export default function TriggerLogsTab() {
       return dateStr;
     }
   };
+
+  const formatDateTimeShort = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr);
+      const now = new Date();
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const time = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate()) {
+        return time;
+      }
+      return `${pad(d.getDate())}.${pad(d.getMonth() + 1)} ${time}`;
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    setPage(0);
+  };
+
+  const logs = pagedData?.content ?? [];
+  const totalElements = pagedData?.totalElements ?? 0;
+  const totalPages = pagedData?.totalPages ?? 0;
 
   const currentLabel = REFRESH_OPTIONS.find((o) => o.value === refreshInterval)?.label ?? 'Off';
 
@@ -130,6 +160,44 @@ export default function TriggerLogsTab() {
     </div>
   );
 
+  const pagination = totalElements > 10 && (
+    <div className="flex items-center justify-between pt-2">
+      <div className="flex items-center gap-2 text-xs text-muted">
+        <span>{t('rowsPerPage')}:</span>
+        <select
+          value={pageSize}
+          onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+          className="bg-surface-secondary border border-border rounded px-1.5 py-0.5 text-xs text-foreground"
+        >
+          {PAGE_SIZE_OPTIONS.map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+      </div>
+      <div className="flex items-center gap-3 text-xs text-muted">
+        <span>
+          {page * pageSize + 1}–{Math.min((page + 1) * pageSize, totalElements)} / {totalElements}
+        </span>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setPage((p) => p - 1)}
+            disabled={page === 0}
+            className="p-1 rounded hover:bg-surface-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <ChevronLeftIcon className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setPage((p) => p + 1)}
+            disabled={page >= totalPages - 1}
+            className="p-1 rounded hover:bg-surface-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <ChevronRightIcon className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   if (error) {
     return (
       <div className="space-y-4">
@@ -156,7 +224,7 @@ export default function TriggerLogsTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted">
-          {logs.length} {logs.length === 1 ? 'log' : 'logs'} total
+          {totalElements} {totalElements === 1 ? 'log' : 'logs'} total
         </div>
         {refreshControls}
       </div>
@@ -164,43 +232,49 @@ export default function TriggerLogsTab() {
       <table className="w-full">
         <thead>
           <tr className="border-b border-border">
-            <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('createdAt')}</th>
             <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('occurredAt')}</th>
+            <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('connectorCode')}</th>
+            <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('identity')}</th>
             <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('triggerName')}</th>
-            <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('deviceId')}</th>
-            <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('triggerData')}</th>
+            <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('triggerInput')}</th>
+            <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('agentCount')}</th>
           </tr>
         </thead>
         <tbody>
           {logs.map((log) => (
             <tr key={log.id} className="border-b border-border last:border-b-0 hover:bg-surface-secondary transition-colors">
               <td className="py-3 px-4">
-                <span className="text-sm text-muted">{formatDateTime(log.createdAt)}</span>
+                <span className="text-sm text-muted" title={formatDateTimeFull(log.occurredAt)}>
+                  {formatDateTimeShort(log.occurredAt)}
+                </span>
+                <div className="text-xs text-muted/60" title={formatDateTimeFull(log.createdAt)}>
+                  {formatDateTimeShort(log.createdAt)}
+                </div>
               </td>
               <td className="py-3 px-4">
-                <span className="text-sm text-muted">{formatDateTime(log.occurredAt)}</span>
+                <span className="text-sm font-mono text-muted">{log.connectorCode}</span>
+              </td>
+              <td className="py-3 px-4">
+                <span className="text-sm font-mono text-muted truncate block max-w-[150px] dir-rtl text-left" dir="rtl" title={log.identity}>{log.identity}</span>
               </td>
               <td className="py-3 px-4">
                 <span className="text-sm font-medium text-foreground">{log.triggerName}</span>
               </td>
               <td className="py-3 px-4">
-                <span className="text-sm font-mono text-muted">{log.linkedDeviceId}</span>
-              </td>
-              <td className="py-3 px-4">
-                {log.triggerData && Object.keys(log.triggerData).length > 0 ? (
+                {log.triggerInput && Object.keys(log.triggerInput).length > 0 ? (
                   <div>
                     <button
                       onClick={() => toggleExpand(log.id)}
                       className="flex items-center gap-1 text-xs text-accent hover:text-accent/80 font-medium transition-colors"
                     >
                       <span className="max-w-[200px] truncate font-mono">
-                        {JSON.stringify(log.triggerData)}
+                        {JSON.stringify(log.triggerInput)}
                       </span>
                       <span className="shrink-0">{expandedIds.has(log.id) ? '\u25B2' : '\u25BC'}</span>
                     </button>
                     {expandedIds.has(log.id) && (
                       <pre className="mt-2 p-3 bg-background rounded-lg text-xs font-mono text-foreground/80 overflow-x-auto max-w-md">
-                        {JSON.stringify(log.triggerData, null, 2)}
+                        {JSON.stringify(log.triggerInput, null, 2)}
                       </pre>
                     )}
                   </div>
@@ -208,11 +282,15 @@ export default function TriggerLogsTab() {
                   <span className="text-muted text-xs">&mdash;</span>
                 )}
               </td>
+              <td className="py-3 px-4">
+                <span className="text-sm text-muted">{log.agentsCount}</span>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
       </div>
+      {pagination}
     </div>
   );
 }

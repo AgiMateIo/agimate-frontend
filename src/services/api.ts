@@ -465,13 +465,13 @@ class ApiService {
   }
 
   // Trigger logs
-  async getTriggerLogs(params?: { deviceId?: string; appPubId?: string }): Promise<TriggerLog[]> {
+  async getTriggerLogs(params?: { connectorCode?: string; page?: number; size?: number }): Promise<PagedResponse<TriggerLog>> {
     const searchParams = new URLSearchParams();
-    if (params?.deviceId) searchParams.set('deviceId', params.deviceId);
-    if (params?.appPubId) searchParams.set('appPubId', params.appPubId);
+    if (params?.connectorCode) searchParams.set('connectorCode', params.connectorCode);
+    if (params?.page !== undefined) searchParams.set('page', String(params.page));
+    if (params?.size !== undefined) searchParams.set('size', String(params.size));
     const query = searchParams.toString();
-    const page = await this.get<PagedResponse<TriggerLog>>(`${API.ENDPOINTS.DEVICE_API}/manage/trigger-logs/${query ? `?${query}` : ''}`);
-    return page.content;
+    return this.get<PagedResponse<TriggerLog>>(`${API.ENDPOINTS.DEVICE_API}/manage/trigger-logs/${query ? `?${query}` : ''}`);
   }
 
   // Webhook Delivery Logs

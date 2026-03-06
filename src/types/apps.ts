@@ -71,14 +71,12 @@ export interface DeviceToolGroup {
 // Trigger log entry returned by GET /device/manage/trigger-logs/
 export interface TriggerLog {
   id: string;
-  appPubId: string;
+  connectorCode: string;
+  identity: string;
   triggerId: string;
-  triggerType: string;
   triggerName: string;
-  triggerSource: string;
-  requestDeviceId: string;
-  linkedDeviceId: string;
   occurredAt: string;
-  triggerData: Record<string, unknown>;
+  triggerInput: Record<string, unknown>;
+  agentsCount: number;
   createdAt: string;
 }
