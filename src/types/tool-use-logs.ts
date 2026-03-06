@@ -5,12 +5,13 @@ export interface ToolUseLogResponse {
   agentPubId: string;
   connectorCode: string;
   identity: string;
+  agentSessionId: string;
   toolUseId: string;
   toolName: string;
-  toolParams: Record<string, unknown>;
+  input: Record<string, unknown>;
   accessEffect: 'ALLOW' | 'DENY';
-  resultAt: string | null;
-  result: string | null;
+  outputAt: string | null;
+  output: string | null;
   error: string | null;
   createdAt: string;
 }

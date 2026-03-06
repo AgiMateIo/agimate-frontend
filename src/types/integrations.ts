@@ -19,7 +19,7 @@ export interface IntegrationResponse {
 }
 
 export interface CreateIntegrationRequest {
-  platformCode: string;
+  connectorCode: string;
   credentials: Record<string, string>;
   name?: string;
 }

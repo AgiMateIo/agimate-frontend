@@ -57,7 +57,7 @@ export default function AddIntegrationModal({
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
       apiService.createIntegration({
-        platformCode: selectedPlatform!.code,
+        connectorCode: selectedPlatform!.code,
         credentials,
         name: name.trim() || undefined,
       })
