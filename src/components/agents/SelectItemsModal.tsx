@@ -63,13 +63,13 @@ export default function SelectItemsModal({
     return () => { cancelled = true; setGroups(null); };
   }, [isOpen, fetchGroups]);
 
-  const sources: Source[] = groups.map((g) => ({
+  const sources: Source[] = (groups ?? []).map((g) => ({
     id: g.deviceId,
     label: g.deviceName,
   }));
 
   const getItemsForSource = (): ItemInfo[] => {
-    const group = groups.find((g) => g.deviceId === activeSource);
+    const group = (groups ?? []).find((g) => g.deviceId === activeSource);
     return group?.items ?? [];
   };
 
