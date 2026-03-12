@@ -370,7 +370,7 @@ export default function AndroidPage() {
         copyright={t('footer.copyright')}
         links={[
           { label: t('footer.github'), href: 'https://github.com/AgiMateIo/android', external: true },
-          { label: t('footer.telegram'), href: '#' },
+          { label: t('footer.telegram'), href: 'https://t.me/agimate', external: true },
           { label: t('footer.docs'), href: '#' },
         ]}
       />
