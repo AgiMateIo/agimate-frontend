@@ -13,6 +13,7 @@ import {
   WrenchScrewdriverIcon,
   LinkIcon,
   CpuChipIcon,
+  AcademicCapIcon,
 } from '@heroicons/react/24/outline';
 
 type NavItem = {
@@ -42,6 +43,7 @@ const getNavItems = (t: ReturnType<typeof useTranslations>): NavItem[] => [
       { label: t('agents'), icon: SparklesIcon, href: '/dashboard/agents' },
     ],
   },
+  { label: t('skills'), icon: AcademicCapIcon, href: '/dashboard/skills' },
   { label: t('settings'), icon: Cog6ToothIcon, href: '/dashboard/settings' },
 ];
 

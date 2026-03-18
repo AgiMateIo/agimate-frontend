@@ -39,6 +39,11 @@ import type {
   CreateTaskRequest,
   ChangeTaskStatusRequest,
   CreateCommentRequest,
+  SkillResponse,
+  SkillDetailResponse,
+  CreateSkillRequest,
+  UpdateSkillRequest,
+  SkillFileEntry,
 } from '@/types';
 
 const SERVICE_UNAVAILABLE_MESSAGE = 'SERVICE_UNAVAILABLE';
@@ -298,6 +303,47 @@ class ApiService {
     return this.makeRequest<T>(url, {
       method: 'DELETE',
     });
+  }
+
+  private async makeFormDataRequest<T>(url: string, formData: FormData): Promise<T> {
+    const token = getAccessToken();
+    const headers: HeadersInit = {
+      ...(token && { Authorization: `Bearer ${token}` }),
+    };
+
+    let response = await safeFetch(url, { method: 'POST', headers, body: formData });
+
+    if (response.status === 403) {
+      return handleErrorResponse(response);
+    }
+
+    if (response.status === 401) {
+      const refreshed = await this.refreshAccessToken();
+      if (refreshed) {
+        const newToken = getAccessToken();
+        const retryHeaders: HeadersInit = {
+          ...(newToken && { Authorization: `Bearer ${newToken}` }),
+        };
+        response = await safeFetch(url, { method: 'POST', headers: retryHeaders, body: formData });
+        if (response.status === 401) {
+          throw new Error(ACCESS_DENIED_MESSAGE);
+        }
+      } else {
+        throw new Error(ACCESS_DENIED_MESSAGE);
+      }
+    }
+
+    if (!response.ok) {
+      return handleErrorResponse(response);
+    }
+
+    const jsonData = await response.json();
+    return extractResponseData<T>(jsonData);
+  }
+
+  async postFormData<T>(endpoint: string, formData: FormData): Promise<T> {
+    const url = `${getApiBaseUrl()}${endpoint}`;
+    return this.makeFormDataRequest<T>(url, formData);
   }
 
   async getUserInfo(): Promise<User> {
@@ -569,6 +615,86 @@ class ApiService {
 
   async deleteIntegration(id: string): Promise<void> {
     return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/${id}`);
+  }
+
+  // ========== SKILLS ==========
+
+  async getSkills(params?: { search?: string; page?: number; size?: number }): Promise<PagedResponse<SkillResponse>> {
+    const q = new URLSearchParams();
+    if (params?.search) q.set('search', params.search);
+    q.set('page', String(params?.page ?? 0));
+    q.set('size', String(params?.size ?? 20));
+    return this.get<PagedResponse<SkillResponse>>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/?${q}`);
+  }
+
+  async getPublicSkills(params?: { search?: string; page?: number; size?: number }): Promise<PagedResponse<SkillResponse>> {
+    const q = new URLSearchParams();
+    if (params?.search) q.set('search', params.search);
+    q.set('page', String(params?.page ?? 0));
+    q.set('size', String(params?.size ?? 20));
+    return this.get<PagedResponse<SkillResponse>>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/public/?${q}`);
+  }
+
+  async getSkill(id: string): Promise<SkillDetailResponse> {
+    return this.get<SkillDetailResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/${id}`);
+  }
+
+  async createSkill(data: CreateSkillRequest): Promise<SkillResponse> {
+    return this.post<SkillResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/`, data);
+  }
+
+  async updateSkill(id: string, data: UpdateSkillRequest): Promise<SkillResponse> {
+    return this.put<SkillResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/${id}`, data);
+  }
+
+  async deleteSkill(id: string): Promise<void> {
+    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/${id}`);
+  }
+
+  async cloneSkill(id: string): Promise<SkillResponse> {
+    return this.post<SkillResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/${id}/clone`, {});
+  }
+
+  async getSkillFiles(skillId: string): Promise<SkillFileEntry[]> {
+    return this.get<SkillFileEntry[]>(`${API.ENDPOINTS.DEVICE_API}/manage/skill-files/${skillId}/`);
+  }
+
+  async uploadSkillFile(skillId: string, formData: FormData): Promise<void> {
+    return this.postFormData<void>(`${API.ENDPOINTS.DEVICE_API}/manage/skill-files/${skillId}/`, formData);
+  }
+
+  async deleteSkillFile(skillId: string, filePath: string): Promise<void> {
+    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/skill-files/${skillId}/${filePath}`);
+  }
+
+  async downloadSkillFile(skillId: string, filePath: string): Promise<Blob> {
+    const url = `${getApiBaseUrl()}${API.ENDPOINTS.DEVICE_API}/manage/skill-files/${skillId}/${filePath}`;
+    const token = getAccessToken();
+    const headers: HeadersInit = {
+      ...(token && { Authorization: `Bearer ${token}` }),
+    };
+
+    let response = await safeFetch(url, { headers });
+
+    if (response.status === 401) {
+      const refreshed = await this.refreshAccessToken();
+      if (refreshed) {
+        const newToken = getAccessToken();
+        const retryHeaders: HeadersInit = {
+          ...(newToken && { Authorization: `Bearer ${newToken}` }),
+        };
+        response = await safeFetch(url, { headers: retryHeaders });
+      }
+      if (response.status === 401) {
+        throw new Error(ACCESS_DENIED_MESSAGE);
+      }
+    }
+
+    if (!response.ok) {
+      return handleErrorResponse(response);
+    }
+
+    return response.blob();
   }
 
   // ========== PUBLIC (UNAUTHENTICATED) METHODS ==========

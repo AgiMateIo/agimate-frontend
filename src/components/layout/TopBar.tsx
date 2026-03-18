@@ -30,7 +30,10 @@ export default function TopBar() {
     'trigger-logs': t('breadcrumbs.triggerLogs'),
     'tool-use-logs': t('breadcrumbs.toolUseLogs'),
     integrations: t('breadcrumbs.integrations'),
+    skills: t('breadcrumbs.skills'),
     settings: t('breadcrumbs.settings'),
+    create: t('breadcrumbs.create'),
+    edit: t('breadcrumbs.edit'),
     board: t('breadcrumbs.board'),
   };
 
