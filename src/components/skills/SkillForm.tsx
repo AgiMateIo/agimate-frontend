@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { SkillType } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { FormField, TextArea } from '@/components/ui/FormField';
 import { Toggle } from '@/components/ui/Toggle';
@@ -10,19 +9,17 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 
 interface SkillFormProps {
   initialSkillMd?: string;
-  initialType?: SkillType;
   initialIsPublic?: boolean;
   loading: boolean;
   error: string | null;
   fieldErrors: Record<string, string>;
   submitLabel: string;
-  onSubmit: (e: React.FormEvent, data: { skillMd: string; type: SkillType; isPublic: boolean }) => void;
+  onSubmit: (e: React.FormEvent, data: { skillMd: string; isPublic: boolean }) => void;
   onCancel: () => void;
 }
 
 export default function SkillForm({
   initialSkillMd = '',
-  initialType = 'COMMON',
   initialIsPublic = false,
   loading,
   error,
@@ -34,17 +31,14 @@ export default function SkillForm({
   const t = useTranslations('Skills');
 
   const [skillMd, setSkillMd] = useState(initialSkillMd);
-  const [type, setType] = useState<SkillType>(initialType);
   const [isPublic, setIsPublic] = useState(initialIsPublic);
-  const [lastInitials, setLastInitials] = useState({ initialSkillMd, initialType, initialIsPublic });
+  const [lastInitials, setLastInitials] = useState({ initialSkillMd, initialIsPublic });
 
   // Sync local state when initial values change (e.g. after async fetch completes)
   if (initialSkillMd !== lastInitials.initialSkillMd ||
-      initialType !== lastInitials.initialType ||
       initialIsPublic !== lastInitials.initialIsPublic) {
-    setLastInitials({ initialSkillMd, initialType, initialIsPublic });
+    setLastInitials({ initialSkillMd, initialIsPublic });
     setSkillMd(initialSkillMd);
-    setType(initialType);
     setIsPublic(initialIsPublic);
   }
 
@@ -56,34 +50,11 @@ export default function SkillForm({
     || '';
 
   const handleSubmit = (e: React.FormEvent) => {
-    onSubmit(e, { skillMd, type, isPublic });
+    onSubmit(e, { skillMd, isPublic });
   };
-
-  const typeOptions: { value: SkillType; label: string }[] = [
-    { value: 'COMMON', label: t('typeCommon') },
-    { value: 'TRIGGER', label: t('typeTrigger') },
-  ];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <FormField label={t('type')} required error={getFieldError('type')}>
-        <div className="space-y-2">
-          {typeOptions.map((option) => (
-            <label key={option.value} className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="radio"
-                name="type"
-                value={option.value}
-                checked={type === option.value}
-                onChange={() => setType(option.value)}
-                className="accent-accent"
-              />
-              <span className="text-sm text-foreground">{option.label}</span>
-            </label>
-          ))}
-        </div>
-      </FormField>
-
       <FormField label={t('isPublic')} hint={t('isPublicHint')}>
         <Toggle
           checked={isPublic}

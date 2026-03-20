@@ -9,23 +9,22 @@ import { Button } from '@/components/ui/Button';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { Tabs } from '@/components/ui/Tabs';
 import { usePromiseCache } from '@/hooks/usePromiseCache';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { Link } from '@/i18n/navigation';
 import SkillsList from '@/components/skills/SkillsList';
+
+type SkillTab = 'my' | 'public' | 'featured';
 
 function SkillsContent({
   dataPromise,
   tab,
   onUpdate,
-  search,
-  onSearch,
   page,
   onPageChange,
 }: {
   dataPromise: Promise<PagedResponse<SkillResponse>>;
-  tab: 'my' | 'public';
+  tab: SkillTab;
   onUpdate: () => void;
-  search: string;
-  onSearch: (value: string) => void;
   page: number;
   onPageChange: (page: number) => void;
 }) {
@@ -51,21 +50,6 @@ function SkillsContent({
 
   return (
     <div className="space-y-4">
-      {/* Search */}
-      <div className="relative">
-        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted" />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => {
-            onSearch(e.target.value);
-            onPageChange(0);
-          }}
-          placeholder={t('searchPlaceholder')}
-          className="w-full pl-10 pr-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground placeholder:text-muted text-sm"
-        />
-      </div>
-
       <SkillsList
         skills={skills}
         variant={tab}
@@ -103,45 +87,61 @@ function SkillsContent({
 
 export default function SkillsPage() {
   const t = useTranslations('Skills');
-  const [activeTab, setActiveTab] = useState<'my' | 'public'>('my');
+  const [activeTab, setActiveTab] = useState<SkillTab>('my');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
+  const debouncedSearch = useDebouncedValue(search, 300);
 
   const fetchFn = useCallback(() => {
-    const params = { search: search || undefined, page, size: 20 };
-    return activeTab === 'my'
-      ? apiService.getSkills(params)
-      : apiService.getPublicSkills(params);
-  }, [activeTab, search, page]);
+    const params = { search: debouncedSearch || undefined, page, size: 20 };
+    if (activeTab === 'my') return apiService.getSkills(params);
+    if (activeTab === 'featured') return apiService.getFeaturedSkills(params);
+    return apiService.getPublicSkills(params);
+  }, [activeTab, debouncedSearch, page]);
 
   const { promise, invalidate } = usePromiseCache(
     fetchFn,
-    [activeTab, search, page],
+    [activeTab, debouncedSearch, page],
     'skills-list'
   );
 
   const handleTabChange = (tabId: string) => {
-    setActiveTab(tabId as 'my' | 'public');
+    setActiveTab(tabId as SkillTab);
     setSearch('');
     setPage(0);
   };
 
   const tabContent = (
-    <ErrorBoundary>
-      <Suspense fallback={
-        <div className="text-center py-12 text-muted">{t('loading')}</div>
-      }>
-        <SkillsContent
-          dataPromise={promise}
-          tab={activeTab}
-          onUpdate={invalidate}
-          search={search}
-          onSearch={setSearch}
-          page={page}
-          onPageChange={setPage}
+    <>
+      {/* Search — outside Suspense so it never unmounts */}
+      <div className="relative mb-4">
+        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(0);
+          }}
+          placeholder={t('searchPlaceholder')}
+          className="w-full pl-10 pr-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground placeholder:text-muted text-sm"
         />
-      </Suspense>
-    </ErrorBoundary>
+      </div>
+
+      <ErrorBoundary>
+        <Suspense fallback={
+          <div className="text-center py-12 text-muted">{t('loading')}</div>
+        }>
+          <SkillsContent
+            dataPromise={promise}
+            tab={activeTab}
+            onUpdate={invalidate}
+            page={page}
+            onPageChange={setPage}
+          />
+        </Suspense>
+      </ErrorBoundary>
+    </>
   );
 
   return (
@@ -162,6 +162,7 @@ export default function SkillsPage() {
       <Tabs
         tabs={[
           { id: 'my', label: t('mySkills'), content: tabContent },
+          { id: 'featured', label: t('featuredSkills'), content: tabContent },
           { id: 'public', label: t('publicSkills'), content: tabContent },
         ]}
         activeTab={activeTab}

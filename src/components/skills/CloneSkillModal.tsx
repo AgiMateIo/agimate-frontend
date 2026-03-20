@@ -59,7 +59,6 @@ export default function CloneSkillModal({
       const modifiedMd = replaceNameInFrontmatter(detail.skillMd, newName.trim());
       await apiService.createSkill({
         skillMd: modifiedMd,
-        type: skill.type,
         isPublic: false,
       });
       onSuccess();

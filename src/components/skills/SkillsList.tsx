@@ -13,7 +13,7 @@ import CloneSkillModal from './CloneSkillModal';
 
 interface SkillsListProps {
   skills: SkillResponse[];
-  variant: 'my' | 'public';
+  variant: 'my' | 'public' | 'featured';
   onDeleteSuccess: (skillId: string) => void;
   onCloneSuccess: () => void;
 }
@@ -48,7 +48,7 @@ export default function SkillsList({
   if (skills.length === 0) {
     return (
       <div className="text-center py-8 text-muted">
-        {variant === 'my' ? t('noSkills') : t('noPublicSkills')}
+        {variant === 'my' ? t('noSkills') : variant === 'featured' ? t('noFeaturedSkills') : t('noPublicSkills')}
       </div>
     );
   }
@@ -69,16 +69,14 @@ export default function SkillsList({
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                    skill.type === 'TRIGGER'
-                      ? 'bg-warning/10 text-warning'
-                      : 'bg-accent/10 text-accent'
-                  }`}>
-                    {skill.type === 'TRIGGER' ? t('typeTrigger') : t('typeCommon')}
-                  </span>
                   {skill.isPublic && (
                     <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-success/10 text-success">
                       {t('public')}
+                    </span>
+                  )}
+                  {skill.isFeatured && (
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-warning/10 text-warning">
+                      {t('featured')}
                     </span>
                   )}
                   <span className="text-xs text-muted">
@@ -117,7 +115,7 @@ export default function SkillsList({
                   </>
                 )}
 
-                {variant === 'public' && (
+                {(variant === 'public' || variant === 'featured') && (
                   <button
                     onClick={() => setCloningSkill(skill)}
                     className="p-2 text-muted hover:text-accent transition-colors rounded-lg"

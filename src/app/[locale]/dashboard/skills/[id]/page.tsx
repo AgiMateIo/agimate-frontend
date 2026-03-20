@@ -99,16 +99,14 @@ export default function SkillDetailPage() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-              skill.type === 'TRIGGER'
-                ? 'bg-warning/10 text-warning'
-                : 'bg-accent/10 text-accent'
-            }`}>
-              {skill.type === 'TRIGGER' ? t('typeTrigger') : t('typeCommon')}
-            </span>
             {skill.isPublic && (
               <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-success/10 text-success">
                 {t('public')}
+              </span>
+            )}
+            {skill.isFeatured && (
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-warning/10 text-warning">
+                {t('featured')}
               </span>
             )}
             <span className="text-xs text-muted">

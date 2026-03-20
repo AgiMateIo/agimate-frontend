@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
-import { SkillDetailResponse, SkillResponse, SkillType } from '@/types';
+import { SkillDetailResponse, SkillResponse } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
@@ -46,11 +46,10 @@ export default function EditSkillPage() {
     },
   });
 
-  const onSubmit = (e: React.FormEvent, data: { skillMd: string; type: SkillType; isPublic: boolean }) => {
+  const onSubmit = (e: React.FormEvent, data: { skillMd: string; isPublic: boolean }) => {
     handleSubmit(e, () =>
       apiService.updateSkill(skillId, {
         skillMd: data.skillMd,
-        type: data.type,
         isPublic: data.isPublic,
       })
     );
@@ -99,7 +98,6 @@ export default function EditSkillPage() {
       <div className="bg-surface rounded-xl border border-border p-6">
         <SkillForm
           initialSkillMd={skill.skillMd}
-          initialType={skill.type}
           initialIsPublic={skill.isPublic}
           loading={loading}
           error={error}

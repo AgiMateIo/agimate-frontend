@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
-import { SkillResponse, SkillType } from '@/types';
+import { SkillResponse } from '@/types';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import SkillForm from '@/components/skills/SkillForm';
 
@@ -18,11 +18,10 @@ export default function CreateSkillPage() {
     },
   });
 
-  const onSubmit = (e: React.FormEvent, data: { skillMd: string; type: SkillType; isPublic: boolean }) => {
+  const onSubmit = (e: React.FormEvent, data: { skillMd: string; isPublic: boolean }) => {
     handleSubmit(e, () =>
       apiService.createSkill({
         skillMd: data.skillMd,
-        type: data.type,
         isPublic: data.isPublic,
       })
     );

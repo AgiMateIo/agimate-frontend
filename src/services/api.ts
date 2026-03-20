@@ -635,6 +635,14 @@ class ApiService {
     return this.get<PagedResponse<SkillResponse>>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/public/?${q}`);
   }
 
+  async getFeaturedSkills(params?: { search?: string; page?: number; size?: number }): Promise<PagedResponse<SkillResponse>> {
+    const q = new URLSearchParams();
+    if (params?.search) q.set('search', params.search);
+    q.set('page', String(params?.page ?? 0));
+    q.set('size', String(params?.size ?? 20));
+    return this.get<PagedResponse<SkillResponse>>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/featured/?${q}`);
+  }
+
   async getSkill(id: string): Promise<SkillDetailResponse> {
     return this.get<SkillDetailResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/${id}`);
   }
