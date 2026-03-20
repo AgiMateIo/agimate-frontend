@@ -383,6 +383,18 @@
     "updateCredentialsError": "Failed to update credentials",
     "deleteError": "Failed to delete integration"
   },
+  "IntegrationDetail": {
+    "backToIntegrations": "Back to Integrations",
+    "loading": "Loading integration...",
+    "tabInfo": "Information",
+    "tabSkills": "Skills",
+    "integrationInfo": "Integration Details",
+    "platform": "Platform",
+    "platformIdentifier": "Platform Identifier",
+    "connectorCode": "Connector Code",
+    "status": "Status",
+    "skillsComingSoon": "Skills management coming soon"
+  },
   "Board": {
     "title": "Task Board",
     "loading": "Loading board...",

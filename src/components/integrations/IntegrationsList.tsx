@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import { localeMap } from '@/i18n/routing';
 import apiService from '@/services/api';
 import { IntegrationResponse, IntegrationPlatformInfo } from '@/types';
@@ -103,7 +104,10 @@ export default function IntegrationsList({
               className="bg-surface-secondary rounded-lg p-4 border border-border"
             >
               <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
+                <Link
+                  href={`/dashboard/integrations/${integration.id}`}
+                  className="flex-1 min-w-0 hover:opacity-80 transition-opacity"
+                >
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent">
                       {integration.platformName}
@@ -123,7 +127,7 @@ export default function IntegrationsList({
                       <p>{t('lastUsed')}: {formatDate(integration.lastUsedAt)}</p>
                     )}
                   </div>
-                </div>
+                </Link>
 
                 <div className="flex items-center gap-2">
                   <Toggle

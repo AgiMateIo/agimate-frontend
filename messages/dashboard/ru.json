@@ -382,6 +382,18 @@
     "updateCredentialsError": "Не удалось обновить учётные данные",
     "deleteError": "Не удалось удалить интеграцию"
   },
+  "IntegrationDetail": {
+    "backToIntegrations": "Назад к интеграциям",
+    "loading": "Загрузка интеграции...",
+    "tabInfo": "Информация",
+    "tabSkills": "Навыки",
+    "integrationInfo": "Детали интеграции",
+    "platform": "Платформа",
+    "platformIdentifier": "Идентификатор платформы",
+    "connectorCode": "Код коннектора",
+    "status": "Статус",
+    "skillsComingSoon": "Управление навыками скоро будет доступно"
+  },
   "Board": {
     "title": "Доска задач",
     "loading": "Загрузка доски...",
