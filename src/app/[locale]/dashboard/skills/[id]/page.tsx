@@ -14,9 +14,10 @@ import { useUser } from '@/contexts/UserContext';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { formatDate } from '@/utils/date';
 import SkillFilesTab from '@/components/skills/SkillFilesTab';
+import SkillConnectorsTab from '@/components/skills/SkillConnectorsTab';
 import DeleteSkillModal from '@/components/skills/DeleteSkillModal';
 
-type Tab = 'overview' | 'files';
+type Tab = 'overview' | 'files' | 'connectors';
 
 export default function SkillDetailPage() {
   const t = useTranslations('Skills');
@@ -59,6 +60,7 @@ export default function SkillDetailPage() {
   const tabs: { key: Tab; label: string }[] = [
     { key: 'overview', label: t('tabOverview') },
     { key: 'files', label: t('tabFiles') },
+    { key: 'connectors', label: t('tabConnectors') },
   ];
 
   if (loading) {
@@ -186,6 +188,12 @@ export default function SkillDetailPage() {
       {activeTab === 'files' && (
         <div className="bg-surface rounded-xl border border-border p-6">
           <SkillFilesTab skillId={skill.id} isOwner={isOwner} />
+        </div>
+      )}
+
+      {activeTab === 'connectors' && (
+        <div className="bg-surface rounded-xl border border-border p-6">
+          <SkillConnectorsTab skillId={skill.id} isOwner={isOwner} />
         </div>
       )}
 

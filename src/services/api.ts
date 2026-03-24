@@ -44,6 +44,9 @@ import type {
   CreateSkillRequest,
   UpdateSkillRequest,
   SkillFileEntry,
+  SkillConnectorResponse,
+  SkillConnectorRequest,
+  ConnectorCatalogEntry,
 } from '@/types';
 
 const SERVICE_UNAVAILABLE_MESSAGE = 'SERVICE_UNAVAILABLE';
@@ -703,6 +706,30 @@ class ApiService {
     }
 
     return response.blob();
+  }
+
+  // ========== SKILL CONNECTORS ==========
+
+  async getSkillConnectors(skillId: string): Promise<SkillConnectorResponse[]> {
+    return this.get<SkillConnectorResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/${skillId}/connectors/`);
+  }
+
+  async replaceSkillConnectors(skillId: string, connectors: SkillConnectorRequest[]): Promise<SkillConnectorResponse[]> {
+    return this.put<SkillConnectorResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/${skillId}/connectors/`, { connectors });
+  }
+
+  async addSkillConnector(skillId: string, data: SkillConnectorRequest): Promise<SkillConnectorResponse> {
+    return this.post<SkillConnectorResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/${skillId}/connectors/`, data);
+  }
+
+  async deleteSkillConnector(skillId: string, bindingId: string): Promise<void> {
+    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/${skillId}/connectors/${bindingId}`);
+  }
+
+  // ========== CONNECTOR CATALOG ==========
+
+  async getConnectorCatalog(): Promise<ConnectorCatalogEntry[]> {
+    return this.get<ConnectorCatalogEntry[]>(`${API.ENDPOINTS.DEVICE_API}/manage/connectors/`);
   }
 
   // ========== PUBLIC (UNAUTHENTICATED) METHODS ==========
