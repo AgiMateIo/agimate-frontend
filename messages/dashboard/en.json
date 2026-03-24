@@ -393,7 +393,9 @@
     "platformIdentifier": "Platform Identifier",
     "connectorCode": "Connector Code",
     "status": "Status",
-    "skillsComingSoon": "Skills management coming soon"
+    "loadingSkills": "Loading skills...",
+    "noLinkedSkills": "No skills are linked to this connector",
+    "connectorBinding": "Connector"
   },
   "Board": {
     "title": "Task Board",

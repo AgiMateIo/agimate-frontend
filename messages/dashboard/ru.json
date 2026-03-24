@@ -392,7 +392,9 @@
     "platformIdentifier": "Идентификатор платформы",
     "connectorCode": "Код коннектора",
     "status": "Статус",
-    "skillsComingSoon": "Управление навыками скоро будет доступно"
+    "loadingSkills": "Загрузка навыков...",
+    "noLinkedSkills": "Нет навыков, связанных с этим коннектором",
+    "connectorBinding": "Коннектор"
   },
   "Board": {
     "title": "Доска задач",

@@ -16,6 +16,7 @@ import UpdateCredentialsModal from '@/components/integrations/UpdateCredentialsM
 import DeleteIntegrationModal from '@/components/integrations/DeleteIntegrationModal';
 import { PencilIcon, KeyIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
+import IntegrationSkillsTab from '@/components/integrations/IntegrationSkillsTab';
 
 type Tab = 'info' | 'skills';
 
@@ -223,9 +224,7 @@ function IntegrationDetailContent({
       )}
 
       {activeTab === 'skills' && (
-        <div className="text-center py-12 text-muted">
-          {t('skillsComingSoon')}
-        </div>
+        <IntegrationSkillsTab connectorCode={integration.connectorCode} />
       )}
 
       {/* Modals */}
