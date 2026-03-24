@@ -4,14 +4,17 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
-import { ArrowLeftIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
-import { Link } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { SkillDetailResponse } from '@/types';
+import { Button } from '@/components/ui/Button';
+import { FormField, TextArea } from '@/components/ui/FormField';
+import { Toggle } from '@/components/ui/Toggle';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useUser } from '@/contexts/UserContext';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
+import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { formatDate } from '@/utils/date';
 import SkillFilesTab from '@/components/skills/SkillFilesTab';
 import SkillConnectorsTab from '@/components/skills/SkillConnectorsTab';
@@ -28,10 +31,14 @@ export default function SkillDetailPage() {
   const { user } = useUser();
 
   const [skill, setSkill] = useState<SkillDetailResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [pageError, setPageError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // Inline edit state
+  const [editSkillMd, setEditSkillMd] = useState('');
+  const [editIsPublic, setEditIsPublic] = useState(false);
 
   useSetBreadcrumb(skillId, skill?.name);
 
@@ -39,19 +46,39 @@ export default function SkillDetailPage() {
 
   const fetchSkill = useCallback(async () => {
     try {
-      setError(null);
+      setPageError(null);
       const data = await apiService.getSkill(skillId);
       setSkill(data);
+      setEditSkillMd(data.skillMd);
+      setEditIsPublic(data.isPublic);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load skill');
+      setPageError(err instanceof Error ? err.message : 'Failed to load skill');
     } finally {
-      setLoading(false);
+      setPageLoading(false);
     }
   }, [skillId]);
 
   useEffect(() => {
     fetchSkill();
   }, [fetchSkill]);
+
+  const isDirty = skill !== null && (
+    editSkillMd !== skill.skillMd || editIsPublic !== skill.isPublic
+  );
+
+  const { loading: saving, error: saveError, handleSubmit } = useAsyncForm<void>({
+    onSuccess: () => {
+      fetchSkill();
+    },
+  });
+
+  const onSave = (e: React.FormEvent) =>
+    handleSubmit(e, async () => {
+      await apiService.updateSkill(skillId, {
+        skillMd: editSkillMd,
+        isPublic: editIsPublic,
+      });
+    });
 
   const handleDeleteSuccess = () => {
     router.push('/dashboard/skills');
@@ -63,7 +90,7 @@ export default function SkillDetailPage() {
     { key: 'connectors', label: t('tabConnectors') },
   ];
 
-  if (loading) {
+  if (pageLoading) {
     return (
       <div className="space-y-6">
         <div className="text-center py-12 text-muted">{t('loadingSkill')}</div>
@@ -71,7 +98,7 @@ export default function SkillDetailPage() {
     );
   }
 
-  if (error || !skill) {
+  if (pageError || !skill) {
     return (
       <div className="space-y-6">
         <button
@@ -81,7 +108,7 @@ export default function SkillDetailPage() {
           <ArrowLeftIcon className="h-4 w-4" />
           <span className="text-sm">{t('backToSkills')}</span>
         </button>
-        <ErrorAlert>{error || t('skillNotFound')}</ErrorAlert>
+        <ErrorAlert>{pageError || t('skillNotFound')}</ErrorAlert>
       </div>
     );
   }
@@ -120,23 +147,6 @@ export default function SkillDetailPage() {
             <p className="text-muted mt-1">{skill.description}</p>
           )}
         </div>
-        {isOwner && (
-          <div className="flex items-center gap-2">
-            <Link
-              href={`/dashboard/skills/${skill.id}/edit`}
-              className="flex items-center gap-2 bg-accent text-accent-foreground px-4 py-2 rounded-lg font-medium hover:bg-accent/90 transition-colors text-sm"
-            >
-              <PencilIcon className="h-4 w-4" />
-              {t('edit')}
-            </Link>
-            <button
-              onClick={() => setShowDeleteModal(true)}
-              className="px-4 py-2 rounded-lg font-medium text-sm border border-error text-error hover:bg-error/10 transition-colors"
-            >
-              {t('delete')}
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Tabs */}
@@ -173,15 +183,61 @@ export default function SkillDetailPage() {
             </div>
           </div>
 
+          {/* Public toggle */}
+          {isOwner ? (
+            <FormField label={t('isPublic')} hint={t('isPublicHint')}>
+              <Toggle
+                checked={editIsPublic}
+                onChange={setEditIsPublic}
+              />
+            </FormField>
+          ) : (
+            <div className="text-sm">
+              <span className="text-muted">{t('isPublic')}</span>
+              <p className="text-foreground mt-0.5">{skill.isPublic ? t('public') : t('private')}</p>
+            </div>
+          )}
+
           {/* SKILL.md Content */}
           <div>
             <h3 className="text-sm font-medium text-muted mb-2">{t('skillMd')}</h3>
-            <div className="bg-surface-secondary rounded-lg border border-border/50 p-4">
-              <pre className="text-sm text-foreground whitespace-pre-wrap font-mono">
-                {skill.skillMd}
-              </pre>
-            </div>
+            {isOwner ? (
+              <TextArea
+                value={editSkillMd}
+                onChange={(e) => setEditSkillMd(e.target.value)}
+                placeholder={t('skillMdPlaceholder')}
+                rows={16}
+                className="font-mono text-sm"
+              />
+            ) : (
+              <div className="bg-surface-secondary rounded-lg border border-border/50 p-4">
+                <pre className="text-sm text-foreground whitespace-pre-wrap font-mono">
+                  {skill.skillMd}
+                </pre>
+              </div>
+            )}
           </div>
+
+          {saveError && <ErrorAlert>{saveError}</ErrorAlert>}
+
+          {/* Actions */}
+          {isOwner && (
+            <div className="flex items-center gap-3 pt-2 border-t border-border">
+              <Button
+                onClick={onSave}
+                disabled={!isDirty || saving || !editSkillMd.trim()}
+                loading={saving}
+              >
+                {t('save')}
+              </Button>
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                className="px-4 py-2 rounded-lg font-medium text-sm border border-error text-error hover:bg-error/10 transition-colors"
+              >
+                {t('delete')}
+              </button>
+            </div>
+          )}
         </div>
       )}
 
