@@ -394,7 +394,13 @@
     "status": "Статус",
     "loadingSkills": "Загрузка навыков...",
     "noLinkedSkills": "Нет навыков, связанных с этим коннектором",
-    "connectorBinding": "Коннектор"
+    "connectorBinding": "Коннектор",
+    "mySkills": "Мои навыки",
+    "featuredSkills": "Рекомендуемые",
+    "publicSkills": "Публичные",
+    "noSkills": "Нет навыков для этого коннектора",
+    "noFeaturedSkills": "Нет рекомендуемых навыков для этого коннектора",
+    "noPublicSkills": "Нет публичных навыков для этого коннектора"
   },
   "Board": {
     "title": "Доска задач",

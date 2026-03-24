@@ -395,7 +395,13 @@
     "status": "Status",
     "loadingSkills": "Loading skills...",
     "noLinkedSkills": "No skills are linked to this connector",
-    "connectorBinding": "Connector"
+    "connectorBinding": "Connector",
+    "mySkills": "My Skills",
+    "featuredSkills": "Featured",
+    "publicSkills": "Public",
+    "noSkills": "No skills linked to this connector",
+    "noFeaturedSkills": "No featured skills for this connector",
+    "noPublicSkills": "No public skills for this connector"
   },
   "Board": {
     "title": "Task Board",

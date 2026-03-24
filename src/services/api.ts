@@ -622,25 +622,28 @@ class ApiService {
 
   // ========== SKILLS ==========
 
-  async getSkills(params?: { search?: string; page?: number; size?: number }): Promise<PagedResponse<SkillResponse>> {
+  async getSkills(params?: { search?: string; connectorCode?: string; page?: number; size?: number }): Promise<PagedResponse<SkillResponse>> {
     const q = new URLSearchParams();
     if (params?.search) q.set('search', params.search);
+    if (params?.connectorCode) q.set('connectorCode', params.connectorCode);
     q.set('page', String(params?.page ?? 0));
     q.set('size', String(params?.size ?? 20));
     return this.get<PagedResponse<SkillResponse>>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/?${q}`);
   }
 
-  async getPublicSkills(params?: { search?: string; page?: number; size?: number }): Promise<PagedResponse<SkillResponse>> {
+  async getPublicSkills(params?: { search?: string; connectorCode?: string; page?: number; size?: number }): Promise<PagedResponse<SkillResponse>> {
     const q = new URLSearchParams();
     if (params?.search) q.set('search', params.search);
+    if (params?.connectorCode) q.set('connectorCode', params.connectorCode);
     q.set('page', String(params?.page ?? 0));
     q.set('size', String(params?.size ?? 20));
     return this.get<PagedResponse<SkillResponse>>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/public/?${q}`);
   }
 
-  async getFeaturedSkills(params?: { search?: string; page?: number; size?: number }): Promise<PagedResponse<SkillResponse>> {
+  async getFeaturedSkills(params?: { search?: string; connectorCode?: string; page?: number; size?: number }): Promise<PagedResponse<SkillResponse>> {
     const q = new URLSearchParams();
     if (params?.search) q.set('search', params.search);
+    if (params?.connectorCode) q.set('connectorCode', params.connectorCode);
     q.set('page', String(params?.page ?? 0));
     q.set('size', String(params?.size ?? 20));
     return this.get<PagedResponse<SkillResponse>>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/featured/?${q}`);
