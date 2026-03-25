@@ -49,6 +49,7 @@ import type {
   ConnectorCatalogEntry,
   AgentSkillResponse,
   CreateAgentSkillRequest,
+  PolicyDiffResponse,
 } from '@/types';
 
 const SERVICE_UNAVAILABLE_MESSAGE = 'SERVICE_UNAVAILABLE';
@@ -500,6 +501,16 @@ class ApiService {
 
   async unbindAgentSkill(agentPubId: string, skillPubId: string): Promise<void> {
     return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${agentPubId}/skills/${skillPubId}`);
+  }
+
+  async getSkillPolicyDiff(agentPubId: string, skillPubId: string, action: 'add' | 'remove' | 'sync'): Promise<PolicyDiffResponse> {
+    const q = new URLSearchParams();
+    q.set('action', action);
+    return this.get<PolicyDiffResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${agentPubId}/skills/${skillPubId}/policy-diff?${q}`);
+  }
+
+  async syncAgentSkillPolicies(agentPubId: string): Promise<void> {
+    return this.post<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${agentPubId}/skills/sync-policies`, {});
   }
 
   // App resources

@@ -325,7 +325,19 @@
     "addedAt": "Added",
     "searchSkills": "Search skills...",
     "noSkillsFound": "No skills found",
-    "alreadyBound": "already added"
+    "alreadyBound": "already added",
+    "needsReinstall": "Update available",
+    "upToDate": "Up to date",
+    "statusColumn": "Status",
+    "skillDeleted": "Skill deleted",
+    "syncPolicies": "Sync Policies",
+    "policyChangesPreview": "Policy changes",
+    "loadingPolicyDiff": "Loading policy changes...",
+    "noPolicyChanges": "No policy changes",
+    "policiesToAdd": "Policies to add",
+    "policiesToRemove": "Policies to remove",
+    "policyTypeTool": "Tool",
+    "policyTypeTrigger": "Trigger"
   },
   "AgenticTeams": {
     "title": "Agentic Teams",

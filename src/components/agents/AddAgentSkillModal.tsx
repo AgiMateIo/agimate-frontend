@@ -3,12 +3,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { SkillResponse, PagedResponse } from '@/types';
+import { SkillResponse, PagedResponse, PolicyDiffResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { MagnifyingGlassIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import PolicyDiffPreview from './PolicyDiffPreview';
 
 const PAGE_SIZE = 10;
 
@@ -29,6 +30,9 @@ export default function AddAgentSkillModal({ agentPubId, boundSkillIds, onClose,
   const [skillsLoading, setSkillsLoading] = useState(true);
   const [skillsError, setSkillsError] = useState('');
   const [selectedSkill, setSelectedSkill] = useState<SkillResponse | null>(null);
+
+  const [diff, setDiff] = useState<PolicyDiffResponse | null>(null);
+  const [diffLoading, setDiffLoading] = useState(false);
 
   // Debounce search input
   useEffect(() => {
@@ -59,6 +63,21 @@ export default function AddAgentSkillModal({ agentPubId, boundSkillIds, onClose,
   useEffect(() => {
     fetchSkills();
   }, [fetchSkills]);
+
+  // Fetch policy diff when a skill is selected
+  useEffect(() => {
+    if (!selectedSkill) {
+      setDiff(null);
+      return;
+    }
+    let cancelled = false;
+    setDiffLoading(true);
+    apiService.getSkillPolicyDiff(agentPubId, selectedSkill.id, 'add')
+      .then(data => { if (!cancelled) setDiff(data); })
+      .catch(() => { if (!cancelled) setDiff(null); })
+      .finally(() => { if (!cancelled) setDiffLoading(false); });
+    return () => { cancelled = true; };
+  }, [agentPubId, selectedSkill]);
 
   const { loading, error, handleSubmit } = useAsyncForm<void>({
     onSuccess,
@@ -162,6 +181,18 @@ export default function AddAgentSkillModal({ agentPubId, boundSkillIds, onClose,
                 <ChevronRightIcon className="h-4 w-4" />
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Policy diff preview */}
+        {selectedSkill && (
+          <div className="bg-surface-secondary rounded-lg border border-border p-3">
+            <div className="text-xs font-medium text-foreground mb-2">{t('policyChangesPreview')}</div>
+            {diffLoading ? (
+              <div className="text-xs text-muted">{t('loadingPolicyDiff')}</div>
+            ) : diff ? (
+              <PolicyDiffPreview diff={diff} />
+            ) : null}
           </div>
         )}
 

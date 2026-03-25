@@ -324,7 +324,19 @@
     "addedAt": "Добавлен",
     "searchSkills": "Поиск навыков...",
     "noSkillsFound": "Навыки не найдены",
-    "alreadyBound": "уже добавлен"
+    "alreadyBound": "уже добавлен",
+    "needsReinstall": "Требуется обновление",
+    "upToDate": "Актуально",
+    "statusColumn": "Статус",
+    "skillDeleted": "Навык удалён",
+    "syncPolicies": "Синхронизировать политики",
+    "policyChangesPreview": "Изменения политик",
+    "loadingPolicyDiff": "Загрузка изменений политик...",
+    "noPolicyChanges": "Без изменений политик",
+    "policiesToAdd": "Будут добавлены",
+    "policiesToRemove": "Будут удалены",
+    "policyTypeTool": "Инструмент",
+    "policyTypeTrigger": "Триггер"
   },
   "AgenticTeams": {
     "title": "Команды агентов",

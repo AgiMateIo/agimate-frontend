@@ -1,13 +1,15 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { AgentSkillResponse } from '@/types';
+import { AgentSkillResponse, PolicyDiffResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
+import PolicyDiffPreview from './PolicyDiffPreview';
 
 interface DeleteAgentSkillModalProps {
   agentPubId: string;
@@ -18,6 +20,18 @@ interface DeleteAgentSkillModalProps {
 
 export default function DeleteAgentSkillModal({ agentPubId, binding, onClose, onSuccess }: DeleteAgentSkillModalProps) {
   const t = useTranslations('Agents');
+
+  const [diff, setDiff] = useState<PolicyDiffResponse | null>(null);
+  const [diffLoading, setDiffLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    apiService.getSkillPolicyDiff(agentPubId, binding.skillPubId, 'remove')
+      .then(data => { if (!cancelled) setDiff(data); })
+      .catch(() => { if (!cancelled) setDiff(null); })
+      .finally(() => { if (!cancelled) setDiffLoading(false); });
+    return () => { cancelled = true; };
+  }, [agentPubId, binding.skillPubId]);
 
   const { loading, error, handleSubmit } = useAsyncForm<void>({
     onSuccess,
@@ -36,7 +50,17 @@ export default function DeleteAgentSkillModal({ agentPubId, binding, onClose, on
           {t('removeSkillConfirm')}
         </p>
         <div className="text-sm text-muted">
-          <strong>{t('skillName')}:</strong> {binding.skillName}
+          <strong>{t('skillName')}:</strong> {binding.skillName ?? binding.skillPubId}
+        </div>
+
+        {/* Policy diff preview */}
+        <div className="bg-surface-secondary rounded-lg border border-border p-3">
+          <div className="text-xs font-medium text-foreground mb-2">{t('policyChangesPreview')}</div>
+          {diffLoading ? (
+            <div className="text-xs text-muted">{t('loadingPolicyDiff')}</div>
+          ) : diff ? (
+            <PolicyDiffPreview diff={diff} />
+          ) : null}
         </div>
 
         <Alert variant="warning">
