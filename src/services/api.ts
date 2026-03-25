@@ -47,6 +47,8 @@ import type {
   SkillConnectorResponse,
   SkillConnectorRequest,
   ConnectorCatalogEntry,
+  AgentSkillResponse,
+  CreateAgentSkillRequest,
 } from '@/types';
 
 const SERVICE_UNAVAILABLE_MESSAGE = 'SERVICE_UNAVAILABLE';
@@ -482,6 +484,22 @@ class ApiService {
 
   async deleteAgentTriggerPolicy(id: string): Promise<void> {
     return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-trigger-policies/${id}`);
+  }
+
+  // Agent-Skill bindings
+  async getAgentSkills(params: { agentPubId: string; page?: number; size?: number }): Promise<PagedResponse<AgentSkillResponse>> {
+    const q = new URLSearchParams();
+    q.set('page', String(params.page ?? 0));
+    q.set('size', String(params.size ?? 20));
+    return this.get<PagedResponse<AgentSkillResponse>>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${params.agentPubId}/skills/?${q}`);
+  }
+
+  async bindAgentSkill(agentPubId: string, data: CreateAgentSkillRequest): Promise<AgentSkillResponse> {
+    return this.post<AgentSkillResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${agentPubId}/skills/`, data);
+  }
+
+  async unbindAgentSkill(agentPubId: string, skillPubId: string): Promise<void> {
+    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${agentPubId}/skills/${skillPubId}`);
   }
 
   // App resources

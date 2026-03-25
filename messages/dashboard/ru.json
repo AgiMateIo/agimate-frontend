@@ -311,7 +311,20 @@
     "loadingTriggers": "Загрузка триггеров...",
     "noTriggersFound": "Нет зарегистрированных триггеров для этого приложения",
     "deleteTriggerPolicyConfirm": "Вы уверены, что хотите удалить эту политику триггеров?",
-    "deleteTriggerPolicyWarning": "Это действие нельзя отменить. Политика будет удалена немедленно."
+    "deleteTriggerPolicyWarning": "Это действие нельзя отменить. Политика будет удалена немедленно.",
+    "tabSkills": "Навыки",
+    "loadingSkills": "Загрузка навыков...",
+    "noAgentSkills": "К этому агенту не привязаны навыки",
+    "skillsTotal": "{count, plural, one {# навык} few {# навыка} many {# навыков} other {# навыков}} всего",
+    "addSkill": "Добавить навык",
+    "removeSkill": "Удалить навык",
+    "removeSkillConfirm": "Вы уверены, что хотите убрать этот навык у агента?",
+    "removeSkillWarning": "Навык будет отвязан от агента. Сам навык не будет удалён.",
+    "skillName": "Навык",
+    "addedAt": "Добавлен",
+    "searchSkills": "Поиск навыков...",
+    "noSkillsFound": "Навыки не найдены",
+    "alreadyBound": "уже добавлен"
   },
   "AgenticTeams": {
     "title": "Команды агентов",

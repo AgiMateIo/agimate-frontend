@@ -14,4 +14,5 @@ export * from './agentic-teams';
 export * from './integrations';
 export * from './boards';
 export * from './agent-policies';
+export * from './agent-skills';
 export * from './skills';

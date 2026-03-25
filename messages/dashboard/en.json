@@ -312,7 +312,20 @@
     "loadingTriggers": "Loading triggers...",
     "noTriggersFound": "No triggers registered for this app",
     "deleteTriggerPolicyConfirm": "Are you sure you want to delete this trigger policy?",
-    "deleteTriggerPolicyWarning": "This action cannot be undone. The policy will be removed immediately."
+    "deleteTriggerPolicyWarning": "This action cannot be undone. The policy will be removed immediately.",
+    "tabSkills": "Skills",
+    "loadingSkills": "Loading skills...",
+    "noAgentSkills": "No skills attached to this agent",
+    "skillsTotal": "{count, plural, one {# skill} other {# skills}} total",
+    "addSkill": "Add Skill",
+    "removeSkill": "Remove Skill",
+    "removeSkillConfirm": "Are you sure you want to remove this skill from the agent?",
+    "removeSkillWarning": "The skill will be detached from this agent. The skill itself will not be deleted.",
+    "skillName": "Skill",
+    "addedAt": "Added",
+    "searchSkills": "Search skills...",
+    "noSkillsFound": "No skills found",
+    "alreadyBound": "already added"
   },
   "AgenticTeams": {
     "title": "Agentic Teams",
