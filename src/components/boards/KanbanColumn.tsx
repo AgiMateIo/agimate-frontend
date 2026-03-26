@@ -17,10 +17,7 @@ interface KanbanColumnProps {
 
 const STATUS_COLORS: Record<TaskStatus, string> = {
   BACKLOG: 'bg-surface-secondary',
-  ANALYTICS: 'bg-accent/10',
-  TODO: 'bg-blue-500/10',
   IN_PROGRESS: 'bg-warning/10',
-  BLOCKED: 'bg-error/10',
   REVIEW: 'bg-purple-500/10',
   DONE: 'bg-success/10',
 };

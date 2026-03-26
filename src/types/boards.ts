@@ -2,17 +2,14 @@
 
 export type TaskStatus =
   | 'BACKLOG'
-  | 'ANALYTICS'
-  | 'TODO'
   | 'IN_PROGRESS'
-  | 'BLOCKED'
   | 'REVIEW'
   | 'DONE';
 
 export type TaskType = 'EPIC' | 'TASK' | 'SUBTASK';
 
 export const TASK_STATUSES: TaskStatus[] = [
-  'BACKLOG', 'ANALYTICS', 'TODO', 'IN_PROGRESS', 'BLOCKED', 'REVIEW', 'DONE',
+  'BACKLOG', 'IN_PROGRESS', 'REVIEW', 'DONE',
 ];
 
 export const TASK_TYPES: TaskType[] = ['EPIC', 'TASK', 'SUBTASK'];

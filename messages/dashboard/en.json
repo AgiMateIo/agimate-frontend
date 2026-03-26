@@ -468,10 +468,7 @@
     "refresh": "Refresh",
     "status": {
       "BACKLOG": "Backlog",
-      "ANALYTICS": "Analytics",
-      "TODO": "To Do",
       "IN_PROGRESS": "In Progress",
-      "BLOCKED": "Blocked",
       "REVIEW": "Review",
       "DONE": "Done"
     },
