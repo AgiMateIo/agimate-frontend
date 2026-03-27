@@ -20,7 +20,8 @@ export default function AgentsList({ agents: agentsProp, onUpdate }: AgentsListP
     setAgents(agentsProp);
   }, [agentsProp]);
 
-  const truncatePrompt = (prompt: string, maxLength = 100) => {
+  const truncatePrompt = (prompt: string | null | undefined, maxLength = 100) => {
+    if (!prompt) return '';
     return prompt.length > maxLength ? prompt.slice(0, maxLength) + '...' : prompt;
   };
 
