@@ -43,6 +43,8 @@ export default function SkillDetailPage() {
   useSetBreadcrumb(skillId, skill?.name);
 
   const isOwner = !!(user?.pubId && user.pubId === skill?.userPubId);
+  const isFeaturedClone = skill?.parentPubId != null;
+  const isEditable = isOwner && !isFeaturedClone;
 
   const fetchSkill = useCallback(async () => {
     try {
@@ -138,6 +140,11 @@ export default function SkillDetailPage() {
                 {t('featured')}
               </span>
             )}
+            {isFeaturedClone && (
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-muted/10 text-muted">
+                {t('systemSkill')}
+              </span>
+            )}
             <span className="text-xs text-muted">
               {t('version', { version: skill.version })}
             </span>
@@ -148,6 +155,12 @@ export default function SkillDetailPage() {
           )}
         </div>
       </div>
+
+      {isFeaturedClone && (
+        <div className="text-sm text-muted bg-surface-secondary rounded-lg px-4 py-3 border border-border">
+          {t('featuredCloneReadOnly')}
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="border-b border-border">
@@ -184,7 +197,7 @@ export default function SkillDetailPage() {
           </div>
 
           {/* Public toggle */}
-          {isOwner ? (
+          {isEditable ? (
             <FormField label={t('isPublic')} hint={t('isPublicHint')}>
               <Toggle
                 checked={editIsPublic}
@@ -201,7 +214,7 @@ export default function SkillDetailPage() {
           {/* SKILL.md Content */}
           <div>
             <h3 className="text-sm font-medium text-muted mb-2">{t('skillMd')}</h3>
-            {isOwner ? (
+            {isEditable ? (
               <TextArea
                 value={editSkillMd}
                 onChange={(e) => setEditSkillMd(e.target.value)}
@@ -221,7 +234,7 @@ export default function SkillDetailPage() {
           {saveError && <ErrorAlert>{saveError}</ErrorAlert>}
 
           {/* Actions */}
-          {isOwner && (
+          {isEditable && (
             <div className="flex items-center gap-3 pt-2 border-t border-border">
               <Button
                 onClick={onSave}
@@ -243,13 +256,13 @@ export default function SkillDetailPage() {
 
       {activeTab === 'files' && (
         <div className="bg-surface rounded-xl border border-border p-6">
-          <SkillFilesTab skillId={skill.id} isOwner={isOwner} />
+          <SkillFilesTab skillId={skill.id} isOwner={isEditable} />
         </div>
       )}
 
       {activeTab === 'connectors' && (
         <div className="bg-surface rounded-xl border border-border p-6">
-          <SkillConnectorsTab skillId={skill.id} isOwner={isOwner} />
+          <SkillConnectorsTab skillId={skill.id} isOwner={isEditable} />
         </div>
       )}
 

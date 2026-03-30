@@ -21,6 +21,7 @@ export default function EditSkillPage() {
   const [skill, setSkill] = useState<SkillDetailResponse | null>(null);
   const [pageLoading, setPageLoading] = useState(true);
   const [pageError, setPageError] = useState<string | null>(null);
+  const [redirecting, setRedirecting] = useState(false);
 
   useSetBreadcrumb(skillId, skill?.name);
 
@@ -28,13 +29,18 @@ export default function EditSkillPage() {
     try {
       setPageError(null);
       const data = await apiService.getSkill(skillId);
+      if (data.parentPubId != null) {
+        setRedirecting(true);
+        router.replace(`/dashboard/skills/${skillId}`);
+        return;
+      }
       setSkill(data);
     } catch (err) {
       setPageError(err instanceof Error ? err.message : 'Failed to load skill');
     } finally {
       setPageLoading(false);
     }
-  }, [skillId]);
+  }, [skillId, router]);
 
   useEffect(() => {
     fetchSkill();
@@ -55,7 +61,7 @@ export default function EditSkillPage() {
     );
   };
 
-  if (pageLoading) {
+  if (pageLoading || redirecting) {
     return (
       <div className="space-y-6">
         <div className="text-center py-12 text-muted">{t('loadingSkill')}</div>

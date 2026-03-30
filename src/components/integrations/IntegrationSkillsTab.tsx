@@ -131,6 +131,11 @@ export default function IntegrationSkillsTab({ connectorCode }: IntegrationSkill
                     {tSkills('updatedAt')}: {formatDate(skill.updatedAt, locale)}
                   </div>
                 </div>
+                {filter !== 'my' && skill.myCopyId != null && (
+                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent whitespace-nowrap self-start mt-0.5">
+                    {tSkills('alreadyAdded')}
+                  </span>
+                )}
               </div>
             </Link>
           ))}

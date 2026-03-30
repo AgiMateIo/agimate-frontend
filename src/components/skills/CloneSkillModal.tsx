@@ -8,6 +8,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { Link } from '@/i18n/navigation';
 
 interface CloneSkillModalProps {
   skill: SkillResponse;
@@ -21,8 +22,9 @@ export default function CloneSkillModal({
   onSuccess,
 }: CloneSkillModalProps) {
   const t = useTranslations('Skills');
-  const [mode, setMode] = useState<'confirm' | 'rename'>('confirm');
+  const [mode, setMode] = useState<'confirm' | 'rename' | 'featured-conflict'>('confirm');
   const [newName, setNewName] = useState('');
+  const [conflictSkillId, setConflictSkillId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,7 +40,14 @@ export default function CloneSkillModal({
       if (err instanceof ApiError && err.message) {
         const msg = err.message.toLowerCase();
         if (msg.includes('already exists') || msg.includes('conflict')) {
-          setMode('rename');
+          const existingId = err.details?.existingSkillId ?? null;
+          if (skill.isFeatured && existingId) {
+            setConflictSkillId(existingId);
+            setMode('featured-conflict');
+          } else {
+            if (existingId) setConflictSkillId(existingId);
+            setMode('rename');
+          }
           setError(null);
           return;
         }
@@ -68,6 +77,27 @@ export default function CloneSkillModal({
       setLoading(false);
     }
   };
+
+  if (mode === 'featured-conflict') {
+    return (
+      <Modal isOpen={true} onClose={onClose} title={t('cloneConflictTitle')} size="sm">
+        <div className="space-y-4">
+          <p className="text-sm text-muted">{t('cloneConflictGoToCopy')}</p>
+          <div className="flex gap-3 pt-2">
+            <Button variant="secondary" onClick={onClose} className="flex-1">
+              {t('cancel')}
+            </Button>
+            <Link
+              href={`/dashboard/skills/${conflictSkillId}`}
+              className="flex-1 inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium text-sm bg-accent text-white hover:bg-accent/90 transition-colors"
+            >
+              {t('goToCopy')}
+            </Link>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
 
   if (mode === 'rename') {
     return (

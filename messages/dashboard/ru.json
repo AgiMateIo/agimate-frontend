@@ -540,7 +540,12 @@
     "page": "Страница {current} из {total}",
     "loadingSkill": "Загрузка навыка...",
     "skillNotFound": "Навык не найден",
-    "cannotDeleteSkillMd": "SKILL.md нельзя удалить"
+    "cannotDeleteSkillMd": "SKILL.md нельзя удалить",
+    "systemSkill": "Системный",
+    "alreadyAdded": "Уже добавлен",
+    "goToCopy": "Перейти к копии",
+    "cloneConflictGoToCopy": "У вас уже есть копия этого навыка в коллекции.",
+    "featuredCloneReadOnly": "Это системный навык. Он доступен только для чтения и не может быть изменён или удалён."
   },
   "SkillConnectors": {
     "loading": "Загрузка коннекторов...",

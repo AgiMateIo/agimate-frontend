@@ -4,8 +4,8 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { SkillResponse } from '@/types';
-import { TrashIcon, PencilIcon, DocumentDuplicateIcon } from '@heroicons/react/24/outline';
-import { useRouter } from '@/i18n/navigation';
+import { TrashIcon, PencilIcon, DocumentDuplicateIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import { useRouter, Link } from '@/i18n/navigation';
 import { Alert } from '@/components/ui/Alert';
 import { formatDate } from '@/utils/date';
 import DeleteSkillModal from './DeleteSkillModal';
@@ -99,30 +99,47 @@ export default function SkillsList({
 
               <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                 {variant === 'my' && (
-                  <>
-                    <button
-                      onClick={() => router.push(`/dashboard/skills/${skill.id}/edit`)}
-                      className="p-2 text-muted hover:text-foreground transition-colors rounded-lg"
-                    >
-                      <PencilIcon className="h-5 w-5" />
-                    </button>
-                    <button
-                      onClick={() => setDeletingSkill(skill)}
-                      className="p-2 text-muted hover:text-error transition-colors rounded-lg"
-                    >
-                      <TrashIcon className="h-5 w-5" />
-                    </button>
-                  </>
+                  skill.parentPubId != null ? (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-muted/10 text-muted">
+                      <LockClosedIcon className="h-3 w-3" />
+                      {t('systemSkill')}
+                    </span>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => router.push(`/dashboard/skills/${skill.id}/edit`)}
+                        className="p-2 text-muted hover:text-foreground transition-colors rounded-lg"
+                      >
+                        <PencilIcon className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => setDeletingSkill(skill)}
+                        className="p-2 text-muted hover:text-error transition-colors rounded-lg"
+                      >
+                        <TrashIcon className="h-5 w-5" />
+                      </button>
+                    </>
+                  )
                 )}
 
                 {(variant === 'public' || variant === 'featured') && (
-                  <button
-                    onClick={() => setCloningSkill(skill)}
-                    className="p-2 text-muted hover:text-accent transition-colors rounded-lg"
-                    title={t('cloneSkill')}
-                  >
-                    <DocumentDuplicateIcon className="h-5 w-5" />
-                  </button>
+                  skill.myCopyId != null ? (
+                    <Link
+                      href={`/dashboard/skills/${skill.myCopyId}`}
+                      onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                      className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent hover:bg-accent/20 transition-colors whitespace-nowrap"
+                    >
+                      {t('alreadyAdded')}
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => setCloningSkill(skill)}
+                      className="p-2 text-muted hover:text-accent transition-colors rounded-lg"
+                      title={t('cloneSkill')}
+                    >
+                      <DocumentDuplicateIcon className="h-5 w-5" />
+                    </button>
+                  )
                 )}
               </div>
             </div>

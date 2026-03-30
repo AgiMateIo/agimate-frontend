@@ -541,7 +541,12 @@
     "page": "Page {current} of {total}",
     "loadingSkill": "Loading skill...",
     "skillNotFound": "Skill not found",
-    "cannotDeleteSkillMd": "SKILL.md cannot be deleted"
+    "cannotDeleteSkillMd": "SKILL.md cannot be deleted",
+    "systemSkill": "System",
+    "alreadyAdded": "Already added",
+    "goToCopy": "Go to copy",
+    "cloneConflictGoToCopy": "You already have a copy of this skill in your collection.",
+    "featuredCloneReadOnly": "This is a system skill. It is read-only and cannot be edited or deleted."
   },
   "SkillConnectors": {
     "loading": "Loading connectors...",
