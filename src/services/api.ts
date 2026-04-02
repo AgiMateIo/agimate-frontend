@@ -275,7 +275,7 @@ class ApiService {
     this.inflightGetRequests.set(url, promise);
     promise.finally(() => {
       this.inflightGetRequests.delete(url);
-    });
+    }).catch(() => {});
 
     return promise;
   }

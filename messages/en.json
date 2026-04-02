@@ -207,7 +207,11 @@
   },
   "LoginCheck": {
     "authorizing": "Authorizing...",
-    "pleaseWait": "Please wait while we complete the sign-in"
+    "pleaseWait": "Please wait while we complete the sign-in",
+    "connectionError": "Could not connect to the server",
+    "connectionErrorHint": "This is usually temporary. Please check your internet connection and try again.",
+    "retry": "Try again",
+    "backToLogin": "Back to sign in"
   },
   "Logout": {
     "title": "Sign out",
