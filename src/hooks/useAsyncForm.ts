@@ -27,7 +27,7 @@ export function useAsyncForm<T = void>(options: UseAsyncFormOptions<T> = {}) {
         optionsRef.current.onSuccess?.(result);
         return result;
       } catch (err) {
-        if (err instanceof ApiError && err.details) {
+        if (err instanceof ApiError && err.details && Object.keys(err.details).length > 0) {
           setFieldErrors(err.details);
         } else {
           const errorMessage =
