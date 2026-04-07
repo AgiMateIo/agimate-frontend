@@ -54,9 +54,11 @@ export interface SkillConnectorRequest {
 
 // Connector catalog entry (from GET /device/manage/connectors/)
 
+export type ConnectorType = 'APP' | 'INTEGRATION' | 'INTERNAL_SERVICE' | 'LOOPBACK';
+
 export interface ConnectorCatalogEntry {
   code: string;
-  type: string;
+  type: ConnectorType;
   name: string;
-  description: string;
+  description: string | null;
 }

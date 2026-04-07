@@ -57,6 +57,24 @@
     "loadingApiKeys": "Загрузка API ключей...",
     "noApiKeys": "API ключи не созданы"
   },
+  "ConnectorCatalog": {
+    "title": "Коннекторы",
+    "subtitle": "Каталог доступных типов коннекторов",
+    "searchPlaceholder": "Поиск по названию или описанию…",
+    "typeAll": "Все",
+    "type": {
+      "APP": "Приложение",
+      "INTEGRATION": "Интеграция",
+      "INTERNAL_SERVICE": "Внутренний сервис",
+      "LOOPBACK": "Loopback"
+    },
+    "noDescription": "Описание отсутствует",
+    "empty": "Коннекторы не найдены",
+    "loading": "Загрузка коннекторов…",
+    "page": "Страница {current} из {total}",
+    "previous": "Назад",
+    "next": "Вперёд"
+  },
   "Connectors": {
     "title": "Приложения",
     "subtitle": "Управление приложениями и подключёнными устройствами",

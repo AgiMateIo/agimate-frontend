@@ -57,6 +57,24 @@
     "loadingApiKeys": "Loading API keys...",
     "noApiKeys": "No API keys created yet"
   },
+  "ConnectorCatalog": {
+    "title": "Connectors",
+    "subtitle": "Catalog of available connector types",
+    "searchPlaceholder": "Search by name or description…",
+    "typeAll": "All",
+    "type": {
+      "APP": "App",
+      "INTEGRATION": "Integration",
+      "INTERNAL_SERVICE": "Internal service",
+      "LOOPBACK": "Loopback"
+    },
+    "noDescription": "No description",
+    "empty": "No connectors found",
+    "loading": "Loading connectors…",
+    "page": "Page {current} of {total}",
+    "previous": "Previous",
+    "next": "Next"
+  },
   "Connectors": {
     "title": "Apps",
     "subtitle": "Manage your apps and connected devices",

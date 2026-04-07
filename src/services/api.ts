@@ -47,6 +47,7 @@ import type {
   SkillConnectorResponse,
   SkillConnectorRequest,
   ConnectorCatalogEntry,
+  ConnectorType,
   AgentSkillResponse,
   CreateAgentSkillRequest,
   PolicyDiffResponse,
@@ -761,7 +762,28 @@ class ApiService {
   // ========== CONNECTOR CATALOG ==========
 
   async getConnectorCatalog(): Promise<ConnectorCatalogEntry[]> {
-    return this.get<ConnectorCatalogEntry[]>(`${API.ENDPOINTS.DEVICE_API}/manage/connectors/`);
+    // Backend returns a paginated response; fetch a large page and unwrap content.
+    // Tolerates legacy array responses for backwards compatibility.
+    const result = await this.get<PagedResponse<ConnectorCatalogEntry> | ConnectorCatalogEntry[]>(
+      `${API.ENDPOINTS.DEVICE_API}/manage/connectors/?size=200`
+    );
+    return Array.isArray(result) ? result : result.content;
+  }
+
+  async getConnectors(params?: {
+    type?: ConnectorType;
+    search?: string;
+    page?: number;
+    size?: number;
+  }): Promise<PagedResponse<ConnectorCatalogEntry>> {
+    const q = new URLSearchParams();
+    if (params?.type) q.set('type', params.type);
+    if (params?.search) q.set('search', params.search);
+    q.set('page', String(params?.page ?? 0));
+    q.set('size', String(params?.size ?? 20));
+    return this.get<PagedResponse<ConnectorCatalogEntry>>(
+      `${API.ENDPOINTS.DEVICE_API}/manage/connectors/?${q}`
+    );
   }
 
   // ========== PUBLIC (UNAUTHENTICATED) METHODS ==========

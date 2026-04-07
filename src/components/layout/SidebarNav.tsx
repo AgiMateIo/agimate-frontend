@@ -27,8 +27,8 @@ type NavItem = {
 const getNavItems = (t: ReturnType<typeof useTranslations>): NavItem[] => [
   { label: t('dashboard'), icon: HomeIcon, href: '/dashboard' },
   {
-    label: t('connectors'), icon: CpuChipIcon, href: '/dashboard/apps',
-    activePaths: ['/dashboard/apps', '/dashboard/trigger-logs', '/dashboard/tool-use-logs', '/dashboard/integrations'],
+    label: t('connectors'), icon: CpuChipIcon, href: '/dashboard/connectors',
+    activePaths: ['/dashboard/connectors', '/dashboard/apps', '/dashboard/trigger-logs', '/dashboard/tool-use-logs', '/dashboard/integrations'],
     children: [
       { label: t('apps'), icon: DevicePhoneMobileIcon, href: '/dashboard/apps' },
       { label: t('integrations'), icon: LinkIcon, href: '/dashboard/integrations' },
