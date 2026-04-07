@@ -21,6 +21,14 @@ export interface AgentCreatedResponse {
   fullKey: string;
 }
 
+// Lightweight agent representation used by GET /device/manage/skills/{pubId}/agents/
+export interface AgentSummaryResponse {
+  id: string;
+  name: string;
+  prompt: string | null;
+  enabled: boolean;
+}
+
 export interface CreateAgentRequest {
   name: string;
   prompt?: string;

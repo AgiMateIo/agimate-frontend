@@ -536,6 +536,7 @@
     "tabOverview": "Overview",
     "tabFiles": "Files",
     "tabConnectors": "Connectors",
+    "tabAgents": "Agents",
     "noFiles": "No additional files",
     "uploadFile": "Upload File",
     "uploading": "Uploading...",
@@ -591,6 +592,21 @@
     "deleteWarning": "This action cannot be undone.",
     "addError": "Failed to add connector binding",
     "deleteError": "Failed to delete connector binding"
+  },
+  "SkillAgents": {
+    "loading": "Loading agents…",
+    "total": "{count, plural, =0 {No agents use this skill} one {# agent uses this skill} other {# agents use this skill}}",
+    "searchPlaceholder": "Search by name or prompt…",
+    "name": "Name",
+    "prompt": "Prompt",
+    "status": "Status",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "empty": "No agents use this skill yet",
+    "emptySearch": "No agents match your search",
+    "page": "Page {current} of {total}",
+    "previous": "Previous",
+    "next": "Next"
   },
   "Settings": {
     "title": "Settings",

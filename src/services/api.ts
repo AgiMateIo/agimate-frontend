@@ -12,6 +12,7 @@ import type {
   DeviceTriggerGroup,
   DeviceToolGroup,
   AgentResponse,
+  AgentSummaryResponse,
   AgentCreatedResponse,
   CreateAgentRequest,
   UpdateAgentRequest,
@@ -697,6 +698,19 @@ class ApiService {
 
   async cloneSkill(id: string): Promise<SkillResponse> {
     return this.post<SkillResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/${id}/clone`, {});
+  }
+
+  async getSkillAgents(
+    skillId: string,
+    params?: { search?: string; page?: number; size?: number }
+  ): Promise<PagedResponse<AgentSummaryResponse>> {
+    const q = new URLSearchParams();
+    if (params?.search) q.set('search', params.search);
+    q.set('page', String(params?.page ?? 0));
+    q.set('size', String(params?.size ?? 20));
+    return this.get<PagedResponse<AgentSummaryResponse>>(
+      `${API.ENDPOINTS.DEVICE_API}/manage/skills/${skillId}/agents/?${q}`
+    );
   }
 
   async getSkillFiles(skillId: string): Promise<SkillFileEntry[]> {

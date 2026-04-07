@@ -18,9 +18,10 @@ import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { formatDate } from '@/utils/date';
 import SkillFilesTab from '@/components/skills/SkillFilesTab';
 import SkillConnectorsTab from '@/components/skills/SkillConnectorsTab';
+import SkillAgentsTab from '@/components/skills/SkillAgentsTab';
 import DeleteSkillModal from '@/components/skills/DeleteSkillModal';
 
-type Tab = 'overview' | 'files' | 'connectors';
+type Tab = 'overview' | 'files' | 'connectors' | 'agents';
 
 export default function SkillDetailPage() {
   const t = useTranslations('Skills');
@@ -90,6 +91,7 @@ export default function SkillDetailPage() {
     { key: 'overview', label: t('tabOverview') },
     { key: 'files', label: t('tabFiles') },
     { key: 'connectors', label: t('tabConnectors') },
+    { key: 'agents', label: t('tabAgents') },
   ];
 
   if (pageLoading) {
@@ -263,6 +265,12 @@ export default function SkillDetailPage() {
       {activeTab === 'connectors' && (
         <div className="bg-surface rounded-xl border border-border p-6">
           <SkillConnectorsTab skillId={skill.id} isOwner={isEditable} />
+        </div>
+      )}
+
+      {activeTab === 'agents' && (
+        <div className="bg-surface rounded-xl border border-border p-6">
+          <SkillAgentsTab skillId={skill.id} />
         </div>
       )}
 

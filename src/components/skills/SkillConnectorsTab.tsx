@@ -36,7 +36,7 @@ export default function SkillConnectorsTab({ skillId, isOwner }: SkillConnectors
         apiService.getConnectorCatalog(),
       ]);
       setBindings(bindingsData);
-      setConnectors(catalogData.filter(c => c.type === 'INTEGRATION'));
+      setConnectors(catalogData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load data');
     } finally {
