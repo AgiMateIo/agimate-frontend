@@ -1,12 +1,12 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Link } from '@/i18n/navigation';
 import { usePathname } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import {
   HomeIcon,
   DevicePhoneMobileIcon,
-  SparklesIcon,
   UserGroupIcon,
   Cog6ToothIcon,
   BoltIcon,
@@ -14,7 +14,10 @@ import {
   LinkIcon,
   CpuChipIcon,
   AcademicCapIcon,
+  ChartBarIcon,
 } from '@heroicons/react/24/outline';
+import apiService from '@/services/api';
+import { AgenticTeam } from '@/types';
 
 type NavItem = {
   label: string;
@@ -24,33 +27,47 @@ type NavItem = {
   children?: NavItem[];
 };
 
-const getNavItems = (t: ReturnType<typeof useTranslations>): NavItem[] => [
+const getNavItems = (t: ReturnType<typeof useTranslations>, teams: AgenticTeam[]): NavItem[] => [
   { label: t('dashboard'), icon: HomeIcon, href: '/dashboard' },
   {
     label: t('connectors'), icon: CpuChipIcon, href: '/dashboard/connectors',
-    activePaths: ['/dashboard/connectors', '/dashboard/apps', '/dashboard/trigger-logs', '/dashboard/tool-use-logs', '/dashboard/integrations'],
+    activePaths: ['/dashboard/connectors', '/dashboard/apps', '/dashboard/integrations'],
     children: [
       { label: t('apps'), icon: DevicePhoneMobileIcon, href: '/dashboard/apps' },
       { label: t('integrations'), icon: LinkIcon, href: '/dashboard/integrations' },
+    ],
+  },
+  { label: t('skills'), icon: AcademicCapIcon, href: '/dashboard/skills' },
+  {
+    label: t('agenticTeams'), icon: UserGroupIcon, href: '/dashboard/agentic-teams',
+    activePaths: ['/dashboard/agentic-teams', '/dashboard/agents'],
+    children: teams.map((team) => ({
+      label: team.name,
+      icon: UserGroupIcon,
+      href: `/dashboard/agentic-teams/${team.id}`,
+    })),
+  },
+  {
+    label: t('monitoring'), icon: ChartBarIcon, href: '/dashboard/trigger-logs',
+    activePaths: ['/dashboard/trigger-logs', '/dashboard/tool-use-logs'],
+    children: [
       { label: t('triggerLogs'), icon: BoltIcon, href: '/dashboard/trigger-logs' },
       { label: t('toolUseLogs'), icon: WrenchScrewdriverIcon, href: '/dashboard/tool-use-logs' },
     ],
   },
-  {
-    label: t('agenticTeams'), icon: UserGroupIcon, href: '/dashboard/agentic-teams',
-    activePaths: ['/dashboard/agentic-teams', '/dashboard/agents'],
-    children: [
-      { label: t('agents'), icon: SparklesIcon, href: '/dashboard/agents' },
-    ],
-  },
-  { label: t('skills'), icon: AcademicCapIcon, href: '/dashboard/skills' },
   { label: t('settings'), icon: Cog6ToothIcon, href: '/dashboard/settings' },
 ];
 
 export default function SidebarNav() {
   const pathname = usePathname();
   const t = useTranslations('Sidebar');
-  const navItems = getNavItems(t);
+  const [teams, setTeams] = useState<AgenticTeam[]>([]);
+
+  useEffect(() => {
+    apiService.getAgenticTeams().then(setTeams).catch(() => {});
+  }, []);
+
+  const navItems = getNavItems(t, teams);
 
   return (
     <aside className="w-64 border-r border-border bg-surface flex flex-col shrink-0">

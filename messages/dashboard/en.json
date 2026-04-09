@@ -10,6 +10,7 @@
     "integrations": "Integrations",
     "apiKeys": "API Keys",
     "skills": "Skills",
+    "monitoring": "Monitoring",
     "settings": "Settings"
   },
   "TopBar": {
