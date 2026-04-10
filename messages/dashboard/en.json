@@ -241,6 +241,8 @@
     "triggerCount": "{count, plural, one {# trigger} other {# triggers}}",
     "toolCount": "{count, plural, one {# tool} other {# tools}}",
     "allTriggers": "All triggers",
+    "description": "Description",
+    "descriptionPlaceholder": "Enter agent description",
     "nameLabel": "Name",
     "namePlaceholder": "Enter agent name",
     "backToAgents": "Back to Agents",

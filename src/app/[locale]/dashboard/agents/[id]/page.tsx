@@ -157,6 +157,14 @@ export default function AgentDetailPage() {
             </span>
           </div>
 
+          {/* Description */}
+          {agent.description && (
+            <div>
+              <h3 className="text-sm font-medium text-muted mb-2">{t('description')}</h3>
+              <p className="text-sm text-foreground">{agent.description}</p>
+            </div>
+          )}
+
           {/* Prompt */}
           <div>
             <h3 className="text-sm font-medium text-muted mb-2">{t('prompt')}</h3>

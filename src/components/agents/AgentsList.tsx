@@ -69,9 +69,16 @@ export default function AgentsList({ agents: agentsProp, onUpdate }: AgentsListP
                   <Link href={`/dashboard/agents/${agent.id}`} className="font-medium text-foreground hover:text-accent transition-colors">
                     {agent.name}
                   </Link>
-                  <p className="text-sm text-muted mt-1 font-mono">
-                    {truncatePrompt(agent.prompt)}
-                  </p>
+                  {agent.description && (
+                    <p className="text-sm text-muted mt-1">
+                      {truncatePrompt(agent.description)}
+                    </p>
+                  )}
+                  {!agent.description && agent.prompt && (
+                    <p className="text-sm text-muted mt-1 font-mono">
+                      {truncatePrompt(agent.prompt)}
+                    </p>
+                  )}
                   <div className="flex flex-wrap gap-2 mt-2">
                     <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${getTriggerDestinationColor(agent.triggerDestination)}`}>
                       {agent.triggerDestination}

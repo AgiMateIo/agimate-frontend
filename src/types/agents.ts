@@ -5,6 +5,7 @@ export type TriggerDestination = 'CENTRIFUGO' | 'WEBHOOK';
 export interface AgentResponse {
   id: string;
   name: string;
+  description: string | null;
   maskedKeyId: string;
   prompt: string;
   triggerDestination: TriggerDestination;
@@ -25,12 +26,14 @@ export interface AgentCreatedResponse {
 export interface AgentSummaryResponse {
   id: string;
   name: string;
+  description: string | null;
   prompt: string | null;
   enabled: boolean;
 }
 
 export interface CreateAgentRequest {
   name: string;
+  description?: string;
   prompt?: string;
   triggerDestination?: TriggerDestination;
   webhookUrl?: string | null;
@@ -40,6 +43,7 @@ export interface CreateAgentRequest {
 
 export interface UpdateAgentRequest {
   name?: string;
+  description?: string | null;
   prompt?: string;
   triggerDestination?: TriggerDestination;
   webhookUrl?: string | null;

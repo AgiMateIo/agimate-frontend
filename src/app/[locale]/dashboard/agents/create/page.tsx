@@ -22,6 +22,7 @@ export default function CreateAgentPage() {
   const teamId = searchParams.get('teamId');
 
   const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
   const [prompt, setPrompt] = useState('');
   const [triggerDestination, setTriggerDestination] = useState<TriggerDestination>('CENTRIFUGO');
   const [webhookUrl, setWebhookUrl] = useState('');
@@ -47,6 +48,7 @@ export default function CreateAgentPage() {
     handleSubmit(e, () =>
       apiService.createAgent({
         name,
+        description: description || undefined,
         prompt: prompt || undefined,
         triggerDestination,
         webhookUrl: triggerDestination === 'WEBHOOK' ? webhookUrl : null,
@@ -158,6 +160,16 @@ export default function CreateAgentPage() {
                 maxLength={100}
               />
             </div>
+          </FormField>
+
+          <FormField label={t('description')} error={getFieldError('description')}>
+            <TextArea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={t('descriptionPlaceholder')}
+              rows={2}
+              maxLength={500}
+            />
           </FormField>
 
           <FormField label="Prompt" error={getFieldError('prompt')}>

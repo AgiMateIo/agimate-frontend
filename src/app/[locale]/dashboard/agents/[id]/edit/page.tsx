@@ -26,6 +26,7 @@ export default function EditAgentPage() {
   const [dataError, setDataError] = useState<string | null>(null);
 
   const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
   const [prompt, setPrompt] = useState('');
   const [triggerDestination, setTriggerDestination] = useState<TriggerDestination>('CENTRIFUGO');
   const [webhookUrl, setWebhookUrl] = useState('');
@@ -43,6 +44,7 @@ export default function EditAgentPage() {
       const agentData = await apiService.getAgent(agentId);
       setAgent(agentData);
       setName(agentData.name);
+      setDescription(agentData.description ?? '');
       setPrompt(agentData.prompt);
       setTriggerDestination(agentData.triggerDestination);
       setWebhookUrl(agentData.webhookUrl ?? '');
@@ -75,6 +77,7 @@ export default function EditAgentPage() {
     handleSubmit(e, () =>
       apiService.updateAgent(agentId, {
         name,
+        description: description || null,
         prompt,
         triggerDestination,
         webhookUrl: triggerDestination === 'WEBHOOK' ? webhookUrl : null,
@@ -206,6 +209,16 @@ export default function EditAgentPage() {
             </div>
           </FormField>
 
+          <FormField label={t('description')} error={getFieldError('description')}>
+            <TextArea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={t('descriptionPlaceholder')}
+              rows={2}
+              maxLength={500}
+            />
+          </FormField>
+
           <FormField label="Prompt" error={getFieldError('prompt')}>
             <TextArea
               value={prompt}
@@ -213,15 +226,6 @@ export default function EditAgentPage() {
               placeholder="Enter instructions for the agent..."
               rows={6}
             />
-          </FormField>
-
-          <FormField label={t('skills')}>
-            <select
-              disabled
-              className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-muted opacity-60 cursor-not-allowed"
-            >
-              <option value="">{t('skillsPlaceholder')}</option>
-            </select>
           </FormField>
 
           <FormField label="Trigger Destination" required error={getFieldError('triggerDestination')}>

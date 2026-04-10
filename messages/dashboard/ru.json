@@ -240,6 +240,8 @@
     "triggerCount": "{count, plural, one {# триггер} few {# триггера} many {# триггеров} other {# триггеров}}",
     "toolCount": "{count, plural, one {# инструмент} few {# инструмента} many {# инструментов} other {# инструментов}}",
     "allTriggers": "Все триггеры",
+    "description": "Описание",
+    "descriptionPlaceholder": "Введите описание агента",
     "nameLabel": "Имя",
     "namePlaceholder": "Введите имя агента",
     "backToAgents": "Назад к агентам",
