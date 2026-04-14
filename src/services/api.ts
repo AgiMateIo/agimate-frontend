@@ -52,6 +52,7 @@ import type {
   AgentSkillResponse,
   CreateAgentSkillRequest,
   PolicyDiffResponse,
+  CentrifugoTokenResponse,
 } from '@/types';
 
 const SERVICE_UNAVAILABLE_MESSAGE = 'SERVICE_UNAVAILABLE';
@@ -619,6 +620,12 @@ class ApiService {
 
   async createTaskComment(taskPubId: string, data: CreateCommentRequest): Promise<BoardTaskComment> {
     return this.post<BoardTaskComment>(`${API.ENDPOINTS.DEVICE_API}/manage/boards/tasks/${taskPubId}/comments/`, data);
+  }
+
+  // ========== CENTRIFUGO ==========
+
+  async getCentrifugoToken(): Promise<CentrifugoTokenResponse> {
+    return this.post<CentrifugoTokenResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/centrifugo/token`, {});
   }
 
   // ========== PLATFORM INTEGRATIONS ==========

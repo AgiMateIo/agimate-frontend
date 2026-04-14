@@ -9,7 +9,10 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  closestCorners,
+  pointerWithin,
+  rectIntersection,
+  getFirstCollision,
+  type CollisionDetection,
 } from '@dnd-kit/core';
 import type { BoardTask, TaskStatus } from '@/types';
 import { TASK_STATUSES } from '@/types';
@@ -22,6 +25,7 @@ interface KanbanBoardProps {
   onTaskMove: (taskPubId: string, from: TaskStatus, to: TaskStatus) => void;
   onTaskClick: (taskPubId: string) => void;
   onAddTask: (status: TaskStatus) => void;
+  highlightedIds?: Set<string>;
 }
 
 export default function KanbanBoard({
@@ -30,12 +34,35 @@ export default function KanbanBoard({
   onTaskMove,
   onTaskClick,
   onAddTask,
+  highlightedIds,
 }: KanbanBoardProps) {
   const [activeTask, setActiveTask] = useState<BoardTask | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
+
+  // Multi-container kanban collision: prefer pointer-within, fall back to
+  // rectangle intersection. closestCorners misbehaves for middle columns —
+  // near column boundaries it often resolves to the neighbouring column's
+  // corner, making drops into IN_PROGRESS/REVIEW unreliable.
+  const collisionDetection: CollisionDetection = useCallback((args) => {
+    const pointerCollisions = pointerWithin(args);
+    if (pointerCollisions.length > 0) {
+      const columnHit = pointerCollisions.find((c) =>
+        TASK_STATUSES.includes(c.id as TaskStatus)
+      );
+      return columnHit ? [columnHit] : [getFirstCollision(pointerCollisions)!];
+    }
+    const rectCollisions = rectIntersection(args);
+    if (rectCollisions.length > 0) {
+      const columnHit = rectCollisions.find((c) =>
+        TASK_STATUSES.includes(c.id as TaskStatus)
+      );
+      return columnHit ? [columnHit] : [getFirstCollision(rectCollisions)!];
+    }
+    return [];
+  }, []);
 
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
@@ -89,7 +116,7 @@ export default function KanbanBoard({
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={collisionDetection}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
@@ -103,6 +130,7 @@ export default function KanbanBoard({
               agentMap={agentMap}
               onTaskClick={onTaskClick}
               onAddTask={onAddTask}
+              highlightedIds={highlightedIds}
             />
           ))}
         </div>

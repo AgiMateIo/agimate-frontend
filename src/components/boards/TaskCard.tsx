@@ -11,6 +11,7 @@ interface TaskCardProps {
   agentMap: Map<string, string>;
   onClick?: () => void;
   isDragOverlay?: boolean;
+  highlighted?: boolean;
 }
 
 const TYPE_BADGE: Record<string, string> = {
@@ -19,7 +20,13 @@ const TYPE_BADGE: Record<string, string> = {
   SUBTASK: 'bg-surface-secondary text-muted',
 };
 
-export default function TaskCard({ task, agentMap, onClick, isDragOverlay = false }: TaskCardProps) {
+export default function TaskCard({
+  task,
+  agentMap,
+  onClick,
+  isDragOverlay = false,
+  highlighted = false,
+}: TaskCardProps) {
   const t = useTranslations('Board');
 
   const {
@@ -31,12 +38,17 @@ export default function TaskCard({ task, agentMap, onClick, isDragOverlay = fals
     isDragging,
   } = useSortable({ id: task.pubId, disabled: isDragOverlay });
 
-  const style = isDragOverlay
+  const style: React.CSSProperties | undefined = isDragOverlay
     ? undefined
     : {
         transform: CSS.Transform.toString(transform),
         transition,
         opacity: isDragging ? 0.4 : 1,
+        // Per-card view-transition-name lets VT treat each card as a stable
+        // element; on setColumns the moving card morphs from its old slot
+        // to the new one (true flight), while siblings glide to their new
+        // positions instead of a muddy root cross-fade.
+        viewTransitionName: `task-${task.pubId.replace(/-/g, '_')}`,
       };
 
   const assigneeName = task.assigneeAgentPubId
@@ -46,13 +58,15 @@ export default function TaskCard({ task, agentMap, onClick, isDragOverlay = fals
   return (
     <div
       ref={isDragOverlay ? undefined : setNodeRef}
+      data-task-pubid={isDragOverlay ? undefined : task.pubId}
       style={style}
       {...(isDragOverlay ? {} : attributes)}
       {...(isDragOverlay ? {} : listeners)}
       onClick={onClick}
       className={`bg-surface rounded-lg p-3 border border-border cursor-pointer
         hover:border-accent/40 transition-colors space-y-2 select-none
-        ${isDragOverlay ? 'shadow-lg ring-2 ring-accent/30 rotate-2' : ''}`}
+        ${isDragOverlay ? 'shadow-lg ring-2 ring-accent/30 rotate-2' : ''}
+        ${highlighted && !isDragOverlay && !isDragging ? 'animate-task-arrive' : ''}`}
     >
       <span className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase ${TYPE_BADGE[task.type] ?? ''}`}>
         {t(`type.${task.type}`)}

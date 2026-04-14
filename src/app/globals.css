@@ -108,3 +108,30 @@ body {
 .animate-agent-activate-delay-2 {
   animation: agent-activate 6s ease-in-out infinite 4s;
 }
+
+/* Kanban card arrival animation — triggered when a card appears in a column
+   due to a realtime event or remote status change. */
+@keyframes task-arrive {
+  0%   { opacity: 0; transform: translateY(-10px); box-shadow: 0 0 0 2px var(--accent); }
+  40%  { opacity: 1; transform: translateY(0);     box-shadow: 0 0 0 2px var(--accent); }
+  100% { opacity: 1; transform: translateY(0);     box-shadow: 0 0 0 0 transparent; }
+}
+
+.animate-task-arrive {
+  animation: task-arrive 900ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+/* View Transition tuning for kanban card flight.
+   Every task card carries a unique view-transition-name (task-<id>), so VT
+   groups match up per-card between old and new snapshots. The `::...group`
+   rule animates position/size (the actual flight trajectory). The
+   `::...old/new` crossfade is kept brief so the moving card reads as a
+   single element gliding rather than two overlapping snapshots. */
+::view-transition-group(*) {
+  animation-duration: 520ms;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+::view-transition-old(*),
+::view-transition-new(*) {
+  animation-duration: 120ms;
+}

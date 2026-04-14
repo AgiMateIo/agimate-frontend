@@ -13,6 +13,7 @@ interface KanbanColumnProps {
   agentMap: Map<string, string>;
   onTaskClick: (taskPubId: string) => void;
   onAddTask: (status: TaskStatus) => void;
+  highlightedIds?: Set<string>;
 }
 
 const STATUS_COLORS: Record<TaskStatus, string> = {
@@ -28,6 +29,7 @@ export default function KanbanColumn({
   agentMap,
   onTaskClick,
   onAddTask,
+  highlightedIds,
 }: KanbanColumnProps) {
   const t = useTranslations('Board');
 
@@ -67,6 +69,7 @@ export default function KanbanColumn({
               task={task}
               agentMap={agentMap}
               onClick={() => onTaskClick(task.pubId)}
+              highlighted={highlightedIds?.has(task.pubId)}
             />
           ))}
         </div>

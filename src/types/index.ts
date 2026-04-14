@@ -16,3 +16,4 @@ export * from './boards';
 export * from './agent-policies';
 export * from './agent-skills';
 export * from './skills';
+export * from './centrifugo';

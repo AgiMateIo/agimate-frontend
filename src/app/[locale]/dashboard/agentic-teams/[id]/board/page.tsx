@@ -8,12 +8,22 @@ import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import apiService from '@/services/api';
-import type { Board, BoardTask, TasksByStatus, TaskStatus, AgentResponse } from '@/types';
+import type {
+  Board,
+  BoardTask,
+  TasksByStatus,
+  TaskStatus,
+  AgentResponse,
+  BoardTaskCreatedPayload,
+  BoardTaskStatusChangedPayload,
+} from '@/types';
 import { TASK_STATUSES } from '@/types';
 import KanbanBoard from '@/components/boards/KanbanBoard';
 import BoardEmptyState from '@/components/boards/BoardEmptyState';
 import TaskSlideOver from '@/components/boards/TaskSlideOver';
 import CreateTaskModal from '@/components/boards/CreateTaskModal';
+import { useBoardSubscription } from '@/realtime/useBoardSubscription';
+import { animateCardMove } from '@/utils/animateCardMove';
 
 function buildAgentMap(agents: AgentResponse[]): Map<string, string> {
   return new Map(agents.map((a) => [a.id, a.name]));
@@ -40,6 +50,7 @@ export default function BoardPage() {
 
   const [selectedTaskPubId, setSelectedTaskPubId] = useState<string | null>(null);
   const [showCreateTask, setShowCreateTask] = useState(false);
+  const [highlightedIds, setHighlightedIds] = useState<Set<string>>(() => new Set());
 
   const agentMap = useMemo(() => buildAgentMap(agents), [agents]);
 
@@ -100,16 +111,16 @@ export default function BoardPage() {
       const agentPubId = agents[0]?.id;
       if (!agentPubId) return;
 
-      // Optimistic update
+      // Optimistic update with inter-column animation
       const updated = { ...columns };
       updated[fromStatus] = updated[fromStatus].filter((t) => t.pubId !== taskPubId);
       updated[toStatus] = [{ ...task, status: toStatus }, ...updated[toStatus]];
-      setColumns(updated);
+      animateCardMove(taskPubId, () => setColumns(updated));
 
       try {
         await apiService.changeTaskStatus(taskPubId, { status: toStatus, agentPubId });
       } catch {
-        setColumns(snapshot); // revert on failure
+        animateCardMove(taskPubId, () => setColumns(snapshot));
       }
     },
     [columns, agents]
@@ -119,6 +130,84 @@ export default function BoardPage() {
     setShowCreateTask(false);
     fetchData();
   }, [fetchData]);
+
+  // ===== Real-time event handlers =====
+
+  const flashCard = useCallback((pubId: string) => {
+    setHighlightedIds((prev) => {
+      const next = new Set(prev);
+      next.add(pubId);
+      return next;
+    });
+    setTimeout(() => {
+      setHighlightedIds((prev) => {
+        if (!prev.has(pubId)) return prev;
+        const next = new Set(prev);
+        next.delete(pubId);
+        return next;
+      });
+    }, 1000);
+  }, []);
+
+  const handleRealtimeTaskCreated = useCallback(
+    (p: BoardTaskCreatedPayload) => {
+      setColumns((prev) => {
+        if (!prev) return prev;
+        const exists = Object.values(prev).some((tasks) =>
+          tasks.some((t) => t.pubId === p.taskPubId)
+        );
+        if (exists) return prev;
+
+        const now = new Date().toISOString();
+        const newTask: BoardTask = {
+          pubId: p.taskPubId,
+          type: p.type,
+          status: p.status,
+          title: p.title,
+          description: p.description,
+          createdByAgentPubId: p.createdByAgentPubId,
+          assigneeAgentPubId: p.assigneeAgentPubId,
+          parentTaskPubId: p.parentTaskPubId,
+          createdAt: now,
+          updatedAt: now,
+        };
+        return { ...prev, [p.status]: [newTask, ...prev[p.status]] };
+      });
+      flashCard(p.taskPubId);
+    },
+    [flashCard]
+  );
+
+  const handleRealtimeStatusChanged = useCallback(
+    (p: BoardTaskStatusChangedPayload) => {
+      if (!columns) return;
+      if (p.oldStatus === p.newStatus) return;
+      if (columns[p.newStatus].some((t) => t.pubId === p.taskPubId)) return;
+
+      let task: BoardTask | undefined;
+      for (const status of TASK_STATUSES) {
+        const found = columns[status].find((t) => t.pubId === p.taskPubId);
+        if (found) {
+          task = found;
+          break;
+        }
+      }
+      if (!task) return;
+
+      const next = {} as Record<TaskStatus, BoardTask[]>;
+      for (const s of TASK_STATUSES) {
+        next[s] = columns[s].filter((t) => t.pubId !== p.taskPubId);
+      }
+      next[p.newStatus] = [{ ...task, status: p.newStatus }, ...next[p.newStatus]];
+      animateCardMove(p.taskPubId, () => setColumns(next));
+    },
+    [columns]
+  );
+
+  useBoardSubscription(board?.pubId ?? null, {
+    onTaskCreated: handleRealtimeTaskCreated,
+    onTaskStatusChanged: handleRealtimeStatusChanged,
+  });
 
   // Find the selected task from columns
   const selectedTask = useMemo(() => {
@@ -185,6 +274,7 @@ export default function BoardPage() {
           onTaskMove={handleTaskMove}
           onTaskClick={setSelectedTaskPubId}
           onAddTask={() => setShowCreateTask(true)}
+          highlightedIds={highlightedIds}
         />
       )}
 

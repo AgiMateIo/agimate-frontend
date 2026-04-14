@@ -53,6 +53,8 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     } catch (err) {
       console.error('Logout error:', err);
     } finally {
+      const { disconnectCentrifuge } = await import('@/realtime/centrifugoClient');
+      disconnectCentrifuge();
       setUser(null);
       setError(null);
     }
