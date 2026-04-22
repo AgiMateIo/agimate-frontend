@@ -14,11 +14,9 @@ import AgentsList from '@/components/agents/AgentsList';
 
 function TeamAgentsContent({
   dataPromise,
-  onUpdate,
   teamId,
 }: {
   dataPromise: Promise<[PagedResponse<AgentResponse>, AgenticTeam]>;
-  onUpdate: () => void;
   teamId: string;
 }) {
   const t = useTranslations('AgenticTeams');
@@ -39,10 +37,7 @@ function TeamAgentsContent({
         </Link>
       </div>
 
-      <AgentsList
-        agents={agents}
-        onUpdate={onUpdate}
-      />
+      <AgentsList agents={agents} />
     </div>
   );
 }
@@ -52,7 +47,7 @@ export default function TeamAgentsPage() {
   const params = useParams();
   const teamId = params.id as string;
 
-  const { promise, invalidate } = usePromiseCache(
+  const { promise } = usePromiseCache(
     () => Promise.all([
       apiService.getAgentsList({ agenticTeamPubId: teamId }),
       apiService.getAgenticTeam(teamId),
@@ -70,7 +65,7 @@ export default function TeamAgentsPage() {
 
       <ErrorBoundary>
         <Suspense fallback={<div className="text-center py-12 text-muted">{t('loadingAgents')}</div>}>
-          <TeamAgentsContent dataPromise={promise} onUpdate={invalidate} teamId={teamId} />
+          <TeamAgentsContent dataPromise={promise} teamId={teamId} />
         </Suspense>
       </ErrorBoundary>
     </div>

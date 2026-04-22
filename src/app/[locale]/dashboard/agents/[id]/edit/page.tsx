@@ -14,6 +14,7 @@ import { Alert } from '@/components/ui/Alert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { useClipboard } from '@/hooks/useClipboard';
 import { getAgentAvatarUrl } from '@/utils/avatar';
+import DeleteAgentModal from '@/components/agents/DeleteAgentModal';
 
 export default function EditAgentPage() {
   const t = useTranslations('Agents');
@@ -37,6 +38,8 @@ export default function EditAgentPage() {
   const [regenerating, setRegenerating] = useState(false);
   const [regenerateError, setRegenerateError] = useState<string | null>(null);
   const { copied, copy } = useClipboard();
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -298,8 +301,26 @@ export default function EditAgentPage() {
               {t('save')}
             </Button>
           </div>
+
+          <div className="flex justify-end pt-4 border-t border-border">
+            <button
+              type="button"
+              onClick={() => setShowDeleteModal(true)}
+              className="px-4 py-2 rounded-lg font-medium text-sm border border-error text-error hover:bg-error/10 transition-colors"
+            >
+              {t('deleteAgentTitle')}
+            </button>
+          </div>
         </form>
       </div>
+
+      {showDeleteModal && (
+        <DeleteAgentModal
+          agent={agent}
+          onClose={() => setShowDeleteModal(false)}
+          onSuccess={() => router.push('/dashboard/agents')}
+        />
+      )}
     </div>
   );
 }

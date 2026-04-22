@@ -11,10 +11,8 @@ import AgentsList from '@/components/agents/AgentsList';
 
 function AgentsContent({
   dataPromise,
-  onUpdate,
 }: {
   dataPromise: Promise<PagedResponse<AgentResponse>>;
-  onUpdate: () => void;
 }) {
   const t = useTranslations('Agents');
   const { content: agents } = use(dataPromise);
@@ -31,17 +29,14 @@ function AgentsContent({
         </Link>
       </div>
 
-      <AgentsList
-        agents={agents}
-        onUpdate={onUpdate}
-      />
+      <AgentsList agents={agents} />
     </div>
   );
 }
 
 export default function AgentsPage() {
   const t = useTranslations('Agents');
-  const { promise, invalidate } = usePromiseCache(
+  const { promise } = usePromiseCache(
     () => apiService.getAgentsList(),
     [],
     'agents'
@@ -58,7 +53,7 @@ export default function AgentsPage() {
       {/* Agents Section */}
       <ErrorBoundary>
         <Suspense fallback={<div className="text-center py-12 text-muted">{t('loadingAgents')}</div>}>
-          <AgentsContent dataPromise={promise} onUpdate={invalidate} />
+          <AgentsContent dataPromise={promise} />
         </Suspense>
       </ErrorBoundary>
     </div>
