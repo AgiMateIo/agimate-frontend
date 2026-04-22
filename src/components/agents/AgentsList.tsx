@@ -25,17 +25,6 @@ export default function AgentsList({ agents: agentsProp, onUpdate }: AgentsListP
     return prompt.length > maxLength ? prompt.slice(0, maxLength) + '...' : prompt;
   };
 
-  const getTriggerDestinationColor = (dest: string) => {
-    switch (dest) {
-      case 'CENTRIFUGO':
-        return 'bg-accent/10 text-accent';
-      case 'WEBHOOK':
-        return 'bg-success/10 text-success';
-      default:
-        return 'bg-muted/10 text-muted';
-    }
-  };
-
   const handleDeleteSuccess = (agentId: string) => {
     setAgents((prev) => prev.filter((a) => a.id !== agentId));
     setDeletingAgent(null);
@@ -80,9 +69,6 @@ export default function AgentsList({ agents: agentsProp, onUpdate }: AgentsListP
                     </p>
                   )}
                   <div className="flex flex-wrap gap-2 mt-2">
-                    <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${getTriggerDestinationColor(agent.triggerDestination)}`}>
-                      {agent.triggerDestination}
-                    </span>
                     {agent.triggerDestination === 'WEBHOOK' && agent.webhookUrl && (
                       <span className="inline-block bg-surface border border-border rounded px-2 py-0.5 text-xs text-muted font-mono truncate max-w-[200px]" title={agent.webhookUrl}>
                         {agent.webhookUrl}
@@ -94,6 +80,16 @@ export default function AgentsList({ agents: agentsProp, onUpdate }: AgentsListP
                         Auth
                       </span>
                     )}
+                    {agent.skills.map((skill) => (
+                      <Link
+                        key={skill.pubId}
+                        href={`/dashboard/skills/${skill.pubId}`}
+                        className="inline-block rounded px-2 py-0.5 text-xs font-medium bg-surface border border-border text-foreground hover:border-accent hover:text-accent transition-colors"
+                        title={skill.name}
+                      >
+                        {skill.name}
+                      </Link>
+                    ))}
                   </div>
                 </div>
               </div>

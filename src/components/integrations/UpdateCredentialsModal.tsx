@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { IntegrationResponse, IntegrationPlatformInfo } from '@/types';
+import { IntegrationResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input } from '@/components/ui/FormField';
@@ -13,14 +13,14 @@ import { useAsyncForm } from '@/hooks/useAsyncForm';
 
 interface UpdateCredentialsModalProps {
   integration: IntegrationResponse;
-  platform: IntegrationPlatformInfo;
+  credentialFields: string[];
   onClose: () => void;
   onSuccess: (integration: IntegrationResponse) => void;
 }
 
 export default function UpdateCredentialsModal({
   integration,
-  platform,
+  credentialFields,
   onClose,
   onSuccess,
 }: UpdateCredentialsModalProps) {
@@ -36,11 +36,11 @@ export default function UpdateCredentialsModal({
     setCredentials(prev => ({ ...prev, [fieldName]: value }));
   };
 
-  const allFieldsFilled = platform.credentialFields.every(field => credentials[field]?.trim());
+  const allFieldsFilled = credentialFields.every(field => credentials[field]?.trim());
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
-      apiService.updateIntegrationCredentials(integration.id, { credentials })
+      apiService.updateIntegrationSecret(integration.id, { credentials })
     );
 
   return (
@@ -50,7 +50,7 @@ export default function UpdateCredentialsModal({
           {t('updateCredentialsWarning')}
         </Alert>
 
-        {platform.credentialFields.map(fieldName => (
+        {credentialFields.map(fieldName => (
           <FormField
             key={fieldName}
             label={fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}

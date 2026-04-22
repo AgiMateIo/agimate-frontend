@@ -2,19 +2,22 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { AgentSummaryResponse, PagedResponse } from '@/types';
 import { Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/Button';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import DeleteAgentSkillModal from '@/components/agents/DeleteAgentSkillModal';
+import AddSkillAgentModal from './AddSkillAgentModal';
 
 interface SkillAgentsTabProps {
   skillId: string;
+  skillName: string;
 }
 
-export default function SkillAgentsTab({ skillId }: SkillAgentsTabProps) {
+export default function SkillAgentsTab({ skillId, skillName }: SkillAgentsTabProps) {
   const t = useTranslations('SkillAgents');
 
   const [data, setData] = useState<PagedResponse<AgentSummaryResponse> | null>(null);
@@ -24,6 +27,9 @@ export default function SkillAgentsTab({ skillId }: SkillAgentsTabProps) {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const debouncedSearch = useDebouncedValue(search, 300);
+
+  const [deletingAgent, setDeletingAgent] = useState<AgentSummaryResponse | null>(null);
+  const [showAdd, setShowAdd] = useState(false);
 
   const fetchAgents = useCallback(async () => {
     setLoading(true);
@@ -53,6 +59,10 @@ export default function SkillAgentsTab({ skillId }: SkillAgentsTabProps) {
         <div className="text-sm text-muted">
           {data ? t('total', { count: data.totalElements }) : t('loading')}
         </div>
+        <Button onClick={() => setShowAdd(true)} className="flex items-center gap-2">
+          <PlusIcon className="h-4 w-4" />
+          {t('addAgent')}
+        </Button>
       </div>
 
       {/* Search */}
@@ -92,11 +102,12 @@ export default function SkillAgentsTab({ skillId }: SkillAgentsTabProps) {
                     {t('name')}
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted">
-                    {t('prompt')}
+                    {t('description')}
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted">
                     {t('status')}
                   </th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-muted"></th>
                 </tr>
               </thead>
               <tbody>
@@ -115,7 +126,7 @@ export default function SkillAgentsTab({ skillId }: SkillAgentsTabProps) {
                     </td>
                     <td className="py-3 px-4 text-sm text-muted max-w-md">
                       <span className="line-clamp-2">
-                        {agent.prompt || <span className="text-muted/60">—</span>}
+                        {agent.description || <span className="text-muted/60">—</span>}
                       </span>
                     </td>
                     <td className="py-3 px-4">
@@ -128,6 +139,15 @@ export default function SkillAgentsTab({ skillId }: SkillAgentsTabProps) {
                       >
                         {agent.enabled ? t('enabled') : t('disabled')}
                       </span>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <button
+                        onClick={() => setDeletingAgent(agent)}
+                        className="p-1.5 rounded-lg text-muted hover:text-error hover:bg-error/10 transition-colors"
+                        title={t('removeSkill')}
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -160,6 +180,30 @@ export default function SkillAgentsTab({ skillId }: SkillAgentsTabProps) {
             </div>
           )}
         </>
+      )}
+
+      {deletingAgent && (
+        <DeleteAgentSkillModal
+          agentPubId={deletingAgent.id}
+          skillPubId={skillId}
+          skillName={skillName}
+          onClose={() => setDeletingAgent(null)}
+          onSuccess={() => {
+            setDeletingAgent(null);
+            fetchAgents();
+          }}
+        />
+      )}
+
+      {showAdd && (
+        <AddSkillAgentModal
+          skillId={skillId}
+          onClose={() => setShowAdd(false)}
+          onSuccess={() => {
+            setShowAdd(false);
+            fetchAgents();
+          }}
+        />
       )}
     </div>
   );

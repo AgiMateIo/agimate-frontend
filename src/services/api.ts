@@ -22,7 +22,6 @@ import type {
   AgenticTeam,
   CreateAgenticTeamRequest,
   UpdateAgenticTeamRequest,
-  IntegrationPlatformInfo,
   IntegrationResponse,
   CreateIntegrationRequest,
   UpdateIntegrationRequest,
@@ -391,9 +390,10 @@ class ApiService {
   }
 
   // Agents
-  async getAgentsList(params?: { agenticTeamPubId?: string; page?: number; size?: number }): Promise<PagedResponse<AgentResponse>> {
+  async getAgentsList(params?: { agenticTeamPubId?: string; search?: string; page?: number; size?: number }): Promise<PagedResponse<AgentResponse>> {
     const query = new URLSearchParams();
     if (params?.agenticTeamPubId) query.set('agenticTeamPubId', params.agenticTeamPubId);
+    if (params?.search) query.set('search', params.search);
     query.set('page', String(params?.page ?? 0));
     query.set('size', String(params?.size ?? 20));
     return this.get<PagedResponse<AgentResponse>>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/?${query}`);
@@ -525,6 +525,19 @@ class ApiService {
     return this.get<DeviceTriggerInfo[]>(`${API.ENDPOINTS.DEVICE_API}/manage/app-triggers/${appPubId}`);
   }
 
+  // Integration resources
+  async getIntegrationTools(connectorCode: string): Promise<DeviceToolInfo[]> {
+    return this.get<DeviceToolInfo[]>(
+      `${API.ENDPOINTS.DEVICE_API}/manage/integrations/tools/?connectorCode=${encodeURIComponent(connectorCode)}`
+    );
+  }
+
+  async getIntegrationTriggers(connectorCode: string): Promise<DeviceTriggerInfo[]> {
+    return this.get<DeviceTriggerInfo[]>(
+      `${API.ENDPOINTS.DEVICE_API}/manage/integrations/triggers/?connectorCode=${encodeURIComponent(connectorCode)}`
+    );
+  }
+
   // Tool Use Logs (paginated)
   async getToolUseLogs(params?: { agentPubId?: string; page?: number; size?: number }): Promise<PagedResponse<ToolUseLogResponse>> {
     const searchParams = new URLSearchParams();
@@ -628,34 +641,31 @@ class ApiService {
     return this.post<CentrifugoTokenResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/centrifugo/token`, {});
   }
 
-  // ========== PLATFORM INTEGRATIONS ==========
+  // ========== INTEGRATION CREDENTIALS ==========
 
-  async getPlatforms(): Promise<IntegrationPlatformInfo[]> {
-    return this.get<IntegrationPlatformInfo[]>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/platforms/`);
+  async getIntegrationCredentials(connectorCode?: string): Promise<IntegrationResponse[]> {
+    const q = connectorCode ? `?connectorCode=${encodeURIComponent(connectorCode)}` : '';
+    return this.get<IntegrationResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/credentials/${q}`);
   }
 
-  async getIntegrations(): Promise<IntegrationResponse[]> {
-    return this.get<IntegrationResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/`);
-  }
-
-  async getIntegration(id: string): Promise<IntegrationResponse> {
-    return this.get<IntegrationResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/${id}`);
+  async getIntegrationCredential(id: string): Promise<IntegrationResponse> {
+    return this.get<IntegrationResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/credentials/${id}`);
   }
 
   async createIntegration(data: CreateIntegrationRequest): Promise<IntegrationResponse> {
-    return this.post<IntegrationResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/`, data);
+    return this.post<IntegrationResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/credentials/`, data);
   }
 
   async updateIntegration(id: string, data: UpdateIntegrationRequest): Promise<IntegrationResponse> {
-    return this.patch<IntegrationResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/${id}`, data);
+    return this.patch<IntegrationResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/credentials/${id}/`, data);
   }
 
-  async updateIntegrationCredentials(id: string, data: UpdateIntegrationCredentialsRequest): Promise<IntegrationResponse> {
-    return this.put<IntegrationResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/${id}/credentials`, data);
+  async updateIntegrationSecret(id: string, data: UpdateIntegrationCredentialsRequest): Promise<IntegrationResponse> {
+    return this.put<IntegrationResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/credentials/${id}/secret`, data);
   }
 
   async deleteIntegration(id: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/${id}`);
+    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/credentials/${id}`);
   }
 
   // ========== SKILLS ==========
@@ -805,6 +815,10 @@ class ApiService {
     return this.get<PagedResponse<ConnectorCatalogEntry>>(
       `${API.ENDPOINTS.DEVICE_API}/manage/connectors/?${q}`
     );
+  }
+
+  async getConnector(code: string): Promise<ConnectorCatalogEntry> {
+    return this.get<ConnectorCatalogEntry>(`${API.ENDPOINTS.DEVICE_API}/manage/connectors/${encodeURIComponent(code)}`);
   }
 
   // ========== PUBLIC (UNAUTHENTICATED) METHODS ==========

@@ -3,7 +3,7 @@
 import { useState, Suspense, use } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { IntegrationPlatformInfo, IntegrationResponse } from '@/types';
+import { ConnectorCatalogEntry, IntegrationResponse } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { usePromiseCache } from '@/hooks/usePromiseCache';
@@ -14,7 +14,7 @@ function IntegrationsContent({
   dataPromise,
   onUpdate,
 }: {
-  dataPromise: Promise<[IntegrationPlatformInfo[], IntegrationResponse[]]>;
+  dataPromise: Promise<[ConnectorCatalogEntry[], IntegrationResponse[]]>;
   onUpdate: () => void;
 }) {
   const t = useTranslations('Integrations');
@@ -67,8 +67,8 @@ export default function IntegrationsPage() {
   const t = useTranslations('Integrations');
   const { promise, invalidate } = usePromiseCache(
     () => Promise.all([
-      apiService.getPlatforms(),
-      apiService.getIntegrations(),
+      apiService.getConnectors({ type: 'INTEGRATION', size: 200 }).then(r => r.content),
+      apiService.getIntegrationCredentials(),
     ]),
     [],
     'integrations'

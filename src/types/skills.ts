@@ -56,9 +56,15 @@ export interface SkillConnectorRequest {
 
 export type ConnectorType = 'APP' | 'INTEGRATION' | 'INTERNAL_SERVICE' | 'LOOPBACK';
 
+export interface IntegrationMeta {
+  credentialFields: string[];
+  supportsWebhooks: boolean;
+}
+
 export interface ConnectorCatalogEntry {
   code: string;
   type: ConnectorType;
   name: string;
   description: string | null;
+  integrationMeta: IntegrationMeta | null;
 }

@@ -12,12 +12,14 @@ import { useAsyncForm } from '@/hooks/useAsyncForm';
 
 interface EditIntegrationModalProps {
   integration: IntegrationResponse;
+  connectorName: string;
   onClose: () => void;
   onSuccess: (integration: IntegrationResponse) => void;
 }
 
 export default function EditIntegrationModal({
   integration,
+  connectorName,
   onClose,
   onSuccess,
 }: EditIntegrationModalProps) {
@@ -42,7 +44,7 @@ export default function EditIntegrationModal({
         <FormField label={t('platformName')}>
           <Input
             type="text"
-            value={integration.platformName}
+            value={connectorName}
             disabled
           />
         </FormField>

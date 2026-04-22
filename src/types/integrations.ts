@@ -1,18 +1,8 @@
-export interface IntegrationPlatformInfo {
-  code: string;
-  name: string;
-  credentialFields: string[];
-  supportsWebhooks: boolean;
-}
-
 export interface IntegrationResponse {
   id: string;
-  platformType: string;
-  platformCode: string;
-  platformName: string;
+  connectorCode: string;
   platformIdentifier: string;
   name: string;
-  connectorCode: string;
   enabled: boolean;
   lastUsedAt: string | null;
   createdAt: string;

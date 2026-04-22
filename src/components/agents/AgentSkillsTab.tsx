@@ -213,7 +213,8 @@ export default function AgentSkillsTab({ agentPubId }: AgentSkillsTabProps) {
       {deletingBinding && (
         <DeleteAgentSkillModal
           agentPubId={agentPubId}
-          binding={deletingBinding}
+          skillPubId={deletingBinding.skillPubId}
+          skillName={deletingBinding.skillName}
           onClose={() => setDeletingBinding(null)}
           onSuccess={handleMutationSuccess}
         />

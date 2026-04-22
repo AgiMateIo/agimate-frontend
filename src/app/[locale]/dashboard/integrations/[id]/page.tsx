@@ -7,7 +7,7 @@ import { useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { localeMap } from '@/i18n/routing';
 import apiService from '@/services/api';
-import type { IntegrationResponse, IntegrationPlatformInfo } from '@/types';
+import type { IntegrationResponse, ConnectorCatalogEntry } from '@/types';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { usePromiseCache } from '@/hooks/usePromiseCache';
 import { Toggle } from '@/components/ui/Toggle';
@@ -24,7 +24,7 @@ function IntegrationDetailContent({
   dataPromise,
   onUpdate,
 }: {
-  dataPromise: Promise<[IntegrationResponse, IntegrationPlatformInfo[]]>;
+  dataPromise: Promise<[IntegrationResponse, ConnectorCatalogEntry]>;
   onUpdate: () => void;
 }) {
   const t = useTranslations('IntegrationDetail');
@@ -33,7 +33,7 @@ function IntegrationDetailContent({
   const bcp47Locale = localeMap[locale];
   const router = useRouter();
 
-  const [initialIntegration, platforms] = use(dataPromise);
+  const [initialIntegration, connector] = use(dataPromise);
   const [integration, setIntegration] = useState(initialIntegration);
   const [lastInitial, setLastInitial] = useState(initialIntegration);
   const [activeTab, setActiveTab] = useState<Tab>('info');
@@ -46,8 +46,6 @@ function IntegrationDetailContent({
     setLastInitial(initialIntegration);
     setIntegration(initialIntegration);
   }
-
-  const platform = platforms.find(p => p.code === integration.platformCode);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString.replace(' ', 'T'));
@@ -104,7 +102,7 @@ function IntegrationDetailContent({
               {integration.name || integration.platformIdentifier}
             </h1>
             <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-accent/10 text-accent">
-              {integration.platformName}
+              {connector.name}
             </span>
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -129,7 +127,7 @@ function IntegrationDetailContent({
             onChange={handleToggleEnabled}
             disabled={updating}
           />
-          {platform && (
+          {connector.integrationMeta && (
             <button
               onClick={() => setUpdatingCreds(true)}
               className="p-2 text-muted hover:text-foreground transition-colors rounded-lg"
@@ -179,7 +177,7 @@ function IntegrationDetailContent({
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
             <div>
               <dt className="text-sm text-muted">{t('platform')}</dt>
-              <dd className="text-foreground mt-0.5">{integration.platformName}</dd>
+              <dd className="text-foreground mt-0.5">{connector.name}</dd>
             </div>
             <div>
               <dt className="text-sm text-muted">{t('platformIdentifier')}</dt>
@@ -231,6 +229,7 @@ function IntegrationDetailContent({
       {editingIntegration && (
         <EditIntegrationModal
           integration={integration}
+          connectorName={connector.name}
           onClose={() => setEditingIntegration(false)}
           onSuccess={handleEditSuccess}
         />
@@ -244,10 +243,10 @@ function IntegrationDetailContent({
         />
       )}
 
-      {updatingCreds && platform && (
+      {updatingCreds && connector.integrationMeta && (
         <UpdateCredentialsModal
           integration={integration}
-          platform={platform}
+          credentialFields={connector.integrationMeta.credentialFields}
           onClose={() => setUpdatingCreds(false)}
           onSuccess={handleUpdateCredsSuccess}
         />
@@ -260,10 +259,10 @@ export default function IntegrationDetailPage() {
   const { id } = useParams<{ id: string }>();
   const t = useTranslations('IntegrationDetail');
   const { promise, invalidate } = usePromiseCache(
-    () => Promise.all([
-      apiService.getIntegration(id),
-      apiService.getPlatforms(),
-    ]),
+    () => apiService.getIntegrationCredential(id).then(async (integration) => {
+      const connector = await apiService.getConnector(integration.connectorCode);
+      return [integration, connector] as [IntegrationResponse, ConnectorCatalogEntry];
+    }),
     [id],
     'integration-detail'
   );

@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { localeMap } from '@/i18n/routing';
 import apiService from '@/services/api';
-import { IntegrationResponse, IntegrationPlatformInfo } from '@/types';
+import { IntegrationResponse, ConnectorCatalogEntry } from '@/types';
 import { TrashIcon, PencilIcon, KeyIcon } from '@heroicons/react/24/outline';
 import { Toggle } from '@/components/ui/Toggle';
 import DeleteIntegrationModal from './DeleteIntegrationModal';
@@ -14,7 +14,7 @@ import UpdateCredentialsModal from './UpdateCredentialsModal';
 
 interface IntegrationsListProps {
   integrations: IntegrationResponse[];
-  platforms: IntegrationPlatformInfo[];
+  platforms: ConnectorCatalogEntry[];
   onUpdate: (integrations: IntegrationResponse[]) => void;
 }
 
@@ -32,7 +32,7 @@ export default function IntegrationsList({
   const [updatingCredsIntegration, setUpdatingCredsIntegration] = useState<IntegrationResponse | null>(null);
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
 
-  const getPlatform = (code: string) => platforms.find(p => p.code === code);
+  const getConnector = (code: string) => platforms.find(p => p.code === code);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString.replace(' ', 'T'));
@@ -96,7 +96,7 @@ export default function IntegrationsList({
     <>
       <div className="space-y-3">
         {integrations.map((integration) => {
-          const platform = getPlatform(integration.platformCode);
+          const connector = getConnector(integration.connectorCode);
 
           return (
             <div
@@ -110,7 +110,7 @@ export default function IntegrationsList({
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent">
-                      {integration.platformName}
+                      {connector?.name ?? integration.connectorCode}
                     </span>
                   </div>
                   <h3 className="font-medium text-foreground mt-1">
@@ -136,7 +136,7 @@ export default function IntegrationsList({
                     disabled={updatingIds.has(integration.id)}
                   />
 
-                  {platform && (
+                  {connector?.integrationMeta && (
                     <button
                       onClick={() => setUpdatingCredsIntegration(integration)}
                       className="p-2 text-muted hover:text-foreground transition-colors rounded-lg"
@@ -169,6 +169,7 @@ export default function IntegrationsList({
       {editingIntegration && (
         <EditIntegrationModal
           integration={editingIntegration}
+          connectorName={getConnector(editingIntegration.connectorCode)?.name ?? editingIntegration.connectorCode}
           onClose={() => setEditingIntegration(null)}
           onSuccess={handleEditSuccess}
         />
@@ -182,14 +183,17 @@ export default function IntegrationsList({
         />
       )}
 
-      {updatingCredsIntegration && getPlatform(updatingCredsIntegration.platformCode) && (
-        <UpdateCredentialsModal
-          integration={updatingCredsIntegration}
-          platform={getPlatform(updatingCredsIntegration.platformCode)!}
-          onClose={() => setUpdatingCredsIntegration(null)}
-          onSuccess={handleUpdateCredsSuccess}
-        />
-      )}
+      {updatingCredsIntegration && (() => {
+        const connector = getConnector(updatingCredsIntegration.connectorCode);
+        return connector?.integrationMeta ? (
+          <UpdateCredentialsModal
+            integration={updatingCredsIntegration}
+            credentialFields={connector.integrationMeta.credentialFields}
+            onClose={() => setUpdatingCredsIntegration(null)}
+            onSuccess={handleUpdateCredsSuccess}
+          />
+        ) : null;
+      })()}
     </>
   );
 }

@@ -2,6 +2,11 @@
 
 export type TriggerDestination = 'CENTRIFUGO' | 'WEBHOOK';
 
+export interface AgentSkillSummary {
+  pubId: string;
+  name: string;
+}
+
 export interface AgentResponse {
   id: string;
   name: string;
@@ -15,6 +20,7 @@ export interface AgentResponse {
   agenticTeamId: string | null;
   agenticTeamName: string | null;
   createdAt: string;
+  skills: AgentSkillSummary[];
 }
 
 export interface AgentCreatedResponse {

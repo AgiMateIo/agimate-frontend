@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { IntegrationPlatformInfo, IntegrationResponse } from '@/types';
+import { ConnectorCatalogEntry, IntegrationResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input } from '@/components/ui/FormField';
@@ -11,7 +11,7 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 
 interface AddIntegrationModalProps {
-  platforms: IntegrationPlatformInfo[];
+  platforms: ConnectorCatalogEntry[];
   onClose: () => void;
   onSuccess: (integration: IntegrationResponse) => void;
 }
@@ -23,7 +23,7 @@ export default function AddIntegrationModal({
 }: AddIntegrationModalProps) {
   const t = useTranslations('Integrations');
   const [step, setStep] = useState<1 | 2>(1);
-  const [selectedPlatform, setSelectedPlatform] = useState<IntegrationPlatformInfo | null>(null);
+  const [selectedPlatform, setSelectedPlatform] = useState<ConnectorCatalogEntry | null>(null);
   const [name, setName] = useState('');
   const [credentials, setCredentials] = useState<Record<string, string>>({});
 
@@ -32,7 +32,7 @@ export default function AddIntegrationModal({
     defaultError: t('createError'),
   });
 
-  const handlePlatformSelect = (platform: IntegrationPlatformInfo) => {
+  const handlePlatformSelect = (platform: ConnectorCatalogEntry) => {
     setSelectedPlatform(platform);
     setCredentials({});
     setName('');
@@ -50,9 +50,9 @@ export default function AddIntegrationModal({
     setCredentials(prev => ({ ...prev, [fieldName]: value }));
   };
 
-  const allFieldsFilled = selectedPlatform
-    ? selectedPlatform.credentialFields.every(field => credentials[field]?.trim())
-    : false;
+  const credentialFields = selectedPlatform?.integrationMeta?.credentialFields ?? [];
+
+  const allFieldsFilled = credentialFields.every(field => credentials[field]?.trim());
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
@@ -74,7 +74,7 @@ export default function AddIntegrationModal({
         <div className="space-y-4">
           <p className="text-sm text-muted">{t('selectPlatformSubtitle')}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {platforms.map((platform) => (
+            {platforms.filter(p => p.integrationMeta).map((platform) => (
               <button
                 key={platform.code}
                 onClick={() => handlePlatformSelect(platform)}
@@ -85,6 +85,9 @@ export default function AddIntegrationModal({
                 </div>
                 <div className="min-w-0">
                   <div className="font-medium text-foreground">{platform.name}</div>
+                  {platform.description && (
+                    <p className="text-xs text-muted mt-0.5">{platform.description}</p>
+                  )}
                 </div>
               </button>
             ))}
@@ -109,7 +112,7 @@ export default function AddIntegrationModal({
             />
           </FormField>
 
-          {selectedPlatform!.credentialFields.map(fieldName => (
+          {credentialFields.map(fieldName => (
             <FormField
               key={fieldName}
               label={fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}

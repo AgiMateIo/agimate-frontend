@@ -270,7 +270,7 @@ export default function SkillDetailPage() {
 
       {activeTab === 'agents' && (
         <div className="bg-surface rounded-xl border border-border p-6">
-          <SkillAgentsTab skillId={skill.id} />
+          <SkillAgentsTab skillId={skill.id} skillName={skill.name} />
         </div>
       )}
 

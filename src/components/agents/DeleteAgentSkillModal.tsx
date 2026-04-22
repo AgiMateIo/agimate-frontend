@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { AgentSkillResponse, PolicyDiffResponse } from '@/types';
+import { PolicyDiffResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
@@ -13,12 +13,13 @@ import PolicyDiffPreview from './PolicyDiffPreview';
 
 interface DeleteAgentSkillModalProps {
   agentPubId: string;
-  binding: AgentSkillResponse;
+  skillPubId: string;
+  skillName: string | null;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export default function DeleteAgentSkillModal({ agentPubId, binding, onClose, onSuccess }: DeleteAgentSkillModalProps) {
+export default function DeleteAgentSkillModal({ agentPubId, skillPubId, skillName, onClose, onSuccess }: DeleteAgentSkillModalProps) {
   const t = useTranslations('Agents');
 
   const [diff, setDiff] = useState<PolicyDiffResponse | null>(null);
@@ -26,12 +27,12 @@ export default function DeleteAgentSkillModal({ agentPubId, binding, onClose, on
 
   useEffect(() => {
     let cancelled = false;
-    apiService.getSkillPolicyDiff(agentPubId, binding.skillPubId, 'remove')
+    apiService.getSkillPolicyDiff(agentPubId, skillPubId, 'remove')
       .then(data => { if (!cancelled) setDiff(data); })
       .catch(() => { if (!cancelled) setDiff(null); })
       .finally(() => { if (!cancelled) setDiffLoading(false); });
     return () => { cancelled = true; };
-  }, [agentPubId, binding.skillPubId]);
+  }, [agentPubId, skillPubId]);
 
   const { loading, error, handleSubmit } = useAsyncForm<void>({
     onSuccess,
@@ -40,7 +41,7 @@ export default function DeleteAgentSkillModal({ agentPubId, binding, onClose, on
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, async () => {
-      await apiService.unbindAgentSkill(agentPubId, binding.skillPubId);
+      await apiService.unbindAgentSkill(agentPubId, skillPubId);
     });
 
   return (
@@ -50,7 +51,7 @@ export default function DeleteAgentSkillModal({ agentPubId, binding, onClose, on
           {t('removeSkillConfirm')}
         </p>
         <div className="text-sm text-muted">
-          <strong>{t('skillName')}:</strong> {binding.skillName ?? binding.skillPubId}
+          <strong>{t('skillName')}:</strong> {skillName ?? skillPubId}
         </div>
 
         {/* Policy diff preview */}
