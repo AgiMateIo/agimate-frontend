@@ -44,7 +44,14 @@ export async function initCentrifuge(): Promise<Centrifuge> {
     },
   });
 
-  centrifuge.on('error', (ctx) => console.error('[centrifugo] error', ctx));
+  centrifuge.on('error', (ctx) => {
+    console.error('[centrifugo] error', {
+      type: ctx?.type,
+      code: ctx?.error?.code,
+      message: ctx?.error?.message,
+      transport: ctx?.transport,
+    });
+  });
 
   centrifuge.connect();
   return centrifuge;

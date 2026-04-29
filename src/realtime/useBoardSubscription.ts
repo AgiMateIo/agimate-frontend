@@ -52,7 +52,14 @@ export function useBoardSubscription(
           tagsFilter: { key: 'boardId', cmp: 'eq', val: boardId },
         });
 
-        sub.on('error', (ctx) => console.error('[centrifugo] subscription error', ctx));
+        sub.on('error', (ctx) => {
+          console.error('[centrifugo] subscription error', {
+            type: ctx?.type,
+            channel: ctx?.channel,
+            code: ctx?.error?.code,
+            message: ctx?.error?.message,
+          });
+        });
 
         sub.on('publication', (ctx: { data: unknown }) => {
           const data = ctx.data as { type?: string; payload?: unknown } | undefined;

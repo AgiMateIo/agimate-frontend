@@ -38,7 +38,7 @@ export default function KanbanColumn({
   const taskIds = tasks.map((task) => task.pubId);
 
   return (
-    <div className="flex flex-col w-64 shrink-0">
+    <div className="flex flex-col flex-1 min-w-64">
       <div className={`rounded-t-lg px-3 py-2 flex items-center justify-between ${STATUS_COLORS[status]}`}>
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-foreground uppercase tracking-wide">
@@ -60,7 +60,7 @@ export default function KanbanColumn({
       <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
         <div
           ref={setNodeRef}
-          className={`flex-1 overflow-y-auto rounded-b-lg border border-t-0 border-border p-2 space-y-2 min-h-32
+          className={`flex-1 rounded-b-lg border border-t-0 border-border p-2 space-y-2 min-h-32
             ${isOver ? 'bg-accent/5 border-accent/30' : 'bg-surface-secondary/50'}`}
         >
           {tasks.map((task) => (

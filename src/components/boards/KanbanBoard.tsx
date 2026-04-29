@@ -120,20 +120,18 @@ export default function KanbanBoard({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex-1 overflow-x-auto overflow-y-hidden">
-        <div className="flex h-full gap-3 px-6 pb-6 min-w-max">
-          {TASK_STATUSES.map((status) => (
-            <KanbanColumn
-              key={status}
-              status={status}
-              tasks={columns[status]}
-              agentMap={agentMap}
-              onTaskClick={onTaskClick}
-              onAddTask={onAddTask}
-              highlightedIds={highlightedIds}
-            />
-          ))}
-        </div>
+      <div className="flex-1 flex items-stretch gap-3 px-6 pb-6">
+        {TASK_STATUSES.map((status) => (
+          <KanbanColumn
+            key={status}
+            status={status}
+            tasks={columns[status]}
+            agentMap={agentMap}
+            onTaskClick={onTaskClick}
+            onAddTask={onAddTask}
+            highlightedIds={highlightedIds}
+          />
+        ))}
       </div>
 
       <DragOverlay>

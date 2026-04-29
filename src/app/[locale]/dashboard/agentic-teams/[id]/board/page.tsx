@@ -230,7 +230,7 @@ export default function BoardPage() {
   }
 
   return (
-    <div className="-mx-6 -mt-6 flex flex-col" style={{ height: 'calc(100vh - 4rem)' }}>
+    <div className="-mx-6 -mt-6 flex flex-col" style={{ minHeight: 'calc(100vh - 4rem)' }}>
       {/* Board header */}
       <div className="px-6 pt-6 pb-4 shrink-0 flex items-start justify-between">
         <div>
