@@ -52,12 +52,14 @@ export default function AgentDetailPage() {
     { key: 'tool-rules', label: t('tabToolRules') },
   ];
 
-  const getTriggerDestinationColor = (dest: string) => {
+  const getAgentTypeColor = (dest: string) => {
     switch (dest) {
       case 'CENTRIFUGO':
         return 'bg-accent/10 text-accent';
       case 'WEBHOOK':
         return 'bg-success/10 text-success';
+      case 'GENERIC':
+        return 'bg-warning/10 text-warning';
       default:
         return 'bg-muted/10 text-muted';
     }
@@ -173,14 +175,14 @@ export default function AgentDetailPage() {
             </div>
           </div>
 
-          {/* Trigger Destination */}
+          {/* Agent Type */}
           <div>
-            <h3 className="text-sm font-medium text-muted mb-2">{t('triggerDestination')}</h3>
+            <h3 className="text-sm font-medium text-muted mb-2">{t('agentType')}</h3>
             <div className="flex flex-wrap items-center gap-2">
-              <span className={`inline-block rounded px-2.5 py-1 text-xs font-medium ${getTriggerDestinationColor(agent.triggerDestination)}`}>
-                {agent.triggerDestination}
+              <span className={`inline-block rounded px-2.5 py-1 text-xs font-medium ${getAgentTypeColor(agent.type)}`}>
+                {agent.type}
               </span>
-              {agent.triggerDestination === 'WEBHOOK' && agent.webhookUrl && (
+              {agent.type === 'WEBHOOK' && agent.webhookUrl && (
                 <span className="inline-block bg-surface-secondary border border-border/50 rounded px-2.5 py-1 text-xs text-muted font-mono">
                   {agent.webhookUrl}
                 </span>

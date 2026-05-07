@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { ArrowLeftIcon, ClipboardDocumentIcon, ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
-import { AgentResponse, TriggerDestination } from '@/types';
+import { AgentResponse, AgentType } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { FormField, TextArea, Input } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
@@ -15,6 +15,7 @@ import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { useClipboard } from '@/hooks/useClipboard';
 import { getAgentAvatarUrl } from '@/utils/avatar';
 import DeleteAgentModal from '@/components/agents/DeleteAgentModal';
+import AgentTypePicker from '@/components/agents/AgentTypePicker';
 
 export default function EditAgentPage() {
   const t = useTranslations('Agents');
@@ -29,7 +30,7 @@ export default function EditAgentPage() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [prompt, setPrompt] = useState('');
-  const [triggerDestination, setTriggerDestination] = useState<TriggerDestination>('CENTRIFUGO');
+  const [agentType, setAgentType] = useState<AgentType>('CENTRIFUGO');
   const [webhookUrl, setWebhookUrl] = useState('');
   const [webhookAuthHeader, setWebhookAuthHeader] = useState('');
 
@@ -49,7 +50,7 @@ export default function EditAgentPage() {
       setName(agentData.name);
       setDescription(agentData.description ?? '');
       setPrompt(agentData.prompt);
-      setTriggerDestination(agentData.triggerDestination);
+      setAgentType(agentData.type);
       setWebhookUrl(agentData.webhookUrl ?? '');
     } catch (err) {
       setDataError(err instanceof Error ? err.message : 'Failed to load data');
@@ -82,9 +83,9 @@ export default function EditAgentPage() {
         name,
         description: description || null,
         prompt,
-        triggerDestination,
-        webhookUrl: triggerDestination === 'WEBHOOK' ? webhookUrl : null,
-        webhookAuthHeader: triggerDestination === 'WEBHOOK' && webhookAuthHeader ? webhookAuthHeader : null,
+        type: agentType,
+        webhookUrl: agentType === 'WEBHOOK' ? webhookUrl : null,
+        webhookAuthHeader: agentType === 'WEBHOOK' && webhookAuthHeader ? webhookAuthHeader : null,
       })
     );
 
@@ -100,11 +101,6 @@ export default function EditAgentPage() {
       setRegenerating(false);
     }
   };
-
-  const triggerDestinationOptions: { value: TriggerDestination; label: string; color: string }[] = [
-    { value: 'CENTRIFUGO', label: 'Centrifugo (Real-time)', color: 'text-accent' },
-    { value: 'WEBHOOK', label: 'Webhook', color: 'text-success' },
-  ];
 
   if (dataLoading) {
     return (
@@ -231,31 +227,19 @@ export default function EditAgentPage() {
             />
           </FormField>
 
-          <FormField label="Trigger Destination" required error={getFieldError('triggerDestination')}>
-            <div className="space-y-2">
-              {triggerDestinationOptions.map((option) => (
-                <label key={option.value} className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="triggerDestination"
-                    value={option.value}
-                    checked={triggerDestination === option.value}
-                    onChange={() => {
-                      setTriggerDestination(option.value);
-                      if (option.value !== 'WEBHOOK') {
-                        setWebhookUrl('');
-                        setWebhookAuthHeader('');
-                      }
-                    }}
-                    className="accent-accent"
-                  />
-                  <span className={`text-sm ${option.color}`}>{option.label}</span>
-                </label>
-              ))}
-            </div>
-          </FormField>
+          <AgentTypePicker
+            value={agentType}
+            onChange={(next) => {
+              setAgentType(next);
+              if (next !== 'WEBHOOK') {
+                setWebhookUrl('');
+                setWebhookAuthHeader('');
+              }
+            }}
+            error={getFieldError('type')}
+          />
 
-          {triggerDestination === 'WEBHOOK' && (
+          {agentType === 'WEBHOOK' && (
             <>
               <FormField label={t('webhookUrl')} required error={getFieldError('webhookUrl')} hint={t('webhookUrlHint')}>
                 <Input

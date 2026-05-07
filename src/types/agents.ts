@@ -1,6 +1,6 @@
 // Agent types
 
-export type TriggerDestination = 'CENTRIFUGO' | 'WEBHOOK';
+export type AgentType = 'CENTRIFUGO' | 'WEBHOOK' | 'GENERIC';
 
 export interface AgentSkillSummary {
   pubId: string;
@@ -13,7 +13,7 @@ export interface AgentResponse {
   description: string | null;
   maskedKeyId: string;
   prompt: string;
-  triggerDestination: TriggerDestination;
+  type: AgentType;
   webhookUrl: string | null;
   hasWebhookAuth: boolean;
   enabled: boolean;
@@ -41,7 +41,7 @@ export interface CreateAgentRequest {
   name: string;
   description?: string;
   prompt?: string;
-  triggerDestination?: TriggerDestination;
+  type?: AgentType;
   webhookUrl?: string | null;
   webhookAuthHeader?: string | null;
   agenticTeamPubId?: string | null;
@@ -51,7 +51,7 @@ export interface UpdateAgentRequest {
   name?: string;
   description?: string | null;
   prompt?: string;
-  triggerDestination?: TriggerDestination;
+  type?: AgentType;
   webhookUrl?: string | null;
   webhookAuthHeader?: string | null;
   enabled?: boolean;

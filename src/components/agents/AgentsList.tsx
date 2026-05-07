@@ -47,7 +47,7 @@ export default function AgentsList({ agents }: AgentsListProps) {
                 ) : null}
               </div>
               <div className="flex flex-wrap gap-2 mt-2">
-                {agent.triggerDestination === 'WEBHOOK' && agent.webhookUrl && (
+                {agent.type === 'WEBHOOK' && agent.webhookUrl && (
                   <span className="inline-block bg-surface border border-border rounded px-2 py-0.5 text-xs text-muted font-mono truncate max-w-[200px]" title={agent.webhookUrl}>
                     {agent.webhookUrl}
                   </span>
