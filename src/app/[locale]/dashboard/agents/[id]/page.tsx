@@ -14,8 +14,9 @@ import { formatDate } from '@/utils/date';
 import { Link } from '@/i18n/navigation';
 import AgentPoliciesTab from '@/components/agents/AgentPoliciesTab';
 import AgentSkillsTab from '@/components/agents/AgentSkillsTab';
+import AgentModelsTab from '@/components/agents/AgentModelsTab';
 
-type Tab = 'general' | 'skills' | 'trigger-rules' | 'tool-rules';
+type Tab = 'general' | 'models' | 'skills' | 'trigger-rules' | 'tool-rules';
 
 export default function AgentDetailPage() {
   const t = useTranslations('Agents');
@@ -47,6 +48,7 @@ export default function AgentDetailPage() {
 
   const tabs: { key: Tab; label: string }[] = [
     { key: 'general', label: t('tabGeneral') },
+    { key: 'models', label: t('tabModels') },
     { key: 'skills', label: t('tabSkills') },
     { key: 'trigger-rules', label: t('tabTriggerRules') },
     { key: 'tool-rules', label: t('tabToolRules') },
@@ -201,6 +203,12 @@ export default function AgentDetailPage() {
             <h3 className="text-sm font-medium text-muted mb-2">{t('createdAt')}</h3>
             <p className="text-sm text-foreground">{formatDate(agent.createdAt, locale)}</p>
           </div>
+        </div>
+      )}
+
+      {activeTab === 'models' && (
+        <div className="bg-surface rounded-xl border border-border p-6">
+          <AgentModelsTab agentPubId={agentId} />
         </div>
       )}
 

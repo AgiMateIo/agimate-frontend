@@ -52,6 +52,13 @@ import type {
   CreateAgentSkillRequest,
   PolicyDiffResponse,
   CentrifugoTokenResponse,
+  LlmProviderResponse,
+  CreateLlmProviderRequest,
+  UpdateLlmProviderRequest,
+  RefreshModelsResponse,
+  AgentLlmResponse,
+  CreateAgentLlmRequest,
+  UpdateAgentLlmRequest,
 } from '@/types';
 
 const SERVICE_UNAVAILABLE_MESSAGE = 'SERVICE_UNAVAILABLE';
@@ -514,6 +521,48 @@ class ApiService {
 
   async syncAgentSkillPolicies(agentPubId: string): Promise<void> {
     return this.post<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${agentPubId}/skills/sync-policies`, {});
+  }
+
+  // LLM Providers
+  async getLlmProviders(): Promise<LlmProviderResponse[]> {
+    return this.get<LlmProviderResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/llm-providers/`);
+  }
+
+  async createLlmProvider(data: CreateLlmProviderRequest): Promise<LlmProviderResponse> {
+    return this.post<LlmProviderResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/llm-providers/`, data);
+  }
+
+  async getLlmProvider(pubId: string): Promise<LlmProviderResponse> {
+    return this.get<LlmProviderResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/llm-providers/${pubId}`);
+  }
+
+  async updateLlmProvider(pubId: string, data: UpdateLlmProviderRequest): Promise<LlmProviderResponse> {
+    return this.patch<LlmProviderResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/llm-providers/${pubId}`, data);
+  }
+
+  async deleteLlmProvider(pubId: string): Promise<void> {
+    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/llm-providers/${pubId}`);
+  }
+
+  async refreshLlmProviderModels(pubId: string): Promise<RefreshModelsResponse> {
+    return this.post<RefreshModelsResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/llm-providers/${pubId}/refresh-models`, {});
+  }
+
+  // Agent ↔ LLM bindings
+  async getAgentLlms(agentPubId: string): Promise<AgentLlmResponse[]> {
+    return this.get<AgentLlmResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${agentPubId}/llms/`);
+  }
+
+  async createAgentLlm(agentPubId: string, data: CreateAgentLlmRequest): Promise<AgentLlmResponse> {
+    return this.post<AgentLlmResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${agentPubId}/llms/`, data);
+  }
+
+  async updateAgentLlm(agentPubId: string, name: string, data: UpdateAgentLlmRequest): Promise<AgentLlmResponse> {
+    return this.put<AgentLlmResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${agentPubId}/llms/${encodeURIComponent(name)}`, data);
+  }
+
+  async deleteAgentLlm(agentPubId: string, name: string): Promise<void> {
+    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${agentPubId}/llms/${encodeURIComponent(name)}`);
   }
 
   // App resources

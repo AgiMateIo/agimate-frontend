@@ -15,6 +15,7 @@ import {
   CpuChipIcon,
   AcademicCapIcon,
   ChartBarIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { AgenticTeam } from '@/types';
@@ -29,6 +30,7 @@ type NavItem = {
 
 const getNavItems = (t: ReturnType<typeof useTranslations>, teams: AgenticTeam[]): NavItem[] => [
   { label: t('dashboard'), icon: HomeIcon, href: '/dashboard' },
+  { label: t('llmProviders'), icon: SparklesIcon, href: '/dashboard/llm-providers' },
   {
     label: t('connectors'), icon: CpuChipIcon, href: '/dashboard/connectors',
     activePaths: ['/dashboard/connectors', '/dashboard/apps', '/dashboard/integrations'],

@@ -1,5 +1,7 @@
 // Agent types
 
+import type { AgentLlmResponse } from './llm-providers';
+
 export type AgentType = 'CENTRIFUGO' | 'WEBHOOK' | 'GENERIC';
 
 export interface AgentSkillSummary {
@@ -21,6 +23,7 @@ export interface AgentResponse {
   agenticTeamName: string | null;
   createdAt: string;
   skills: AgentSkillSummary[];
+  llms: AgentLlmResponse[];
 }
 
 export interface AgentCreatedResponse {
