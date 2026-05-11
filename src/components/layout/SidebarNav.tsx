@@ -16,6 +16,7 @@ import {
   AcademicCapIcon,
   ChartBarIcon,
   SparklesIcon,
+  ChatBubbleLeftRightIcon,
 } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { AgenticTeam } from '@/types';
@@ -40,6 +41,7 @@ const getNavItems = (t: ReturnType<typeof useTranslations>, teams: AgenticTeam[]
     ],
   },
   { label: t('skills'), icon: AcademicCapIcon, href: '/dashboard/skills' },
+  { label: t('channels'), icon: ChatBubbleLeftRightIcon, href: '/dashboard/channels' },
   {
     label: t('agenticTeams'), icon: UserGroupIcon, href: '/dashboard/agentic-teams',
     activePaths: ['/dashboard/agentic-teams', '/dashboard/agents'],

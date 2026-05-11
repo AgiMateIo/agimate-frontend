@@ -15,8 +15,9 @@ import { Link } from '@/i18n/navigation';
 import AgentPoliciesTab from '@/components/agents/AgentPoliciesTab';
 import AgentSkillsTab from '@/components/agents/AgentSkillsTab';
 import AgentModelsTab from '@/components/agents/AgentModelsTab';
+import AgentChannelsTab from '@/components/agents/AgentChannelsTab';
 
-type Tab = 'general' | 'models' | 'skills' | 'trigger-rules' | 'tool-rules';
+type Tab = 'general' | 'models' | 'channels' | 'skills' | 'trigger-rules' | 'tool-rules';
 
 export default function AgentDetailPage() {
   const t = useTranslations('Agents');
@@ -49,6 +50,7 @@ export default function AgentDetailPage() {
   const tabs: { key: Tab; label: string }[] = [
     { key: 'general', label: t('tabGeneral') },
     { key: 'models', label: t('tabModels') },
+    { key: 'channels', label: t('tabChannels') },
     { key: 'skills', label: t('tabSkills') },
     { key: 'trigger-rules', label: t('tabTriggerRules') },
     { key: 'tool-rules', label: t('tabToolRules') },
@@ -209,6 +211,12 @@ export default function AgentDetailPage() {
       {activeTab === 'models' && (
         <div className="bg-surface rounded-xl border border-border p-6">
           <AgentModelsTab agentPubId={agentId} />
+        </div>
+      )}
+
+      {activeTab === 'channels' && (
+        <div className="bg-surface rounded-xl border border-border p-6">
+          <AgentChannelsTab agentPubId={agentId} />
         </div>
       )}
 

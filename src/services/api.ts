@@ -59,6 +59,11 @@ import type {
   AgentLlmResponse,
   CreateAgentLlmRequest,
   UpdateAgentLlmRequest,
+  ChannelResponse,
+  CreateChannelRequest,
+  UpdateChannelRequest,
+  ChannelSessionResponse,
+  ChannelSessionMessageResponse,
 } from '@/types';
 
 const SERVICE_UNAVAILABLE_MESSAGE = 'SERVICE_UNAVAILABLE';
@@ -563,6 +568,51 @@ class ApiService {
 
   async deleteAgentLlm(agentPubId: string, name: string): Promise<void> {
     return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${agentPubId}/llms/${encodeURIComponent(name)}`);
+  }
+
+  // Channels
+  async getChannels(params?: { agentPubId?: string }): Promise<ChannelResponse[]> {
+    const q = new URLSearchParams();
+    if (params?.agentPubId) q.set('agentPubId', params.agentPubId);
+    const qs = q.toString();
+    return this.get<ChannelResponse[]>(
+      `${API.ENDPOINTS.DEVICE_API}/manage/channels/${qs ? `?${qs}` : ''}`,
+    );
+  }
+
+  async getChannel(pubId: string): Promise<ChannelResponse> {
+    return this.get<ChannelResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/channels/${pubId}`);
+  }
+
+  async createChannel(data: CreateChannelRequest): Promise<ChannelResponse> {
+    return this.post<ChannelResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/channels/`, data);
+  }
+
+  async updateChannel(pubId: string, data: UpdateChannelRequest): Promise<ChannelResponse> {
+    return this.patch<ChannelResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/channels/${pubId}`, data);
+  }
+
+  async deleteChannel(pubId: string): Promise<void> {
+    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/channels/${pubId}`);
+  }
+
+  async getChannelSessions(pubId: string): Promise<ChannelSessionResponse[]> {
+    return this.get<ChannelSessionResponse[]>(
+      `${API.ENDPOINTS.DEVICE_API}/manage/channels/${pubId}/sessions/`,
+    );
+  }
+
+  async getChannelSessionMessages(sessionPubId: string): Promise<ChannelSessionMessageResponse[]> {
+    return this.get<ChannelSessionMessageResponse[]>(
+      `${API.ENDPOINTS.DEVICE_API}/manage/channels/sessions/${sessionPubId}/messages/`,
+    );
+  }
+
+  async closeChannelSession(sessionPubId: string): Promise<ChannelSessionResponse> {
+    return this.post<ChannelSessionResponse>(
+      `${API.ENDPOINTS.DEVICE_API}/manage/channels/sessions/${sessionPubId}/close`,
+      {},
+    );
   }
 
   // App resources
