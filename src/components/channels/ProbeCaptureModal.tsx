@@ -13,7 +13,7 @@ import type { TriggerLog, TriggerLogProbeResponse } from '@/types';
 interface ProbeCaptureModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCaptured: (log: TriggerLog) => void;
+  onCaptured: (log: TriggerLog, probeCode: string) => void;
 }
 
 type Phase = 'issuing' | 'waiting' | 'expired' | 'error';
@@ -55,7 +55,7 @@ export function ProbeCaptureModal({ isOpen, onClose, onCaptured }: ProbeCaptureM
     try {
       const log = await apiService.matchTriggerLogProbe(current.code, current.issuedAt);
       if (log) {
-        onCaptured(log);
+        onCaptured(log, current.code);
         return true;
       }
       return false;

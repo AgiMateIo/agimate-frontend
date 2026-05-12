@@ -51,6 +51,29 @@ const TEMPLATE_PRESETS: Record<string, { messageField: string; params: string }>
   },
 };
 
+// Depth-first search for the first dotted path whose string leaf contains `substring`.
+// Used to surface the leaf that holds the user's probe code in the captured TriggerLog.
+function findPathContaining(value: unknown, substring: string, path = ''): string | null {
+  if (typeof value === 'string') {
+    return value.includes(substring) ? path : null;
+  }
+  if (value !== null && typeof value === 'object') {
+    if (Array.isArray(value)) {
+      for (let i = 0; i < value.length; i++) {
+        const found = findPathContaining(value[i], substring, path);
+        if (found !== null) return found;
+      }
+      return null;
+    }
+    for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
+      const childPath = path ? `${path}.${key}` : key;
+      const found = findPathContaining(child, substring, childPath);
+      if (found !== null) return found;
+    }
+  }
+  return null;
+}
+
 function tryParseJson(text: string): { ok: true; value: Record<string, unknown> } | { ok: false; error: string } {
   if (!text.trim()) return { ok: true, value: {} };
   try {
@@ -109,9 +132,10 @@ export default function ChannelConfigForm({
 
   const [probeOpen, setProbeOpen] = useState(false);
   const [capturedSample, setCapturedSample] = useState<Record<string, unknown> | null>(null);
+  const [suggestedPath, setSuggestedPath] = useState<string | null>(null);
 
   const handleProbeCaptured = useCallback(
-    (log: TriggerLog) => {
+    (log: TriggerLog, probeCode: string) => {
       setProbeOpen(false);
       // Resolve connector type from already-loaded catalog so the dependent
       // useEffects can load identities/triggers correctly.
@@ -121,15 +145,36 @@ export default function ChannelConfigForm({
       setTriggerIdentity(log.identity);
       setTriggerName(log.triggerName);
       setCapturedSample(log.triggerInput);
-      // Apply connector preset if available and user hasn't customized yet.
+
+      // Locate the leaf containing the probe code — that's the user's message text.
+      const detected = findPathContaining(log.triggerInput, probeCode);
+      setSuggestedPath(detected);
+
       const preset = TEMPLATE_PRESETS[log.connectorCode];
-      if (preset) {
+      // Auto-fill message field only when the user hasn't deviated from the default:
+      // empty, or still equal to the preset's messageField. Preserve any manual input.
+      if (detected) {
+        setTriggerMessageField((curr) => {
+          if (!curr.trim()) return detected;
+          if (preset && curr === preset.messageField) return detected;
+          return curr;
+        });
+      } else if (preset) {
         setTriggerMessageField((curr) => curr || preset.messageField);
+      }
+      if (preset) {
         setParamsText((curr) => (curr === DEFAULT_PARAMS_PLACEHOLDER ? preset.params : curr));
       }
     },
     [connectors],
   );
+
+  // Reset the persistent suggestion when the user opens a fresh probe — otherwise
+  // a stale marker could point at a leaf that no longer exists in the new sample.
+  const openProbe = useCallback(() => {
+    setSuggestedPath(null);
+    setProbeOpen(true);
+  }, []);
 
   useEffect(() => {
     apiService.getConnectorCatalog().then((all) => {
@@ -287,7 +332,7 @@ export default function ChannelConfigForm({
           <>
             <button
               type="button"
-              onClick={() => setProbeOpen(true)}
+              onClick={openProbe}
               className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-dashed border-accent/40 bg-accent/5 hover:bg-accent/10 text-accent text-sm font-medium transition-colors"
             >
               <span aria-hidden>🪄</span>
@@ -378,6 +423,7 @@ export default function ChannelConfigForm({
           <CapturedSamplePanel
             sample={capturedSample}
             currentPath={triggerMessageField}
+            suggestedPath={suggestedPath}
             onPickPath={setTriggerMessageField}
           />
         )}

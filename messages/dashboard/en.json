@@ -822,6 +822,7 @@
     "probeClose": "Cancel",
     "capturedSampleTitle": "Captured sample",
     "capturedSampleHint": "Click a value to use its path as the message field.",
-    "capturedSampleInserted": "Inserted: {path}"
+    "capturedSampleInserted": "Inserted: {path}",
+    "capturedSampleSuggested": "Contains your probe code — suggested as the message field"
   }
 }

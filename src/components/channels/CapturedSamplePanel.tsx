@@ -7,6 +7,7 @@ import { ChevronDownIcon } from '@heroicons/react/24/outline';
 interface CapturedSamplePanelProps {
   sample: Record<string, unknown>;
   currentPath: string;
+  suggestedPath?: string | null;
   onPickPath: (path: string) => void;
 }
 
@@ -15,10 +16,16 @@ type JsonValue = string | number | boolean | null | { [k: string]: JsonValue } |
 const isObject = (v: unknown): v is Record<string, unknown> =>
   v !== null && typeof v === 'object' && !Array.isArray(v);
 
-export function CapturedSamplePanel({ sample, currentPath, onPickPath }: CapturedSamplePanelProps) {
+export function CapturedSamplePanel({
+  sample,
+  currentPath,
+  suggestedPath,
+  onPickPath,
+}: CapturedSamplePanelProps) {
   const t = useTranslations('Channels');
   const [open, setOpen] = useState(true);
   const [insertedPath, setInsertedPath] = useState<string | null>(null);
+  const suggestedTitle = t('capturedSampleSuggested');
 
   const handlePick = (path: string) => {
     onPickPath(path);
@@ -42,7 +49,14 @@ export function CapturedSamplePanel({ sample, currentPath, onPickPath }: Capture
         <div className="px-3 pb-3 space-y-2">
           <div className="text-[11px] text-muted">{t('capturedSampleHint')}</div>
           <div className="font-mono text-xs text-foreground bg-surface rounded border border-border p-2 overflow-x-auto">
-            <JsonNode value={sample as JsonValue} path="" currentPath={currentPath} onPick={handlePick} />
+            <JsonNode
+              value={sample as JsonValue}
+              path=""
+              currentPath={currentPath}
+              suggestedPath={suggestedPath ?? null}
+              suggestedTitle={suggestedTitle}
+              onPick={handlePick}
+            />
           </div>
           {insertedPath && (
             <div className="text-[11px] text-success">
@@ -59,10 +73,12 @@ interface JsonNodeProps {
   value: JsonValue;
   path: string;
   currentPath: string;
+  suggestedPath: string | null;
+  suggestedTitle: string;
   onPick: (path: string) => void;
 }
 
-function JsonNode({ value, path, currentPath, onPick }: JsonNodeProps) {
+function JsonNode({ value, path, currentPath, suggestedPath, suggestedTitle, onPick }: JsonNodeProps) {
   if (isObject(value)) {
     const entries = Object.entries(value);
     if (entries.length === 0) return <span className="text-muted">{'{}'}</span>;
@@ -73,7 +89,14 @@ function JsonNode({ value, path, currentPath, onPick }: JsonNodeProps) {
           return (
             <div key={childPath} className="flex flex-wrap items-baseline gap-1.5">
               <span className="text-accent">{key}:</span>
-              <JsonNode value={child as JsonValue} path={childPath} currentPath={currentPath} onPick={onPick} />
+              <JsonNode
+                value={child as JsonValue}
+                path={childPath}
+                currentPath={currentPath}
+                suggestedPath={suggestedPath}
+                suggestedTitle={suggestedTitle}
+                onPick={onPick}
+              />
             </div>
           );
         })}
@@ -88,7 +111,14 @@ function JsonNode({ value, path, currentPath, onPick }: JsonNodeProps) {
         {value.map((child, idx) => (
           <div key={idx} className="flex flex-wrap items-baseline gap-1.5">
             <span className="text-muted">[{idx}]:</span>
-            <JsonNode value={child as JsonValue} path={path} currentPath={currentPath} onPick={onPick} />
+            <JsonNode
+              value={child as JsonValue}
+              path={path}
+              currentPath={currentPath}
+              suggestedPath={suggestedPath}
+              suggestedTitle={suggestedTitle}
+              onPick={onPick}
+            />
           </div>
         ))}
       </div>
@@ -100,21 +130,25 @@ function JsonNode({ value, path, currentPath, onPick }: JsonNodeProps) {
     : typeof value === 'string' ? `"${value}"`
     : String(value);
 
-  const isCurrent = path && path === currentPath;
+  const isCurrent = !!path && path === currentPath;
+  const isSuggested = !!suggestedPath && path === suggestedPath;
+
+  const stateClass = isCurrent
+    ? 'bg-accent/20 ring-1 ring-accent text-foreground'
+    : isSuggested
+      ? 'border border-dashed border-accent/60 bg-accent/5 text-foreground'
+      : 'hover:bg-accent/10 text-foreground/90';
 
   return (
     <button
       type="button"
       onClick={() => path && onPick(path)}
       disabled={!path}
-      title={path || undefined}
-      className={`px-1.5 py-0.5 rounded transition-colors text-left ${
-        isCurrent
-          ? 'bg-accent/20 ring-1 ring-accent text-foreground'
-          : 'hover:bg-accent/10 text-foreground/90'
-      } ${!path ? 'cursor-default' : 'cursor-pointer'}`}
+      title={isSuggested ? suggestedTitle : (path || undefined)}
+      className={`px-1.5 py-0.5 rounded transition-colors text-left inline-flex items-baseline gap-1 ${stateClass} ${!path ? 'cursor-default' : 'cursor-pointer'}`}
     >
-      {display}
+      {isSuggested && <span aria-hidden className="text-[10px]">🪄</span>}
+      <span>{display}</span>
     </button>
   );
 }

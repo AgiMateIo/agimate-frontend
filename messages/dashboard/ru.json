@@ -821,6 +821,7 @@
     "probeClose": "Отмена",
     "capturedSampleTitle": "Захваченный пример",
     "capturedSampleHint": "Кликните по значению, чтобы использовать его путь в поле сообщения.",
-    "capturedSampleInserted": "Вставлено: {path}"
+    "capturedSampleInserted": "Вставлено: {path}",
+    "capturedSampleSuggested": "Содержит ваш код — рекомендуем как поле сообщения"
   }
 }
