@@ -12,12 +12,15 @@ import {
   DeviceTriggerInfo,
   DeviceToolInfo,
   IntegrationResponse,
+  TriggerLog,
   UpdateChannelRequest,
 } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input } from '@/components/ui/FormField';
 import { Alert } from '@/components/ui/Alert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
+import { ProbeCaptureModal } from './ProbeCaptureModal';
+import { CapturedSamplePanel } from './CapturedSamplePanel';
 
 interface ChannelConfigFormProps {
   agentPubId: string;
@@ -103,6 +106,30 @@ export default function ChannelConfigForm({
     onSuccess: (result) => onSuccess(result),
     defaultError: 'Failed to save channel',
   });
+
+  const [probeOpen, setProbeOpen] = useState(false);
+  const [capturedSample, setCapturedSample] = useState<Record<string, unknown> | null>(null);
+
+  const handleProbeCaptured = useCallback(
+    (log: TriggerLog) => {
+      setProbeOpen(false);
+      // Resolve connector type from already-loaded catalog so the dependent
+      // useEffects can load identities/triggers correctly.
+      const conn = connectors.find((c) => c.code === log.connectorCode);
+      setTriggerConnectorCode(log.connectorCode);
+      setTriggerConnectorType(conn?.type ?? null);
+      setTriggerIdentity(log.identity);
+      setTriggerName(log.triggerName);
+      setCapturedSample(log.triggerInput);
+      // Apply connector preset if available and user hasn't customized yet.
+      const preset = TEMPLATE_PRESETS[log.connectorCode];
+      if (preset) {
+        setTriggerMessageField((curr) => curr || preset.messageField);
+        setParamsText((curr) => (curr === DEFAULT_PARAMS_PLACEHOLDER ? preset.params : curr));
+      }
+    },
+    [connectors],
+  );
 
   useEffect(() => {
     apiService.getConnectorCatalog().then((all) => {
@@ -234,6 +261,7 @@ export default function ChannelConfigForm({
     });
 
   return (
+    <>
     <form onSubmit={onSubmit} className="space-y-5">
       {error && <Alert variant="error">{error}</Alert>}
 
@@ -257,6 +285,14 @@ export default function ChannelConfigForm({
           />
         ) : (
           <>
+            <button
+              type="button"
+              onClick={() => setProbeOpen(true)}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-dashed border-accent/40 bg-accent/5 hover:bg-accent/10 text-accent text-sm font-medium transition-colors"
+            >
+              <span aria-hidden>🪄</span>
+              <span>{t('probeButton')}</span>
+            </button>
             <FormField label={t('fieldConnector')} required>
               <select
                 value={triggerConnectorCode}
@@ -294,6 +330,9 @@ export default function ChannelConfigForm({
                 className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground disabled:opacity-50"
               >
                 <option value="">{t('selectIdentity')}</option>
+                {triggerIdentity && !triggerIdentities.some((o) => o.value === triggerIdentity) && (
+                  <option value={triggerIdentity}>{triggerIdentity}</option>
+                )}
                 {triggerIdentities.map((o) => (
                   <option key={o.value} value={o.value}>
                     {o.label}{o.hint ? ` (${o.hint})` : ''}
@@ -310,6 +349,9 @@ export default function ChannelConfigForm({
                 className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground disabled:opacity-50"
               >
                 <option value="">{t('selectTrigger')}</option>
+                {triggerName && !triggers.some((tr) => tr.name === triggerName) && (
+                  <option value={triggerName}>{triggerName}</option>
+                )}
                 {triggers.map((tr) => (
                   <option key={tr.name} value={tr.name}>
                     {tr.name}{tr.description ? ` — ${tr.description}` : ''}
@@ -331,6 +373,14 @@ export default function ChannelConfigForm({
             placeholder="data.message.text"
           />
         </FormField>
+
+        {!isEdit && capturedSample && (
+          <CapturedSamplePanel
+            sample={capturedSample}
+            currentPath={triggerMessageField}
+            onPickPath={setTriggerMessageField}
+          />
+        )}
       </div>
 
       <div className="border border-border rounded-lg p-4 space-y-4">
@@ -475,6 +525,14 @@ export default function ChannelConfigForm({
         </Button>
       </div>
     </form>
+    {!isEdit && (
+      <ProbeCaptureModal
+        isOpen={probeOpen}
+        onClose={() => setProbeOpen(false)}
+        onCaptured={handleProbeCaptured}
+      />
+    )}
+    </>
   );
 }
 

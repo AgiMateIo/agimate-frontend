@@ -80,3 +80,11 @@ export interface TriggerLog {
   agentsCount: number;
   createdAt: string;
 }
+
+// Response of POST /device/manage/trigger-logs/probe — issues a short-lived
+// probe code that the user pastes into a real bot/app/channel to make the
+// backend capture the resulting TriggerLog without delivering it to agents.
+export interface TriggerLogProbeResponse {
+  code: string;       // agm-probe-(block|pass)-[a-z0-9]{10}
+  issuedAt: string;   // LocalDateTime ISO (yyyy-MM-dd'T'HH:mm:ss), no timezone
+}

@@ -805,6 +805,23 @@
     "colAgent": "Agent",
     "colTrigger": "Trigger",
     "colReply": "Reply",
-    "colUpdatedAt": "Updated"
+    "colUpdatedAt": "Updated",
+    "probeButton": "Detect from incoming message",
+    "probeTitle": "Capture trigger from incoming message",
+    "probeIntro": "Send a message containing this code to your bot, channel, or app. We'll detect it and fill the form for you.",
+    "probeCodeLabel": "Probe code",
+    "probeCopy": "Copy",
+    "probeCopied": "Copied!",
+    "probeStatusIssuing": "Generating code…",
+    "probeStatusWaiting": "Waiting for message…",
+    "probeCheckNow": "Check now",
+    "probeExpired": "Code expired. Generate a new one to try again.",
+    "probeRegenerate": "Generate new code",
+    "probeErrorIssue": "Couldn't generate probe code",
+    "probeErrorMatch": "Failed to check for incoming message",
+    "probeClose": "Cancel",
+    "capturedSampleTitle": "Captured sample",
+    "capturedSampleHint": "Click a value to use its path as the message field.",
+    "capturedSampleInserted": "Inserted: {path}"
   }
 }

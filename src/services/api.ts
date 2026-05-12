@@ -9,6 +9,7 @@ import type {
   CreateAppRequest,
   UpdateAppRequest,
   TriggerLog,
+  TriggerLogProbeResponse,
   DeviceTriggerGroup,
   DeviceToolGroup,
   AgentResponse,
@@ -665,6 +666,30 @@ class ApiService {
     if (params?.size !== undefined) searchParams.set('size', String(params.size));
     const query = searchParams.toString();
     return this.get<PagedResponse<TriggerLog>>(`${API.ENDPOINTS.DEVICE_API}/manage/trigger-logs/${query ? `?${query}` : ''}`);
+  }
+
+  // Trigger Log Probe — issue a probe code that captures the next matching trigger.
+  async issueTriggerLogProbe(blockDelivery: boolean = true): Promise<TriggerLogProbeResponse> {
+    return this.post<TriggerLogProbeResponse>(
+      `${API.ENDPOINTS.DEVICE_API}/manage/trigger-logs/probe`,
+      { blockDelivery },
+    );
+  }
+
+  // Trigger Log Probe — match. Returns null when nothing has matched yet (HTTP 404).
+  async matchTriggerLogProbe(code: string, since: string): Promise<TriggerLog | null> {
+    const params = new URLSearchParams({ code, since });
+    try {
+      return await this.get<TriggerLog>(
+        `${API.ENDPOINTS.DEVICE_API}/manage/trigger-logs/probe/match?${params.toString()}`,
+      );
+    } catch (err) {
+      // Backend returns 404 with message "No matching trigger log yet" while waiting.
+      if (err instanceof ApiError && err.message === 'No matching trigger log yet') {
+        return null;
+      }
+      throw err;
+    }
   }
 
   // Webhook Delivery Logs

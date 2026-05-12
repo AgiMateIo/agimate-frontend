@@ -804,6 +804,23 @@
     "colAgent": "Агент",
     "colTrigger": "Триггер",
     "colReply": "Ответ",
-    "colUpdatedAt": "Обновлён"
+    "colUpdatedAt": "Обновлён",
+    "probeButton": "Определить по входящему сообщению",
+    "probeTitle": "Захват триггера по входящему сообщению",
+    "probeIntro": "Отправьте сообщение с этим кодом в свой бот, канал или приложение. Мы поймаем его и заполним форму за вас.",
+    "probeCodeLabel": "Код-маркер",
+    "probeCopy": "Скопировать",
+    "probeCopied": "Скопировано!",
+    "probeStatusIssuing": "Генерируем код…",
+    "probeStatusWaiting": "Ждём сообщение…",
+    "probeCheckNow": "Проверить сейчас",
+    "probeExpired": "Код устарел. Сгенерируйте новый, чтобы попробовать ещё раз.",
+    "probeRegenerate": "Сгенерировать новый код",
+    "probeErrorIssue": "Не удалось получить код",
+    "probeErrorMatch": "Не удалось проверить входящее сообщение",
+    "probeClose": "Отмена",
+    "capturedSampleTitle": "Захваченный пример",
+    "capturedSampleHint": "Кликните по значению, чтобы использовать его путь в поле сообщения.",
+    "capturedSampleInserted": "Вставлено: {path}"
   }
 }
