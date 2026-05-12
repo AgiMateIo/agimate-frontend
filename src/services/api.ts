@@ -10,6 +10,7 @@ import type {
   UpdateAppRequest,
   TriggerLog,
   TriggerLogProbeResponse,
+  ToolSpecification,
   DeviceTriggerGroup,
   DeviceToolGroup,
   AgentResponse,
@@ -635,6 +636,29 @@ class ApiService {
   async getIntegrationTriggers(connectorCode: string): Promise<DeviceTriggerInfo[]> {
     return this.get<DeviceTriggerInfo[]>(
       `${API.ENDPOINTS.DEVICE_API}/manage/integrations/triggers/?connectorCode=${encodeURIComponent(connectorCode)}`
+    );
+  }
+
+  // Tool specifications (JSON-Schema-based parameter descriptions).
+  // For APP connectors `identity` is required; for INTEGRATION / INTERNAL_SERVICE it's ignored.
+  async getToolSpecifications(
+    connectorCode: string,
+    identity?: string,
+  ): Promise<Record<string, ToolSpecification>> {
+    const query = identity ? `?identity=${encodeURIComponent(identity)}` : '';
+    return this.get<Record<string, ToolSpecification>>(
+      `${API.ENDPOINTS.DEVICE_API}/manage/tools/${encodeURIComponent(connectorCode)}/${query}`,
+    );
+  }
+
+  async getToolSpecification(
+    connectorCode: string,
+    toolName: string,
+    identity?: string,
+  ): Promise<ToolSpecification> {
+    const query = identity ? `?identity=${encodeURIComponent(identity)}` : '';
+    return this.get<ToolSpecification>(
+      `${API.ENDPOINTS.DEVICE_API}/manage/tools/${encodeURIComponent(connectorCode)}/${encodeURIComponent(toolName)}${query}`,
     );
   }
 

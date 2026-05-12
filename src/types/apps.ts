@@ -61,6 +61,24 @@ export interface DeviceToolInfo {
   description: string;
 }
 
+// JSON Schema fragment returned by GET /device/manage/tools/{connectorCode}/...
+// Fields are JsonInclude.NON_NULL on the backend, so absent properties are omitted.
+export interface ToolJsonSchema {
+  type: 'string' | 'integer' | 'number' | 'boolean' | 'array' | 'object';
+  description?: string;
+  properties?: Record<string, ToolJsonSchema>;
+  required?: string[];
+  items?: ToolJsonSchema;
+  enumValues?: string[];
+}
+
+// Full tool specification: GET /device/manage/tools/{connectorCode}/{toolName}
+export interface ToolSpecification {
+  name: string;
+  description: string;
+  parameters: ToolJsonSchema; // root is always { type: 'object', properties, required }
+}
+
 export interface DeviceToolGroup {
   connectorPubId: string;
   deviceId: string;
