@@ -478,7 +478,7 @@ export default function ChannelConfigForm({
     <form onSubmit={onSubmit} className="space-y-5">
       {error && <Alert variant="error">{error}</Alert>}
 
-      <FormField label={t('fieldName')} required>
+      <FormField label={t('fieldName')} required layout="inline">
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -506,7 +506,7 @@ export default function ChannelConfigForm({
               <span aria-hidden>🪄</span>
               <span>{t('probeButton')}</span>
             </button>
-            <FormField label={t('fieldConnector')} required>
+            <FormField label={t('fieldConnector')} required layout="inline">
               <select
                 value={triggerConnectorCode}
                 onChange={(e) => {
@@ -535,7 +535,7 @@ export default function ChannelConfigForm({
               </select>
             </FormField>
 
-            <FormField label={t('fieldIdentity')} required>
+            <FormField label={t('fieldIdentity')} required layout="inline">
               <select
                 value={triggerIdentity}
                 onChange={(e) => { setTriggerIdentity(e.target.value); setTriggerName(''); }}
@@ -554,7 +554,7 @@ export default function ChannelConfigForm({
               </select>
             </FormField>
 
-            <FormField label={t('fieldTrigger')} required>
+            <FormField label={t('fieldTrigger')} required layout="inline">
               <select
                 value={triggerName}
                 onChange={(e) => setTriggerName(e.target.value)}
@@ -579,6 +579,7 @@ export default function ChannelConfigForm({
           label={t('fieldMessageField')}
           required
           hint={t('messageFieldHint')}
+          layout="inline"
         >
           <Input
             value={triggerMessageField}
@@ -624,7 +625,7 @@ export default function ChannelConfigForm({
           <>
             {!useSameForReply && (
               <>
-                <FormField label={t('fieldConnector')} required>
+                <FormField label={t('fieldConnector')} required layout="inline">
                   <select
                     value={replyConnectorCode}
                     onChange={(e) => {
@@ -646,7 +647,7 @@ export default function ChannelConfigForm({
                   </select>
                 </FormField>
 
-                <FormField label={t('fieldIdentity')} required>
+                <FormField label={t('fieldIdentity')} required layout="inline">
                   <select
                     value={replyIdentity}
                     onChange={(e) => { setReplyIdentity(e.target.value); setReplyToolName(''); }}
@@ -664,7 +665,7 @@ export default function ChannelConfigForm({
               </>
             )}
 
-            <FormField label={t('fieldTool')} required>
+            <FormField label={t('fieldTool')} required layout="inline">
               <select
                 value={replyToolName}
                 onChange={(e) => setReplyToolName(e.target.value)}
