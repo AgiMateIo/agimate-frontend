@@ -83,19 +83,21 @@ export default function ChannelsPage() {
                         )}
                       </td>
                       <td className="py-3 px-4 text-xs">
-                        <div className="flex flex-col gap-0.5">
-                          <span className="font-mono text-foreground">{c.triggerConnectorCode}</span>
-                          <span className="text-muted truncate max-w-[220px]">
-                            {(c.triggerIdentityName || c.triggerIdentity.slice(0, 8))} · <span className="font-mono">{c.triggerName}</span>
+                        <div className="flex flex-col gap-0.5 max-w-[260px]">
+                          <span className="truncate">
+                            <span className="font-mono text-foreground">{c.triggerConnectorCode}</span>
+                            <span className="text-muted"> ({c.triggerIdentityName || c.triggerIdentity.slice(0, 8)})</span>
                           </span>
+                          <span className="font-mono text-muted truncate">{c.triggerName}</span>
                         </div>
                       </td>
                       <td className="py-3 px-4 text-xs">
-                        <div className="flex flex-col gap-0.5">
-                          <span className="font-mono text-foreground">{c.replyConnectorCode}</span>
-                          <span className="text-muted truncate max-w-[220px]">
-                            {(c.replyIdentityName || c.replyIdentity.slice(0, 8))} · <span className="font-mono">{c.replyToolName}</span>
+                        <div className="flex flex-col gap-0.5 max-w-[260px]">
+                          <span className="truncate">
+                            <span className="font-mono text-foreground">{c.replyConnectorCode}</span>
+                            <span className="text-muted"> ({c.replyIdentityName || c.replyIdentity.slice(0, 8)})</span>
                           </span>
+                          <span className="font-mono text-muted truncate">{c.replyToolName}</span>
                         </div>
                       </td>
                       <td className="py-3 px-4 text-xs text-muted">
