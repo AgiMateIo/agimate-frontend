@@ -823,6 +823,10 @@
     "capturedSampleTitle": "Captured sample",
     "capturedSampleHint": "Click a value to use its path as the message field.",
     "capturedSampleInserted": "Inserted: {path}",
-    "capturedSampleSuggested": "Contains your probe code — suggested as the message field"
+    "capturedSampleInsertedFilter": "Added to filter: {path} = {value}",
+    "capturedSampleSuggested": "Contains your probe code — suggested as the message field",
+    "capturedSampleFilterParseError": "Fix invalid JSON in the filter field first",
+    "capturedSampleTitleFilter": "Captured sample — add filter conditions",
+    "capturedSampleHintFilter": "Click a value to add it as a filter condition (key = value)."
   }
 }

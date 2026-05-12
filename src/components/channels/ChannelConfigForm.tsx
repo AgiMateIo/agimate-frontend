@@ -20,7 +20,7 @@ import { FormField, Input } from '@/components/ui/FormField';
 import { Alert } from '@/components/ui/Alert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { ProbeCaptureModal } from './ProbeCaptureModal';
-import { CapturedSamplePanel } from './CapturedSamplePanel';
+import { CapturedSamplePanel, type JsonLeaf } from './CapturedSamplePanel';
 
 interface ChannelConfigFormProps {
   agentPubId: string;
@@ -174,6 +174,15 @@ export default function ChannelConfigForm({
   const openProbe = useCallback(() => {
     setSuggestedPath(null);
     setProbeOpen(true);
+  }, []);
+
+  const handleAddFilter = useCallback((path: string, value: JsonLeaf) => {
+    setInputFilterText((curr) => {
+      const parsed = tryParseJson(curr);
+      if (!parsed.ok) return curr;
+      const merged = { ...parsed.value, [path]: value };
+      return JSON.stringify(merged, null, 2);
+    });
   }, []);
 
   useEffect(() => {
@@ -421,6 +430,7 @@ export default function ChannelConfigForm({
 
         {!isEdit && capturedSample && (
           <CapturedSamplePanel
+            mode="message"
             sample={capturedSample}
             currentPath={triggerMessageField}
             suggestedPath={suggestedPath}
@@ -552,14 +562,26 @@ export default function ChannelConfigForm({
         hint={t('inputFilterHint')}
         error={inputFilterText.trim() && !filterValidation.ok ? filterValidation.error : undefined}
       >
-        <textarea
-          value={inputFilterText}
-          onChange={(e) => setInputFilterText(e.target.value)}
-          rows={4}
-          spellCheck={false}
-          placeholder='{ "data.message.chat_id": 12345 }'
-          className="w-full px-3 py-2 bg-surface-secondary border border-border rounded-lg text-foreground font-mono text-xs resize-y"
-        />
+        <div className="space-y-2">
+          <textarea
+            value={inputFilterText}
+            onChange={(e) => setInputFilterText(e.target.value)}
+            rows={4}
+            spellCheck={false}
+            placeholder='{ "data.message.chat_id": 12345 }'
+            className="w-full px-3 py-2 bg-surface-secondary border border-border rounded-lg text-foreground font-mono text-xs resize-y"
+          />
+          {!isEdit && capturedSample && (
+            <CapturedSamplePanel
+              mode="filter"
+              sample={capturedSample}
+              currentFilter={filterValidation.ok ? filterValidation.value : {}}
+              onAddFilter={handleAddFilter}
+              disabled={!!inputFilterText.trim() && !filterValidation.ok}
+              disabledReason={t('capturedSampleFilterParseError')}
+            />
+          )}
+        </div>
       </FormField>
 
       <div className="flex justify-end gap-2 pt-2">

@@ -822,6 +822,10 @@
     "capturedSampleTitle": "Захваченный пример",
     "capturedSampleHint": "Кликните по значению, чтобы использовать его путь в поле сообщения.",
     "capturedSampleInserted": "Вставлено: {path}",
-    "capturedSampleSuggested": "Содержит ваш код — рекомендуем как поле сообщения"
+    "capturedSampleInsertedFilter": "Добавлено в фильтр: {path} = {value}",
+    "capturedSampleSuggested": "Содержит ваш код — рекомендуем как поле сообщения",
+    "capturedSampleFilterParseError": "Сначала исправьте невалидный JSON в поле фильтра",
+    "capturedSampleTitleFilter": "Захваченный пример — условия фильтра",
+    "capturedSampleHintFilter": "Кликните по значению, чтобы добавить его как условие фильтра (ключ = значение)."
   }
 }
