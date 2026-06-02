@@ -1,7 +1,7 @@
 // App types (replaces connectors)
 
 export interface AppResponse {
-  pubId: string;
+  id: string;
   name: string;
   description: string;
   maskedKeyId: string;
@@ -12,7 +12,7 @@ export interface AppResponse {
 }
 
 export interface AppCreatedResponse {
-  pubId: string;
+  id: string;
   name: string;
   fullKey: string;
   description: string;
@@ -49,7 +49,7 @@ export interface DeviceTriggerInfo {
 }
 
 export interface DeviceTriggerGroup {
-  connectorPubId: string;
+  connectorId: string;
   deviceId: string;
   deviceName: string;
   triggers: DeviceTriggerInfo[];
@@ -80,7 +80,7 @@ export interface ToolSpecification {
 }
 
 export interface DeviceToolGroup {
-  connectorPubId: string;
+  connectorId: string;
   deviceId: string;
   deviceName: string;
   tools: DeviceToolInfo[];

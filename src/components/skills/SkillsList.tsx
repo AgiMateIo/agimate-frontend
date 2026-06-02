@@ -99,7 +99,7 @@ export default function SkillsList({
 
               <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                 {variant === 'my' && (
-                  skill.parentPubId != null ? (
+                  skill.parentId != null ? (
                     <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-muted/10 text-muted">
                       <LockClosedIcon className="h-3 w-3" />
                       {t('systemSkill')}

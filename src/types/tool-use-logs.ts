@@ -2,7 +2,7 @@
 
 export interface ToolUseLogResponse {
   id: string;
-  agentPubId: string;
+  agentId: string;
   connectorCode: string;
   identity: string;
   agentSessionId: string;

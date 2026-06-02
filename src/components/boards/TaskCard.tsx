@@ -36,7 +36,7 @@ export default function TaskCard({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: task.pubId, disabled: isDragOverlay });
+  } = useSortable({ id: task.id, disabled: isDragOverlay });
 
   const style: React.CSSProperties | undefined = isDragOverlay
     ? undefined
@@ -48,17 +48,17 @@ export default function TaskCard({
         // element; on setColumns the moving card morphs from its old slot
         // to the new one (true flight), while siblings glide to their new
         // positions instead of a muddy root cross-fade.
-        viewTransitionName: `task-${task.pubId.replace(/-/g, '_')}`,
+        viewTransitionName: `task-${task.id.replace(/-/g, '_')}`,
       };
 
-  const assigneeName = task.assigneeAgentPubId
-    ? agentMap.get(task.assigneeAgentPubId) ?? t('unknownAgent')
+  const assigneeName = task.assigneeAgentId
+    ? agentMap.get(task.assigneeAgentId) ?? t('unknownAgent')
     : null;
 
   return (
     <div
       ref={isDragOverlay ? undefined : setNodeRef}
-      data-task-pubid={isDragOverlay ? undefined : task.pubId}
+      data-task-pubid={isDragOverlay ? undefined : task.id}
       style={style}
       {...(isDragOverlay ? {} : attributes)}
       {...(isDragOverlay ? {} : listeners)}

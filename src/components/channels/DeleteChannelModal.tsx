@@ -23,7 +23,7 @@ export default function DeleteChannelModal({ channel, onClose, onSuccess }: Dele
 
   const onConfirm = (e: React.FormEvent) =>
     handleSubmit(e, async () => {
-      await apiService.deleteChannel(channel.pubId);
+      await apiService.deleteChannel(channel.id);
     });
 
   return (

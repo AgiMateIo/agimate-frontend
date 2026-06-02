@@ -10,13 +10,13 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 
 interface DeleteAgentLlmModalProps {
-  agentPubId: string;
+  agentId: string;
   binding: AgentLlmResponse;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export default function DeleteAgentLlmModal({ agentPubId, binding, onClose, onSuccess }: DeleteAgentLlmModalProps) {
+export default function DeleteAgentLlmModal({ agentId, binding, onClose, onSuccess }: DeleteAgentLlmModalProps) {
   const t = useTranslations('Agents');
 
   const { loading, error, handleSubmit } = useAsyncForm<void>({
@@ -25,7 +25,7 @@ export default function DeleteAgentLlmModal({ agentPubId, binding, onClose, onSu
   });
 
   const onSubmit = (e: React.FormEvent) =>
-    handleSubmit(e, () => apiService.deleteAgentLlm(agentPubId, binding.name));
+    handleSubmit(e, () => apiService.deleteAgentLlm(agentId, binding.name));
 
   return (
     <Modal isOpen={true} onClose={onClose} title={t('deleteModelBinding')}>

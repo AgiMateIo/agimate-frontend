@@ -10,7 +10,7 @@ import { FormField } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 
 interface EditAgentLlmModalProps {
-  agentPubId: string;
+  agentId: string;
   binding: AgentLlmResponse;
   providers: LlmProviderResponse[];
   onProvidersUpdate: (providers: LlmProviderResponse[]) => void;
@@ -19,7 +19,7 @@ interface EditAgentLlmModalProps {
 }
 
 export default function EditAgentLlmModal({
-  agentPubId,
+  agentId,
   binding,
   providers,
   onProvidersUpdate,
@@ -28,13 +28,13 @@ export default function EditAgentLlmModal({
 }: EditAgentLlmModalProps) {
   const t = useTranslations('Agents');
 
-  const [providerPubId, setProviderPubId] = useState(binding.llmProviderPubId);
+  const [providerId, setProviderId] = useState(binding.llmProviderId);
   const [model, setModel] = useState(binding.model);
   const [submitting, setSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const selected = providers.find(p => p.pubId === providerPubId);
+  const selected = providers.find(p => p.id === providerId);
   const selectedModels = selected?.availableModels ?? null;
   const noModelsYet = selectedModels === null || selectedModels.length === 0;
 
@@ -43,8 +43,8 @@ export default function EditAgentLlmModal({
     setRefreshing(true);
     setError(null);
     try {
-      const result = await apiService.refreshLlmProviderModels(selected.pubId);
-      const updated = providers.map(p => p.pubId === selected.pubId
+      const result = await apiService.refreshLlmProviderModels(selected.id);
+      const updated = providers.map(p => p.id === selected.id
         ? { ...p, availableModels: result.availableModels, modelsRefreshedAt: result.refreshedAt }
         : p);
       onProvidersUpdate(updated);
@@ -57,12 +57,12 @@ export default function EditAgentLlmModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!providerPubId || !model) return;
+    if (!providerId || !model) return;
     setSubmitting(true);
     setError(null);
     try {
-      await apiService.updateAgentLlm(agentPubId, binding.name, {
-        llmProviderPubId: providerPubId,
+      await apiService.updateAgentLlm(agentId, binding.name, {
+        llmProviderId: providerId,
         model,
       });
       onSuccess();
@@ -80,9 +80,9 @@ export default function EditAgentLlmModal({
       <form onSubmit={handleSubmit} className="space-y-4">
         <FormField label={t('provider')} required>
           <select
-            value={providerPubId}
+            value={providerId}
             onChange={(e) => {
-              setProviderPubId(e.target.value);
+              setProviderId(e.target.value);
               setModel('');
             }}
             disabled={busy}
@@ -90,7 +90,7 @@ export default function EditAgentLlmModal({
             required
           >
             {providers.map((p) => (
-              <option key={p.pubId} value={p.pubId}>
+              <option key={p.id} value={p.id}>
                 {p.name} {!p.enabled ? `(${t('providerDisabled')})` : ''}
               </option>
             ))}

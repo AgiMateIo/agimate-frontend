@@ -48,7 +48,7 @@ export default function BoardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [selectedTaskPubId, setSelectedTaskPubId] = useState<string | null>(null);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [highlightedIds, setHighlightedIds] = useState<Set<string>>(() => new Set());
 
@@ -62,12 +62,12 @@ export default function BoardPage() {
       setLoading(true);
       const [boards, agentsList] = await Promise.all([
         apiService.getBoards(),
-        apiService.getAgentsList({ agenticTeamPubId: teamId }),
+        apiService.getAgentsList({ agenticTeamId: teamId }),
       ]);
 
       setAgents(agentsList.content);
 
-      const teamBoard = boards.find((b) => b.agenticTeamPubId === teamId) ?? null;
+      const teamBoard = boards.find((b) => b.agenticTeamId === teamId) ?? null;
       if (!teamBoard) {
         setBoard(null);
         setColumns(null);
@@ -75,7 +75,7 @@ export default function BoardPage() {
         return;
       }
 
-      const tasksByStatus = await apiService.getBoardTasks(teamBoard.pubId);
+      const tasksByStatus = await apiService.getBoardTasks(teamBoard.id);
       setBoard(teamBoard);
       setColumns(buildColumnMap(tasksByStatus));
     } catch (err) {
@@ -95,7 +95,7 @@ export default function BoardPage() {
   }, []);
 
   const handleTaskMove = useCallback(
-    async (taskPubId: string, fromStatus: TaskStatus, toStatus: TaskStatus) => {
+    async (taskId: string, fromStatus: TaskStatus, toStatus: TaskStatus) => {
       if (!columns) return;
 
       // Deep copy for safe rollback
@@ -104,23 +104,23 @@ export default function BoardPage() {
         snapshot[s] = [...columns[s]];
       }
 
-      const task = columns[fromStatus].find((t) => t.pubId === taskPubId);
+      const task = columns[fromStatus].find((t) => t.id === taskId);
       if (!task) return;
 
       // Use the first available agent for the status change
-      const agentPubId = agents[0]?.id;
-      if (!agentPubId) return;
+      const agentId = agents[0]?.id;
+      if (!agentId) return;
 
       // Optimistic update with inter-column animation
       const updated = { ...columns };
-      updated[fromStatus] = updated[fromStatus].filter((t) => t.pubId !== taskPubId);
+      updated[fromStatus] = updated[fromStatus].filter((t) => t.id !== taskId);
       updated[toStatus] = [{ ...task, status: toStatus }, ...updated[toStatus]];
-      animateCardMove(taskPubId, () => setColumns(updated));
+      animateCardMove(taskId, () => setColumns(updated));
 
       try {
-        await apiService.changeTaskStatus(taskPubId, { status: toStatus, agentPubId });
+        await apiService.changeTaskStatus(taskId, { status: toStatus, agentId });
       } catch {
-        animateCardMove(taskPubId, () => setColumns(snapshot));
+        animateCardMove(taskId, () => setColumns(snapshot));
       }
     },
     [columns, agents]
@@ -133,17 +133,17 @@ export default function BoardPage() {
 
   // ===== Real-time event handlers =====
 
-  const flashCard = useCallback((pubId: string) => {
+  const flashCard = useCallback((id: string) => {
     setHighlightedIds((prev) => {
       const next = new Set(prev);
-      next.add(pubId);
+      next.add(id);
       return next;
     });
     setTimeout(() => {
       setHighlightedIds((prev) => {
-        if (!prev.has(pubId)) return prev;
+        if (!prev.has(id)) return prev;
         const next = new Set(prev);
-        next.delete(pubId);
+        next.delete(id);
         return next;
       });
     }, 1000);
@@ -154,26 +154,26 @@ export default function BoardPage() {
       setColumns((prev) => {
         if (!prev) return prev;
         const exists = Object.values(prev).some((tasks) =>
-          tasks.some((t) => t.pubId === p.taskPubId)
+          tasks.some((t) => t.id === p.taskId)
         );
         if (exists) return prev;
 
         const now = new Date().toISOString();
         const newTask: BoardTask = {
-          pubId: p.taskPubId,
+          id: p.taskId,
           type: p.type,
           status: p.status,
           title: p.title,
           description: p.description,
-          createdByAgentPubId: p.createdByAgentPubId,
-          assigneeAgentPubId: p.assigneeAgentPubId,
-          parentTaskPubId: p.parentTaskPubId,
+          createdByAgentId: p.createdByAgentId,
+          assigneeAgentId: p.assigneeAgentId,
+          parentTaskId: p.parentTaskId,
           createdAt: now,
           updatedAt: now,
         };
         return { ...prev, [p.status]: [newTask, ...prev[p.status]] };
       });
-      flashCard(p.taskPubId);
+      flashCard(p.taskId);
     },
     [flashCard]
   );
@@ -182,11 +182,11 @@ export default function BoardPage() {
     (p: BoardTaskStatusChangedPayload) => {
       if (!columns) return;
       if (p.oldStatus === p.newStatus) return;
-      if (columns[p.newStatus].some((t) => t.pubId === p.taskPubId)) return;
+      if (columns[p.newStatus].some((t) => t.id === p.taskId)) return;
 
       let task: BoardTask | undefined;
       for (const status of TASK_STATUSES) {
-        const found = columns[status].find((t) => t.pubId === p.taskPubId);
+        const found = columns[status].find((t) => t.id === p.taskId);
         if (found) {
           task = found;
           break;
@@ -196,24 +196,24 @@ export default function BoardPage() {
 
       const next = {} as Record<TaskStatus, BoardTask[]>;
       for (const s of TASK_STATUSES) {
-        next[s] = columns[s].filter((t) => t.pubId !== p.taskPubId);
+        next[s] = columns[s].filter((t) => t.id !== p.taskId);
       }
       next[p.newStatus] = [{ ...task, status: p.newStatus }, ...next[p.newStatus]];
-      animateCardMove(p.taskPubId, () => setColumns(next));
+      animateCardMove(p.taskId, () => setColumns(next));
     },
     [columns]
   );
 
-  useBoardSubscription(board?.pubId ?? null, {
+  useBoardSubscription(board?.id ?? null, {
     onTaskCreated: handleRealtimeTaskCreated,
     onTaskStatusChanged: handleRealtimeStatusChanged,
   });
 
   // Find the selected task from columns
   const selectedTask = useMemo(() => {
-    if (!selectedTaskPubId || !columns) return null;
-    return Object.values(columns).flat().find((t) => t.pubId === selectedTaskPubId) ?? null;
-  }, [selectedTaskPubId, columns]);
+    if (!selectedTaskId || !columns) return null;
+    return Object.values(columns).flat().find((t) => t.id === selectedTaskId) ?? null;
+  }, [selectedTaskId, columns]);
 
   // All tasks flat for parent selection in create modal
   const allTasks = useMemo(() => {
@@ -272,7 +272,7 @@ export default function BoardPage() {
           columns={columns}
           agentMap={agentMap}
           onTaskMove={handleTaskMove}
-          onTaskClick={setSelectedTaskPubId}
+          onTaskClick={setSelectedTaskId}
           onAddTask={() => setShowCreateTask(true)}
           highlightedIds={highlightedIds}
         />
@@ -283,14 +283,14 @@ export default function BoardPage() {
         <TaskSlideOver
           task={selectedTask}
           agentMap={agentMap}
-          onClose={() => setSelectedTaskPubId(null)}
+          onClose={() => setSelectedTaskId(null)}
         />
       )}
 
       {/* Create task modal */}
       {showCreateTask && board && (
         <CreateTaskModal
-          boardPubId={board.pubId}
+          boardId={board.id}
           allTasks={allTasks}
           agentMap={agentMap}
           onClose={() => setShowCreateTask(false)}

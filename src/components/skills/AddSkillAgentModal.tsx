@@ -82,7 +82,7 @@ export default function AddSkillAgentModal({ skillId, onClose, onSuccess }: AddS
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, async () => {
       if (!selectedAgent) return;
-      await apiService.bindAgentSkill(selectedAgent.id, { skillPubId: skillId });
+      await apiService.bindAgentSkill(selectedAgent.id, { skillId: skillId });
     });
 
   const agents = pagedData?.content ?? [];
@@ -115,7 +115,7 @@ export default function AddSkillAgentModal({ skillId, onClose, onSuccess }: AddS
           ) : (
             <div className="space-y-1">
               {agents.map((agent) => {
-                const isBound = agent.skills.some(s => s.pubId === skillId);
+                const isBound = agent.skills.some(s => s.id === skillId);
                 return (
                   <button
                     key={agent.id}
@@ -148,9 +148,9 @@ export default function AddSkillAgentModal({ skillId, onClose, onSuccess }: AddS
                       <div className="flex flex-wrap gap-1 mt-1.5">
                         {agent.skills.map((skill) => (
                           <span
-                            key={skill.pubId}
+                            key={skill.id}
                             className={`inline-block rounded px-1.5 py-0.5 text-xs font-medium border ${
-                              skill.pubId === skillId
+                              skill.id === skillId
                                 ? 'bg-accent/10 border-accent text-accent'
                                 : 'bg-surface border-border text-muted'
                             }`}

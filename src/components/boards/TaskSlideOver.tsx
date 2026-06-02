@@ -36,20 +36,20 @@ export default function TaskSlideOver({
   const [commentsLoading, setCommentsLoading] = useState(true);
   const [commentsError, setCommentsError] = useState<string | null>(null);
   const [newComment, setNewComment] = useState('');
-  const [commentAgentPubId, setCommentAgentPubId] = useState('');
+  const [commentAgentId, setCommentAgentId] = useState('');
 
   const fetchComments = useCallback(async () => {
     setCommentsLoading(true);
     setCommentsError(null);
     try {
-      const data = await apiService.getTaskComments(task.pubId);
+      const data = await apiService.getTaskComments(task.id);
       setComments(data);
     } catch (err) {
       setCommentsError(err instanceof Error ? err.message : t('loadError'));
     } finally {
       setCommentsLoading(false);
     }
-  }, [task.pubId, t]);
+  }, [task.id, t]);
 
   // Lock body scroll while panel is open
   useEffect(() => {
@@ -73,15 +73,15 @@ export default function TaskSlideOver({
 
   const onCommentSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
-      apiService.createTaskComment(task.pubId, {
-        agentPubId: commentAgentPubId,
+      apiService.createTaskComment(task.id, {
+        agentId: commentAgentId,
         content: newComment.trim(),
       })
     );
 
-  const createdByName = agentMap.get(task.createdByAgentPubId) ?? t('unknownAgent');
-  const assigneeName = task.assigneeAgentPubId
-    ? agentMap.get(task.assigneeAgentPubId) ?? t('unknownAgent')
+  const createdByName = agentMap.get(task.createdByAgentId) ?? t('unknownAgent');
+  const assigneeName = task.assigneeAgentId
+    ? agentMap.get(task.assigneeAgentId) ?? t('unknownAgent')
     : null;
 
   const agentEntries = Array.from(agentMap.entries());
@@ -157,9 +157,9 @@ export default function TaskSlideOver({
             ) : (
               <div className="space-y-3">
                 {comments.map((comment) => {
-                  const authorName = agentMap.get(comment.agentPubId) ?? t('unknownAgent');
+                  const authorName = agentMap.get(comment.agentId) ?? t('unknownAgent');
                   return (
-                    <div key={comment.pubId} className="bg-surface-secondary rounded-lg p-3 space-y-1">
+                    <div key={comment.id} className="bg-surface-secondary rounded-lg p-3 space-y-1">
                       <div className="flex items-center gap-2">
                         <UserCircleIcon className="h-4 w-4 text-muted shrink-0" />
                         <span className="text-xs font-medium text-foreground">{authorName}</span>
@@ -183,8 +183,8 @@ export default function TaskSlideOver({
 
             {agentEntries.length > 0 && (
               <select
-                value={commentAgentPubId}
-                onChange={(e) => setCommentAgentPubId(e.target.value)}
+                value={commentAgentId}
+                onChange={(e) => setCommentAgentId(e.target.value)}
                 required
                 className="w-full px-3 py-2 bg-surface-secondary border border-border rounded-lg text-sm text-foreground"
               >
@@ -205,7 +205,7 @@ export default function TaskSlideOver({
             <div className="flex justify-end">
               <Button
                 type="submit"
-                disabled={!newComment.trim() || !commentAgentPubId}
+                disabled={!newComment.trim() || !commentAgentId}
                 loading={commentLoading}
               >
                 {t('addComment')}

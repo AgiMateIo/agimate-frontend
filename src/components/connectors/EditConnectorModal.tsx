@@ -28,7 +28,7 @@ export default function EditConnectorModal({ connector, onClose, onSuccess }: Ed
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
-      apiService.updateApp(connector.pubId, {
+      apiService.updateApp(connector.id, {
         name,
         description: description || undefined,
       })

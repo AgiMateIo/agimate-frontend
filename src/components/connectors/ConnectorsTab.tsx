@@ -47,37 +47,37 @@ function ConnectorsListView({
   };
 
   const handleToggleEnabled = async (connector: AppResponse) => {
-    setUpdatingIds(prev => new Set(prev).add(connector.pubId));
+    setUpdatingIds(prev => new Set(prev).add(connector.id));
 
     setConnectors(prev =>
-      prev.map(a => a.pubId === connector.pubId ? { ...a, enabled: !a.enabled } : a)
+      prev.map(a => a.id === connector.id ? { ...a, enabled: !a.enabled } : a)
     );
 
     try {
-      await apiService.updateApp(connector.pubId, {
+      await apiService.updateApp(connector.id, {
         enabled: !connector.enabled,
       });
     } catch (err) {
       console.error('Failed to update app:', err);
       setConnectors(prev =>
-        prev.map(a => a.pubId === connector.pubId ? { ...a, enabled: connector.enabled } : a)
+        prev.map(a => a.id === connector.id ? { ...a, enabled: connector.enabled } : a)
       );
     } finally {
       setUpdatingIds(prev => {
         const next = new Set(prev);
-        next.delete(connector.pubId);
+        next.delete(connector.id);
         return next;
       });
     }
   };
 
   const handleDeleteSuccess = (connectorId: string) => {
-    setConnectors(prev => prev.filter(a => a.pubId !== connectorId));
+    setConnectors(prev => prev.filter(a => a.id !== connectorId));
     setDeletingConnector(null);
   };
 
   const handleEditSuccess = (updated: AppResponse) => {
-    setConnectors(prev => prev.map(a => a.pubId === updated.pubId ? updated : a));
+    setConnectors(prev => prev.map(a => a.id === updated.id ? updated : a));
     setEditingConnector(null);
   };
 
@@ -124,8 +124,8 @@ function ConnectorsListView({
           <div className="space-y-3">
             {connectors.map((connector) => (
               <Link
-                key={connector.pubId}
-                href={`/dashboard/apps/${connector.pubId}`}
+                key={connector.id}
+                href={`/dashboard/apps/${connector.id}`}
                 className="block bg-surface-secondary rounded-lg p-4 border border-border hover:border-accent/30 transition-colors"
               >
                 <div className="flex items-start justify-between gap-4">
@@ -144,7 +144,7 @@ function ConnectorsListView({
                     <Toggle
                       checked={connector.enabled}
                       onChange={() => handleToggleEnabled(connector)}
-                      disabled={updatingIds.has(connector.pubId)}
+                      disabled={updatingIds.has(connector.id)}
                     />
 
                     <button

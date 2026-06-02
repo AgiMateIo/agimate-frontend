@@ -25,7 +25,7 @@ import { ProbeCaptureModal } from './ProbeCaptureModal';
 import { CapturedSamplePanel, type JsonLeaf } from './CapturedSamplePanel';
 
 interface ChannelConfigFormProps {
-  agentPubId: string;
+  agentId: string;
   channel: ChannelResponse | null;
   onCancel: () => void;
   onSuccess: (channel: ChannelResponse) => void;
@@ -193,7 +193,7 @@ function tryParseJson(text: string): { ok: true; value: Record<string, unknown> 
 }
 
 export default function ChannelConfigForm({
-  agentPubId,
+  agentId,
   channel,
   onCancel,
   onSuccess,
@@ -316,7 +316,7 @@ export default function ChannelConfigForm({
         }));
       }
       const apps = await apiService.getApps({ size: 100 });
-      return apps.content.map((a: AppResponse) => ({ value: a.pubId, label: a.name }));
+      return apps.content.map((a: AppResponse) => ({ value: a.id, label: a.name }));
     },
     [],
   );
@@ -454,11 +454,11 @@ export default function ChannelConfigForm({
           body.clearInputFilter = true;
           body.inputFilter = null;
         }
-        return apiService.updateChannel(channel.pubId, body);
+        return apiService.updateChannel(channel.id, body);
       }
 
       const body: CreateChannelRequest = {
-        agentPubId,
+        agentId,
         name: name.trim(),
         triggerConnectorCode,
         triggerIdentity,

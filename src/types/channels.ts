@@ -1,8 +1,8 @@
 // Channel: declarative binding between a dialog trigger (incoming user message) and
 // a reply tool-call with a parameter template.
 export interface ChannelResponse {
-  pubId: string;
-  agentPubId: string;
+  id: string;
+  agentId: string;
   name: string;
 
   // Trigger side
@@ -27,7 +27,7 @@ export interface ChannelResponse {
 }
 
 export interface CreateChannelRequest {
-  agentPubId: string;
+  agentId: string;
   name: string;
   triggerConnectorCode: string;
   triggerIdentity: string;
@@ -49,7 +49,7 @@ export interface UpdateChannelRequest {
 }
 
 export interface ChannelSessionResponse {
-  pubId: string;
+  id: string;
   title: string | null;
   lastMessageAt: string;
   closedAt: string | null;
@@ -59,7 +59,7 @@ export interface ChannelSessionResponse {
 export type ChannelMessageDirection = 'IN' | 'OUT';
 
 export interface ChannelSessionMessageResponse {
-  pubId: string;
+  id: string;
   direction: ChannelMessageDirection;
   message: string;
   createdAt: string;

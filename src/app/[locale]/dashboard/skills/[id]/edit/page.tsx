@@ -29,7 +29,7 @@ export default function EditSkillPage() {
     try {
       setPageError(null);
       const data = await apiService.getSkill(skillId);
-      if (data.parentPubId != null) {
+      if (data.parentId != null) {
         setRedirecting(true);
         router.replace(`/dashboard/skills/${skillId}`);
         return;

@@ -184,8 +184,8 @@ export default function SkillAgentsTab({ skillId, skillName }: SkillAgentsTabPro
 
       {deletingAgent && (
         <DeleteAgentSkillModal
-          agentPubId={deletingAgent.id}
-          skillPubId={skillId}
+          agentId={deletingAgent.id}
+          skillId={skillId}
           skillName={skillName}
           onClose={() => setDeletingAgent(null)}
           onSuccess={() => {

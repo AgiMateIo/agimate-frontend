@@ -43,7 +43,7 @@ export default function WebhookDeliveriesPage() {
     if (!silent) { setLoading(true); setError(''); }
     try {
       const response = await apiService.getWebhookDeliveryLogs({
-        agentPubId: selectedAgent || undefined,
+        agentId: selectedAgent || undefined,
         page,
         size: pageSize,
       });

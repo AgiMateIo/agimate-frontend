@@ -1,7 +1,7 @@
 // API Key types
 
 export interface ApiKey {
-  pubId: string;
+  id: string;
   name: string;
   description: string;
   maskedKeyId: string;

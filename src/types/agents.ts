@@ -5,7 +5,7 @@ import type { AgentLlmResponse } from './llm-providers';
 export type AgentType = 'CENTRIFUGO' | 'WEBHOOK' | 'GENERIC';
 
 export interface AgentSkillSummary {
-  pubId: string;
+  id: string;
   name: string;
 }
 
@@ -31,7 +31,7 @@ export interface AgentCreatedResponse {
   fullKey: string;
 }
 
-// Lightweight agent representation used by GET /device/manage/skills/{pubId}/agents/
+// Lightweight agent representation used by GET /device/manage/skills/{id}/agents/
 export interface AgentSummaryResponse {
   id: string;
   name: string;
@@ -47,7 +47,7 @@ export interface CreateAgentRequest {
   type?: AgentType;
   webhookUrl?: string | null;
   webhookAuthHeader?: string | null;
-  agenticTeamPubId?: string | null;
+  agenticTeamId?: string | null;
 }
 
 export interface UpdateAgentRequest {

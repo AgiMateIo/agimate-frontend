@@ -29,7 +29,7 @@ export default function CreateBoardModal({ teamId, onClose, onSuccess }: CreateB
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
       apiService.createBoard({
-        agenticTeamPubId: teamId,
+        agenticTeamId: teamId,
         name: name.trim(),
         description: description.trim() || undefined,
       })

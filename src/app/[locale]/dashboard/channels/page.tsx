@@ -64,10 +64,10 @@ export default function ChannelsPage() {
               </thead>
               <tbody>
                 {rows.map((c) => {
-                  const agent = agents[c.agentPubId];
-                  const href = `/dashboard/agents/${c.agentPubId}`;
+                  const agent = agents[c.agentId];
+                  const href = `/dashboard/agents/${c.agentId}`;
                   return (
-                    <tr key={c.pubId} className="border-b border-border last:border-b-0 hover:bg-surface-secondary transition-colors">
+                    <tr key={c.id} className="border-b border-border last:border-b-0 hover:bg-surface-secondary transition-colors">
                       <td className="py-3 px-4 text-sm">
                         <Link href={href} className="text-accent hover:text-accent/80 transition-colors">
                           {c.name}
@@ -79,7 +79,7 @@ export default function ChannelsPage() {
                             {agent.name}
                           </Link>
                         ) : (
-                          <span className="text-muted font-mono">{c.agentPubId.slice(0, 8)}</span>
+                          <span className="text-muted font-mono">{c.agentId.slice(0, 8)}</span>
                         )}
                       </td>
                       <td className="py-3 px-4 text-xs">

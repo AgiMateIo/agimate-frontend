@@ -2,8 +2,8 @@
 
 export interface AgentSkillResponse {
   id: string;
-  agentPubId: string;
-  skillPubId: string;
+  agentId: string;
+  skillId: string;
   skillName: string | null;
   needsReinstall: boolean;
   createdAt: string;
@@ -11,7 +11,7 @@ export interface AgentSkillResponse {
 }
 
 export interface CreateAgentSkillRequest {
-  skillPubId: string;
+  skillId: string;
 }
 
 export interface PolicyDiffEntry {

@@ -6,29 +6,29 @@ export interface CentrifugoTokenResponse {
 }
 
 export interface BoardTaskCreatedPayload {
-  boardPubId: string;
-  taskPubId: string;
+  boardId: string;
+  taskId: string;
   type: 'EPIC' | 'TASK' | 'SUBTASK';
   status: 'BACKLOG' | 'IN_PROGRESS' | 'REVIEW' | 'DONE';
   title: string;
   description: string | null;
-  createdByAgentPubId: string;
-  assigneeAgentPubId: string | null;
-  parentTaskPubId: string | null;
+  createdByAgentId: string;
+  assigneeAgentId: string | null;
+  parentTaskId: string | null;
 }
 
 export interface BoardTaskStatusChangedPayload {
-  boardPubId: string;
-  taskPubId: string;
+  boardId: string;
+  taskId: string;
   oldStatus: 'BACKLOG' | 'IN_PROGRESS' | 'REVIEW' | 'DONE';
   newStatus: 'BACKLOG' | 'IN_PROGRESS' | 'REVIEW' | 'DONE';
 }
 
 export interface BoardTaskCommentCreatedPayload {
-  boardPubId: string;
-  taskPubId: string;
-  commentPubId: string;
-  agentPubId: string;
+  boardId: string;
+  taskId: string;
+  commentId: string;
+  agentId: string;
   content: string;
 }
 

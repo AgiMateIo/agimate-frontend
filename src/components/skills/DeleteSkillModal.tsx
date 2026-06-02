@@ -38,7 +38,7 @@ export default function DeleteSkillModal({
     }
   };
 
-  if (skill.parentPubId != null) {
+  if (skill.parentId != null) {
     return (
       <Modal isOpen={true} onClose={onClose} title={t('deleteSkillTitle')} size="sm">
         <div className="space-y-4">

@@ -12,7 +12,7 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Link } from '@/i18n/navigation';
 
 interface AddAgentLlmModalProps {
-  agentPubId: string;
+  agentId: string;
   providers: LlmProviderResponse[];
   existingNames: Set<string>;
   onProvidersUpdate: (providers: LlmProviderResponse[]) => void;
@@ -21,7 +21,7 @@ interface AddAgentLlmModalProps {
 }
 
 export default function AddAgentLlmModal({
-  agentPubId,
+  agentId,
   providers,
   existingNames,
   onProvidersUpdate,
@@ -31,13 +31,13 @@ export default function AddAgentLlmModal({
   const t = useTranslations('Agents');
 
   const [name, setName] = useState('');
-  const [providerPubId, setProviderPubId] = useState<string>(providers[0]?.pubId ?? '');
+  const [providerId, setProviderId] = useState<string>(providers[0]?.id ?? '');
   const [model, setModel] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const selected = providers.find(p => p.pubId === providerPubId);
+  const selected = providers.find(p => p.id === providerId);
   const selectedModels = selected?.availableModels ?? null;
   const noModelsYet = selectedModels === null || selectedModels.length === 0;
 
@@ -46,8 +46,8 @@ export default function AddAgentLlmModal({
     setRefreshing(true);
     setError(null);
     try {
-      const result = await apiService.refreshLlmProviderModels(selected.pubId);
-      const updatedProviders = providers.map(p => p.pubId === selected.pubId
+      const result = await apiService.refreshLlmProviderModels(selected.id);
+      const updatedProviders = providers.map(p => p.id === selected.id
         ? { ...p, availableModels: result.availableModels, modelsRefreshedAt: result.refreshedAt }
         : p);
       onProvidersUpdate(updatedProviders);
@@ -63,7 +63,7 @@ export default function AddAgentLlmModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!providerPubId || !model || !name.trim()) return;
+    if (!providerId || !model || !name.trim()) return;
     if (existingNames.has(name.trim())) {
       setError('A binding with this label already exists');
       return;
@@ -71,9 +71,9 @@ export default function AddAgentLlmModal({
     setSubmitting(true);
     setError(null);
     try {
-      await apiService.createAgentLlm(agentPubId, {
+      await apiService.createAgentLlm(agentId, {
         name: name.trim(),
-        llmProviderPubId: providerPubId,
+        llmProviderId: providerId,
         model,
       });
       onSuccess();
@@ -119,9 +119,9 @@ export default function AddAgentLlmModal({
 
             <FormField label={t('provider')} required>
               <select
-                value={providerPubId}
+                value={providerId}
                 onChange={(e) => {
-                  setProviderPubId(e.target.value);
+                  setProviderId(e.target.value);
                   setModel('');
                 }}
                 disabled={busy}
@@ -129,7 +129,7 @@ export default function AddAgentLlmModal({
                 required
               >
                 {providers.map((p) => (
-                  <option key={p.pubId} value={p.pubId}>
+                  <option key={p.id} value={p.id}>
                     {p.name} {!p.enabled ? `(${t('providerDisabled')})` : ''}
                   </option>
                 ))}

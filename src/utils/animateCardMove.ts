@@ -18,7 +18,7 @@ type DocWithVT = Document & {
  * Browsers without View Transitions (Firefox/Safari as of 2026) just run
  * the update instantly — graceful degradation.
  */
-export function animateCardMove(_taskPubId: string, update: () => void): void {
+export function animateCardMove(_taskId: string, update: () => void): void {
   const doc = document as DocWithVT;
   if (typeof doc.startViewTransition !== 'function') {
     update();

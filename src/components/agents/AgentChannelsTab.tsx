@@ -10,42 +10,42 @@ import ChannelDetailPane from '@/components/channels/ChannelDetailPane';
 type Mode = 'view' | 'edit' | 'create';
 
 interface AgentChannelsTabProps {
-  agentPubId: string;
+  agentId: string;
 }
 
-export default function AgentChannelsTab({ agentPubId }: AgentChannelsTabProps) {
+export default function AgentChannelsTab({ agentId }: AgentChannelsTabProps) {
   const [channels, setChannels] = useState<ChannelResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [selectedPubId, setSelectedPubId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>('view');
 
   const fetchChannels = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      const data = await apiService.getChannels({ agentPubId });
+      const data = await apiService.getChannels({ agentId });
       setChannels(data);
-      if (data.length > 0 && !selectedPubId) {
-        setSelectedPubId(data[0].pubId);
+      if (data.length > 0 && !selectedId) {
+        setSelectedId(data[0].id);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load channels');
     } finally {
       setLoading(false);
     }
-  }, [agentPubId, selectedPubId]);
+  }, [agentId, selectedId]);
 
   useEffect(() => {
     fetchChannels();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [agentPubId]);
+  }, [agentId]);
 
-  const selected = channels.find((c) => c.pubId === selectedPubId) || null;
+  const selected = channels.find((c) => c.id === selectedId) || null;
 
   const handleSaved = (saved: ChannelResponse) => {
     setChannels((prev) => {
-      const idx = prev.findIndex((c) => c.pubId === saved.pubId);
+      const idx = prev.findIndex((c) => c.id === saved.id);
       if (idx >= 0) {
         const next = [...prev];
         next[idx] = saved;
@@ -53,12 +53,12 @@ export default function AgentChannelsTab({ agentPubId }: AgentChannelsTabProps) 
       }
       return [saved, ...prev];
     });
-    setSelectedPubId(saved.pubId);
+    setSelectedId(saved.id);
   };
 
-  const handleDeleted = (pubId: string) => {
-    setChannels((prev) => prev.filter((c) => c.pubId !== pubId));
-    setSelectedPubId((curr) => (curr === pubId ? null : curr));
+  const handleDeleted = (id: string) => {
+    setChannels((prev) => prev.filter((c) => c.id !== id));
+    setSelectedId((curr) => (curr === id ? null : curr));
     setMode('view');
   };
 
@@ -69,15 +69,15 @@ export default function AgentChannelsTab({ agentPubId }: AgentChannelsTabProps) 
       <div className="md:border-r md:border-border md:pr-6">
         <ChannelsList
           channels={channels}
-          selectedPubId={selectedPubId}
+          selectedId={selectedId}
           loading={loading}
-          onSelect={(id) => { setSelectedPubId(id); setMode('view'); }}
+          onSelect={(id) => { setSelectedId(id); setMode('view'); }}
           onCreate={() => setMode('create')}
         />
       </div>
       <div>
         <ChannelDetailPane
-          agentPubId={agentPubId}
+          agentId={agentId}
           channel={mode === 'create' ? null : selected}
           mode={mode}
           onModeChange={setMode}

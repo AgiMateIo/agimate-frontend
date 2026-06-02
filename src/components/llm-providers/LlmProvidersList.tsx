@@ -43,25 +43,25 @@ export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersLi
   };
 
   const handleToggleEnabled = async (provider: LlmProviderResponse) => {
-    setBusy(provider.pubId, true);
+    setBusy(provider.id, true);
     const newEnabled = !provider.enabled;
-    onUpdate(providers.map(p => p.pubId === provider.pubId ? { ...p, enabled: newEnabled } : p));
+    onUpdate(providers.map(p => p.id === provider.id ? { ...p, enabled: newEnabled } : p));
     try {
-      const updated = await apiService.updateLlmProvider(provider.pubId, { enabled: newEnabled });
-      onUpdate(providers.map(p => p.pubId === provider.pubId ? updated : p));
+      const updated = await apiService.updateLlmProvider(provider.id, { enabled: newEnabled });
+      onUpdate(providers.map(p => p.id === provider.id ? updated : p));
     } catch (err) {
       console.error('Failed to toggle provider', err);
-      onUpdate(providers.map(p => p.pubId === provider.pubId ? { ...p, enabled: provider.enabled } : p));
+      onUpdate(providers.map(p => p.id === provider.id ? { ...p, enabled: provider.enabled } : p));
     } finally {
-      setBusy(provider.pubId, false);
+      setBusy(provider.id, false);
     }
   };
 
   const handleRefreshModels = async (provider: LlmProviderResponse) => {
-    setBusy(provider.pubId, true);
+    setBusy(provider.id, true);
     try {
-      const result = await apiService.refreshLlmProviderModels(provider.pubId);
-      onUpdate(providers.map(p => p.pubId === provider.pubId
+      const result = await apiService.refreshLlmProviderModels(provider.id);
+      onUpdate(providers.map(p => p.id === provider.id
         ? { ...p, availableModels: result.availableModels, modelsRefreshedAt: result.refreshedAt }
         : p));
     } catch (err) {
@@ -69,22 +69,22 @@ export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersLi
       // surface the upstream error message to the user
       window.alert(message);
     } finally {
-      setBusy(provider.pubId, false);
+      setBusy(provider.id, false);
     }
   };
 
   const handleEditSuccess = (updated: LlmProviderResponse) => {
-    onUpdate(providers.map(p => p.pubId === updated.pubId ? updated : p));
+    onUpdate(providers.map(p => p.id === updated.id ? updated : p));
     setEditing(null);
   };
 
   const handleRotateSuccess = (updated: LlmProviderResponse) => {
-    onUpdate(providers.map(p => p.pubId === updated.pubId ? updated : p));
+    onUpdate(providers.map(p => p.id === updated.id ? updated : p));
     setRotating(null);
   };
 
-  const handleDeleteSuccess = (pubId: string) => {
-    onUpdate(providers.filter(p => p.pubId !== pubId));
+  const handleDeleteSuccess = (id: string) => {
+    onUpdate(providers.filter(p => p.id !== id));
     setDeleting(null);
   };
 
@@ -100,13 +100,13 @@ export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersLi
     <>
       <div className="space-y-3">
         {providers.map((provider) => {
-          const busy = busyIds.has(provider.pubId);
+          const busy = busyIds.has(provider.id);
           const modelsCount = provider.availableModels?.length ?? 0;
           const hasModels = provider.availableModels !== null && modelsCount > 0;
 
           return (
             <div
-              key={provider.pubId}
+              key={provider.id}
               className="bg-surface-secondary rounded-lg p-4 border border-border"
             >
               <div className="flex items-start justify-between gap-4">

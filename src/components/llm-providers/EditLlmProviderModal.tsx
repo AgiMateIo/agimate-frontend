@@ -39,7 +39,7 @@ export default function EditLlmProviderModal({ provider, onClose, onSuccess }: E
         body.baseUrl = trimmedUrl === '' ? '' : trimmedUrl;
       }
       if (enabled !== provider.enabled) body.enabled = enabled;
-      return apiService.updateLlmProvider(provider.pubId, body);
+      return apiService.updateLlmProvider(provider.id, body);
     });
 
   return (

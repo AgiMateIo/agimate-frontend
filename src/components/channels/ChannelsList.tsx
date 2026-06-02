@@ -7,15 +7,15 @@ import { Button } from '@/components/ui/Button';
 
 interface ChannelsListProps {
   channels: ChannelResponse[];
-  selectedPubId: string | null;
-  onSelect: (pubId: string) => void;
+  selectedId: string | null;
+  onSelect: (id: string) => void;
   onCreate: () => void;
   loading: boolean;
 }
 
 export default function ChannelsList({
   channels,
-  selectedPubId,
+  selectedId,
   onSelect,
   onCreate,
   loading,
@@ -36,12 +36,12 @@ export default function ChannelsList({
       ) : (
         <div className="space-y-2 overflow-y-auto pr-1">
           {channels.map((c) => {
-            const active = c.pubId === selectedPubId;
+            const active = c.id === selectedId;
             return (
               <button
-                key={c.pubId}
+                key={c.id}
                 type="button"
-                onClick={() => onSelect(c.pubId)}
+                onClick={() => onSelect(c.id)}
                 className={`w-full text-left p-3 rounded-lg border transition-colors ${
                   active
                     ? 'border-accent bg-accent/5'

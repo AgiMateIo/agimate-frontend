@@ -210,31 +210,31 @@ export default function AgentDetailPage() {
 
       {activeTab === 'models' && (
         <div className="bg-surface rounded-xl border border-border p-6">
-          <AgentModelsTab agentPubId={agentId} />
+          <AgentModelsTab agentId={agentId} />
         </div>
       )}
 
       {activeTab === 'channels' && (
         <div className="bg-surface rounded-xl border border-border p-6">
-          <AgentChannelsTab agentPubId={agentId} />
+          <AgentChannelsTab agentId={agentId} />
         </div>
       )}
 
       {activeTab === 'skills' && (
         <div className="bg-surface rounded-xl border border-border p-6">
-          <AgentSkillsTab agentPubId={agentId} />
+          <AgentSkillsTab agentId={agentId} />
         </div>
       )}
 
       {activeTab === 'trigger-rules' && (
         <div className="bg-surface rounded-xl border border-border p-6">
-          <AgentPoliciesTab kind="trigger" agentPubId={agentId} />
+          <AgentPoliciesTab kind="trigger" agentId={agentId} />
         </div>
       )}
 
       {activeTab === 'tool-rules' && (
         <div className="bg-surface rounded-xl border border-border p-6">
-          <AgentPoliciesTab kind="tool" agentPubId={agentId} />
+          <AgentPoliciesTab kind="tool" agentId={agentId} />
         </div>
       )}
     </div>

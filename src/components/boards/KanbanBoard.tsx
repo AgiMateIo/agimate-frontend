@@ -22,8 +22,8 @@ import TaskCard from './TaskCard';
 interface KanbanBoardProps {
   columns: Record<TaskStatus, BoardTask[]>;
   agentMap: Map<string, string>;
-  onTaskMove: (taskPubId: string, from: TaskStatus, to: TaskStatus) => void;
-  onTaskClick: (taskPubId: string) => void;
+  onTaskMove: (taskId: string, from: TaskStatus, to: TaskStatus) => void;
+  onTaskClick: (taskId: string) => void;
   onAddTask: (status: TaskStatus) => void;
   highlightedIds?: Set<string>;
 }
@@ -67,7 +67,7 @@ export default function KanbanBoard({
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
       const taskId = event.active.id as string;
-      const task = Object.values(columns).flat().find((t) => t.pubId === taskId);
+      const task = Object.values(columns).flat().find((t) => t.id === taskId);
       setActiveTask(task ?? null);
     },
     [columns]
@@ -88,7 +88,7 @@ export default function KanbanBoard({
       } else {
         // Dropped on another task — find which column it belongs to
         for (const [status, tasks] of Object.entries(columns)) {
-          if (tasks.some((t) => t.pubId === over.id)) {
+          if (tasks.some((t) => t.id === over.id)) {
             toStatus = status as TaskStatus;
             break;
           }
@@ -100,7 +100,7 @@ export default function KanbanBoard({
       // Find the source column
       let fromStatus: TaskStatus | undefined;
       for (const [status, tasks] of Object.entries(columns)) {
-        if (tasks.some((t) => t.pubId === taskId)) {
+        if (tasks.some((t) => t.id === taskId)) {
           fromStatus = status as TaskStatus;
           break;
         }

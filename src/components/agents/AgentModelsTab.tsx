@@ -13,7 +13,7 @@ import EditAgentLlmModal from './EditAgentLlmModal';
 import DeleteAgentLlmModal from './DeleteAgentLlmModal';
 
 interface AgentModelsTabProps {
-  agentPubId: string;
+  agentId: string;
 }
 
 const providerTypeBadge: Record<LlmProviderType, string> = {
@@ -23,7 +23,7 @@ const providerTypeBadge: Record<LlmProviderType, string> = {
   OPENAI_COMPATIBLE: 'OpenAI-compatible',
 };
 
-export default function AgentModelsTab({ agentPubId }: AgentModelsTabProps) {
+export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
   const t = useTranslations('Agents');
 
   const [bindings, setBindings] = useState<AgentLlmResponse[]>([]);
@@ -40,7 +40,7 @@ export default function AgentModelsTab({ agentPubId }: AgentModelsTabProps) {
     setError('');
     try {
       const [bindingsData, providersData] = await Promise.all([
-        apiService.getAgentLlms(agentPubId),
+        apiService.getAgentLlms(agentId),
         apiService.getLlmProviders(),
       ]);
       setBindings(bindingsData);
@@ -50,7 +50,7 @@ export default function AgentModelsTab({ agentPubId }: AgentModelsTabProps) {
     } finally {
       setLoading(false);
     }
-  }, [agentPubId]);
+  }, [agentId]);
 
   useEffect(() => {
     fetchData();
@@ -71,7 +71,7 @@ export default function AgentModelsTab({ agentPubId }: AgentModelsTabProps) {
     return <div className="text-center py-12 text-muted">{t('loadingBindings')}</div>;
   }
 
-  const providerByPubId = (pubId: string) => providers.find(p => p.pubId === pubId);
+  const providerById = (id: string) => providers.find(p => p.id === id);
 
   return (
     <div className="space-y-4">
@@ -103,7 +103,7 @@ export default function AgentModelsTab({ agentPubId }: AgentModelsTabProps) {
             </thead>
             <tbody>
               {bindings.map((binding) => {
-                const provider = providerByPubId(binding.llmProviderPubId);
+                const provider = providerById(binding.llmProviderId);
                 const providerDisabled = provider ? !provider.enabled : false;
                 return (
                   <tr key={binding.name} className="border-b border-border last:border-b-0 hover:bg-surface-secondary transition-colors">
@@ -156,7 +156,7 @@ export default function AgentModelsTab({ agentPubId }: AgentModelsTabProps) {
 
       {showAdd && (
         <AddAgentLlmModal
-          agentPubId={agentPubId}
+          agentId={agentId}
           providers={providers}
           existingNames={new Set(bindings.map(b => b.name))}
           onProvidersUpdate={setProviders}
@@ -167,7 +167,7 @@ export default function AgentModelsTab({ agentPubId }: AgentModelsTabProps) {
 
       {editing && (
         <EditAgentLlmModal
-          agentPubId={agentPubId}
+          agentId={agentId}
           binding={editing}
           providers={providers}
           onProvidersUpdate={setProviders}
@@ -178,7 +178,7 @@ export default function AgentModelsTab({ agentPubId }: AgentModelsTabProps) {
 
       {deleting && (
         <DeleteAgentLlmModal
-          agentPubId={agentPubId}
+          agentId={agentId}
           binding={deleting}
           onClose={() => setDeleting(null)}
           onSuccess={handleMutationSuccess}

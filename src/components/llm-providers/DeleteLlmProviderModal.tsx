@@ -12,19 +12,19 @@ import { useAsyncForm } from '@/hooks/useAsyncForm';
 interface DeleteLlmProviderModalProps {
   provider: LlmProviderResponse;
   onClose: () => void;
-  onSuccess: (pubId: string) => void;
+  onSuccess: (id: string) => void;
 }
 
 export default function DeleteLlmProviderModal({ provider, onClose, onSuccess }: DeleteLlmProviderModalProps) {
   const t = useTranslations('LlmProviders');
 
   const { loading, error, handleSubmit } = useAsyncForm<void>({
-    onSuccess: () => onSuccess(provider.pubId),
+    onSuccess: () => onSuccess(provider.id),
     defaultError: 'Failed to delete provider',
   });
 
   const onSubmit = (e: React.FormEvent) =>
-    handleSubmit(e, () => apiService.deleteLlmProvider(provider.pubId));
+    handleSubmit(e, () => apiService.deleteLlmProvider(provider.id));
 
   return (
     <Modal isOpen={true} onClose={onClose} title={`${t('deleteProvider')}: ${provider.name}`}>

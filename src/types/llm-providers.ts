@@ -3,7 +3,7 @@
 export type LlmProviderType = 'OPENAI' | 'ANTHROPIC' | 'GEMINI' | 'OPENAI_COMPATIBLE';
 
 export interface LlmProviderResponse {
-  pubId: string;
+  id: string;
   name: string;
   providerType: LlmProviderType;
   baseUrl: string | null;
@@ -37,18 +37,18 @@ export interface RefreshModelsResponse {
 export interface AgentLlmResponse {
   name: string;
   model: string;
-  llmProviderPubId: string;
+  llmProviderId: string;
   llmProviderName: string;
   providerType: LlmProviderType;
 }
 
 export interface CreateAgentLlmRequest {
   name: string;
-  llmProviderPubId: string;
+  llmProviderId: string;
   model: string;
 }
 
 export interface UpdateAgentLlmRequest {
-  llmProviderPubId: string;
+  llmProviderId: string;
   model: string;
 }

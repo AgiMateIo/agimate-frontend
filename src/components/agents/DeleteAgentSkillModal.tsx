@@ -12,14 +12,14 @@ import { useAsyncForm } from '@/hooks/useAsyncForm';
 import PolicyDiffPreview from './PolicyDiffPreview';
 
 interface DeleteAgentSkillModalProps {
-  agentPubId: string;
-  skillPubId: string;
+  agentId: string;
+  skillId: string;
   skillName: string | null;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export default function DeleteAgentSkillModal({ agentPubId, skillPubId, skillName, onClose, onSuccess }: DeleteAgentSkillModalProps) {
+export default function DeleteAgentSkillModal({ agentId, skillId, skillName, onClose, onSuccess }: DeleteAgentSkillModalProps) {
   const t = useTranslations('Agents');
 
   const [diff, setDiff] = useState<PolicyDiffResponse | null>(null);
@@ -27,12 +27,12 @@ export default function DeleteAgentSkillModal({ agentPubId, skillPubId, skillNam
 
   useEffect(() => {
     let cancelled = false;
-    apiService.getSkillPolicyDiff(agentPubId, skillPubId, 'remove')
+    apiService.getSkillPolicyDiff(agentId, skillId, 'remove')
       .then(data => { if (!cancelled) setDiff(data); })
       .catch(() => { if (!cancelled) setDiff(null); })
       .finally(() => { if (!cancelled) setDiffLoading(false); });
     return () => { cancelled = true; };
-  }, [agentPubId, skillPubId]);
+  }, [agentId, skillId]);
 
   const { loading, error, handleSubmit } = useAsyncForm<void>({
     onSuccess,
@@ -41,7 +41,7 @@ export default function DeleteAgentSkillModal({ agentPubId, skillPubId, skillNam
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, async () => {
-      await apiService.unbindAgentSkill(agentPubId, skillPubId);
+      await apiService.unbindAgentSkill(agentId, skillId);
     });
 
   return (
@@ -51,7 +51,7 @@ export default function DeleteAgentSkillModal({ agentPubId, skillPubId, skillNam
           {t('removeSkillConfirm')}
         </p>
         <div className="text-sm text-muted">
-          <strong>{t('skillName')}:</strong> {skillName ?? skillPubId}
+          <strong>{t('skillName')}:</strong> {skillName ?? skillId}
         </div>
 
         {/* Policy diff preview */}

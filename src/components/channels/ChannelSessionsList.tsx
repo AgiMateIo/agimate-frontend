@@ -9,7 +9,7 @@ import { formatDate } from '@/utils/date';
 import ChannelChatView from './ChannelChatView';
 
 interface ChannelSessionsListProps {
-  channelPubId: string;
+  channelId: string;
 }
 
 const SESSION_ACTIVE_WINDOW_MS = 12 * 60 * 60 * 1000;
@@ -20,43 +20,43 @@ function isSessionActive(s: ChannelSessionResponse): boolean {
   return Date.now() - last < SESSION_ACTIVE_WINDOW_MS;
 }
 
-export default function ChannelSessionsList({ channelPubId }: ChannelSessionsListProps) {
+export default function ChannelSessionsList({ channelId }: ChannelSessionsListProps) {
   const t = useTranslations('Channels');
   const locale = useLocale();
   const [sessions, setSessions] = useState<ChannelSessionResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [selectedPubId, setSelectedPubId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const fetchSessions = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      const data = await apiService.getChannelSessions(channelPubId);
+      const data = await apiService.getChannelSessions(channelId);
       setSessions(data);
-      if (data.length > 0 && !selectedPubId) {
-        setSelectedPubId(data[0].pubId);
+      if (data.length > 0 && !selectedId) {
+        setSelectedId(data[0].id);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load sessions');
     } finally {
       setLoading(false);
     }
-  }, [channelPubId, selectedPubId]);
+  }, [channelId, selectedId]);
 
   useEffect(() => {
-    setSelectedPubId(null);
+    setSelectedId(null);
     fetchSessions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [channelPubId]);
+  }, [channelId]);
 
   const handleSessionClosed = (updated: ChannelSessionResponse) => {
-    setSessions((prev) => prev.map((s) => (s.pubId === updated.pubId ? updated : s)));
+    setSessions((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
   };
 
   if (error) return <ErrorAlert>{error}</ErrorAlert>;
 
-  const selected = sessions.find((s) => s.pubId === selectedPubId) || null;
+  const selected = sessions.find((s) => s.id === selectedId) || null;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 min-h-0 h-[600px]">
@@ -68,13 +68,13 @@ export default function ChannelSessionsList({ channelPubId }: ChannelSessionsLis
         ) : (
           <div className="space-y-1">
             {sessions.map((s) => {
-              const active = s.pubId === selectedPubId;
+              const active = s.id === selectedId;
               const live = isSessionActive(s);
               return (
                 <button
-                  key={s.pubId}
+                  key={s.id}
                   type="button"
-                  onClick={() => setSelectedPubId(s.pubId)}
+                  onClick={() => setSelectedId(s.id)}
                   className={`w-full text-left p-2 rounded-md transition-colors ${
                     active
                       ? 'bg-accent/10 border border-accent'

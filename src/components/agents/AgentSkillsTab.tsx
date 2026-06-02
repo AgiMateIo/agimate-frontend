@@ -14,10 +14,10 @@ import AddAgentSkillModal from './AddAgentSkillModal';
 import DeleteAgentSkillModal from './DeleteAgentSkillModal';
 
 interface AgentSkillsTabProps {
-  agentPubId: string;
+  agentId: string;
 }
 
-export default function AgentSkillsTab({ agentPubId }: AgentSkillsTabProps) {
+export default function AgentSkillsTab({ agentId }: AgentSkillsTabProps) {
   const t = useTranslations('Agents');
   const locale = useLocale();
 
@@ -37,7 +37,7 @@ export default function AgentSkillsTab({ agentPubId }: AgentSkillsTabProps) {
       setError('');
     }
     try {
-      const data = await apiService.getAgentSkills({ agentPubId, page, size: 20 });
+      const data = await apiService.getAgentSkills({ agentId, page, size: 20 });
       setBindings(data.content);
       setPageInfo({
         totalElements: data.totalElements,
@@ -57,7 +57,7 @@ export default function AgentSkillsTab({ agentPubId }: AgentSkillsTabProps) {
     } finally {
       if (!silent) setLoading(false);
     }
-  }, [agentPubId, page]);
+  }, [agentId, page]);
 
   useEffect(() => {
     fetchData(false);
@@ -74,7 +74,7 @@ export default function AgentSkillsTab({ agentPubId }: AgentSkillsTabProps) {
   const handleSyncPolicies = async () => {
     setSyncing(true);
     try {
-      await apiService.syncAgentSkillPolicies(agentPubId);
+      await apiService.syncAgentSkillPolicies(agentId);
       await fetchData(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sync policies');
@@ -137,7 +137,7 @@ export default function AgentSkillsTab({ agentPubId }: AgentSkillsTabProps) {
                     <td className="py-3 px-4 text-sm">
                       {binding.skillName ? (
                         <Link
-                          href={`/dashboard/skills/${binding.skillPubId}`}
+                          href={`/dashboard/skills/${binding.skillId}`}
                           className="text-accent hover:text-accent/80 transition-colors"
                         >
                           {binding.skillName}
@@ -203,8 +203,8 @@ export default function AgentSkillsTab({ agentPubId }: AgentSkillsTabProps) {
 
       {showAdd && (
         <AddAgentSkillModal
-          agentPubId={agentPubId}
-          boundSkillIds={new Set(bindings.map(b => b.skillPubId))}
+          agentId={agentId}
+          boundSkillIds={new Set(bindings.map(b => b.skillId))}
           onClose={() => setShowAdd(false)}
           onSuccess={handleMutationSuccess}
         />
@@ -212,8 +212,8 @@ export default function AgentSkillsTab({ agentPubId }: AgentSkillsTabProps) {
 
       {deletingBinding && (
         <DeleteAgentSkillModal
-          agentPubId={agentPubId}
-          skillPubId={deletingBinding.skillPubId}
+          agentId={agentId}
+          skillId={deletingBinding.skillId}
           skillName={deletingBinding.skillName}
           onClose={() => setDeletingBinding(null)}
           onSuccess={handleMutationSuccess}

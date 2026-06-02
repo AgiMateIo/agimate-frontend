@@ -14,13 +14,13 @@ import PolicyDiffPreview from './PolicyDiffPreview';
 const PAGE_SIZE = 10;
 
 interface AddAgentSkillModalProps {
-  agentPubId: string;
+  agentId: string;
   boundSkillIds: Set<string>;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export default function AddAgentSkillModal({ agentPubId, boundSkillIds, onClose, onSuccess }: AddAgentSkillModalProps) {
+export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, onSuccess }: AddAgentSkillModalProps) {
   const t = useTranslations('Agents');
 
   const [search, setSearch] = useState('');
@@ -72,12 +72,12 @@ export default function AddAgentSkillModal({ agentPubId, boundSkillIds, onClose,
     }
     let cancelled = false;
     setDiffLoading(true);
-    apiService.getSkillPolicyDiff(agentPubId, selectedSkill.id, 'add')
+    apiService.getSkillPolicyDiff(agentId, selectedSkill.id, 'add')
       .then(data => { if (!cancelled) setDiff(data); })
       .catch(() => { if (!cancelled) setDiff(null); })
       .finally(() => { if (!cancelled) setDiffLoading(false); });
     return () => { cancelled = true; };
-  }, [agentPubId, selectedSkill]);
+  }, [agentId, selectedSkill]);
 
   const { loading, error, handleSubmit } = useAsyncForm<void>({
     onSuccess,
@@ -87,7 +87,7 @@ export default function AddAgentSkillModal({ agentPubId, boundSkillIds, onClose,
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, async () => {
       if (!selectedSkill) return;
-      await apiService.bindAgentSkill(agentPubId, { skillPubId: selectedSkill.id });
+      await apiService.bindAgentSkill(agentId, { skillId: selectedSkill.id });
     });
 
   const skills = pagedData?.content ?? [];

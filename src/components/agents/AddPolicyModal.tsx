@@ -16,7 +16,7 @@ const CONNECTOR_PAGE_SIZE = 10;
 
 interface AddPolicyModalProps {
   kind: PolicyKind;
-  agentPubId: string;
+  agentId: string;
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -32,7 +32,7 @@ interface ResourceItem {
   description: string;
 }
 
-export default function AddPolicyModal({ kind, agentPubId, onClose, onSuccess }: AddPolicyModalProps) {
+export default function AddPolicyModal({ kind, agentId, onClose, onSuccess }: AddPolicyModalProps) {
   const t = useTranslations('Agents');
   const labels = getPolicyLabels(kind);
   const [step, setStep] = useState<Step>('connector');
@@ -199,7 +199,7 @@ export default function AddPolicyModal({ kind, agentPubId, onClose, onSuccess }:
     const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
     handleSubmit(fakeEvent, async () => {
       const data = {
-        agentPubId,
+        agentId,
         connectorCode: toApiValue(connectorCode),
         connectorIdentity: toApiValue(connectorIdentity),
         resourceName: toApiValue(resourceName),
@@ -404,14 +404,14 @@ export default function AddPolicyModal({ kind, agentPubId, onClose, onSuccess }:
               ) : (
                 <div className="space-y-2 max-h-56 overflow-y-auto">
                   {apps.map((app) => (
-                    <label key={app.pubId} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                      connectorIdentity === app.pubId ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/50'
+                    <label key={app.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                      connectorIdentity === app.id ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/50'
                     }`}>
                       <input
                         type="radio"
                         name="identity"
-                        checked={connectorIdentity === app.pubId}
-                        onChange={() => setConnectorIdentity(app.pubId)}
+                        checked={connectorIdentity === app.id}
+                        onChange={() => setConnectorIdentity(app.id)}
                         className="accent-accent"
                       />
                       <div>

@@ -25,8 +25,8 @@ export default function DeleteConnectorModal({ connector, onClose, onSuccess }: 
     setError(null);
 
     try {
-      await apiService.deleteApp(connector.pubId);
-      onSuccess(connector.pubId);
+      await apiService.deleteApp(connector.id);
+      onSuccess(connector.id);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete connector');
     } finally {

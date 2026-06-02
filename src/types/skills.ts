@@ -8,7 +8,7 @@ export interface SkillResponse {
   isPublic: boolean;
   isFeatured: boolean;
   userPubId: string;
-  parentPubId: string | null;
+  parentId: string | null;
   myCopyId: string | null;
   createdAt: string;
   updatedAt: string;

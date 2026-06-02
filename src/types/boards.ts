@@ -15,31 +15,31 @@ export const TASK_STATUSES: TaskStatus[] = [
 export const TASK_TYPES: TaskType[] = ['EPIC', 'TASK', 'SUBTASK'];
 
 export interface Board {
-  pubId: string;
+  id: string;
   name: string;
   description: string | null;
-  agenticTeamPubId: string;
+  agenticTeamId: string;
   agenticTeamName: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface BoardTask {
-  pubId: string;
+  id: string;
   type: TaskType;
   status: TaskStatus;
   title: string;
   description: string | null;
-  createdByAgentPubId: string;
-  assigneeAgentPubId: string | null;
-  parentTaskPubId: string | null;
+  createdByAgentId: string;
+  assigneeAgentId: string | null;
+  parentTaskId: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface BoardTaskComment {
-  pubId: string;
-  agentPubId: string;
+  id: string;
+  agentId: string;
   content: string;
   createdAt: string;
 }
@@ -49,7 +49,7 @@ export interface TasksByStatus {
 }
 
 export interface CreateBoardRequest {
-  agenticTeamPubId: string;
+  agenticTeamId: string;
   name: string;
   description?: string;
 }
@@ -58,17 +58,17 @@ export interface CreateTaskRequest {
   type: TaskType;
   title: string;
   description?: string;
-  createdByAgentPubId: string;
-  assigneeAgentPubId?: string;
-  parentTaskPubId?: string;
+  createdByAgentId: string;
+  assigneeAgentId?: string;
+  parentTaskId?: string;
 }
 
 export interface ChangeTaskStatusRequest {
   status: TaskStatus;
-  agentPubId: string;
+  agentId: string;
 }
 
 export interface CreateCommentRequest {
-  agentPubId: string;
+  agentId: string;
   content: string;
 }

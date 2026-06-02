@@ -50,7 +50,7 @@ export default function AddLlmProviderModal({ onClose, onSuccess }: AddLlmProvid
     }
 
     setCreating(true);
-    let createdPubId: string | null = null;
+    let createdId: string | null = null;
     try {
       const body: CreateLlmProviderRequest = {
         name: name.trim(),
@@ -59,7 +59,7 @@ export default function AddLlmProviderModal({ onClose, onSuccess }: AddLlmProvid
         baseUrl: baseUrl.trim() || undefined,
       };
       const created = await apiService.createLlmProvider(body);
-      createdPubId = created.pubId;
+      createdId = created.id;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create provider');
       setCreating(false);
@@ -70,7 +70,7 @@ export default function AddLlmProviderModal({ onClose, onSuccess }: AddLlmProvid
     // Auto-refresh models — also serves as credential verification
     setRefreshing(true);
     try {
-      await apiService.refreshLlmProviderModels(createdPubId);
+      await apiService.refreshLlmProviderModels(createdId);
       onSuccess();
     } catch (err) {
       setRefreshError(err instanceof Error ? err.message : t('refreshFailed'));

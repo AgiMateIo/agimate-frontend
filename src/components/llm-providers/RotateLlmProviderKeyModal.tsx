@@ -28,7 +28,7 @@ export default function RotateLlmProviderKeyModal({ provider, onClose, onSuccess
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
-      apiService.updateLlmProvider(provider.pubId, { apiKey: apiKey.trim() })
+      apiService.updateLlmProvider(provider.id, { apiKey: apiKey.trim() })
     );
 
   return (

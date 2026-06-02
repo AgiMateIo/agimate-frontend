@@ -54,7 +54,7 @@ export default function CreateAgentPage() {
         type: agentType,
         webhookUrl: agentType === 'WEBHOOK' ? webhookUrl : null,
         webhookAuthHeader: agentType === 'WEBHOOK' && webhookAuthHeader ? webhookAuthHeader : null,
-        agenticTeamPubId: teamId || null,
+        agenticTeamId: teamId || null,
       })
     );
 

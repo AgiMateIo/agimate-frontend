@@ -14,16 +14,16 @@ type Mode = 'view' | 'edit' | 'create';
 type SubTab = 'config' | 'sessions' | 'test';
 
 interface ChannelDetailPaneProps {
-  agentPubId: string;
+  agentId: string;
   channel: ChannelResponse | null;
   mode: Mode;
   onModeChange: (m: Mode) => void;
   onChannelSaved: (channel: ChannelResponse) => void;
-  onChannelDeleted: (pubId: string) => void;
+  onChannelDeleted: (id: string) => void;
 }
 
 export default function ChannelDetailPane({
-  agentPubId,
+  agentId,
   channel,
   mode,
   onModeChange,
@@ -40,7 +40,7 @@ export default function ChannelDetailPane({
       <div>
         <h2 className="text-lg font-semibold text-foreground mb-4">{t('createChannel')}</h2>
         <ChannelConfigForm
-          agentPubId={agentPubId}
+          agentId={agentId}
           channel={null}
           onCancel={() => onModeChange('view')}
           onSuccess={(c) => { onChannelSaved(c); onModeChange('view'); }}
@@ -62,7 +62,7 @@ export default function ChannelDetailPane({
       <div>
         <h2 className="text-lg font-semibold text-foreground mb-4">{t('editChannel')}</h2>
         <ChannelConfigForm
-          agentPubId={agentPubId}
+          agentId={agentId}
           channel={channel}
           onCancel={() => onModeChange('view')}
           onSuccess={(c) => { onChannelSaved(c); onModeChange('view'); }}
@@ -126,7 +126,7 @@ export default function ChannelDetailPane({
       </div>
 
       {subTab === 'config' && <ConfigView channel={channel} />}
-      {subTab === 'sessions' && <ChannelSessionsList channelPubId={channel.pubId} />}
+      {subTab === 'sessions' && <ChannelSessionsList channelId={channel.id} />}
       {subTab === 'test' && (
         <div className="py-12 text-center text-sm text-muted">
           {t('testComingSoon')}
@@ -137,7 +137,7 @@ export default function ChannelDetailPane({
         <DeleteChannelModal
           channel={channel}
           onClose={() => setConfirmDelete(false)}
-          onSuccess={() => { setConfirmDelete(false); onChannelDeleted(channel.pubId); }}
+          onSuccess={() => { setConfirmDelete(false); onChannelDeleted(channel.id); }}
         />
       )}
     </div>

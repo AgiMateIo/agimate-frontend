@@ -14,10 +14,10 @@ import { getPolicyLabels } from './policyLabels';
 
 interface AgentPoliciesTabProps {
   kind: PolicyKind;
-  agentPubId: string;
+  agentId: string;
 }
 
-export default function AgentPoliciesTab({ kind, agentPubId }: AgentPoliciesTabProps) {
+export default function AgentPoliciesTab({ kind, agentId }: AgentPoliciesTabProps) {
   const t = useTranslations('Agents');
   const labels = getPolicyLabels(kind);
   const [policies, setPolicies] = useState<AgentPolicyResponse[]>([]);
@@ -39,7 +39,7 @@ export default function AgentPoliciesTab({ kind, agentPubId }: AgentPoliciesTabP
       const fetcher = kind === 'tool'
         ? apiService.getAgentToolPolicies
         : apiService.getAgentTriggerPolicies;
-      const data = await fetcher.call(apiService, { agentPubId, page, size: 20 });
+      const data = await fetcher.call(apiService, { agentId, page, size: 20 });
       setPolicies(data.content);
       setPageInfo({
         totalElements: data.totalElements,
@@ -59,7 +59,7 @@ export default function AgentPoliciesTab({ kind, agentPubId }: AgentPoliciesTabP
     } finally {
       if (!silent) setLoading(false);
     }
-  }, [kind, agentPubId, page]);
+  }, [kind, agentId, page]);
 
   useEffect(() => {
     fetchData(false);
@@ -175,7 +175,7 @@ export default function AgentPoliciesTab({ kind, agentPubId }: AgentPoliciesTabP
       {showAdd && (
         <AddPolicyModal
           kind={kind}
-          agentPubId={agentPubId}
+          agentId={agentId}
           onClose={() => setShowAdd(false)}
           onSuccess={handleMutationSuccess}
         />

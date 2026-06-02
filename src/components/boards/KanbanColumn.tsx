@@ -11,7 +11,7 @@ interface KanbanColumnProps {
   status: TaskStatus;
   tasks: BoardTask[];
   agentMap: Map<string, string>;
-  onTaskClick: (taskPubId: string) => void;
+  onTaskClick: (taskId: string) => void;
   onAddTask: (status: TaskStatus) => void;
   highlightedIds?: Set<string>;
 }
@@ -35,7 +35,7 @@ export default function KanbanColumn({
 
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
-  const taskIds = tasks.map((task) => task.pubId);
+  const taskIds = tasks.map((task) => task.id);
 
   return (
     <div className="flex flex-col flex-1 min-w-64">
@@ -65,11 +65,11 @@ export default function KanbanColumn({
         >
           {tasks.map((task) => (
             <TaskCard
-              key={task.pubId}
+              key={task.id}
               task={task}
               agentMap={agentMap}
-              onClick={() => onTaskClick(task.pubId)}
-              highlighted={highlightedIds?.has(task.pubId)}
+              onClick={() => onTaskClick(task.id)}
+              highlighted={highlightedIds?.has(task.id)}
             />
           ))}
         </div>

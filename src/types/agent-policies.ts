@@ -5,7 +5,7 @@ export type PolicyKind = 'tool' | 'trigger';
 // mapped to resourceName by API service
 export interface AgentPolicyResponse {
   id: string;
-  agentPubId: string;
+  agentId: string;
   userPubId: string;
   connectorCode: string | null;
   connectorIdentity: string | null;
@@ -18,7 +18,7 @@ export interface AgentPolicyResponse {
 }
 
 export interface CreateAgentPolicyRequest {
-  agentPubId: string;
+  agentId: string;
   connectorCode?: string | null;
   connectorIdentity?: string | null;
   resourceName?: string | null;

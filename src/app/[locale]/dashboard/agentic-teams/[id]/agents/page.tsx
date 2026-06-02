@@ -49,7 +49,7 @@ export default function TeamAgentsPage() {
 
   const { promise } = usePromiseCache(
     () => Promise.all([
-      apiService.getAgentsList({ agenticTeamPubId: teamId }),
+      apiService.getAgentsList({ agenticTeamId: teamId }),
       apiService.getAgenticTeam(teamId),
     ]),
     [teamId],

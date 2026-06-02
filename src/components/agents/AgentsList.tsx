@@ -60,8 +60,8 @@ export default function AgentsList({ agents }: AgentsListProps) {
                 )}
                 {agent.skills.map((skill) => (
                   <Link
-                    key={skill.pubId}
-                    href={`/dashboard/skills/${skill.pubId}`}
+                    key={skill.id}
+                    href={`/dashboard/skills/${skill.id}`}
                     className="inline-block rounded px-2 py-0.5 text-xs font-medium bg-surface border border-border text-foreground hover:border-accent hover:text-accent transition-colors"
                     title={skill.name}
                   >

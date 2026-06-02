@@ -12,7 +12,7 @@ import type { TaskType, BoardTask } from '@/types';
 import { TASK_TYPES } from '@/types';
 
 interface CreateTaskModalProps {
-  boardPubId: string;
+  boardId: string;
   allTasks: BoardTask[];
   agentMap: Map<string, string>;
   onClose: () => void;
@@ -20,7 +20,7 @@ interface CreateTaskModalProps {
 }
 
 export default function CreateTaskModal({
-  boardPubId,
+  boardId,
   allTasks,
   agentMap,
   onClose,
@@ -30,9 +30,9 @@ export default function CreateTaskModal({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState<TaskType>('TASK');
-  const [createdByAgentPubId, setCreatedByAgentPubId] = useState('');
-  const [assigneeAgentPubId, setAssigneeAgentPubId] = useState('');
-  const [parentTaskPubId, setParentTaskPubId] = useState('');
+  const [createdByAgentId, setCreatedByAgentId] = useState('');
+  const [assigneeAgentId, setAssigneeAgentId] = useState('');
+  const [parentTaskId, setParentTaskId] = useState('');
 
   const { loading, error, handleSubmit } = useAsyncForm<BoardTask>({
     onSuccess: () => onSuccess(),
@@ -41,13 +41,13 @@ export default function CreateTaskModal({
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
-      apiService.createBoardTask(boardPubId, {
+      apiService.createBoardTask(boardId, {
         type,
         title: title.trim(),
         description: description.trim() || undefined,
-        createdByAgentPubId,
-        assigneeAgentPubId: assigneeAgentPubId || undefined,
-        parentTaskPubId: parentTaskPubId || undefined,
+        createdByAgentId,
+        assigneeAgentId: assigneeAgentId || undefined,
+        parentTaskId: parentTaskId || undefined,
       })
     );
 
@@ -95,7 +95,7 @@ export default function CreateTaskModal({
               value={type}
               onChange={(e) => {
                 setType(e.target.value as TaskType);
-                setParentTaskPubId(''); // Reset parent on type change
+                setParentTaskId(''); // Reset parent on type change
               }}
               className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground text-sm"
             >
@@ -110,14 +110,14 @@ export default function CreateTaskModal({
           {type !== 'EPIC' && (
             <FormField label={t('parentTask')} required={parentRequired}>
               <select
-                value={parentTaskPubId}
-                onChange={(e) => setParentTaskPubId(e.target.value)}
+                value={parentTaskId}
+                onChange={(e) => setParentTaskId(e.target.value)}
                 required={parentRequired}
                 className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground text-sm"
               >
                 <option value="">{t('noParent')}</option>
                 {parentOptions.map((task) => (
-                  <option key={task.pubId} value={task.pubId}>
+                  <option key={task.id} value={task.id}>
                     {task.title}
                   </option>
                 ))}
@@ -129,8 +129,8 @@ export default function CreateTaskModal({
         <div className="grid grid-cols-2 gap-4">
           <FormField label={t('createdBy')} required>
             <select
-              value={createdByAgentPubId}
-              onChange={(e) => setCreatedByAgentPubId(e.target.value)}
+              value={createdByAgentId}
+              onChange={(e) => setCreatedByAgentId(e.target.value)}
               required
               className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground text-sm"
             >
@@ -143,8 +143,8 @@ export default function CreateTaskModal({
 
           <FormField label={t('assignee')}>
             <select
-              value={assigneeAgentPubId}
-              onChange={(e) => setAssigneeAgentPubId(e.target.value)}
+              value={assigneeAgentId}
+              onChange={(e) => setAssigneeAgentId(e.target.value)}
               className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground text-sm"
             >
               <option value="">{t('noAssignee')}</option>
@@ -161,7 +161,7 @@ export default function CreateTaskModal({
           </Button>
           <Button
             type="submit"
-            disabled={!title.trim() || !createdByAgentPubId || (parentRequired && !parentTaskPubId)}
+            disabled={!title.trim() || !createdByAgentId || (parentRequired && !parentTaskId)}
             loading={loading}
             className="flex-1"
           >

@@ -44,7 +44,7 @@ export default function SkillDetailPage() {
   useSetBreadcrumb(skillId, skill?.name);
 
   const isOwner = !!(user?.pubId && user.pubId === skill?.userPubId);
-  const isFeaturedClone = skill?.parentPubId != null;
+  const isFeaturedClone = skill?.parentId != null;
   const isEditable = isOwner && !isFeaturedClone;
 
   const fetchSkill = useCallback(async () => {

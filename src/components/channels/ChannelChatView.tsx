@@ -26,17 +26,17 @@ export default function ChannelChatView({ session, onClosed }: ChannelChatViewPr
     setLoading(true);
     setError('');
     apiService
-      .getChannelSessionMessages(session.pubId)
+      .getChannelSessionMessages(session.id)
       .then((data) => { if (!cancelled) setMessages(data); })
       .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load messages'); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [session.pubId]);
+  }, [session.id]);
 
   const handleClose = async () => {
     setClosing(true);
     try {
-      const updated = await apiService.closeChannelSession(session.pubId);
+      const updated = await apiService.closeChannelSession(session.id);
       onClosed(updated);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to close session');
@@ -75,7 +75,7 @@ export default function ChannelChatView({ session, onClosed }: ChannelChatViewPr
         ) : (
           messages.map((m) => (
             <div
-              key={m.pubId}
+              key={m.id}
               className={`flex ${m.direction === 'OUT' ? 'justify-end' : 'justify-start'}`}
             >
               <div
