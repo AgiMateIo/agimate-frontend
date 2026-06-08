@@ -52,7 +52,7 @@ export default function AddAgentLlmModal({
         : p);
       onProvidersUpdate(updatedProviders);
       if (result.availableModels.length > 0) {
-        setModel(result.availableModels[0]);
+        setModel(result.availableModels[0].id);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to refresh models');
@@ -160,7 +160,9 @@ export default function AddAgentLlmModal({
                 >
                   <option value="" disabled>{t('selectModel')}</option>
                   {selectedModels!.map((m) => (
-                    <option key={m} value={m}>{m}</option>
+                    <option key={m.id} value={m.id} title={m.displayName ? m.id : undefined}>
+                      {m.displayName ?? m.id}
+                    </option>
                   ))}
                 </select>
               )}

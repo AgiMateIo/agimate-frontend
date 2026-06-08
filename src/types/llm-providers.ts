@@ -2,13 +2,21 @@
 
 export type LlmProviderType = 'OPENAI' | 'ANTHROPIC' | 'GEMINI' | 'OPENAI_COMPATIBLE';
 
+export interface LlmModel {
+  // The model identifier sent back as `model` when creating an AgentLlm.
+  id: string;
+  // Human-readable name. Optional and may be absent (@JsonInclude(NON_NULL)) or null
+  // — fall back to `id`. Always set for Anthropic, usually for Gemini, null for OpenAI.
+  displayName?: string | null;
+}
+
 export interface LlmProviderResponse {
   id: string;
   name: string;
   providerType: LlmProviderType;
   baseUrl: string | null;
   apiKeyMask: string;
-  availableModels: string[] | null;
+  availableModels: LlmModel[] | null;
   modelsRefreshedAt: string | null;
   enabled: boolean;
   createdAt: string;
@@ -30,7 +38,7 @@ export interface UpdateLlmProviderRequest {
 }
 
 export interface RefreshModelsResponse {
-  availableModels: string[];
+  availableModels: LlmModel[];
   refreshedAt: string;
 }
 

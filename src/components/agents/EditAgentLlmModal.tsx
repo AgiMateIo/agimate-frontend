@@ -121,7 +121,9 @@ export default function EditAgentLlmModal({
             >
               <option value="" disabled>{t('selectModel')}</option>
               {selectedModels!.map((m) => (
-                <option key={m} value={m}>{m}</option>
+                <option key={m.id} value={m.id} title={m.displayName ? m.id : undefined}>
+                  {m.displayName ?? m.id}
+                </option>
               ))}
             </select>
           )}
