@@ -16,7 +16,7 @@ export interface ToolUseLogResponse {
   createdAt: string;
 }
 
-// Paginated response from GET /device/manage/tool-use-logs/
+// Paginated response from GET /control/manage/tool-use-logs/
 export interface PagedResponse<T> {
   content: T[];
   totalElements: number;

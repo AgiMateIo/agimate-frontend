@@ -37,7 +37,7 @@ export const API = {
   // API endpoint prefixes
   ENDPOINTS: {
     USER_API: 'user',
-    DEVICE_API: 'device',
+    CONTROL_API: 'control',
   },
 
   // Request timeouts (if needed in future)

@@ -380,27 +380,27 @@ class ApiService {
     searchParams.set('page', String(params?.page ?? 0));
     searchParams.set('size', String(params?.size ?? 20));
     const query = searchParams.toString();
-    return this.get<PagedResponse<AppResponse>>(`${API.ENDPOINTS.DEVICE_API}/manage/apps/?${query}`);
+    return this.get<PagedResponse<AppResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/apps/?${query}`);
   }
 
   async createApp(data: CreateAppRequest): Promise<AppCreatedResponse> {
-    return this.post<AppCreatedResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/apps/`, data);
+    return this.post<AppCreatedResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/apps/`, data);
   }
 
   async getApp(id: string): Promise<UserAppDetailResponse> {
-    return this.get<UserAppDetailResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/apps/${id}`);
+    return this.get<UserAppDetailResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/apps/${id}`);
   }
 
   async updateApp(id: string, data: UpdateAppRequest): Promise<AppResponse> {
-    return this.put<AppResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/apps/${id}`, data);
+    return this.put<AppResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/apps/${id}`, data);
   }
 
   async deleteApp(id: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/apps/${id}`);
+    return this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/apps/${id}`);
   }
 
   async regenerateAppKey(id: string): Promise<AppCreatedResponse> {
-    return this.post<AppCreatedResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/apps/${id}/regenerate`, {});
+    return this.post<AppCreatedResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/apps/${id}/regenerate`, {});
   }
 
   // Agents
@@ -410,27 +410,27 @@ class ApiService {
     if (params?.search) query.set('search', params.search);
     query.set('page', String(params?.page ?? 0));
     query.set('size', String(params?.size ?? 20));
-    return this.get<PagedResponse<AgentResponse>>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/?${query}`);
+    return this.get<PagedResponse<AgentResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/?${query}`);
   }
 
   async createAgent(data: CreateAgentRequest): Promise<AgentCreatedResponse> {
-    return this.post<AgentCreatedResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/`, data);
+    return this.post<AgentCreatedResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/`, data);
   }
 
   async getAgent(id: string): Promise<AgentResponse> {
-    return this.get<AgentResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${id}`);
+    return this.get<AgentResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${id}`);
   }
 
   async updateAgent(id: string, data: UpdateAgentRequest): Promise<AgentResponse> {
-    return this.put<AgentResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${id}`, data);
+    return this.put<AgentResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${id}`, data);
   }
 
   async deleteAgent(id: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${id}`);
+    return this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${id}`);
   }
 
   async regenerateAgentKey(id: string): Promise<AgentCreatedResponse> {
-    return this.post<AgentCreatedResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${id}/regenerate`, {});
+    return this.post<AgentCreatedResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${id}/regenerate`, {});
   }
 
   // Agent Policies (tool & trigger) — normalized to AgentPolicyResponse
@@ -462,22 +462,22 @@ class ApiService {
     searchParams.set('agentId', params.agentId);
     searchParams.set('page', String(params.page ?? 0));
     searchParams.set('size', String(params.size ?? 20));
-    const raw = await this.get<PagedResponse<Record<string, unknown>>>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-tool-policies/?${searchParams}`);
+    const raw = await this.get<PagedResponse<Record<string, unknown>>>(`${API.ENDPOINTS.CONTROL_API}/manage/agent-tool-policies/?${searchParams}`);
     return this.mapPolicyPage(raw, 'toolName');
   }
 
   async createAgentToolPolicy(data: CreateAgentPolicyRequest): Promise<AgentPolicyResponse> {
-    const raw = await this.post<Record<string, unknown>>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-tool-policies/`, this.toRawPolicyBody(data, 'toolName'));
+    const raw = await this.post<Record<string, unknown>>(`${API.ENDPOINTS.CONTROL_API}/manage/agent-tool-policies/`, this.toRawPolicyBody(data, 'toolName'));
     return this.mapPolicy(raw, 'toolName');
   }
 
   async updateAgentToolPolicy(id: string, data: UpdateAgentPolicyRequest): Promise<AgentPolicyResponse> {
-    const raw = await this.put<Record<string, unknown>>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-tool-policies/${id}`, this.toRawPolicyBody(data, 'toolName'));
+    const raw = await this.put<Record<string, unknown>>(`${API.ENDPOINTS.CONTROL_API}/manage/agent-tool-policies/${id}`, this.toRawPolicyBody(data, 'toolName'));
     return this.mapPolicy(raw, 'toolName');
   }
 
   async deleteAgentToolPolicy(id: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-tool-policies/${id}`);
+    return this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agent-tool-policies/${id}`);
   }
 
   // Trigger policies
@@ -486,22 +486,22 @@ class ApiService {
     searchParams.set('agentId', params.agentId);
     searchParams.set('page', String(params.page ?? 0));
     searchParams.set('size', String(params.size ?? 20));
-    const raw = await this.get<PagedResponse<Record<string, unknown>>>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-trigger-policies/?${searchParams}`);
+    const raw = await this.get<PagedResponse<Record<string, unknown>>>(`${API.ENDPOINTS.CONTROL_API}/manage/agent-trigger-policies/?${searchParams}`);
     return this.mapPolicyPage(raw, 'triggerName');
   }
 
   async createAgentTriggerPolicy(data: CreateAgentPolicyRequest): Promise<AgentPolicyResponse> {
-    const raw = await this.post<Record<string, unknown>>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-trigger-policies/`, this.toRawPolicyBody(data, 'triggerName'));
+    const raw = await this.post<Record<string, unknown>>(`${API.ENDPOINTS.CONTROL_API}/manage/agent-trigger-policies/`, this.toRawPolicyBody(data, 'triggerName'));
     return this.mapPolicy(raw, 'triggerName');
   }
 
   async updateAgentTriggerPolicy(id: string, data: UpdateAgentPolicyRequest): Promise<AgentPolicyResponse> {
-    const raw = await this.put<Record<string, unknown>>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-trigger-policies/${id}`, this.toRawPolicyBody(data, 'triggerName'));
+    const raw = await this.put<Record<string, unknown>>(`${API.ENDPOINTS.CONTROL_API}/manage/agent-trigger-policies/${id}`, this.toRawPolicyBody(data, 'triggerName'));
     return this.mapPolicy(raw, 'triggerName');
   }
 
   async deleteAgentTriggerPolicy(id: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agent-trigger-policies/${id}`);
+    return this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agent-trigger-policies/${id}`);
   }
 
   // Agent-Skill bindings
@@ -509,67 +509,67 @@ class ApiService {
     const q = new URLSearchParams();
     q.set('page', String(params.page ?? 0));
     q.set('size', String(params.size ?? 20));
-    return this.get<PagedResponse<AgentSkillResponse>>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${params.agentId}/skills/?${q}`);
+    return this.get<PagedResponse<AgentSkillResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${params.agentId}/skills/?${q}`);
   }
 
   async bindAgentSkill(agentId: string, data: CreateAgentSkillRequest): Promise<AgentSkillResponse> {
-    return this.post<AgentSkillResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${agentId}/skills/`, data);
+    return this.post<AgentSkillResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/skills/`, data);
   }
 
   async unbindAgentSkill(agentId: string, skillId: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${agentId}/skills/${skillId}`);
+    return this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/skills/${skillId}`);
   }
 
   async getSkillPolicyDiff(agentId: string, skillId: string, action: 'add' | 'remove' | 'sync'): Promise<PolicyDiffResponse> {
     const q = new URLSearchParams();
     q.set('action', action);
-    return this.get<PolicyDiffResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${agentId}/skills/${skillId}/policy-diff?${q}`);
+    return this.get<PolicyDiffResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/skills/${skillId}/policy-diff?${q}`);
   }
 
   async syncAgentSkillPolicies(agentId: string): Promise<void> {
-    return this.post<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${agentId}/skills/sync-policies`, {});
+    return this.post<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/skills/sync-policies`, {});
   }
 
   // LLM Providers
   async getLlmProviders(): Promise<LlmProviderResponse[]> {
-    return this.get<LlmProviderResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/llm-providers/`);
+    return this.get<LlmProviderResponse[]>(`${API.ENDPOINTS.CONTROL_API}/manage/llm-providers/`);
   }
 
   async createLlmProvider(data: CreateLlmProviderRequest): Promise<LlmProviderResponse> {
-    return this.post<LlmProviderResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/llm-providers/`, data);
+    return this.post<LlmProviderResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/llm-providers/`, data);
   }
 
   async getLlmProvider(id: string): Promise<LlmProviderResponse> {
-    return this.get<LlmProviderResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/llm-providers/${id}`);
+    return this.get<LlmProviderResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/llm-providers/${id}`);
   }
 
   async updateLlmProvider(id: string, data: UpdateLlmProviderRequest): Promise<LlmProviderResponse> {
-    return this.patch<LlmProviderResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/llm-providers/${id}`, data);
+    return this.patch<LlmProviderResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/llm-providers/${id}`, data);
   }
 
   async deleteLlmProvider(id: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/llm-providers/${id}`);
+    return this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/llm-providers/${id}`);
   }
 
   async refreshLlmProviderModels(id: string): Promise<RefreshModelsResponse> {
-    return this.post<RefreshModelsResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/llm-providers/${id}/refresh-models`, {});
+    return this.post<RefreshModelsResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/llm-providers/${id}/refresh-models`, {});
   }
 
   // Agent ↔ LLM bindings
   async getAgentLlms(agentId: string): Promise<AgentLlmResponse[]> {
-    return this.get<AgentLlmResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${agentId}/llms/`);
+    return this.get<AgentLlmResponse[]>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/llms/`);
   }
 
   async createAgentLlm(agentId: string, data: CreateAgentLlmRequest): Promise<AgentLlmResponse> {
-    return this.post<AgentLlmResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${agentId}/llms/`, data);
+    return this.post<AgentLlmResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/llms/`, data);
   }
 
   async updateAgentLlm(agentId: string, name: string, data: UpdateAgentLlmRequest): Promise<AgentLlmResponse> {
-    return this.put<AgentLlmResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${agentId}/llms/${encodeURIComponent(name)}`, data);
+    return this.put<AgentLlmResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/llms/${encodeURIComponent(name)}`, data);
   }
 
   async deleteAgentLlm(agentId: string, name: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agents/${agentId}/llms/${encodeURIComponent(name)}`);
+    return this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/llms/${encodeURIComponent(name)}`);
   }
 
   // Channels
@@ -578,64 +578,64 @@ class ApiService {
     if (params?.agentId) q.set('agentId', params.agentId);
     const qs = q.toString();
     return this.get<ChannelResponse[]>(
-      `${API.ENDPOINTS.DEVICE_API}/manage/channels/${qs ? `?${qs}` : ''}`,
+      `${API.ENDPOINTS.CONTROL_API}/manage/channels/${qs ? `?${qs}` : ''}`,
     );
   }
 
   async getChannel(id: string): Promise<ChannelResponse> {
-    return this.get<ChannelResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/channels/${id}`);
+    return this.get<ChannelResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/channels/${id}`);
   }
 
   async createChannel(data: CreateChannelRequest): Promise<ChannelResponse> {
-    return this.post<ChannelResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/channels/`, data);
+    return this.post<ChannelResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/channels/`, data);
   }
 
   async updateChannel(id: string, data: UpdateChannelRequest): Promise<ChannelResponse> {
-    return this.patch<ChannelResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/channels/${id}`, data);
+    return this.patch<ChannelResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/channels/${id}`, data);
   }
 
   async deleteChannel(id: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/channels/${id}`);
+    return this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/channels/${id}`);
   }
 
   async getChannelSessions(id: string): Promise<ChannelSessionResponse[]> {
     return this.get<ChannelSessionResponse[]>(
-      `${API.ENDPOINTS.DEVICE_API}/manage/channels/${id}/sessions/`,
+      `${API.ENDPOINTS.CONTROL_API}/manage/channels/${id}/sessions/`,
     );
   }
 
   async getChannelSessionMessages(sessionId: string): Promise<ChannelSessionMessageResponse[]> {
     return this.get<ChannelSessionMessageResponse[]>(
-      `${API.ENDPOINTS.DEVICE_API}/manage/channels/sessions/${sessionId}/messages/`,
+      `${API.ENDPOINTS.CONTROL_API}/manage/channels/sessions/${sessionId}/messages/`,
     );
   }
 
   async closeChannelSession(sessionId: string): Promise<ChannelSessionResponse> {
     return this.post<ChannelSessionResponse>(
-      `${API.ENDPOINTS.DEVICE_API}/manage/channels/sessions/${sessionId}/close`,
+      `${API.ENDPOINTS.CONTROL_API}/manage/channels/sessions/${sessionId}/close`,
       {},
     );
   }
 
   // App resources
   async getAppTools(appId: string): Promise<DeviceToolInfo[]> {
-    return this.get<DeviceToolInfo[]>(`${API.ENDPOINTS.DEVICE_API}/manage/app-tools/${appId}`);
+    return this.get<DeviceToolInfo[]>(`${API.ENDPOINTS.CONTROL_API}/manage/app-tools/${appId}`);
   }
 
   async getAppTriggers(appId: string): Promise<DeviceTriggerInfo[]> {
-    return this.get<DeviceTriggerInfo[]>(`${API.ENDPOINTS.DEVICE_API}/manage/app-triggers/${appId}`);
+    return this.get<DeviceTriggerInfo[]>(`${API.ENDPOINTS.CONTROL_API}/manage/app-triggers/${appId}`);
   }
 
   // Integration resources
   async getIntegrationTools(connectorCode: string): Promise<DeviceToolInfo[]> {
     return this.get<DeviceToolInfo[]>(
-      `${API.ENDPOINTS.DEVICE_API}/manage/integrations/tools/?connectorCode=${encodeURIComponent(connectorCode)}`
+      `${API.ENDPOINTS.CONTROL_API}/manage/integrations/tools/?connectorCode=${encodeURIComponent(connectorCode)}`
     );
   }
 
   async getIntegrationTriggers(connectorCode: string): Promise<DeviceTriggerInfo[]> {
     return this.get<DeviceTriggerInfo[]>(
-      `${API.ENDPOINTS.DEVICE_API}/manage/integrations/triggers/?connectorCode=${encodeURIComponent(connectorCode)}`
+      `${API.ENDPOINTS.CONTROL_API}/manage/integrations/triggers/?connectorCode=${encodeURIComponent(connectorCode)}`
     );
   }
 
@@ -647,7 +647,7 @@ class ApiService {
   ): Promise<Record<string, ToolSpecification>> {
     const query = identity ? `?identity=${encodeURIComponent(identity)}` : '';
     return this.get<Record<string, ToolSpecification>>(
-      `${API.ENDPOINTS.DEVICE_API}/manage/tools/${encodeURIComponent(connectorCode)}/${query}`,
+      `${API.ENDPOINTS.CONTROL_API}/manage/tools/${encodeURIComponent(connectorCode)}/${query}`,
     );
   }
 
@@ -658,7 +658,7 @@ class ApiService {
   ): Promise<ToolSpecification> {
     const query = identity ? `?identity=${encodeURIComponent(identity)}` : '';
     return this.get<ToolSpecification>(
-      `${API.ENDPOINTS.DEVICE_API}/manage/tools/${encodeURIComponent(connectorCode)}/${encodeURIComponent(toolName)}${query}`,
+      `${API.ENDPOINTS.CONTROL_API}/manage/tools/${encodeURIComponent(connectorCode)}/${encodeURIComponent(toolName)}${query}`,
     );
   }
 
@@ -669,17 +669,17 @@ class ApiService {
     searchParams.set('page', String(params?.page ?? 0));
     searchParams.set('size', String(params?.size ?? 20));
     const query = searchParams.toString();
-    return this.get<PagedResponse<ToolUseLogResponse>>(`${API.ENDPOINTS.DEVICE_API}/manage/tool-use-logs/?${query}`);
+    return this.get<PagedResponse<ToolUseLogResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/tool-use-logs/?${query}`);
   }
 
   // Device triggers
   async getDeviceTriggers(): Promise<DeviceTriggerGroup[]> {
-    return this.get<DeviceTriggerGroup[]>(`${API.ENDPOINTS.DEVICE_API}/manage/triggers/`);
+    return this.get<DeviceTriggerGroup[]>(`${API.ENDPOINTS.CONTROL_API}/manage/triggers/`);
   }
 
   // Device tools
   async getDeviceTools(): Promise<DeviceToolGroup[]> {
-    return this.get<DeviceToolGroup[]>(`${API.ENDPOINTS.DEVICE_API}/manage/tools/`);
+    return this.get<DeviceToolGroup[]>(`${API.ENDPOINTS.CONTROL_API}/manage/tools/`);
   }
 
   // Trigger logs
@@ -689,13 +689,13 @@ class ApiService {
     if (params?.page !== undefined) searchParams.set('page', String(params.page));
     if (params?.size !== undefined) searchParams.set('size', String(params.size));
     const query = searchParams.toString();
-    return this.get<PagedResponse<TriggerLog>>(`${API.ENDPOINTS.DEVICE_API}/manage/trigger-logs/${query ? `?${query}` : ''}`);
+    return this.get<PagedResponse<TriggerLog>>(`${API.ENDPOINTS.CONTROL_API}/manage/trigger-logs/${query ? `?${query}` : ''}`);
   }
 
   // Trigger Log Probe — issue a probe code that captures the next matching trigger.
   async issueTriggerLogProbe(blockDelivery: boolean = true): Promise<TriggerLogProbeResponse> {
     return this.post<TriggerLogProbeResponse>(
-      `${API.ENDPOINTS.DEVICE_API}/manage/trigger-logs/probe`,
+      `${API.ENDPOINTS.CONTROL_API}/manage/trigger-logs/probe`,
       { blockDelivery },
     );
   }
@@ -705,7 +705,7 @@ class ApiService {
     const params = new URLSearchParams({ code, since });
     try {
       return await this.get<TriggerLog>(
-        `${API.ENDPOINTS.DEVICE_API}/manage/trigger-logs/probe/match?${params.toString()}`,
+        `${API.ENDPOINTS.CONTROL_API}/manage/trigger-logs/probe/match?${params.toString()}`,
       );
     } catch (err) {
       // Backend returns 404 with message "No matching trigger log yet" while waiting.
@@ -724,96 +724,96 @@ class ApiService {
     if (params?.size !== undefined) searchParams.set('size', String(params.size));
     const query = searchParams.toString();
     return this.get<WebhookDeliveryLogsResponse>(
-      `${API.ENDPOINTS.DEVICE_API}/manage/webhook-deliveries/${query ? `?${query}` : ''}`
+      `${API.ENDPOINTS.CONTROL_API}/manage/webhook-deliveries/${query ? `?${query}` : ''}`
     );
   }
 
   // Agentic Teams
   async getAgenticTeams(): Promise<AgenticTeam[]> {
-    return this.get<AgenticTeam[]>(`${API.ENDPOINTS.DEVICE_API}/manage/agentic-teams/`);
+    return this.get<AgenticTeam[]>(`${API.ENDPOINTS.CONTROL_API}/manage/agentic-teams/`);
   }
 
   async getAgenticTeam(id: string): Promise<AgenticTeam> {
-    return this.get<AgenticTeam>(`${API.ENDPOINTS.DEVICE_API}/manage/agentic-teams/${id}`);
+    return this.get<AgenticTeam>(`${API.ENDPOINTS.CONTROL_API}/manage/agentic-teams/${id}`);
   }
 
   async createAgenticTeam(data: CreateAgenticTeamRequest): Promise<AgenticTeam> {
-    return this.post<AgenticTeam>(`${API.ENDPOINTS.DEVICE_API}/manage/agentic-teams/`, data);
+    return this.post<AgenticTeam>(`${API.ENDPOINTS.CONTROL_API}/manage/agentic-teams/`, data);
   }
 
   async updateAgenticTeam(id: string, data: UpdateAgenticTeamRequest): Promise<AgenticTeam> {
-    return this.put<AgenticTeam>(`${API.ENDPOINTS.DEVICE_API}/manage/agentic-teams/${id}`, data);
+    return this.put<AgenticTeam>(`${API.ENDPOINTS.CONTROL_API}/manage/agentic-teams/${id}`, data);
   }
 
   async deleteAgenticTeam(id: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/agentic-teams/${id}`);
+    return this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agentic-teams/${id}`);
   }
 
   // ========== BOARDS ==========
 
   async getBoards(): Promise<Board[]> {
-    return this.get<Board[]>(`${API.ENDPOINTS.DEVICE_API}/manage/boards/`);
+    return this.get<Board[]>(`${API.ENDPOINTS.CONTROL_API}/manage/boards/`);
   }
 
   async createBoard(data: CreateBoardRequest): Promise<Board> {
-    return this.post<Board>(`${API.ENDPOINTS.DEVICE_API}/manage/boards/`, data);
+    return this.post<Board>(`${API.ENDPOINTS.CONTROL_API}/manage/boards/`, data);
   }
 
   async getBoard(boardId: string): Promise<Board> {
-    return this.get<Board>(`${API.ENDPOINTS.DEVICE_API}/manage/boards/${boardId}`);
+    return this.get<Board>(`${API.ENDPOINTS.CONTROL_API}/manage/boards/${boardId}`);
   }
 
   async getBoardTasks(boardId: string): Promise<TasksByStatus> {
-    return this.get<TasksByStatus>(`${API.ENDPOINTS.DEVICE_API}/manage/boards/${boardId}/tasks/`);
+    return this.get<TasksByStatus>(`${API.ENDPOINTS.CONTROL_API}/manage/boards/${boardId}/tasks/`);
   }
 
   async createBoardTask(boardId: string, data: CreateTaskRequest): Promise<BoardTask> {
-    return this.post<BoardTask>(`${API.ENDPOINTS.DEVICE_API}/manage/boards/${boardId}/tasks/`, data);
+    return this.post<BoardTask>(`${API.ENDPOINTS.CONTROL_API}/manage/boards/${boardId}/tasks/`, data);
   }
 
   async changeTaskStatus(taskId: string, data: ChangeTaskStatusRequest): Promise<BoardTask> {
-    return this.patch<BoardTask>(`${API.ENDPOINTS.DEVICE_API}/manage/boards/tasks/${taskId}/status`, data);
+    return this.patch<BoardTask>(`${API.ENDPOINTS.CONTROL_API}/manage/boards/tasks/${taskId}/status`, data);
   }
 
   async getTaskComments(taskId: string): Promise<BoardTaskComment[]> {
-    return this.get<BoardTaskComment[]>(`${API.ENDPOINTS.DEVICE_API}/manage/boards/tasks/${taskId}/comments/`);
+    return this.get<BoardTaskComment[]>(`${API.ENDPOINTS.CONTROL_API}/manage/boards/tasks/${taskId}/comments/`);
   }
 
   async createTaskComment(taskId: string, data: CreateCommentRequest): Promise<BoardTaskComment> {
-    return this.post<BoardTaskComment>(`${API.ENDPOINTS.DEVICE_API}/manage/boards/tasks/${taskId}/comments/`, data);
+    return this.post<BoardTaskComment>(`${API.ENDPOINTS.CONTROL_API}/manage/boards/tasks/${taskId}/comments/`, data);
   }
 
   // ========== CENTRIFUGO ==========
 
   async getCentrifugoToken(): Promise<CentrifugoTokenResponse> {
-    return this.post<CentrifugoTokenResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/centrifugo/token`, {});
+    return this.post<CentrifugoTokenResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/centrifugo/token`, {});
   }
 
   // ========== INTEGRATION CREDENTIALS ==========
 
   async getIntegrationCredentials(connectorCode?: string): Promise<IntegrationResponse[]> {
     const q = connectorCode ? `?connectorCode=${encodeURIComponent(connectorCode)}` : '';
-    return this.get<IntegrationResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/credentials/${q}`);
+    return this.get<IntegrationResponse[]>(`${API.ENDPOINTS.CONTROL_API}/manage/integrations/credentials/${q}`);
   }
 
   async getIntegrationCredential(id: string): Promise<IntegrationResponse> {
-    return this.get<IntegrationResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/credentials/${id}`);
+    return this.get<IntegrationResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/integrations/credentials/${id}`);
   }
 
   async createIntegration(data: CreateIntegrationRequest): Promise<IntegrationResponse> {
-    return this.post<IntegrationResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/credentials/`, data);
+    return this.post<IntegrationResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/integrations/credentials/`, data);
   }
 
   async updateIntegration(id: string, data: UpdateIntegrationRequest): Promise<IntegrationResponse> {
-    return this.patch<IntegrationResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/credentials/${id}/`, data);
+    return this.patch<IntegrationResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/integrations/credentials/${id}/`, data);
   }
 
   async updateIntegrationSecret(id: string, data: UpdateIntegrationCredentialsRequest): Promise<IntegrationResponse> {
-    return this.put<IntegrationResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/credentials/${id}/secret`, data);
+    return this.put<IntegrationResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/integrations/credentials/${id}/secret`, data);
   }
 
   async deleteIntegration(id: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/integrations/credentials/${id}`);
+    return this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/integrations/credentials/${id}`);
   }
 
   // ========== SKILLS ==========
@@ -824,7 +824,7 @@ class ApiService {
     if (params?.connectorCode) q.set('connectorCode', params.connectorCode);
     q.set('page', String(params?.page ?? 0));
     q.set('size', String(params?.size ?? 20));
-    return this.get<PagedResponse<SkillResponse>>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/?${q}`);
+    return this.get<PagedResponse<SkillResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/?${q}`);
   }
 
   async getPublicSkills(params?: { search?: string; connectorCode?: string; page?: number; size?: number }): Promise<PagedResponse<SkillResponse>> {
@@ -833,7 +833,7 @@ class ApiService {
     if (params?.connectorCode) q.set('connectorCode', params.connectorCode);
     q.set('page', String(params?.page ?? 0));
     q.set('size', String(params?.size ?? 20));
-    return this.get<PagedResponse<SkillResponse>>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/public/?${q}`);
+    return this.get<PagedResponse<SkillResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/public/?${q}`);
   }
 
   async getFeaturedSkills(params?: { search?: string; connectorCode?: string; page?: number; size?: number }): Promise<PagedResponse<SkillResponse>> {
@@ -842,27 +842,27 @@ class ApiService {
     if (params?.connectorCode) q.set('connectorCode', params.connectorCode);
     q.set('page', String(params?.page ?? 0));
     q.set('size', String(params?.size ?? 20));
-    return this.get<PagedResponse<SkillResponse>>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/featured/?${q}`);
+    return this.get<PagedResponse<SkillResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/featured/?${q}`);
   }
 
   async getSkill(id: string): Promise<SkillDetailResponse> {
-    return this.get<SkillDetailResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/${id}`);
+    return this.get<SkillDetailResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/${id}`);
   }
 
   async createSkill(data: CreateSkillRequest): Promise<SkillResponse> {
-    return this.post<SkillResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/`, data);
+    return this.post<SkillResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/`, data);
   }
 
   async updateSkill(id: string, data: UpdateSkillRequest): Promise<SkillResponse> {
-    return this.put<SkillResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/${id}`, data);
+    return this.put<SkillResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/${id}`, data);
   }
 
   async deleteSkill(id: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/${id}`);
+    return this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/${id}`);
   }
 
   async cloneSkill(id: string): Promise<SkillResponse> {
-    return this.post<SkillResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/${id}/clone`, {});
+    return this.post<SkillResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/${id}/clone`, {});
   }
 
   async getSkillAgents(
@@ -874,24 +874,24 @@ class ApiService {
     q.set('page', String(params?.page ?? 0));
     q.set('size', String(params?.size ?? 20));
     return this.get<PagedResponse<AgentSummaryResponse>>(
-      `${API.ENDPOINTS.DEVICE_API}/manage/skills/${skillId}/agents/?${q}`
+      `${API.ENDPOINTS.CONTROL_API}/manage/skills/${skillId}/agents/?${q}`
     );
   }
 
   async getSkillFiles(skillId: string): Promise<SkillFileEntry[]> {
-    return this.get<SkillFileEntry[]>(`${API.ENDPOINTS.DEVICE_API}/manage/skill-files/${skillId}/`);
+    return this.get<SkillFileEntry[]>(`${API.ENDPOINTS.CONTROL_API}/manage/skill-files/${skillId}/`);
   }
 
   async uploadSkillFile(skillId: string, formData: FormData): Promise<void> {
-    return this.postFormData<void>(`${API.ENDPOINTS.DEVICE_API}/manage/skill-files/${skillId}/`, formData);
+    return this.postFormData<void>(`${API.ENDPOINTS.CONTROL_API}/manage/skill-files/${skillId}/`, formData);
   }
 
   async deleteSkillFile(skillId: string, filePath: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/skill-files/${skillId}/${filePath}`);
+    return this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/skill-files/${skillId}/${filePath}`);
   }
 
   async downloadSkillFile(skillId: string, filePath: string): Promise<Blob> {
-    const url = `${getApiBaseUrl()}${API.ENDPOINTS.DEVICE_API}/manage/skill-files/${skillId}/${filePath}`;
+    const url = `${getApiBaseUrl()}${API.ENDPOINTS.CONTROL_API}/manage/skill-files/${skillId}/${filePath}`;
     const token = getAccessToken();
     const headers: HeadersInit = {
       ...(token && { Authorization: `Bearer ${token}` }),
@@ -923,19 +923,19 @@ class ApiService {
   // ========== SKILL CONNECTORS ==========
 
   async getSkillConnectors(skillId: string): Promise<SkillConnectorResponse[]> {
-    return this.get<SkillConnectorResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/${skillId}/connectors/`);
+    return this.get<SkillConnectorResponse[]>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/${skillId}/connectors/`);
   }
 
   async replaceSkillConnectors(skillId: string, connectors: SkillConnectorRequest[]): Promise<SkillConnectorResponse[]> {
-    return this.put<SkillConnectorResponse[]>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/${skillId}/connectors/`, { connectors });
+    return this.put<SkillConnectorResponse[]>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/${skillId}/connectors/`, { connectors });
   }
 
   async addSkillConnector(skillId: string, data: SkillConnectorRequest): Promise<SkillConnectorResponse> {
-    return this.post<SkillConnectorResponse>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/${skillId}/connectors/`, data);
+    return this.post<SkillConnectorResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/${skillId}/connectors/`, data);
   }
 
   async deleteSkillConnector(skillId: string, bindingId: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.DEVICE_API}/manage/skills/${skillId}/connectors/${bindingId}`);
+    return this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/${skillId}/connectors/${bindingId}`);
   }
 
   // ========== CONNECTOR CATALOG ==========
@@ -944,7 +944,7 @@ class ApiService {
     // Backend returns a paginated response; fetch a large page and unwrap content.
     // Tolerates legacy array responses for backwards compatibility.
     const result = await this.get<PagedResponse<ConnectorCatalogEntry> | ConnectorCatalogEntry[]>(
-      `${API.ENDPOINTS.DEVICE_API}/manage/connectors/?size=200`
+      `${API.ENDPOINTS.CONTROL_API}/manage/connectors/?size=200`
     );
     return Array.isArray(result) ? result : result.content;
   }
@@ -961,12 +961,12 @@ class ApiService {
     q.set('page', String(params?.page ?? 0));
     q.set('size', String(params?.size ?? 20));
     return this.get<PagedResponse<ConnectorCatalogEntry>>(
-      `${API.ENDPOINTS.DEVICE_API}/manage/connectors/?${q}`
+      `${API.ENDPOINTS.CONTROL_API}/manage/connectors/?${q}`
     );
   }
 
   async getConnector(code: string): Promise<ConnectorCatalogEntry> {
-    return this.get<ConnectorCatalogEntry>(`${API.ENDPOINTS.DEVICE_API}/manage/connectors/${encodeURIComponent(code)}`);
+    return this.get<ConnectorCatalogEntry>(`${API.ENDPOINTS.CONTROL_API}/manage/connectors/${encodeURIComponent(code)}`);
   }
 
   // ========== PUBLIC (UNAUTHENTICATED) METHODS ==========

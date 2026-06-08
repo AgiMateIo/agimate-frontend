@@ -42,7 +42,7 @@ export interface UpdateAppRequest {
   enabled?: boolean;
 }
 
-// Device trigger info returned by GET /device/manage/triggers/
+// Device trigger info returned by GET /control/manage/triggers/
 export interface DeviceTriggerInfo {
   name: string;
   description: string;
@@ -55,13 +55,13 @@ export interface DeviceTriggerGroup {
   triggers: DeviceTriggerInfo[];
 }
 
-// Device tool info returned by GET /device/manage/tools/
+// Device tool info returned by GET /control/manage/tools/
 export interface DeviceToolInfo {
   name: string;
   description: string;
 }
 
-// JSON Schema fragment returned by GET /device/manage/tools/{connectorCode}/...
+// JSON Schema fragment returned by GET /control/manage/tools/{connectorCode}/...
 // Fields are JsonInclude.NON_NULL on the backend, so absent properties are omitted.
 export interface ToolJsonSchema {
   type: 'string' | 'integer' | 'number' | 'boolean' | 'array' | 'object';
@@ -72,7 +72,7 @@ export interface ToolJsonSchema {
   enumValues?: string[];
 }
 
-// Full tool specification: GET /device/manage/tools/{connectorCode}/{toolName}
+// Full tool specification: GET /control/manage/tools/{connectorCode}/{toolName}
 export interface ToolSpecification {
   name: string;
   description: string;
@@ -86,7 +86,7 @@ export interface DeviceToolGroup {
   tools: DeviceToolInfo[];
 }
 
-// Trigger log entry returned by GET /device/manage/trigger-logs/
+// Trigger log entry returned by GET /control/manage/trigger-logs/
 export interface TriggerLog {
   id: string;
   connectorCode: string;
@@ -99,7 +99,7 @@ export interface TriggerLog {
   createdAt: string;
 }
 
-// Response of POST /device/manage/trigger-logs/probe — issues a short-lived
+// Response of POST /control/manage/trigger-logs/probe — issues a short-lived
 // probe code that the user pastes into a real bot/app/channel to make the
 // backend capture the resulting TriggerLog without delivering it to agents.
 export interface TriggerLogProbeResponse {

@@ -31,7 +31,7 @@ export interface AgentCreatedResponse {
   fullKey: string;
 }
 
-// Lightweight agent representation used by GET /device/manage/skills/{id}/agents/
+// Lightweight agent representation used by GET /control/manage/skills/{id}/agents/
 export interface AgentSummaryResponse {
   id: string;
   name: string;
