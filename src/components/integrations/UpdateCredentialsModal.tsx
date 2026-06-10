@@ -13,7 +13,8 @@ import { useAsyncForm } from '@/hooks/useAsyncForm';
 
 interface UpdateCredentialsModalProps {
   integration: IntegrationResponse;
-  credentialFields: string[];
+  // field code → human-readable label
+  credentialFields: Record<string, string>;
   onClose: () => void;
   onSuccess: (integration: IntegrationResponse) => void;
 }
@@ -36,7 +37,7 @@ export default function UpdateCredentialsModal({
     setCredentials(prev => ({ ...prev, [fieldName]: value }));
   };
 
-  const allFieldsFilled = credentialFields.every(field => credentials[field]?.trim());
+  const allFieldsFilled = Object.keys(credentialFields).every(field => credentials[field]?.trim());
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
@@ -50,10 +51,10 @@ export default function UpdateCredentialsModal({
           {t('updateCredentialsWarning')}
         </Alert>
 
-        {credentialFields.map(fieldName => (
+        {Object.entries(credentialFields).map(([fieldName, label]) => (
           <FormField
             key={fieldName}
-            label={fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}
+            label={label}
             required
             error={fieldErrors[fieldName]}
           >
@@ -61,7 +62,7 @@ export default function UpdateCredentialsModal({
               type="password"
               value={credentials[fieldName] || ''}
               onChange={(e) => handleFieldChange(fieldName, e.target.value)}
-              placeholder={`Enter ${fieldName}`}
+              placeholder={`Enter ${label}`}
               required
             />
           </FormField>

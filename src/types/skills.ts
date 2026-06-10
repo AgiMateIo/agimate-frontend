@@ -57,7 +57,8 @@ export interface SkillConnectorRequest {
 export type ConnectorType = 'APP' | 'INTEGRATION' | 'INTERNAL_SERVICE' | 'LOOPBACK';
 
 export interface IntegrationMeta {
-  credentialFields: string[];
+  // field code → human-readable label (keys are sent as credential codes)
+  credentialFields: Record<string, string>;
   supportsWebhooks: boolean;
 }
 

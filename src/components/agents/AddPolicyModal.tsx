@@ -29,7 +29,7 @@ const WILDCARD = '__wildcard__';
 
 interface ResourceItem {
   name: string;
-  description: string;
+  description?: string;
 }
 
 export default function AddPolicyModal({ kind, agentId, onClose, onSuccess }: AddPolicyModalProps) {

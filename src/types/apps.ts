@@ -61,22 +61,39 @@ export interface DeviceToolInfo {
   description: string;
 }
 
-// JSON Schema fragment returned by GET /control/manage/tools/{connectorCode}/...
+// JSON Schema node (draft 2020-12 subset, as in MCP) used by ConnectorToolSpec.
 // Fields are JsonInclude.NON_NULL on the backend, so absent properties are omitted.
+// An empty schema {} means "any type".
 export interface ToolJsonSchema {
-  type: 'string' | 'integer' | 'number' | 'boolean' | 'array' | 'object';
+  type?: 'string' | 'integer' | 'number' | 'boolean' | 'array' | 'object';
   description?: string;
   properties?: Record<string, ToolJsonSchema>;
   required?: string[];
   items?: ToolJsonSchema;
-  enumValues?: string[];
+  enum?: Array<string | number | boolean>;
+  additionalProperties?: boolean | ToolJsonSchema;
 }
 
-// Full tool specification: GET /control/manage/tools/{connectorCode}/{toolName}
-export interface ToolSpecification {
+// MCP behavior hints. When the whole object is absent the backend defaults are:
+// readOnly=false, destructive=true, idempotent=false, openWorld=true.
+export interface ToolAnnotations {
+  readOnlyHint?: boolean;
+  destructiveHint?: boolean;
+  idempotentHint?: boolean;
+  openWorldHint?: boolean;
+}
+
+// MCP-compatible tool spec (replaces the old ToolSpecification with `parameters`):
+// GET /control/manage/tools/{connectorCode}/{toolName}, and the element type of
+// GET /control/manage/tools/{connectorCode}/ and /manage/integrations/tools/.
+export interface ConnectorToolSpec {
   name: string;
-  description: string;
-  parameters: ToolJsonSchema; // root is always { type: 'object', properties, required }
+  title?: string;
+  description?: string;
+  inputSchema: ToolJsonSchema; // { type: 'object' } for tools without parameters
+  outputSchema?: ToolJsonSchema;
+  annotations?: ToolAnnotations;
+  _meta?: Record<string, string>;
 }
 
 export interface DeviceToolGroup {
