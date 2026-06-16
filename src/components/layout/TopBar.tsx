@@ -29,6 +29,7 @@ export default function TopBar() {
     'agentic-teams': t('breadcrumbs.agenticTeams'),
     'trigger-logs': t('breadcrumbs.triggerLogs'),
     'tool-use-logs': t('breadcrumbs.toolUseLogs'),
+    'connector-tasks': t('breadcrumbs.connectorTasks'),
     integrations: t('breadcrumbs.integrations'),
     skills: t('breadcrumbs.skills'),
     settings: t('breadcrumbs.settings'),

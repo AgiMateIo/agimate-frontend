@@ -19,3 +19,4 @@ export * from './skills';
 export * from './centrifugo';
 export * from './llm-providers';
 export * from './channels';
+export * from './connector-tasks';

@@ -12,6 +12,7 @@
     "apiKeys": "API ключи",
     "skills": "Навыки",
     "channels": "Каналы",
+    "connectorTasks": "Задачи коннекторов",
     "monitoring": "Мониторинг",
     "settings": "Настройки"
   },
@@ -27,6 +28,7 @@
       "agenticTeams": "Команды агентов",
       "triggerLogs": "Логи триггеров",
       "toolUseLogs": "Логи инструментов",
+      "connectorTasks": "Задачи коннекторов",
       "integrations": "Интеграции",
       "apiKeys": "API ключи",
       "skills": "Навыки",
@@ -210,6 +212,54 @@
     "previous": "Назад",
     "next": "Вперёд"
   },
+  "ConnectorTasks": {
+    "title": "Задачи коннекторов",
+    "loading": "Загрузка задач...",
+    "noTasks": "Задач коннекторов пока нет",
+    "noTasksFiltered": "Нет задач, соответствующих фильтрам",
+    "tasksTotal": "Всего {count, plural, one {# задача} few {# задачи} many {# задач} other {# задачи}}",
+    "filterByConnector": "Код коннектора",
+    "allKinds": "Все типы",
+    "kind": {
+      "SYSTEM": "Системная",
+      "AGENT": "Агент",
+      "USER": "Пользователь"
+    },
+    "kindShort": {
+      "SYSTEM": "С",
+      "AGENT": "А",
+      "USER": "П"
+    },
+    "status": {
+      "PENDING": "Ожидает",
+      "RUNNING": "Выполняется",
+      "COMPLETED": "Завершена"
+    },
+    "nextRun": "Следующий запуск",
+    "connector": "Коннектор",
+    "kindLabel": "Тип",
+    "task": "Задача",
+    "schedule": "Расписание",
+    "statusLabel": "Статус",
+    "actions": "Действия",
+    "every": "Каждые {interval}",
+    "oneTime": "Однократно",
+    "paused": "На паузе",
+    "error": "Ошибка",
+    "details": "Подробности",
+    "args": "Аргументы",
+    "config": "Параметры расписания",
+    "lastError": "Последняя ошибка",
+    "pause": "Приостановить",
+    "resume": "Возобновить",
+    "delete": "Удалить",
+    "cancel": "Отмена",
+    "deleteTitle": "Удалить задачу",
+    "deleteConfirm": "Вы уверены, что хотите удалить задачу «{name}»?",
+    "deleteWarning": "Это действие нельзя отменить. Если задача сейчас выполняется, текущая итерация завершится, но задача больше не будет запланирована.",
+    "actionFailed": "Не удалось выполнить действие",
+    "rowsPerPage": "Строк на странице"
+  },
   "Agents": {
     "title": "Агенты",
     "subtitle": "Настройка AI-агентов для приложений",
@@ -306,7 +356,6 @@
     "effect": "Эффект",
     "effectAllow": "ALLOW",
     "effectDeny": "DENY",
-    "description": "Описание",
     "anyWildcard": "* (любой)",
     "stepConnector": "Коннектор",
     "stepIdentity": "Идентификатор",

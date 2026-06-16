@@ -17,6 +17,7 @@ import {
   ChartBarIcon,
   SparklesIcon,
   ChatBubbleLeftRightIcon,
+  ClockIcon,
 } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { AgenticTeam } from '@/types';
@@ -34,11 +35,12 @@ const getNavItems = (t: ReturnType<typeof useTranslations>, teams: AgenticTeam[]
   { label: t('llmProviders'), icon: SparklesIcon, href: '/dashboard/llm-providers' },
   {
     label: t('connectors'), icon: CpuChipIcon, href: '/dashboard/connectors',
-    activePaths: ['/dashboard/connectors', '/dashboard/apps', '/dashboard/integrations', '/dashboard/channels'],
+    activePaths: ['/dashboard/connectors', '/dashboard/apps', '/dashboard/integrations', '/dashboard/channels', '/dashboard/connector-tasks'],
     children: [
       { label: t('apps'), icon: DevicePhoneMobileIcon, href: '/dashboard/apps' },
       { label: t('integrations'), icon: LinkIcon, href: '/dashboard/integrations' },
       { label: t('channels'), icon: ChatBubbleLeftRightIcon, href: '/dashboard/channels' },
+      { label: t('connectorTasks'), icon: ClockIcon, href: '/dashboard/connector-tasks' },
     ],
   },
   { label: t('skills'), icon: AcademicCapIcon, href: '/dashboard/skills' },

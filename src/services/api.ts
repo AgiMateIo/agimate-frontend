@@ -20,6 +20,8 @@ import type {
   UpdateAgentRequest,
   ToolUseLogResponse,
   PagedResponse,
+  ConnectorTaskResponse,
+  ConnectorTaskKind,
   WebhookDeliveryLogsResponse,
   AgenticTeam,
   CreateAgenticTeamRequest,
@@ -670,6 +672,29 @@ class ApiService {
     searchParams.set('size', String(params?.size ?? 20));
     const query = searchParams.toString();
     return this.get<PagedResponse<ToolUseLogResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/tool-use-logs/?${query}`);
+  }
+
+  // Connector tasks (paginated, sorted by nextRunAt ascending on the backend)
+  async getConnectorTasks(params?: { connectorCode?: string; kind?: ConnectorTaskKind; page?: number; size?: number }): Promise<PagedResponse<ConnectorTaskResponse>> {
+    const searchParams = new URLSearchParams();
+    if (params?.connectorCode) searchParams.set('connectorCode', params.connectorCode);
+    if (params?.kind) searchParams.set('kind', params.kind);
+    searchParams.set('page', String(params?.page ?? 0));
+    searchParams.set('size', String(params?.size ?? 20));
+    return this.get<PagedResponse<ConnectorTaskResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/connector-tasks/?${searchParams.toString()}`);
+  }
+
+  async pauseConnectorTask(id: string): Promise<void> {
+    await this.post<void>(`${API.ENDPOINTS.CONTROL_API}/manage/connector-tasks/${encodeURIComponent(id)}/pause`, {});
+  }
+
+  async resumeConnectorTask(id: string): Promise<void> {
+    await this.post<void>(`${API.ENDPOINTS.CONTROL_API}/manage/connector-tasks/${encodeURIComponent(id)}/resume`, {});
+  }
+
+  // SYSTEM tasks cannot be deleted (backend returns 400) — pause them or delete the integration.
+  async deleteConnectorTask(id: string): Promise<void> {
+    await this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/connector-tasks/${encodeURIComponent(id)}`);
   }
 
   // Device triggers

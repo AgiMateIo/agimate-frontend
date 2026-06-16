@@ -12,6 +12,7 @@
     "apiKeys": "API Keys",
     "skills": "Skills",
     "channels": "Channels",
+    "connectorTasks": "Connector Tasks",
     "monitoring": "Monitoring",
     "settings": "Settings"
   },
@@ -27,6 +28,7 @@
       "agenticTeams": "Agentic Teams",
       "triggerLogs": "Trigger Logs",
       "toolUseLogs": "Tool Use Logs",
+      "connectorTasks": "Connector Tasks",
       "integrations": "Integrations",
       "apiKeys": "API Keys",
       "skills": "Skills",
@@ -211,6 +213,54 @@
     "previous": "Previous",
     "next": "Next"
   },
+  "ConnectorTasks": {
+    "title": "Connector Tasks",
+    "loading": "Loading tasks...",
+    "noTasks": "No connector tasks yet",
+    "noTasksFiltered": "No tasks match the current filters",
+    "tasksTotal": "{count, plural, one {# task} other {# tasks}} total",
+    "filterByConnector": "Connector code",
+    "allKinds": "All kinds",
+    "kind": {
+      "SYSTEM": "System",
+      "AGENT": "Agent",
+      "USER": "User"
+    },
+    "kindShort": {
+      "SYSTEM": "S",
+      "AGENT": "A",
+      "USER": "U"
+    },
+    "status": {
+      "PENDING": "Pending",
+      "RUNNING": "Running",
+      "COMPLETED": "Completed"
+    },
+    "nextRun": "Next run",
+    "connector": "Connector",
+    "kindLabel": "Kind",
+    "task": "Task",
+    "schedule": "Schedule",
+    "statusLabel": "Status",
+    "actions": "Actions",
+    "every": "Every {interval}",
+    "oneTime": "One-time",
+    "paused": "Paused",
+    "error": "Error",
+    "details": "Details",
+    "args": "Arguments",
+    "config": "Schedule config",
+    "lastError": "Last error",
+    "pause": "Pause",
+    "resume": "Resume",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "deleteTitle": "Delete task",
+    "deleteConfirm": "Are you sure you want to delete the task “{name}”?",
+    "deleteWarning": "This action cannot be undone. If the task is currently running, the in-flight iteration will finish, but the task will not be scheduled again.",
+    "actionFailed": "Action failed",
+    "rowsPerPage": "Rows per page"
+  },
   "Agents": {
     "title": "Agents",
     "subtitle": "Configure AI agents for your apps",
@@ -307,7 +357,6 @@
     "effect": "Effect",
     "effectAllow": "ALLOW",
     "effectDeny": "DENY",
-    "description": "Description",
     "anyWildcard": "* (any)",
     "stepConnector": "Connector",
     "stepIdentity": "Identity",
