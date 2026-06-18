@@ -148,31 +148,20 @@ function ConfigView({ channel }: { channel: ChannelResponse }) {
   const t = useTranslations('Channels');
   return (
     <div className="space-y-4">
-      <Section title={t('sectionTrigger')}>
-        <Row label={t('fieldConnector')} value={channel.triggerConnectorCode} mono />
+      <Section title={t('sectionBinding')}>
+        <Row label={t('fieldHandler')} value={channel.channelHandler} mono />
+        <Row label={t('fieldConnector')} value={channel.connectorCode} mono />
         <Row
           label={t('fieldIdentity')}
-          value={channel.triggerIdentityName || channel.triggerIdentity}
-          mono={!channel.triggerIdentityName}
+          value={channel.identityName || channel.identity}
+          mono={!channel.identityName}
         />
-        <Row label={t('fieldTrigger')} value={channel.triggerName} mono />
-        <Row label={t('fieldMessageField')} value={channel.triggerMessageField} mono />
       </Section>
 
-      <Section title={t('sectionReply')}>
-        <Row label={t('fieldConnector')} value={channel.replyConnectorCode} mono />
-        <Row
-          label={t('fieldIdentity')}
-          value={channel.replyIdentityName || channel.replyIdentity}
-          mono={!channel.replyIdentityName}
-        />
-        <Row label={t('fieldTool')} value={channel.replyToolName} mono />
-        <div>
-          <div className="text-xs text-muted mb-1">{t('fieldReplyParams')}</div>
-          <pre className="text-xs font-mono bg-surface-secondary border border-border rounded-lg p-3 overflow-x-auto whitespace-pre-wrap">
-            {JSON.stringify(channel.replyToolParams, null, 2)}
-          </pre>
-        </div>
+      <Section title={t('sectionConfig')}>
+        <pre className="text-xs font-mono bg-surface-secondary border border-border rounded-lg p-3 overflow-x-auto whitespace-pre-wrap">
+          {JSON.stringify(channel.config, null, 2)}
+        </pre>
       </Section>
 
       {channel.inputFilter && (

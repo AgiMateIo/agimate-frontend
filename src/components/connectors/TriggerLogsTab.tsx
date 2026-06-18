@@ -258,23 +258,23 @@ export default function TriggerLogsTab() {
                 <span className="text-sm font-mono text-muted truncate block max-w-[150px] dir-rtl text-left" dir="rtl" title={log.identity}>{log.identity}</span>
               </td>
               <td className="py-3 px-4">
-                <span className="text-sm font-medium text-foreground">{log.triggerName}</span>
+                <span className="text-sm font-medium text-foreground">{log.name}</span>
               </td>
               <td className="py-3 px-4">
-                {log.triggerInput && Object.keys(log.triggerInput).length > 0 ? (
+                {log.input && Object.keys(log.input).length > 0 ? (
                   <div>
                     <button
                       onClick={() => toggleExpand(log.id)}
                       className="flex items-center gap-1 text-xs text-accent hover:text-accent/80 font-medium transition-colors"
                     >
                       <span className="max-w-[200px] truncate font-mono">
-                        {JSON.stringify(log.triggerInput)}
+                        {JSON.stringify(log.input)}
                       </span>
                       <span className="shrink-0">{expandedIds.has(log.id) ? '\u25B2' : '\u25BC'}</span>
                     </button>
                     {expandedIds.has(log.id) && (
                       <pre className="mt-2 p-3 bg-background rounded-lg text-xs font-mono text-foreground/80 overflow-x-auto max-w-md">
-                        {JSON.stringify(log.triggerInput, null, 2)}
+                        {JSON.stringify(log.input, null, 2)}
                       </pre>
                     )}
                   </div>

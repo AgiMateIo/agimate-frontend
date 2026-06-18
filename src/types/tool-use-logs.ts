@@ -6,17 +6,17 @@ export interface ToolUseLogResponse {
   connectorCode: string;
   identity: string;
   agentSessionId: string;
-  toolUseId: string;
-  toolName: string;
+  externalId: string;
+  name: string;
   input: Record<string, unknown>;
   accessEffect: 'ALLOW' | 'DENY';
-  outputAt: string | null;
+  finishAt: string | null;
   output: string | null;
   error: string | null;
   createdAt: string;
 }
 
-// Paginated response from GET /control/manage/tool-use-logs/
+// Paginated response from GET /control/manage/tool-call-logs/
 export interface PagedResponse<T> {
   content: T[];
   totalElements: number;

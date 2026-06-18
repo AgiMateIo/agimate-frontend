@@ -264,7 +264,7 @@ export default function ToolUseLogsTab() {
                     <span className="text-sm font-mono text-muted truncate block max-w-[150px] dir-rtl text-left" dir="rtl" title={log.identity}>{log.identity}</span>
                   </td>
                   <td className="py-3 px-4">
-                    <span className="text-sm font-medium text-foreground font-mono">{log.toolName}</span>
+                    <span className="text-sm font-medium text-foreground font-mono">{log.name}</span>
                   </td>
                   <td className="py-3 px-4">
                     {log.input && Object.keys(log.input).length > 0 ? (
@@ -299,7 +299,7 @@ export default function ToolUseLogsTab() {
                   </td>
                   <td className="py-3 px-4">
                     <span className="text-sm text-muted">
-                      {log.outputAt ? formatDateTimeShort(log.outputAt) : '\u2014'}
+                      {log.finishAt ? formatDateTimeShort(log.finishAt) : '\u2014'}
                     </span>
                   </td>
                   <td className="py-3 px-4">

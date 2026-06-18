@@ -40,9 +40,9 @@ export default function AgentsList({ agents }: AgentsListProps) {
                   <span className="text-sm text-muted truncate min-w-0" title={agent.description}>
                     {agent.description}
                   </span>
-                ) : agent.prompt ? (
-                  <span className="text-sm text-muted truncate min-w-0 font-mono" title={agent.prompt}>
-                    {agent.prompt}
+                ) : agent.instructions ? (
+                  <span className="text-sm text-muted truncate min-w-0 font-mono" title={agent.instructions}>
+                    {agent.instructions}
                   </span>
                 ) : null}
               </div>

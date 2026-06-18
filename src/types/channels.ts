@@ -1,27 +1,21 @@
-// Channel: declarative binding between a dialog trigger (incoming user message) and
-// a reply tool-call with a parameter template.
+import type { ToolJsonSchema } from './apps';
+
+// Channel: a handler-driven binding between a connector-sourced trigger and an agent.
+// The handler name selects behaviour; `config` is a free-form map whose shape is described
+// by the handler's JSON Schema (see ChannelHandlerResponse / GET /manage/channels/handlers/).
 export interface ChannelResponse {
   id: string;
   agentId: string;
   name: string;
-
-  // Trigger side
-  triggerConnectorCode: string;
-  triggerIdentity: string;
-  triggerIdentityName: string | null;
-  triggerName: string;
-  triggerMessageField: string;
-
-  // Reply side
-  replyConnectorCode: string;
-  replyIdentity: string;
-  replyIdentityName: string | null;
-  replyToolName: string;
-  replyToolParams: Record<string, unknown>;
-
+  channelHandler: string;
+  connectorCode: string;
+  identity: string;
+  // Denormalised name of the connector source (App.name / IntegrationCredentials.name);
+  // null if the underlying resource was deleted.
+  identityName: string | null;
+  config: Record<string, unknown>;
   // Optional filter stored on the underlying AgentTriggerPolicy
   inputFilter: Record<string, unknown> | null;
-
   createdAt: string;
   updatedAt: string;
 }
@@ -29,23 +23,27 @@ export interface ChannelResponse {
 export interface CreateChannelRequest {
   agentId: string;
   name: string;
-  triggerConnectorCode: string;
-  triggerIdentity: string;
-  triggerName: string;
-  triggerMessageField: string;
-  replyConnectorCode: string;
-  replyIdentity: string;
-  replyToolName: string;
-  replyToolParams: Record<string, unknown>;
+  channelHandler: string;
+  connectorCode: string;
+  identity: string;
+  config: Record<string, unknown>;
   inputFilter?: Record<string, unknown> | null;
 }
 
 export interface UpdateChannelRequest {
   name?: string;
-  triggerMessageField?: string;
-  replyToolParams?: Record<string, unknown>;
+  // Full replacement of the handler config.
+  config?: Record<string, unknown>;
   inputFilter?: Record<string, unknown> | null;
   clearInputFilter?: boolean;
+}
+
+// One available channel handler + the JSON Schema describing its `config`.
+// `configFields` is a ready-to-render JSON Schema (`type: 'object'`); property order
+// is significant and should drive form field order.
+export interface ChannelHandlerResponse {
+  name: string;
+  configFields: ToolJsonSchema;
 }
 
 export interface ChannelSessionResponse {

@@ -57,8 +57,8 @@ export default function ChannelsPage() {
                 <tr className="border-b border-border">
                   <th className="text-left py-3 px-4 text-xs font-medium text-muted uppercase tracking-wide">{t('colName')}</th>
                   <th className="text-left py-3 px-4 text-xs font-medium text-muted uppercase tracking-wide">{t('colAgent')}</th>
-                  <th className="text-left py-3 px-4 text-xs font-medium text-muted uppercase tracking-wide">{t('colTrigger')}</th>
-                  <th className="text-left py-3 px-4 text-xs font-medium text-muted uppercase tracking-wide">{t('colReply')}</th>
+                  <th className="text-left py-3 px-4 text-xs font-medium text-muted uppercase tracking-wide">{t('colHandler')}</th>
+                  <th className="text-left py-3 px-4 text-xs font-medium text-muted uppercase tracking-wide">{t('colSource')}</th>
                   <th className="text-left py-3 px-4 text-xs font-medium text-muted uppercase tracking-wide">{t('colUpdatedAt')}</th>
                 </tr>
               </thead>
@@ -83,21 +83,12 @@ export default function ChannelsPage() {
                         )}
                       </td>
                       <td className="py-3 px-4 text-xs">
-                        <div className="flex flex-col gap-0.5 max-w-[260px]">
-                          <span className="truncate">
-                            <span className="font-mono text-foreground">{c.triggerConnectorCode}</span>
-                            <span className="text-muted"> ({c.triggerIdentityName || c.triggerIdentity.slice(0, 8)})</span>
-                          </span>
-                          <span className="font-mono text-muted truncate">{c.triggerName}</span>
-                        </div>
+                        <span className="font-mono text-foreground">{c.channelHandler}</span>
                       </td>
                       <td className="py-3 px-4 text-xs">
                         <div className="flex flex-col gap-0.5 max-w-[260px]">
-                          <span className="truncate">
-                            <span className="font-mono text-foreground">{c.replyConnectorCode}</span>
-                            <span className="text-muted"> ({c.replyIdentityName || c.replyIdentity.slice(0, 8)})</span>
-                          </span>
-                          <span className="font-mono text-muted truncate">{c.replyToolName}</span>
+                          <span className="font-mono text-foreground truncate">{c.connectorCode}</span>
+                          <span className="text-muted truncate">{c.identityName || c.identity.slice(0, 8)}</span>
                         </div>
                       </td>
                       <td className="py-3 px-4 text-xs text-muted">

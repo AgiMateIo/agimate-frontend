@@ -12,11 +12,11 @@ export interface ConnectorTaskResponse {
   connectorCode: string;
   identity: string | null;
   agentId: string | null;
-  taskName: string;
-  taskType: ConnectorTaskType;
+  name: string;
+  type: ConnectorTaskType;
   // PERIODIC: { intervalSeconds }; CRON: { cron, zone }; ONETIME: empty or connector-specific
-  taskConfig: Record<string, unknown> | null;
-  taskArgs: Record<string, unknown> | null;
+  config: Record<string, unknown> | null;
+  args: Record<string, unknown> | null;
   status: ConnectorTaskStatus;
   nextRunAt: string | null;
   pausedAt: string | null;

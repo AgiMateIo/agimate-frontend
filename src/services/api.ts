@@ -64,6 +64,7 @@ import type {
   CreateAgentLlmRequest,
   UpdateAgentLlmRequest,
   ChannelResponse,
+  ChannelHandlerResponse,
   CreateChannelRequest,
   UpdateChannelRequest,
   ChannelSessionResponse,
@@ -584,6 +585,12 @@ class ApiService {
     );
   }
 
+  async getChannelHandlers(): Promise<ChannelHandlerResponse[]> {
+    return this.get<ChannelHandlerResponse[]>(
+      `${API.ENDPOINTS.CONTROL_API}/manage/channels/handlers/`,
+    );
+  }
+
   async getChannel(id: string): Promise<ChannelResponse> {
     return this.get<ChannelResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/channels/${id}`);
   }
@@ -671,7 +678,7 @@ class ApiService {
     searchParams.set('page', String(params?.page ?? 0));
     searchParams.set('size', String(params?.size ?? 20));
     const query = searchParams.toString();
-    return this.get<PagedResponse<ToolUseLogResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/tool-use-logs/?${query}`);
+    return this.get<PagedResponse<ToolUseLogResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/tool-call-logs/?${query}`);
   }
 
   // Connector tasks (paginated, sorted by nextRunAt ascending on the backend)
@@ -681,20 +688,20 @@ class ApiService {
     if (params?.kind) searchParams.set('kind', params.kind);
     searchParams.set('page', String(params?.page ?? 0));
     searchParams.set('size', String(params?.size ?? 20));
-    return this.get<PagedResponse<ConnectorTaskResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/connector-tasks/?${searchParams.toString()}`);
+    return this.get<PagedResponse<ConnectorTaskResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/connector-jobs/?${searchParams.toString()}`);
   }
 
   async pauseConnectorTask(id: string): Promise<void> {
-    await this.post<void>(`${API.ENDPOINTS.CONTROL_API}/manage/connector-tasks/${encodeURIComponent(id)}/pause`, {});
+    await this.post<void>(`${API.ENDPOINTS.CONTROL_API}/manage/connector-jobs/${encodeURIComponent(id)}/pause`, {});
   }
 
   async resumeConnectorTask(id: string): Promise<void> {
-    await this.post<void>(`${API.ENDPOINTS.CONTROL_API}/manage/connector-tasks/${encodeURIComponent(id)}/resume`, {});
+    await this.post<void>(`${API.ENDPOINTS.CONTROL_API}/manage/connector-jobs/${encodeURIComponent(id)}/resume`, {});
   }
 
   // SYSTEM tasks cannot be deleted (backend returns 400) — pause them or delete the integration.
   async deleteConnectorTask(id: string): Promise<void> {
-    await this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/connector-tasks/${encodeURIComponent(id)}`);
+    await this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/connector-jobs/${encodeURIComponent(id)}`);
   }
 
   // Device triggers

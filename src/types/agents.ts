@@ -14,7 +14,7 @@ export interface AgentResponse {
   name: string;
   description: string | null;
   maskedKeyId: string;
-  prompt: string;
+  instructions: string;
   type: AgentType;
   webhookUrl: string | null;
   hasWebhookAuth: boolean;
@@ -36,14 +36,14 @@ export interface AgentSummaryResponse {
   id: string;
   name: string;
   description: string | null;
-  prompt: string | null;
+  instructions: string | null;
   enabled: boolean;
 }
 
 export interface CreateAgentRequest {
   name: string;
   description?: string;
-  prompt?: string;
+  instructions?: string;
   type?: AgentType;
   webhookUrl?: string | null;
   webhookAuthHeader?: string | null;
@@ -53,7 +53,7 @@ export interface CreateAgentRequest {
 export interface UpdateAgentRequest {
   name?: string;
   description?: string | null;
-  prompt?: string;
+  instructions?: string;
   type?: AgentType;
   webhookUrl?: string | null;
   webhookAuthHeader?: string | null;

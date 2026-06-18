@@ -175,7 +175,7 @@ export default function AgentDetailPage() {
           <div>
             <h3 className="text-sm font-medium text-muted mb-2">{t('prompt')}</h3>
             <div className="bg-surface-secondary rounded-lg border border-border/50 p-4">
-              <pre className="text-sm text-foreground whitespace-pre-wrap font-mono">{agent.prompt}</pre>
+              <pre className="text-sm text-foreground whitespace-pre-wrap font-mono">{agent.instructions}</pre>
             </div>
           </div>
 

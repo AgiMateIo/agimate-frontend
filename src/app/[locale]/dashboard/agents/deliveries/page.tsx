@@ -185,8 +185,8 @@ export default function WebhookDeliveriesPage() {
                       <span className="text-sm text-foreground">{d.durationMs}ms</span>
                     </td>
                     <td className="py-3 px-4">
-                      {d.errorMessage ? (
-                        <span className="text-sm text-error truncate max-w-xs block" title={d.errorMessage}>{d.errorMessage}</span>
+                      {d.error ? (
+                        <span className="text-sm text-error truncate max-w-xs block" title={d.error}>{d.error}</span>
                       ) : (
                         <span className="text-sm text-muted">—</span>
                       )}

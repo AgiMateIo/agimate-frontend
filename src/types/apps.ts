@@ -66,6 +66,7 @@ export interface DeviceToolInfo {
 // An empty schema {} means "any type".
 export interface ToolJsonSchema {
   type?: 'string' | 'integer' | 'number' | 'boolean' | 'array' | 'object';
+  title?: string;
   description?: string;
   properties?: Record<string, ToolJsonSchema>;
   required?: string[];
@@ -108,10 +109,10 @@ export interface TriggerLog {
   id: string;
   connectorCode: string;
   identity: string;
-  triggerId: string;
-  triggerName: string;
+  externalId: string;
+  name: string;
   occurredAt: string;
-  triggerInput: Record<string, unknown>;
+  input: Record<string, unknown>;
   agentsCount: number;
   createdAt: string;
 }

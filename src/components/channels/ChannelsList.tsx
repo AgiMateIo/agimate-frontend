@@ -50,13 +50,13 @@ export default function ChannelsList({
               >
                 <div className="text-sm font-medium text-foreground truncate">{c.name}</div>
                 <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                  <span className="text-xs font-mono text-muted">{c.triggerConnectorCode}</span>
+                  <span className="text-xs font-mono text-muted">{c.connectorCode}</span>
                   <span className="text-xs text-muted">·</span>
                   <span className="text-xs text-muted truncate">
-                    {c.triggerIdentityName || c.triggerIdentity.slice(0, 8)}
+                    {c.identityName || c.identity.slice(0, 8)}
                   </span>
                 </div>
-                <div className="mt-0.5 text-xs text-muted font-mono truncate">{c.triggerName}</div>
+                <div className="mt-0.5 text-xs text-muted font-mono truncate">{c.channelHandler}</div>
               </button>
             );
           })}

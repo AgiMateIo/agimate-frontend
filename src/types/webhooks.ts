@@ -2,7 +2,7 @@ export interface WebhookDeliveryLog {
   id: string;
   requestUrl: string;
   responseStatusCode: number;
-  errorMessage: string | null;
+  error: string | null;
   durationMs: number;
   success: boolean;
   deliveredAt: string;

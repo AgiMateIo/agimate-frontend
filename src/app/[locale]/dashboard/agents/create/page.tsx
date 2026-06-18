@@ -50,7 +50,7 @@ export default function CreateAgentPage() {
       apiService.createAgent({
         name,
         description: description || undefined,
-        prompt: prompt || undefined,
+        instructions: prompt || undefined,
         type: agentType,
         webhookUrl: agentType === 'WEBHOOK' ? webhookUrl : null,
         webhookAuthHeader: agentType === 'WEBHOOK' && webhookAuthHeader ? webhookAuthHeader : null,
@@ -168,7 +168,7 @@ export default function CreateAgentPage() {
             />
           </FormField>
 
-          <FormField label="Prompt" error={getFieldError('prompt')}>
+          <FormField label="Prompt" error={getFieldError('instructions')}>
             <TextArea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}

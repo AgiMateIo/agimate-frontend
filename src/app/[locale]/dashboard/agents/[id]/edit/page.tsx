@@ -49,7 +49,7 @@ export default function EditAgentPage() {
       setAgent(agentData);
       setName(agentData.name);
       setDescription(agentData.description ?? '');
-      setPrompt(agentData.prompt);
+      setPrompt(agentData.instructions);
       setAgentType(agentData.type);
       setWebhookUrl(agentData.webhookUrl ?? '');
     } catch (err) {
@@ -82,7 +82,7 @@ export default function EditAgentPage() {
       apiService.updateAgent(agentId, {
         name,
         description: description || null,
-        prompt,
+        instructions: prompt,
         type: agentType,
         webhookUrl: agentType === 'WEBHOOK' ? webhookUrl : null,
         webhookAuthHeader: agentType === 'WEBHOOK' && webhookAuthHeader ? webhookAuthHeader : null,
@@ -218,7 +218,7 @@ export default function EditAgentPage() {
             />
           </FormField>
 
-          <FormField label="Prompt" error={getFieldError('prompt')}>
+          <FormField label="Prompt" error={getFieldError('instructions')}>
             <TextArea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}

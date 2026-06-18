@@ -194,18 +194,18 @@ export default function ConnectorTasksTab() {
   };
 
   const renderSchedule = (task: ConnectorTaskResponse) => {
-    if (task.taskType === 'PERIODIC') {
-      const interval = Number(task.taskConfig?.intervalSeconds ?? 0);
+    if (task.type === 'PERIODIC') {
+      const interval = Number(task.config?.intervalSeconds ?? 0);
       return (
         <span className="text-sm text-foreground">{t('every', { interval: formatInterval(interval) })}</span>
       );
     }
-    if (task.taskType === 'CRON') {
+    if (task.type === 'CRON') {
       return (
         <div>
-          <span className="text-sm font-mono text-foreground">{String(task.taskConfig?.cron ?? '')}</span>
-          {task.taskConfig?.zone ? (
-            <div className="text-xs text-muted">{String(task.taskConfig.zone)}</div>
+          <span className="text-sm font-mono text-foreground">{String(task.config?.cron ?? '')}</span>
+          {task.config?.zone ? (
+            <div className="text-xs text-muted">{String(task.config.zone)}</div>
           ) : null}
         </div>
       );
@@ -390,8 +390,8 @@ export default function ConnectorTasksTab() {
             const canDelete = task.kind !== 'SYSTEM';
             const expanded = expandedIds.has(task.id);
             const hasDetails =
-              (task.taskArgs && Object.keys(task.taskArgs).length > 0) ||
-              (task.taskConfig && Object.keys(task.taskConfig).length > 0) ||
+              (task.args && Object.keys(task.args).length > 0) ||
+              (task.config && Object.keys(task.config).length > 0) ||
               task.lastError !== null;
 
             return (
@@ -415,7 +415,7 @@ export default function ConnectorTasksTab() {
                   )}
                 </td>
                 <td className="py-3 px-4 align-top">
-                  <span className="text-sm font-medium text-foreground">{task.taskName}</span>
+                  <span className="text-sm font-medium text-foreground">{task.name}</span>
                   {hasDetails && (
                     <div>
                       <button
@@ -427,19 +427,19 @@ export default function ConnectorTasksTab() {
                       </button>
                       {expanded && (
                         <div className="mt-2 space-y-2 max-w-md">
-                          {task.taskArgs && Object.keys(task.taskArgs).length > 0 && (
+                          {task.args && Object.keys(task.args).length > 0 && (
                             <div>
                               <div className="text-xs text-muted">{t('args')}</div>
                               <pre className="mt-1 p-3 bg-background rounded-lg text-xs font-mono text-foreground/80 overflow-x-auto">
-                                {JSON.stringify(task.taskArgs, null, 2)}
+                                {JSON.stringify(task.args, null, 2)}
                               </pre>
                             </div>
                           )}
-                          {task.taskConfig && Object.keys(task.taskConfig).length > 0 && (
+                          {task.config && Object.keys(task.config).length > 0 && (
                             <div>
                               <div className="text-xs text-muted">{t('config')}</div>
                               <pre className="mt-1 p-3 bg-background rounded-lg text-xs font-mono text-foreground/80 overflow-x-auto">
-                                {JSON.stringify(task.taskConfig, null, 2)}
+                                {JSON.stringify(task.config, null, 2)}
                               </pre>
                             </div>
                           )}
@@ -538,7 +538,7 @@ export default function ConnectorTasksTab() {
       >
         <div className="space-y-4">
           <p className="text-sm text-foreground">
-            {t('deleteConfirm', { name: deleteTarget?.taskName ?? '' })}
+            {t('deleteConfirm', { name: deleteTarget?.name ?? '' })}
           </p>
           <p className="text-sm text-muted">{t('deleteWarning')}</p>
           <div className="flex justify-end gap-3">
