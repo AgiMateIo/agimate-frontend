@@ -6,7 +6,8 @@ import apiService from '@/services/api';
 import { IntegrationResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { FormField, Input } from '@/components/ui/FormField';
+import { FormField } from '@/components/ui/FormField';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
@@ -58,8 +59,7 @@ export default function UpdateCredentialsModal({
             required
             error={fieldErrors[fieldName]}
           >
-            <Input
-              type="password"
+            <PasswordInput
               value={credentials[fieldName] || ''}
               onChange={(e) => handleFieldChange(fieldName, e.target.value)}
               placeholder={`Enter ${label}`}
