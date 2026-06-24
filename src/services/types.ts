@@ -1,7 +1,6 @@
 // types.ts
 export interface User {
   id?: string;
-  pubId?: string;
   email?: string;
   displayName?: string;
   role?: string;

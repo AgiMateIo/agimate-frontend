@@ -7,7 +7,7 @@ export interface SkillResponse {
   version: number;
   isPublic: boolean;
   isFeatured: boolean;
-  userPubId: string;
+  userId: string;
   parentId: string | null;
   myCopyId: string | null;
   createdAt: string;

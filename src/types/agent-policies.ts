@@ -6,7 +6,7 @@ export type PolicyKind = 'tool' | 'trigger';
 export interface AgentPolicyResponse {
   id: string;
   agentId: string;
-  userPubId: string;
+  userId: string;
   connectorCode: string | null;
   connectorIdentity: string | null;
   resourceName: string | null;

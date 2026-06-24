@@ -43,7 +43,7 @@ export default function SkillDetailPage() {
 
   useSetBreadcrumb(skillId, skill?.name);
 
-  const isOwner = !!(user?.pubId && user.pubId === skill?.userPubId);
+  const isOwner = !!(user?.id && user.id === skill?.userId);
   const isFeaturedClone = skill?.parentId != null;
   const isEditable = isOwner && !isFeaturedClone;
 
