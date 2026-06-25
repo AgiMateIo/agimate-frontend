@@ -1,10 +1,10 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import ConnectorTasksTab from '@/components/connectors/ConnectorTasksTab';
+import ConnectorJobsTab from '@/components/connectors/ConnectorJobsTab';
 
-export default function ConnectorTasksPage() {
-  const t = useTranslations('ConnectorTasks');
+export default function ConnectorJobsPage() {
+  const t = useTranslations('ConnectorJobs');
 
   return (
     <div className="space-y-6">
@@ -15,7 +15,7 @@ export default function ConnectorTasksPage() {
 
       {/* Connector Tasks */}
       <div className="bg-surface rounded-xl border border-border p-6">
-        <ConnectorTasksTab />
+        <ConnectorJobsTab />
       </div>
     </div>
   );

@@ -20,8 +20,8 @@ import type {
   UpdateAgentRequest,
   ToolUseLogResponse,
   PagedResponse,
-  ConnectorTaskResponse,
-  ConnectorTaskKind,
+  ConnectorJobResponse,
+  ConnectorJobKind,
   WebhookDeliveryLogsResponse,
   AgenticTeam,
   CreateAgenticTeamRequest,
@@ -682,31 +682,31 @@ class ApiService {
   }
 
   // Connector tasks (paginated, sorted by nextRunAt ascending on the backend)
-  async getConnectorTasks(params?: { connectorCode?: string; kind?: ConnectorTaskKind; page?: number; size?: number }): Promise<PagedResponse<ConnectorTaskResponse>> {
+  async getConnectorJobs(params?: { connectorCode?: string; kind?: ConnectorJobKind; page?: number; size?: number }): Promise<PagedResponse<ConnectorJobResponse>> {
     const searchParams = new URLSearchParams();
     if (params?.connectorCode) searchParams.set('connectorCode', params.connectorCode);
     if (params?.kind) searchParams.set('kind', params.kind);
     searchParams.set('page', String(params?.page ?? 0));
     searchParams.set('size', String(params?.size ?? 20));
-    return this.get<PagedResponse<ConnectorTaskResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/connector-jobs/?${searchParams.toString()}`);
+    return this.get<PagedResponse<ConnectorJobResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/connector-jobs/?${searchParams.toString()}`);
   }
 
-  async pauseConnectorTask(id: string): Promise<void> {
+  async pauseConnectorJob(id: string): Promise<void> {
     await this.post<void>(`${API.ENDPOINTS.CONTROL_API}/manage/connector-jobs/${encodeURIComponent(id)}/pause`, {});
   }
 
-  async resumeConnectorTask(id: string): Promise<void> {
+  async resumeConnectorJob(id: string): Promise<void> {
     await this.post<void>(`${API.ENDPOINTS.CONTROL_API}/manage/connector-jobs/${encodeURIComponent(id)}/resume`, {});
   }
 
   // Fire-and-forget: 200 means "queued", not "executed". The real run happens within ~1s;
   // poll the list afterwards to observe the status transition (PENDING → RUNNING → PENDING/COMPLETED).
-  async runConnectorTaskNow(id: string): Promise<void> {
+  async runConnectorJobNow(id: string): Promise<void> {
     await this.post<void>(`${API.ENDPOINTS.CONTROL_API}/manage/connector-jobs/${encodeURIComponent(id)}/run-now`, {});
   }
 
   // SYSTEM tasks cannot be deleted (backend returns 400) — pause them or delete the integration.
-  async deleteConnectorTask(id: string): Promise<void> {
+  async deleteConnectorJob(id: string): Promise<void> {
     await this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/connector-jobs/${encodeURIComponent(id)}`);
   }
 

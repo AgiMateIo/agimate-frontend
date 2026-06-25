@@ -3,13 +3,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { ConnectorTaskResponse, ConnectorTaskKind, PagedResponse } from '@/types';
+import { ConnectorJobResponse, ConnectorJobKind, PagedResponse } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import {
   ArrowPathIcon,
+  BoltIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   PauseIcon,
@@ -27,36 +28,36 @@ const REFRESH_OPTIONS = [
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 const DEFAULT_PAGE_SIZE = 20;
 
-const KIND_OPTIONS: ConnectorTaskKind[] = ['SYSTEM', 'AGENT', 'USER'];
+const KIND_OPTIONS: ConnectorJobKind[] = ['SYSTEM', 'AGENT', 'USER'];
 
-const KIND_BADGE: Record<ConnectorTaskKind, string> = {
+const KIND_BADGE: Record<ConnectorJobKind, string> = {
   SYSTEM: 'bg-surface-secondary text-muted',
   AGENT: 'bg-accent/10 text-accent',
   USER: 'bg-success/10 text-success',
 };
 
-const STATUS_BADGE: Record<ConnectorTaskResponse['status'], string> = {
+const STATUS_BADGE: Record<ConnectorJobResponse['status'], string> = {
   PENDING: 'bg-surface-secondary text-muted',
   RUNNING: 'bg-success/10 text-success',
   COMPLETED: 'bg-surface-secondary text-muted/60',
 };
 
-export default function ConnectorTasksTab() {
-  const t = useTranslations('ConnectorTasks');
-  const [pagedData, setPagedData] = useState<PagedResponse<ConnectorTaskResponse> | null>(null);
+export default function ConnectorJobsTab() {
+  const t = useTranslations('ConnectorJobs');
+  const [pagedData, setPagedData] = useState<PagedResponse<ConnectorJobResponse> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionError, setActionError] = useState('');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [actingIds, setActingIds] = useState<Set<string>>(new Set());
-  const [deleteTarget, setDeleteTarget] = useState<ConnectorTaskResponse | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ConnectorJobResponse | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
   const [refreshOpen, setRefreshOpen] = useState(false);
   const refreshRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-  const [kindFilter, setKindFilter] = useState<ConnectorTaskKind | ''>('');
+  const [kindFilter, setKindFilter] = useState<ConnectorJobKind | ''>('');
   const [codeFilter, setCodeFilter] = useState('');
   const debouncedCodeFilter = useDebouncedValue(codeFilter.trim(), 300);
 
@@ -66,7 +67,7 @@ export default function ConnectorTasksTab() {
       setError('');
     }
     try {
-      const data = await apiService.getConnectorTasks({
+      const data = await apiService.getConnectorJobs({
         connectorCode: debouncedCodeFilter || undefined,
         kind: kindFilter || undefined,
         page,
@@ -76,7 +77,7 @@ export default function ConnectorTasksTab() {
       if (silent) setError('');
     } catch (err) {
       if (!silent) {
-        setError(err instanceof Error ? err.message : 'Failed to load connector tasks');
+        setError(err instanceof Error ? err.message : 'Failed to load connector jobs');
       }
     } finally {
       if (!silent) setLoading(false);
@@ -136,12 +137,32 @@ export default function ConnectorTasksTab() {
     }
   };
 
+  const handleRunNow = async (id: string) => {
+    setActingIds(prev => new Set(prev).add(id));
+    setActionError('');
+    try {
+      // Fire-and-forget: 200 means "queued". The actual run happens within ~1s.
+      await apiService.runConnectorJobNow(id);
+      await fetchData(true);
+      // Re-fetch after a short delay so the user sees the status transition (PENDING → RUNNING → …).
+      setTimeout(() => { fetchData(true); }, 1500);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : t('actionFailed'));
+    } finally {
+      setActingIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }
+  };
+
   const handleDelete = async () => {
     if (!deleteTarget) return;
     setDeleting(true);
     setActionError('');
     try {
-      await apiService.deleteConnectorTask(deleteTarget.id);
+      await apiService.deleteConnectorJob(deleteTarget.id);
       setDeleteTarget(null);
       await fetchData(true);
     } catch (err) {
@@ -193,19 +214,19 @@ export default function ConnectorTasksTab() {
     return parts.join(' ');
   };
 
-  const renderSchedule = (task: ConnectorTaskResponse) => {
-    if (task.type === 'PERIODIC') {
-      const interval = Number(task.config?.intervalSeconds ?? 0);
+  const renderSchedule = (job: ConnectorJobResponse) => {
+    if (job.type === 'PERIODIC') {
+      const interval = Number(job.config?.intervalSeconds ?? 0);
       return (
         <span className="text-sm text-foreground">{t('every', { interval: formatInterval(interval) })}</span>
       );
     }
-    if (task.type === 'CRON') {
+    if (job.type === 'CRON') {
       return (
         <div>
-          <span className="text-sm font-mono text-foreground">{String(task.config?.cron ?? '')}</span>
-          {task.config?.zone ? (
-            <div className="text-xs text-muted">{String(task.config.zone)}</div>
+          <span className="text-sm font-mono text-foreground">{String(job.config?.cron ?? '')}</span>
+          {job.config?.zone ? (
+            <div className="text-xs text-muted">{String(job.config.zone)}</div>
           ) : null}
         </div>
       );
@@ -218,7 +239,7 @@ export default function ConnectorTasksTab() {
     setPage(0);
   };
 
-  const tasks = pagedData?.content ?? [];
+  const jobs = pagedData?.content ?? [];
   const totalElements = pagedData?.totalElements ?? 0;
   const totalPages = pagedData?.totalPages ?? 0;
   const hasFilters = kindFilter !== '' || debouncedCodeFilter !== '';
@@ -280,7 +301,7 @@ export default function ConnectorTasksTab() {
       <select
         value={kindFilter}
         onChange={(e) => {
-          setKindFilter(e.target.value as ConnectorTaskKind | '');
+          setKindFilter(e.target.value as ConnectorJobKind | '');
           setPage(0);
         }}
         className="bg-surface-secondary border border-border rounded-lg px-2 py-1 text-xs text-foreground"
@@ -344,7 +365,7 @@ export default function ConnectorTasksTab() {
     return <div className="text-center py-12 text-muted">{t('loading')}</div>;
   }
 
-  if (tasks.length === 0) {
+  if (jobs.length === 0) {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -353,7 +374,7 @@ export default function ConnectorTasksTab() {
         </div>
         {actionError && <ErrorAlert>{actionError}</ErrorAlert>}
         <div className="text-center py-12 text-muted">
-          {hasFilters ? t('noTasksFiltered') : t('noTasks')}
+          {hasFilters ? t('noJobsFiltered') : t('noJobs')}
         </div>
       </div>
     );
@@ -364,7 +385,7 @@ export default function ConnectorTasksTab() {
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           {filters}
-          <div className="text-sm text-muted">{t('tasksTotal', { count: totalElements })}</div>
+          <div className="text-sm text-muted">{t('jobsTotal', { count: totalElements })}</div>
         </div>
         {refreshControls}
       </div>
@@ -375,7 +396,7 @@ export default function ConnectorTasksTab() {
           <tr className="border-b border-border">
             <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('kindLabel')}</th>
             <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('connector')}</th>
-            <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('task')}</th>
+            <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('job')}</th>
             <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('schedule')}</th>
             <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('nextRun')}</th>
             <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('statusLabel')}</th>
@@ -383,43 +404,44 @@ export default function ConnectorTasksTab() {
           </tr>
         </thead>
         <tbody>
-          {tasks.map((task) => {
-            const acting = actingIds.has(task.id);
-            const canPause = task.status !== 'COMPLETED' && task.pausedAt === null;
-            const canResume = task.status !== 'COMPLETED' && task.pausedAt !== null;
-            const canDelete = task.kind !== 'SYSTEM';
-            const expanded = expandedIds.has(task.id);
+          {jobs.map((job) => {
+            const acting = actingIds.has(job.id);
+            const canRunNow = job.status === 'PENDING' && job.pausedAt === null;
+            const canPause = job.status !== 'COMPLETED' && job.pausedAt === null;
+            const canResume = job.status !== 'COMPLETED' && job.pausedAt !== null;
+            const canDelete = job.kind !== 'SYSTEM';
+            const expanded = expandedIds.has(job.id);
             const hasDetails =
-              (task.args && Object.keys(task.args).length > 0) ||
-              (task.config && Object.keys(task.config).length > 0) ||
-              task.lastError !== null;
+              (job.args && Object.keys(job.args).length > 0) ||
+              (job.config && Object.keys(job.config).length > 0) ||
+              job.lastError !== null;
 
             return (
-              <tr key={task.id} className={`border-b border-border last:border-b-0 transition-colors ${
-                task.lastError ? 'bg-error/5 hover:bg-error/10' : 'hover:bg-surface-secondary'
+              <tr key={job.id} className={`border-b border-border last:border-b-0 transition-colors ${
+                job.lastError ? 'bg-error/5 hover:bg-error/10' : 'hover:bg-surface-secondary'
               }`}>
                 <td className="py-3 px-4 align-top">
                   <span
-                    className={`inline-flex items-center justify-center h-5 w-5 text-xs font-medium rounded-full ${KIND_BADGE[task.kind]}`}
-                    title={t(`kind.${task.kind}`)}
+                    className={`inline-flex items-center justify-center h-5 w-5 text-xs font-medium rounded-full ${KIND_BADGE[job.kind]}`}
+                    title={t(`kind.${job.kind}`)}
                   >
-                    {t(`kindShort.${task.kind}`)}
+                    {t(`kindShort.${job.kind}`)}
                   </span>
                 </td>
                 <td className="py-3 px-4 align-top">
-                  <span className="text-sm font-mono text-muted">{task.connectorCode}</span>
-                  {task.identity && (
-                    <div className="text-xs font-mono text-muted/60 truncate max-w-[150px] text-left" dir="rtl" title={task.identity}>
-                      {task.identity}
+                  <span className="text-sm font-mono text-muted">{job.connectorCode}</span>
+                  {job.identity && (
+                    <div className="text-xs font-mono text-muted/60 truncate max-w-[150px] text-left" dir="rtl" title={job.identity}>
+                      {job.identity}
                     </div>
                   )}
                 </td>
                 <td className="py-3 px-4 align-top">
-                  <span className="text-sm font-medium text-foreground">{task.name}</span>
+                  <span className="text-sm font-medium text-foreground">{job.name}</span>
                   {hasDetails && (
                     <div>
                       <button
-                        onClick={() => toggleExpand(task.id)}
+                        onClick={() => toggleExpand(job.id)}
                         className="mt-1 flex items-center gap-1 text-xs text-accent hover:text-accent/80 font-medium transition-colors"
                       >
                         <span>{t('details')}</span>
@@ -427,27 +449,27 @@ export default function ConnectorTasksTab() {
                       </button>
                       {expanded && (
                         <div className="mt-2 space-y-2 max-w-md">
-                          {task.args && Object.keys(task.args).length > 0 && (
+                          {job.args && Object.keys(job.args).length > 0 && (
                             <div>
                               <div className="text-xs text-muted">{t('args')}</div>
                               <pre className="mt-1 p-3 bg-background rounded-lg text-xs font-mono text-foreground/80 overflow-x-auto">
-                                {JSON.stringify(task.args, null, 2)}
+                                {JSON.stringify(job.args, null, 2)}
                               </pre>
                             </div>
                           )}
-                          {task.config && Object.keys(task.config).length > 0 && (
+                          {job.config && Object.keys(job.config).length > 0 && (
                             <div>
                               <div className="text-xs text-muted">{t('config')}</div>
                               <pre className="mt-1 p-3 bg-background rounded-lg text-xs font-mono text-foreground/80 overflow-x-auto">
-                                {JSON.stringify(task.config, null, 2)}
+                                {JSON.stringify(job.config, null, 2)}
                               </pre>
                             </div>
                           )}
-                          {task.lastError && (
+                          {job.lastError && (
                             <div>
                               <div className="text-xs text-muted">{t('lastError')}</div>
                               <pre className="mt-1 p-3 bg-error/5 rounded-lg text-xs font-mono text-error overflow-x-auto whitespace-pre-wrap">
-                                {task.lastError}
+                                {job.lastError}
                               </pre>
                             </div>
                           )}
@@ -456,34 +478,34 @@ export default function ConnectorTasksTab() {
                     </div>
                   )}
                 </td>
-                <td className="py-3 px-4 align-top">{renderSchedule(task)}</td>
+                <td className="py-3 px-4 align-top">{renderSchedule(job)}</td>
                 <td className="py-3 px-4 align-top">
-                  {task.nextRunAt ? (
-                    <span className="text-sm text-foreground" title={formatDateTimeFull(task.nextRunAt)}>
-                      {formatDateTimeShort(task.nextRunAt)}
+                  {job.nextRunAt ? (
+                    <span className="text-sm text-foreground" title={formatDateTimeFull(job.nextRunAt)}>
+                      {formatDateTimeShort(job.nextRunAt)}
                     </span>
                   ) : (
                     <span className="text-muted text-xs">&mdash;</span>
                   )}
-                  <div className="text-xs text-muted/60" title={formatDateTimeFull(task.createdAt)}>
-                    {formatDateTimeShort(task.createdAt)}
+                  <div className="text-xs text-muted/60" title={formatDateTimeFull(job.createdAt)}>
+                    {formatDateTimeShort(job.createdAt)}
                   </div>
                 </td>
                 <td className="py-3 px-4 align-top">
                   <div className="flex flex-wrap items-center gap-1">
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_BADGE[task.status]}`}>
-                      {t(`status.${task.status}`)}
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_BADGE[job.status]}`}>
+                      {t(`status.${job.status}`)}
                     </span>
-                    {task.pausedAt && (
+                    {job.pausedAt && (
                       <span
                         className="text-xs font-medium px-2 py-0.5 rounded-full bg-warning/10 text-warning"
-                        title={formatDateTimeFull(task.pausedAt)}
+                        title={formatDateTimeFull(job.pausedAt)}
                       >
                         {t('paused')}
                       </span>
                     )}
-                    {task.lastError && (
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-error/10 text-error" title={task.lastError}>
+                    {job.lastError && (
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-error/10 text-error" title={job.lastError}>
                         {t('error')}
                       </span>
                     )}
@@ -491,9 +513,19 @@ export default function ConnectorTasksTab() {
                 </td>
                 <td className="py-3 px-4 align-top">
                   <div className="flex items-center justify-end gap-1">
+                    {canRunNow && (
+                      <button
+                        onClick={() => handleRunNow(job.id)}
+                        disabled={acting}
+                        className="p-1.5 rounded-lg text-muted hover:text-accent hover:bg-surface-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        title={t('runNow')}
+                      >
+                        <BoltIcon className="h-4 w-4" />
+                      </button>
+                    )}
                     {canPause && (
                       <button
-                        onClick={() => runAction(task.id, () => apiService.pauseConnectorTask(task.id))}
+                        onClick={() => runAction(job.id, () => apiService.pauseConnectorJob(job.id))}
                         disabled={acting}
                         className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                         title={t('pause')}
@@ -503,7 +535,7 @@ export default function ConnectorTasksTab() {
                     )}
                     {canResume && (
                       <button
-                        onClick={() => runAction(task.id, () => apiService.resumeConnectorTask(task.id))}
+                        onClick={() => runAction(job.id, () => apiService.resumeConnectorJob(job.id))}
                         disabled={acting}
                         className="p-1.5 rounded-lg text-muted hover:text-success hover:bg-surface-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                         title={t('resume')}
@@ -513,7 +545,7 @@ export default function ConnectorTasksTab() {
                     )}
                     {canDelete && (
                       <button
-                        onClick={() => setDeleteTarget(task)}
+                        onClick={() => setDeleteTarget(job)}
                         disabled={acting}
                         className="p-1.5 rounded-lg text-muted hover:text-error hover:bg-surface-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                         title={t('delete')}

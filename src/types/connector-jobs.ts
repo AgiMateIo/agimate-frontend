@@ -1,23 +1,23 @@
 // Connector task types (scheduled background invocations of connector tools)
 
-export type ConnectorTaskKind = 'SYSTEM' | 'USER' | 'AGENT';
+export type ConnectorJobKind = 'SYSTEM' | 'USER' | 'AGENT';
 
-export type ConnectorTaskType = 'PERIODIC' | 'CRON' | 'ONETIME';
+export type ConnectorJobType = 'PERIODIC' | 'CRON' | 'ONETIME';
 
-export type ConnectorTaskStatus = 'PENDING' | 'RUNNING' | 'COMPLETED';
+export type ConnectorJobStatus = 'PENDING' | 'RUNNING' | 'COMPLETED';
 
-export interface ConnectorTaskResponse {
+export interface ConnectorJobResponse {
   id: string;
-  kind: ConnectorTaskKind;
+  kind: ConnectorJobKind;
   connectorCode: string;
   identity: string | null;
   agentId: string | null;
   name: string;
-  type: ConnectorTaskType;
+  type: ConnectorJobType;
   // PERIODIC: { intervalSeconds }; CRON: { cron, zone }; ONETIME: empty or connector-specific
   config: Record<string, unknown> | null;
   args: Record<string, unknown> | null;
-  status: ConnectorTaskStatus;
+  status: ConnectorJobStatus;
   nextRunAt: string | null;
   pausedAt: string | null;
   lastError: string | null;

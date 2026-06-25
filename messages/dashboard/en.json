@@ -13,7 +13,7 @@
     "apiKeys": "API Keys",
     "skills": "Skills",
     "channels": "Channels",
-    "connectorTasks": "Connector Tasks",
+    "connectorJobs": "Connector Jobs",
     "monitoring": "Monitoring",
     "settings": "Settings"
   },
@@ -30,7 +30,7 @@
       "agenticTeams": "Agentic Teams",
       "triggerLogs": "Trigger Logs",
       "toolUseLogs": "Tool Use Logs",
-      "connectorTasks": "Connector Tasks",
+      "connectorJobs": "Connector Jobs",
       "integrations": "Integrations",
       "apiKeys": "API Keys",
       "skills": "Skills",
@@ -317,12 +317,12 @@
     "previous": "Previous",
     "next": "Next"
   },
-  "ConnectorTasks": {
-    "title": "Connector Tasks",
-    "loading": "Loading tasks...",
-    "noTasks": "No connector tasks yet",
-    "noTasksFiltered": "No tasks match the current filters",
-    "tasksTotal": "{count, plural, one {# task} other {# tasks}} total",
+  "ConnectorJobs": {
+    "title": "Connector Jobs",
+    "loading": "Loading jobs...",
+    "noJobs": "No connector jobs yet",
+    "noJobsFiltered": "No jobs match the current filters",
+    "jobsTotal": "{count, plural, one {# job} other {# jobs}} total",
     "filterByConnector": "Connector code",
     "allKinds": "All kinds",
     "kind": {
@@ -343,7 +343,7 @@
     "nextRun": "Next run",
     "connector": "Connector",
     "kindLabel": "Kind",
-    "task": "Task",
+    "job": "Job",
     "schedule": "Schedule",
     "statusLabel": "Status",
     "actions": "Actions",
@@ -360,9 +360,9 @@
     "resume": "Resume",
     "delete": "Delete",
     "cancel": "Cancel",
-    "deleteTitle": "Delete task",
-    "deleteConfirm": "Are you sure you want to delete the task “{name}”?",
-    "deleteWarning": "This action cannot be undone. If the task is currently running, the in-flight iteration will finish, but the task will not be scheduled again.",
+    "deleteTitle": "Delete job",
+    "deleteConfirm": "Are you sure you want to delete the job “{name}”?",
+    "deleteWarning": "This action cannot be undone. If the job is currently running, the in-flight iteration will finish, but the job will not be scheduled again.",
     "actionFailed": "Action failed",
     "rowsPerPage": "Rows per page"
   },
