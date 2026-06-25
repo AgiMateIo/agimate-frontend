@@ -48,7 +48,6 @@ export default function Step3Channel({ data, setData, goNext, goBack }: WizardSt
         const conn =
           catalog.find(
             (c) =>
-              c.type === 'INTEGRATION' &&
               c.integrationMeta != null &&
               (c.code.toLowerCase().includes(TELEGRAM_HINT) ||
                 c.name.toLowerCase().includes(TELEGRAM_HINT)),
@@ -172,7 +171,7 @@ export default function Step3Channel({ data, setData, goNext, goBack }: WizardSt
                 <option value="">{t('newIntegration')}</option>
                 {existing.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name || c.platformIdentifier}
+                    {c.name || c.fullCode}
                   </option>
                 ))}
               </select>

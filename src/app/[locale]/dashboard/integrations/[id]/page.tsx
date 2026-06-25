@@ -14,7 +14,10 @@ import { Toggle } from '@/components/ui/Toggle';
 import EditIntegrationModal from '@/components/integrations/EditIntegrationModal';
 import UpdateCredentialsModal from '@/components/integrations/UpdateCredentialsModal';
 import DeleteIntegrationModal from '@/components/integrations/DeleteIntegrationModal';
-import { PencilIcon, KeyIcon, TrashIcon } from '@heroicons/react/24/outline';
+import TestIntegrationModal from '@/components/integrations/TestIntegrationModal';
+import IntegrationToolsModal from '@/components/integrations/IntegrationToolsModal';
+import { Button } from '@/components/ui/Button';
+import { PencilIcon, KeyIcon, TrashIcon, BeakerIcon, WrenchScrewdriverIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
 import IntegrationSkillsTab from '@/components/integrations/IntegrationSkillsTab';
 
@@ -41,6 +44,8 @@ function IntegrationDetailContent({
   const [editingIntegration, setEditingIntegration] = useState(false);
   const [updatingCreds, setUpdatingCreds] = useState(false);
   const [deletingIntegration, setDeletingIntegration] = useState(false);
+  const [testingIntegration, setTestingIntegration] = useState(false);
+  const [showingTools, setShowingTools] = useState(false);
 
   if (initialIntegration !== lastInitial) {
     setLastInitial(initialIntegration);
@@ -99,7 +104,7 @@ function IntegrationDetailContent({
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-foreground">
-              {integration.name || integration.platformIdentifier}
+              {integration.name || integration.fullCode}
             </h1>
             <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-accent/10 text-accent">
               {connector.name}
@@ -114,14 +119,31 @@ function IntegrationDetailContent({
               {integration.enabled ? tInt('enabled') : tInt('disabled')}
             </span>
           </div>
+          <p className="text-sm text-muted mt-1 font-mono">{integration.fullCode}</p>
           {integration.name && (
             <p className="text-sm text-muted mt-1">
-              {tInt('identifier')}: {integration.platformIdentifier}
+              {tInt('identifier')}: {integration.subCode}
             </p>
           )}
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            variant="primary"
+            onClick={() => setTestingIntegration(true)}
+            className="inline-flex items-center gap-2 !py-2 text-sm"
+          >
+            <BeakerIcon className="h-4 w-4" />
+            {t('testIntegration')}
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => setShowingTools(true)}
+            className="inline-flex items-center gap-2 !py-2 text-sm"
+          >
+            <WrenchScrewdriverIcon className="h-4 w-4" />
+            {t('toolsTitle')}
+          </Button>
           <Toggle
             checked={integration.enabled}
             onChange={handleToggleEnabled}
@@ -180,8 +202,12 @@ function IntegrationDetailContent({
               <dd className="text-foreground mt-0.5">{connector.name}</dd>
             </div>
             <div>
+              <dt className="text-sm text-muted">{t('instanceHandle')}</dt>
+              <dd className="text-foreground mt-0.5 font-mono text-sm">{integration.fullCode}</dd>
+            </div>
+            <div>
               <dt className="text-sm text-muted">{t('platformIdentifier')}</dt>
-              <dd className="text-foreground mt-0.5 font-mono text-sm">{integration.platformIdentifier}</dd>
+              <dd className="text-foreground mt-0.5 font-mono text-sm">{integration.subCode}</dd>
             </div>
             {integration.name && (
               <div>
@@ -249,6 +275,25 @@ function IntegrationDetailContent({
           credentialFields={connector.integrationMeta.credentialFields}
           onClose={() => setUpdatingCreds(false)}
           onSuccess={handleUpdateCredsSuccess}
+        />
+      )}
+
+      {testingIntegration && (
+        <TestIntegrationModal
+          integrationId={integration.id}
+          integrationName={integration.name || integration.fullCode}
+          onClose={() => {
+            setTestingIntegration(false);
+            onUpdate();
+          }}
+        />
+      )}
+
+      {showingTools && (
+        <IntegrationToolsModal
+          integrationId={integration.id}
+          integrationName={integration.name || integration.fullCode}
+          onClose={() => setShowingTools(false)}
         />
       )}
     </>

@@ -30,6 +30,7 @@ import type {
   CreateIntegrationRequest,
   UpdateIntegrationRequest,
   UpdateIntegrationCredentialsRequest,
+  IntegrationTestResult,
   AgentPolicyResponse,
   CreateAgentPolicyRequest,
   UpdateAgentPolicyRequest,
@@ -51,7 +52,6 @@ import type {
   SkillConnectorResponse,
   SkillConnectorRequest,
   ConnectorCatalogEntry,
-  ConnectorType,
   AgentSkillResponse,
   CreateAgentSkillRequest,
   PolicyDiffResponse,
@@ -699,6 +699,12 @@ class ApiService {
     await this.post<void>(`${API.ENDPOINTS.CONTROL_API}/manage/connector-jobs/${encodeURIComponent(id)}/resume`, {});
   }
 
+  // Fire-and-forget: 200 means "queued", not "executed". The real run happens within ~1s;
+  // poll the list afterwards to observe the status transition (PENDING → RUNNING → PENDING/COMPLETED).
+  async runConnectorTaskNow(id: string): Promise<void> {
+    await this.post<void>(`${API.ENDPOINTS.CONTROL_API}/manage/connector-jobs/${encodeURIComponent(id)}/run-now`, {});
+  }
+
   // SYSTEM tasks cannot be deleted (backend returns 400) — pause them or delete the integration.
   async deleteConnectorTask(id: string): Promise<void> {
     await this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/connector-jobs/${encodeURIComponent(id)}`);
@@ -848,6 +854,16 @@ class ApiService {
     return this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/integrations/credentials/${id}`);
   }
 
+  // Validates credentials and (for MCP) synchronously reloads the tools cache.
+  async testIntegration(id: string): Promise<IntegrationTestResult> {
+    return this.post<IntegrationTestResult>(`${API.ENDPOINTS.CONTROL_API}/manage/integrations/credentials/${id}/test`, {});
+  }
+
+  // Cached tools for this MCP instance (empty for non-MCP integrations).
+  async getIntegrationCredentialTools(id: string): Promise<ConnectorToolSpec[]> {
+    return this.get<ConnectorToolSpec[]>(`${API.ENDPOINTS.CONTROL_API}/manage/integrations/credentials/${id}/tools/`);
+  }
+
   // ========== SKILLS ==========
 
   async getSkills(params?: { search?: string; connectorCode?: string; page?: number; size?: number }): Promise<PagedResponse<SkillResponse>> {
@@ -982,13 +998,11 @@ class ApiService {
   }
 
   async getConnectors(params?: {
-    type?: ConnectorType;
     search?: string;
     page?: number;
     size?: number;
   }): Promise<PagedResponse<ConnectorCatalogEntry>> {
     const q = new URLSearchParams();
-    if (params?.type) q.set('type', params.type);
     if (params?.search) q.set('search', params.search);
     q.set('page', String(params?.page ?? 0));
     q.set('size', String(params?.size ?? 20));

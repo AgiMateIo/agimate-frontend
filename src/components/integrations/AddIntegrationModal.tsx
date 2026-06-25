@@ -57,13 +57,23 @@ export default function AddIntegrationModal({
   const allFieldsFilled = Object.keys(credentialFields).every(field => credentials[field]?.trim());
 
   const onSubmit = (e: React.FormEvent) =>
-    handleSubmit(e, () =>
-      apiService.createIntegration({
+    handleSubmit(e, async () => {
+      const created = await apiService.createIntegration({
         connectorCode: selectedPlatform!.code,
         credentials,
         name: name.trim() || undefined,
-      })
-    );
+      });
+      // DYNAMIC connectors (e.g. MCP) discover tools per instance — warm the
+      // tools cache right after connecting. Don't fail creation if this errors.
+      if (selectedPlatform!.capabilities?.toolBinding === 'DYNAMIC') {
+        try {
+          await apiService.testIntegration(created.id);
+        } catch (err) {
+          console.error('Failed to discover tools for new integration:', err);
+        }
+      }
+      return created;
+    });
 
   return (
     <Modal

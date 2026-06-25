@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { AppResponse, PolicyEffect, PolicyKind, ConnectorCatalogEntry, ConnectorType, IntegrationResponse, PagedResponse } from '@/types';
+import { AppResponse, PolicyEffect, PolicyKind, ConnectorCatalogEntry, IntegrationResponse, PagedResponse } from '@/types';
+import { getConnectorKind, isIntegrationConnector } from '@/utils/connector';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { TextArea } from '@/components/ui/FormField';
@@ -39,7 +40,7 @@ export default function AddPolicyModal({ kind, agentId, onClose, onSuccess }: Ad
 
   const [connectorCode, setConnectorCode] = useState<string | undefined>(undefined);
   const [connectorName, setConnectorName] = useState('');
-  const [connectorType, setConnectorType] = useState<ConnectorType | undefined>(undefined);
+  const [isIntegration, setIsIntegration] = useState(false);
   const [connectorIdentity, setConnectorIdentity] = useState<string | undefined>(undefined);
   const [resourceName, setResourceName] = useState<string | undefined>(undefined);
   const [effect, setEffect] = useState<PolicyEffect>('ALLOW');
@@ -98,7 +99,7 @@ export default function AddPolicyModal({ kind, agentId, onClose, onSuccess }: Ad
   useEffect(() => {
     if (step !== 'identity') return;
     let cancelled = false;
-    if (connectorType === 'INTEGRATION' && connectorCode && connectorCode !== WILDCARD) {
+    if (isIntegration && connectorCode && connectorCode !== WILDCARD) {
       if (credentials.length > 0) return;
       setCredentialsLoading(true);
       apiService.getIntegrationCredentials(connectorCode)
@@ -113,14 +114,14 @@ export default function AddPolicyModal({ kind, agentId, onClose, onSuccess }: Ad
         .finally(() => { if (!cancelled) setAppsLoading(false); });
     }
     return () => { cancelled = true; };
-  }, [step, connectorType, connectorCode, apps.length, credentials.length]);
+  }, [step, isIntegration, connectorCode, apps.length, credentials.length]);
 
   // Load resources (tools or triggers) when entering resource step with a specific identity
   useEffect(() => {
     if (step !== 'resource' || !connectorIdentity || connectorIdentity === WILDCARD) return;
     let cancelled = false;
     let fetcher: Promise<ResourceItem[]>;
-    if (connectorType === 'INTEGRATION' && connectorCode && connectorCode !== WILDCARD) {
+    if (isIntegration && connectorCode && connectorCode !== WILDCARD) {
       fetcher = kind === 'tool'
         ? apiService.getIntegrationTools(connectorCode)
         : apiService.getIntegrationTriggers(connectorCode);
@@ -134,7 +135,7 @@ export default function AddPolicyModal({ kind, agentId, onClose, onSuccess }: Ad
       .catch(() => {})
       .finally(() => { if (!cancelled) setResourcesLoading(false); });
     return () => { cancelled = true; };
-  }, [step, connectorIdentity, connectorType, connectorCode, kind]);
+  }, [step, connectorIdentity, isIntegration, connectorCode, kind]);
 
   const currentIndex = ALL_STEPS.indexOf(step);
 
@@ -142,7 +143,7 @@ export default function AddPolicyModal({ kind, agentId, onClose, onSuccess }: Ad
     if (fromStep === 'connector') {
       setConnectorCode(WILDCARD);
       setConnectorName('');
-      setConnectorType(undefined);
+      setIsIntegration(false);
       setConnectorIdentity(WILDCARD);
       setResourceName(WILDCARD);
     } else if (fromStep === 'identity') {
@@ -159,7 +160,7 @@ export default function AddPolicyModal({ kind, agentId, onClose, onSuccess }: Ad
     if (nextIndex < ALL_STEPS.length) {
       const nextStep = ALL_STEPS[nextIndex];
       if (nextStep === 'identity') {
-        if (connectorType === 'INTEGRATION') setCredentialsLoading(true);
+        if (isIntegration) setCredentialsLoading(true);
         else setAppsLoading(true);
       }
       if (nextStep === 'resource') { setResourcesLoading(true); setResources([]); }
@@ -174,7 +175,7 @@ export default function AddPolicyModal({ kind, agentId, onClose, onSuccess }: Ad
       if (prevStep === 'connector') {
         setConnectorCode(undefined);
         setConnectorName('');
-        setConnectorType(undefined);
+        setIsIntegration(false);
         setConnectorIdentity(undefined);
         setResourceName(undefined);
       } else if (prevStep === 'identity') {
@@ -270,7 +271,7 @@ export default function AddPolicyModal({ kind, agentId, onClose, onSuccess }: Ad
                 type="radio"
                 name="connector"
                 checked={connectorCode === WILDCARD}
-                onChange={() => { setConnectorCode(WILDCARD); setConnectorName(''); setConnectorType(undefined); }}
+                onChange={() => { setConnectorCode(WILDCARD); setConnectorName(''); setIsIntegration(false); }}
                 className="accent-accent"
               />
               <div>
@@ -293,19 +294,23 @@ export default function AddPolicyModal({ kind, agentId, onClose, onSuccess }: Ad
                         type="radio"
                         name="connector"
                         checked={connectorCode === c.code}
-                        onChange={() => { setConnectorCode(c.code); setConnectorName(c.name); setConnectorType(c.type); }}
+                        onChange={() => { setConnectorCode(c.code); setConnectorName(c.name); setIsIntegration(isIntegrationConnector(c)); }}
                         className="accent-accent"
                       />
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-foreground">{c.name}</span>
                           <span className="text-xs text-muted font-mono">{c.code}</span>
-                          <span className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-medium leading-tight ${
-                            c.type === 'APP' ? 'bg-primary/10 text-primary' :
-                            c.type === 'INTEGRATION' ? 'bg-warning/10 text-warning' :
-                            c.type === 'INTERNAL_SERVICE' ? 'bg-accent/10 text-accent' :
-                            'bg-surface-secondary text-muted'
-                          }`}>{c.type}</span>
+                          {(() => {
+                            const ck = getConnectorKind(c);
+                            return (
+                              <span className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-medium leading-tight ${
+                                ck === 'APP' ? 'bg-primary/10 text-primary' :
+                                ck === 'INTEGRATION' ? 'bg-warning/10 text-warning' :
+                                'bg-surface-secondary text-muted'
+                              }`}>{ck}</span>
+                            );
+                          })()}
                         </div>
                         {c.description && (
                           <p className="text-xs text-muted mt-0.5">{c.description}</p>
@@ -348,7 +353,7 @@ export default function AddPolicyModal({ kind, agentId, onClose, onSuccess }: Ad
         {step === 'identity' && (
           <div className="space-y-3">
             <p className="text-sm text-muted">
-              {connectorType === 'INTEGRATION' ? t('selectIntegrationIdentity') : t('selectIdentity')}
+              {isIntegration ? t('selectIntegrationIdentity') : t('selectIdentity')}
             </p>
             <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
               connectorIdentity === WILDCARD ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/50'
@@ -365,7 +370,7 @@ export default function AddPolicyModal({ kind, agentId, onClose, onSuccess }: Ad
                 <p className="text-xs text-muted mt-0.5">{t('skipForWildcard')}</p>
               </div>
             </label>
-            {connectorType === 'INTEGRATION' ? (
+            {isIntegration ? (
               credentialsLoading ? (
                 <div className="text-center py-4 text-muted text-sm">{t('loadingCredentials')}</div>
               ) : credentials.length === 0 ? (
@@ -384,9 +389,9 @@ export default function AddPolicyModal({ kind, agentId, onClose, onSuccess }: Ad
                         className="accent-accent"
                       />
                       <div>
-                        <span className="text-sm font-medium text-foreground">{cred.name || cred.platformIdentifier}</span>
+                        <span className="text-sm font-medium text-foreground">{cred.name || cred.fullCode}</span>
                         {cred.name && (
-                          <span className="text-xs text-muted ml-2 font-mono">{cred.platformIdentifier}</span>
+                          <span className="text-xs text-muted ml-2 font-mono">{cred.subCode}</span>
                         )}
                         <span className={`ml-2 inline-block rounded px-1.5 py-0.5 text-[10px] font-medium leading-tight ${
                           cred.enabled ? 'bg-success/10 text-success' : 'bg-muted/10 text-muted'

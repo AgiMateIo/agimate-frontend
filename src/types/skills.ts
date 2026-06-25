@@ -54,18 +54,32 @@ export interface SkillConnectorRequest {
 
 // Connector catalog entry (from GET /control/manage/connectors/)
 
-export type ConnectorType = 'APP' | 'INTEGRATION' | 'INTERNAL_SERVICE' | 'LOOPBACK';
-
 export interface IntegrationMeta {
   // field code → human-readable label (keys are sent as credential codes)
   credentialFields: Record<string, string>;
   supportsWebhooks: boolean;
 }
 
+// who initiates the connection: we connect to the platform (OUTBOUND) vs device connects to us (INBOUND)
+export type TransportDirection = 'OUTBOUND' | 'INBOUND';
+// where a tool physically runs
+export type ExecutionLocus = 'BACKEND' | 'EXTERNAL' | 'AGENT';
+// fixed tool set (STATIC) vs per-instance discovered tools (DYNAMIC)
+export type ToolBinding = 'STATIC' | 'DYNAMIC';
+export type SharingScope = 'PRIVATE' | 'TEAM_SHARED' | 'GLOBAL';
+
+export interface ConnectorCapabilities {
+  transportDirection: TransportDirection;
+  executionLocus: ExecutionLocus;
+  toolBinding: ToolBinding;
+  sharingScope: SharingScope;
+}
+
 export interface ConnectorCatalogEntry {
   code: string;
-  type: ConnectorType;
   name: string;
   description: string | null;
+  // null when the connector has no descriptor
+  capabilities: ConnectorCapabilities | null;
   integrationMeta: IntegrationMeta | null;
 }

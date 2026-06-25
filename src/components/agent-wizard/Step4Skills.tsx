@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
+import { isIntegrationConnector } from '@/utils/connector';
 import AddIntegrationModal from '@/components/integrations/AddIntegrationModal';
 import { WizardStepProps } from './AgentWizard';
 
@@ -50,7 +51,7 @@ export default function Step4Skills({ data, setData, goNext, goBack }: WizardSte
   }, []);
 
   const integrationCodes = useMemo(
-    () => new Set(catalog.filter((c) => c.type === 'INTEGRATION').map((c) => c.code)),
+    () => new Set(catalog.filter(isIntegrationConnector).map((c) => c.code)),
     [catalog],
   );
   const credCodes = useMemo(() => new Set(creds.map((c) => c.connectorCode)), [creds]);

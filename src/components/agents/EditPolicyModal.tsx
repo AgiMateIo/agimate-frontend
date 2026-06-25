@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
 import { AgentPolicyResponse, PolicyEffect, PolicyKind, ConnectorCatalogEntry, PagedResponse } from '@/types';
+import { getConnectorKind } from '@/utils/connector';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input, TextArea } from '@/components/ui/FormField';
@@ -168,12 +169,16 @@ export default function EditPolicyModal({ kind, policy, onClose, onSuccess }: Ed
                           <span className="flex items-center gap-1.5">
                             {c.name}
                             <span className="text-muted font-mono text-xs">{c.code}</span>
-                            <span className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-medium leading-tight ${
-                              c.type === 'APP' ? 'bg-primary/10 text-primary' :
-                              c.type === 'INTEGRATION' ? 'bg-warning/10 text-warning' :
-                              c.type === 'INTERNAL_SERVICE' ? 'bg-accent/10 text-accent' :
-                              'bg-surface-secondary text-muted'
-                            }`}>{c.type}</span>
+                            {(() => {
+                              const ck = getConnectorKind(c);
+                              return (
+                                <span className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-medium leading-tight ${
+                                  ck === 'APP' ? 'bg-primary/10 text-primary' :
+                                  ck === 'INTEGRATION' ? 'bg-warning/10 text-warning' :
+                                  'bg-surface-secondary text-muted'
+                                }`}>{ck}</span>
+                              );
+                            })()}
                           </span>
                         </button>
                       ))

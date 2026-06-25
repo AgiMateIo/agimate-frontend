@@ -67,7 +67,7 @@ export default function IntegrationsPage() {
   const t = useTranslations('Integrations');
   const { promise, invalidate } = usePromiseCache(
     () => Promise.all([
-      apiService.getConnectors({ type: 'INTEGRATION', size: 200 }).then(r => r.content),
+      apiService.getConnectors({ size: 200 }).then(r => r.content.filter(c => c.integrationMeta)),
       apiService.getIntegrationCredentials(),
     ]),
     [],

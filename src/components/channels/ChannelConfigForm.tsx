@@ -8,12 +8,12 @@ import {
   ChannelHandlerResponse,
   ChannelResponse,
   ConnectorCatalogEntry,
-  ConnectorType,
   CreateChannelRequest,
   IntegrationResponse,
   ToolJsonSchema,
   UpdateChannelRequest,
 } from '@/types';
+import { getConnectorKind, ConnectorKind } from '@/utils/connector';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input } from '@/components/ui/FormField';
 import { Alert } from '@/components/ui/Alert';
@@ -93,7 +93,7 @@ export default function ChannelConfigForm({
   const [name, setName] = useState(channel?.name ?? '');
   const [channelHandler, setChannelHandler] = useState(channel?.channelHandler ?? '');
   const [connectorCode, setConnectorCode] = useState(channel?.connectorCode ?? '');
-  const [connectorType, setConnectorType] = useState<ConnectorType | null>(null);
+  const [connectorType, setConnectorType] = useState<ConnectorKind | null>(null);
   const [identity, setIdentity] = useState(channel?.identity ?? '');
 
   const [handlers, setHandlers] = useState<ChannelHandlerResponse[]>([]);
@@ -129,10 +129,10 @@ export default function ChannelConfigForm({
     apiService
       .getConnectorCatalog()
       .then((all) => {
-        const filtered = all.filter((c) => c.type === 'APP' || c.type === 'INTEGRATION');
+        const filtered = all.filter((c) => getConnectorKind(c) !== 'SERVICE');
         setConnectors(filtered);
         const conn = filtered.find((c) => c.code === channel?.connectorCode);
-        if (conn) setConnectorType(conn.type);
+        if (conn) setConnectorType(getConnectorKind(conn));
       })
       .catch(() => {});
   }, [channel?.connectorCode]);
@@ -148,14 +148,14 @@ export default function ChannelConfigForm({
   }, [selectedHandler?.name]);
 
   const loadIdentities = useCallback(
-    async (code: string, type: ConnectorType | null): Promise<IdentityOption[]> => {
+    async (code: string, type: ConnectorKind | null): Promise<IdentityOption[]> => {
       if (!code || !type) return [];
       if (type === 'INTEGRATION') {
         const creds = await apiService.getIntegrationCredentials(code);
         return creds.map((c: IntegrationResponse) => ({
           value: c.id,
-          label: c.name || c.platformIdentifier,
-          hint: c.name ? c.platformIdentifier : undefined,
+          label: c.name || c.fullCode,
+          hint: c.name ? c.subCode : undefined,
         }));
       }
       const apps = await apiService.getApps({ size: 100 });
@@ -330,7 +330,7 @@ export default function ChannelConfigForm({
                   const code = e.target.value;
                   setConnectorCode(code);
                   const conn = connectors.find((c) => c.code === code);
-                  setConnectorType(conn?.type ?? null);
+                  setConnectorType(conn ? getConnectorKind(conn) : null);
                   setIdentity('');
                 }}
                 className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground"
@@ -338,7 +338,7 @@ export default function ChannelConfigForm({
                 <option value="">{t('selectConnector')}</option>
                 {connectors.map((c) => (
                   <option key={c.code} value={c.code}>
-                    {c.name} ({c.code} - {c.type})
+                    {c.name} ({c.code} - {getConnectorKind(c)})
                   </option>
                 ))}
               </select>

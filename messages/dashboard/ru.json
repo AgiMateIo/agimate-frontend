@@ -153,19 +153,37 @@
     "title": "Коннекторы",
     "subtitle": "Каталог доступных типов коннекторов",
     "searchPlaceholder": "Поиск по названию или описанию…",
-    "typeAll": "Все",
-    "type": {
-      "APP": "Приложение",
+    "kind": {
       "INTEGRATION": "Интеграция",
-      "INTERNAL_SERVICE": "Внутренний сервис",
-      "LOOPBACK": "Loopback"
+      "APP": "Приложение",
+      "SERVICE": "Сервис"
     },
     "noDescription": "Описание отсутствует",
     "empty": "Коннекторы не найдены",
     "loading": "Загрузка коннекторов…",
     "page": "Страница {current} из {total}",
     "previous": "Назад",
-    "next": "Вперёд"
+    "next": "Вперёд",
+    "capabilities": {
+      "transportDirection": {
+        "OUTBOUND": "Исходящий",
+        "INBOUND": "Входящий"
+      },
+      "executionLocus": {
+        "BACKEND": "Бэкенд",
+        "EXTERNAL": "Внешний",
+        "AGENT": "Агент"
+      },
+      "toolBinding": {
+        "STATIC": "Статичные тулы",
+        "DYNAMIC": "Динамические тулы"
+      },
+      "sharingScope": {
+        "PRIVATE": "Приватный",
+        "TEAM_SHARED": "Командный",
+        "GLOBAL": "Глобальный"
+      }
+    }
   },
   "Connectors": {
     "title": "Приложения",
@@ -336,6 +354,7 @@
     "args": "Аргументы",
     "config": "Параметры расписания",
     "lastError": "Последняя ошибка",
+    "runNow": "Запустить сейчас",
     "pause": "Приостановить",
     "resume": "Возобновить",
     "delete": "Удалить",
@@ -659,6 +678,7 @@
     "integrationInfo": "Детали интеграции",
     "platform": "Платформа",
     "platformIdentifier": "Идентификатор платформы",
+    "instanceHandle": "Хэндл",
     "connectorCode": "Код коннектора",
     "status": "Статус",
     "loadingSkills": "Загрузка навыков...",
@@ -669,7 +689,23 @@
     "publicSkills": "Публичные",
     "noSkills": "Нет навыков для этого коннектора",
     "noFeaturedSkills": "Нет рекомендуемых навыков для этого коннектора",
-    "noPublicSkills": "Нет публичных навыков для этого коннектора"
+    "noPublicSkills": "Нет публичных навыков для этого коннектора",
+    "testIntegration": "Проверить",
+    "testRunning": "Проверка интеграции...",
+    "testRetry": "Повторить",
+    "close": "Закрыть",
+    "testError": "Не удалось проверить интеграцию",
+    "testFailed": "Проверка не удалась",
+    "testInvalid": "Учётные данные недействительны",
+    "testErrorField": "Поле",
+    "testConnected": "Подключено",
+    "testConnectedWithTools": "Подключено, тулов: {count}",
+    "testConnectedToolsFailed": "Подключено, но не удалось получить тулы",
+    "toolsTitle": "Тулы",
+    "toolsLoading": "Загрузка тулов...",
+    "toolsError": "Не удалось загрузить тулы",
+    "toolsEmpty": "Для этой интеграции нет доступных тулов",
+    "toolsRequired": "Обязательные"
   },
   "Board": {
     "title": "Доска задач",

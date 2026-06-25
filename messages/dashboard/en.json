@@ -153,19 +153,37 @@
     "title": "Connectors",
     "subtitle": "Catalog of available connector types",
     "searchPlaceholder": "Search by name or description…",
-    "typeAll": "All",
-    "type": {
-      "APP": "App",
+    "kind": {
       "INTEGRATION": "Integration",
-      "INTERNAL_SERVICE": "Internal service",
-      "LOOPBACK": "Loopback"
+      "APP": "App",
+      "SERVICE": "Service"
     },
     "noDescription": "No description",
     "empty": "No connectors found",
     "loading": "Loading connectors…",
     "page": "Page {current} of {total}",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "capabilities": {
+      "transportDirection": {
+        "OUTBOUND": "Outbound",
+        "INBOUND": "Inbound"
+      },
+      "executionLocus": {
+        "BACKEND": "Backend",
+        "EXTERNAL": "External",
+        "AGENT": "Agent"
+      },
+      "toolBinding": {
+        "STATIC": "Static tools",
+        "DYNAMIC": "Dynamic tools"
+      },
+      "sharingScope": {
+        "PRIVATE": "Private",
+        "TEAM_SHARED": "Team",
+        "GLOBAL": "Global"
+      }
+    }
   },
   "Connectors": {
     "title": "Apps",
@@ -337,6 +355,7 @@
     "args": "Arguments",
     "config": "Schedule config",
     "lastError": "Last error",
+    "runNow": "Run now",
     "pause": "Pause",
     "resume": "Resume",
     "delete": "Delete",
@@ -660,6 +679,7 @@
     "integrationInfo": "Integration Details",
     "platform": "Platform",
     "platformIdentifier": "Platform Identifier",
+    "instanceHandle": "Handle",
     "connectorCode": "Connector Code",
     "status": "Status",
     "loadingSkills": "Loading skills...",
@@ -670,7 +690,23 @@
     "publicSkills": "Public",
     "noSkills": "No skills linked to this connector",
     "noFeaturedSkills": "No featured skills for this connector",
-    "noPublicSkills": "No public skills for this connector"
+    "noPublicSkills": "No public skills for this connector",
+    "testIntegration": "Test",
+    "testRunning": "Testing integration...",
+    "testRetry": "Retry",
+    "close": "Close",
+    "testError": "Failed to test integration",
+    "testFailed": "Test failed",
+    "testInvalid": "Credentials are invalid",
+    "testErrorField": "Field",
+    "testConnected": "Connected",
+    "testConnectedWithTools": "Connected, {count} tools",
+    "testConnectedToolsFailed": "Connected, but failed to load tools",
+    "toolsTitle": "Tools",
+    "toolsLoading": "Loading tools...",
+    "toolsError": "Failed to load tools",
+    "toolsEmpty": "No tools available for this integration",
+    "toolsRequired": "Required"
   },
   "Board": {
     "title": "Task Board",

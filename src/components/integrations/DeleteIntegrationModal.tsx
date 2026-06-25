@@ -42,7 +42,7 @@ export default function DeleteIntegrationModal({
     <Modal isOpen={true} onClose={onClose} title={t('deleteIntegration')} size="sm">
       <div className="space-y-4">
         <p className="text-foreground">
-          {t('deleteConfirm', { name: integration.name || integration.platformIdentifier })}
+          {t('deleteConfirm', { name: integration.name || integration.fullCode })}
         </p>
 
         <Alert variant="warning">

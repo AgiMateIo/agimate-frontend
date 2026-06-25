@@ -6,23 +6,18 @@ import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import {
   ConnectorCatalogEntry,
-  ConnectorType,
   PagedResponse,
 } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { usePromiseCache } from '@/hooks/usePromiseCache';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { getConnectorKind, ConnectorKind } from '@/utils/connector';
 
-type TypeFilter = 'ALL' | ConnectorType;
-
-const TYPE_FILTERS: TypeFilter[] = ['ALL', 'APP', 'INTEGRATION', 'INTERNAL_SERVICE', 'LOOPBACK'];
-
-const TYPE_BADGE: Record<ConnectorType, string> = {
-  APP: 'bg-sky-500/10 text-sky-500 border-sky-500/30',
+const KIND_BADGE: Record<ConnectorKind, string> = {
   INTEGRATION: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30',
-  INTERNAL_SERVICE: 'bg-violet-500/10 text-violet-500 border-violet-500/30',
-  LOOPBACK: 'bg-amber-500/10 text-amber-500 border-amber-500/30',
+  APP: 'bg-sky-500/10 text-sky-500 border-sky-500/30',
+  SERVICE: 'bg-violet-500/10 text-violet-500 border-violet-500/30',
 };
 
 function ConnectorsContent({
@@ -79,6 +74,8 @@ function ConnectorsContent({
 
 function ConnectorCard({ connector }: { connector: ConnectorCatalogEntry }) {
   const t = useTranslations('ConnectorCatalog');
+  const caps = connector.capabilities;
+  const kind = getConnectorKind(connector);
 
   return (
     <div className="bg-surface rounded-xl border border-border p-5 flex flex-col gap-3">
@@ -88,21 +85,36 @@ function ConnectorCard({ connector }: { connector: ConnectorCatalogEntry }) {
           <code className="text-xs text-muted font-mono">{connector.code}</code>
         </div>
         <span
-          className={`shrink-0 inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border ${TYPE_BADGE[connector.type]}`}
+          className={`shrink-0 inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border ${KIND_BADGE[kind]}`}
         >
-          {t(`type.${connector.type}`)}
+          {t(`kind.${kind}`)}
         </span>
       </div>
       <p className="text-sm text-muted leading-relaxed line-clamp-3">
         {connector.description ?? t('noDescription')}
       </p>
+      {caps && (
+        <div className="flex flex-wrap gap-1.5 mt-auto pt-1">
+          <CapabilityBadge label={t(`capabilities.transportDirection.${caps.transportDirection}`)} />
+          <CapabilityBadge label={t(`capabilities.executionLocus.${caps.executionLocus}`)} />
+          <CapabilityBadge label={t(`capabilities.toolBinding.${caps.toolBinding}`)} />
+          <CapabilityBadge label={t(`capabilities.sharingScope.${caps.sharingScope}`)} />
+        </div>
+      )}
     </div>
+  );
+}
+
+function CapabilityBadge({ label }: { label: string }) {
+  return (
+    <span className="inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full bg-surface-secondary border border-border text-muted">
+      {label}
+    </span>
   );
 }
 
 export default function ConnectorsPage() {
   const t = useTranslations('ConnectorCatalog');
-  const [typeFilter, setTypeFilter] = useState<TypeFilter>('ALL');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const debouncedSearch = useDebouncedValue(search, 300);
@@ -110,24 +122,18 @@ export default function ConnectorsPage() {
   const fetchFn = useCallback(
     () =>
       apiService.getConnectors({
-        type: typeFilter === 'ALL' ? undefined : typeFilter,
         search: debouncedSearch || undefined,
         page,
         size: 20,
       }),
-    [typeFilter, debouncedSearch, page]
+    [debouncedSearch, page]
   );
 
   const { promise } = usePromiseCache(
     fetchFn,
-    [typeFilter, debouncedSearch, page],
+    [debouncedSearch, page],
     'connectors-list'
   );
-
-  const handleTypeChange = (type: TypeFilter) => {
-    setTypeFilter(type);
-    setPage(0);
-  };
 
   return (
     <div className="space-y-6">
@@ -135,26 +141,6 @@ export default function ConnectorsPage() {
       <div>
         <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
         <p className="text-muted mt-1">{t('subtitle')}</p>
-      </div>
-
-      {/* Type Filter */}
-      <div className="flex flex-wrap gap-2">
-        {TYPE_FILTERS.map((type) => {
-          const isActive = typeFilter === type;
-          return (
-            <button
-              key={type}
-              onClick={() => handleTypeChange(type)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
-                isActive
-                  ? 'bg-accent text-accent-foreground border-accent'
-                  : 'bg-surface border-border text-muted hover:text-foreground hover:bg-surface-secondary'
-              }`}
-            >
-              {type === 'ALL' ? t('typeAll') : t(`type.${type}`)}
-            </button>
-          );
-        })}
       </div>
 
       {/* Search */}

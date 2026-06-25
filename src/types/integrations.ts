@@ -1,7 +1,11 @@
 export interface IntegrationResponse {
   id: string;
   connectorCode: string;
-  platformIdentifier: string;
+  // canonical instance discriminator on the platform (telegram username, MCP URL).
+  // Formerly `platformIdentifier`.
+  subCode: string;
+  // stable per-user instance handle, e.g. `mcp_context7` — used as the instance label in UI.
+  fullCode: string;
   name: string;
   enabled: boolean;
   lastUsedAt: string | null;
@@ -21,4 +25,18 @@ export interface UpdateIntegrationRequest {
 
 export interface UpdateIntegrationCredentialsRequest {
   credentials: Record<string, string>;
+}
+
+// Result of POST /manage/integrations/credentials/{id}/test
+export interface IntegrationTestResult {
+  valid: boolean;
+  identifier: string | null;
+  displayName: string | null;
+  // number of tools loaded into cache (MCP only; null for other connectors)
+  toolsDiscovered: number | null;
+  // valid:true but tools/list failed — error text; otherwise null
+  toolsError: string | null;
+  // populated when valid:false
+  errorMessage?: string | null;
+  errorField?: string | null;
 }
