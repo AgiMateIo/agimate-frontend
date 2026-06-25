@@ -598,6 +598,7 @@
     "providerTypeOpenAI": "OpenAI",
     "providerTypeAnthropic": "Anthropic",
     "providerTypeGemini": "Gemini",
+    "providerTypeOpenRouter": "OpenRouter",
     "providerTypeOpenAICompatible": "OpenAI-compatible",
     "createdAt": "Created",
     "lastRefreshed": "Last refreshed"

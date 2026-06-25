@@ -3,33 +3,31 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { CreateLlmProviderRequest, LlmProviderType } from '@/types';
+import { CreateLlmProviderRequest } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input } from '@/components/ui/FormField';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import {
+  LLM_PROVIDER_PRESETS,
+  DEFAULT_PROVIDER_PRESET,
+  deriveProviderNameFromUrl,
+} from './providerPresets';
 
 interface AddLlmProviderModalProps {
   onClose: () => void;
   onSuccess: () => void;
 }
 
-const PROVIDER_TYPES: LlmProviderType[] = ['OPENAI', 'ANTHROPIC', 'GEMINI', 'OPENAI_COMPATIBLE'];
-
-const providerTypeLabelKey: Record<LlmProviderType, string> = {
-  OPENAI: 'providerTypeOpenAI',
-  ANTHROPIC: 'providerTypeAnthropic',
-  GEMINI: 'providerTypeGemini',
-  OPENAI_COMPATIBLE: 'providerTypeOpenAICompatible',
-};
-
 export default function AddLlmProviderModal({ onClose, onSuccess }: AddLlmProviderModalProps) {
   const t = useTranslations('LlmProviders');
 
-  const [name, setName] = useState('');
-  const [providerType, setProviderType] = useState<LlmProviderType>('OPENAI');
-  const [baseUrl, setBaseUrl] = useState('');
+  const [presetKey, setPresetKey] = useState(DEFAULT_PROVIDER_PRESET.key);
+  const [name, setName] = useState(deriveProviderNameFromUrl(DEFAULT_PROVIDER_PRESET.defaultBaseUrl));
+  // Whether the user has manually typed a name. While false, the name tracks the URL domain.
+  const [nameEdited, setNameEdited] = useState(false);
+  const [baseUrl, setBaseUrl] = useState(DEFAULT_PROVIDER_PRESET.defaultBaseUrl);
   const [apiKey, setApiKey] = useState('');
 
   const [creating, setCreating] = useState(false);
@@ -37,7 +35,27 @@ export default function AddLlmProviderModal({ onClose, onSuccess }: AddLlmProvid
   const [error, setError] = useState<string | null>(null);
   const [refreshError, setRefreshError] = useState<string | null>(null);
 
+  const preset = LLM_PROVIDER_PRESETS.find((p) => p.key === presetKey) ?? DEFAULT_PROVIDER_PRESET;
+  const providerType = preset.providerType;
   const isCompatible = providerType === 'OPENAI_COMPATIBLE';
+
+  const handlePresetChange = (key: string) => {
+    setPresetKey(key);
+    const next = LLM_PROVIDER_PRESETS.find((p) => p.key === key) ?? DEFAULT_PROVIDER_PRESET;
+    setBaseUrl(next.defaultBaseUrl);
+    if (!nameEdited) setName(deriveProviderNameFromUrl(next.defaultBaseUrl));
+  };
+
+  const handleBaseUrlChange = (value: string) => {
+    setBaseUrl(value);
+    if (!nameEdited) setName(deriveProviderNameFromUrl(value));
+  };
+
+  const handleNameChange = (value: string) => {
+    setName(value);
+    // Resume auto-deriving from the URL once the user clears the field again.
+    setNameEdited(value.trim() !== '');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,7 +110,7 @@ export default function AddLlmProviderModal({ onClose, onSuccess }: AddLlmProvid
           <Input
             type="text"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => handleNameChange(e.target.value)}
             placeholder={t('namePlaceholder')}
             required
             maxLength={100}
@@ -102,14 +120,14 @@ export default function AddLlmProviderModal({ onClose, onSuccess }: AddLlmProvid
 
         <FormField label={t('providerType')} required>
           <select
-            value={providerType}
-            onChange={(e) => setProviderType(e.target.value as LlmProviderType)}
+            value={presetKey}
+            onChange={(e) => handlePresetChange(e.target.value)}
             disabled={busy}
             className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground"
           >
-            {PROVIDER_TYPES.map((type) => (
-              <option key={type} value={type}>
-                {t(providerTypeLabelKey[type])}
+            {LLM_PROVIDER_PRESETS.map((p) => (
+              <option key={p.key} value={p.key}>
+                {t(p.labelKey)}
               </option>
             ))}
           </select>
@@ -123,7 +141,7 @@ export default function AddLlmProviderModal({ onClose, onSuccess }: AddLlmProvid
           <Input
             type="url"
             value={baseUrl}
-            onChange={(e) => setBaseUrl(e.target.value)}
+            onChange={(e) => handleBaseUrlChange(e.target.value)}
             placeholder={isCompatible ? t('baseUrlPlaceholderRequired') : t('baseUrlPlaceholderDefault')}
             disabled={busy}
             required={isCompatible}

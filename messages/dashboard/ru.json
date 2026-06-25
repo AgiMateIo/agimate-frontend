@@ -597,6 +597,7 @@
     "providerTypeOpenAI": "OpenAI",
     "providerTypeAnthropic": "Anthropic",
     "providerTypeGemini": "Gemini",
+    "providerTypeOpenRouter": "OpenRouter",
     "providerTypeOpenAICompatible": "OpenAI-совместимый",
     "createdAt": "Создан",
     "lastRefreshed": "Последнее обновление"
