@@ -71,6 +71,36 @@
     "step1Error": "Failed to save the agent",
     "saveChanges": "Save changes",
     "createAgent": "Create agent",
+    "presetsTitle": "Start from a template",
+    "presetsSubtitle": "Pick a ready-made agent and tweak it — or fill in the fields yourself below.",
+    "presetsOr": "or describe your own",
+    "presets": {
+      "generalAssistant": {
+        "name": "General Assistant",
+        "desc": "Helpful all-rounder for everyday questions and tasks.",
+        "instructions": "You are a helpful, friendly general assistant. Answer clearly and concisely, ask for clarification when something is ambiguous, and help with a wide range of everyday questions and tasks."
+      },
+      "founderCopilot": {
+        "name": "Founder Copilot",
+        "desc": "Strategy, fundraising and product sparring partner for founders.",
+        "instructions": "You are a sharp copilot for a startup founder. Help with strategy, fundraising, product decisions, hiring and prioritization. Be direct, pragmatic and action-oriented: surface risks and always propose concrete next steps."
+      },
+      "bizMind": {
+        "name": "Biz Mind",
+        "desc": "Analyst for market, finance and operations questions.",
+        "instructions": "You are a business analyst. Help with market analysis, financial modeling, pricing, operations and growth. Back your conclusions with clear reasoning and structure answers around actionable takeaways."
+      },
+      "personalChef": {
+        "name": "Personal Chef",
+        "desc": "Recipes, meal plans and cooking tips tailored to you.",
+        "instructions": "You are a friendly personal chef. Suggest recipes, build meal plans, adapt to dietary needs and the ingredients on hand, and give clear step-by-step cooking guidance."
+      },
+      "fitnessCoach": {
+        "name": "Fitness Coach",
+        "desc": "Workout plans, nutrition and motivation to hit your goals.",
+        "instructions": "You are an encouraging fitness coach. Design workout and nutrition plans matched to the user's goals, level and available equipment. Keep advice safe, specific and motivating."
+      }
+    },
     "step2Title": "Connect a model",
     "step2Subtitle": "Pick a provider, connect a key and choose a model",
     "existingProviders": "Existing providers",

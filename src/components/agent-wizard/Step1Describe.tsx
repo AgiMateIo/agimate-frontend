@@ -17,6 +17,7 @@ import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { useClipboard } from '@/hooks/useClipboard';
 import { getAgentAvatarUrl } from '@/utils/avatar';
 import AgentTypePicker from '@/components/agents/AgentTypePicker';
+import AgentPresetGallery, { PresetSelection } from './AgentPresetGallery';
 import { WizardStepProps } from './AgentWizard';
 
 export default function Step1Describe({ data, setData, goNext }: WizardStepProps) {
@@ -26,13 +27,27 @@ export default function Step1Describe({ data, setData, goNext }: WizardStepProps
   const [instructions, setInstructions] = useState(data.agent?.instructions ?? '');
   const [agentType, setAgentType] = useState<AgentType>(data.agent?.type ?? 'GENERIC');
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
+  // The manual form is collapsed by default behind the "or describe your own"
+  // divider; picking a preset (or toggling the divider) reveals it.
+  const [showForm, setShowForm] = useState(false);
   const { copied, copy } = useClipboard();
+
+  const applyPreset = (preset: PresetSelection) => {
+    setName(preset.name);
+    setDescription(preset.description);
+    setInstructions(preset.instructions);
+    setAgentType('GENERIC');
+    setSelectedPreset(preset.id);
+  };
 
   const { loading, error, fieldErrors, handleSubmit } = useAsyncForm({
     defaultError: t('step1Error'),
   });
 
   const isCreated = !!data.agent;
+  // Always show the form once the agent exists (editing); otherwise it's gated.
+  const formVisible = isCreated || showForm;
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, async () => {
@@ -62,6 +77,30 @@ export default function Step1Describe({ data, setData, goNext }: WizardStepProps
         <p className="text-sm text-muted mt-0.5">{t('step1Subtitle')}</p>
       </div>
 
+      {!isCreated && (
+        <>
+          <AgentPresetGallery selectedId={selectedPreset} onSelect={applyPreset} />
+          <button
+            type="button"
+            onClick={() => setShowForm((v) => !v)}
+            className="relative block w-full"
+            aria-expanded={formVisible}
+          >
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="inline-flex items-center gap-1 bg-surface px-3 text-xs text-muted hover:text-foreground transition-colors">
+                {t('presetsOr')}
+                <ChevronDownIcon
+                  className={`h-3.5 w-3.5 transition-transform ${formVisible ? 'rotate-180' : ''}`}
+                />
+              </span>
+            </div>
+          </button>
+        </>
+      )}
+
       {isCreated && data.agentKey && (
         <div className="space-y-2">
           <Alert variant="success">{t('agentCreated')}</Alert>
@@ -88,65 +127,72 @@ export default function Step1Describe({ data, setData, goNext }: WizardStepProps
         </div>
       )}
 
-      <FormField label={t('nameLabel')} required error={fieldErrors['name']}>
-        <div className="flex items-center gap-3">
-          {name && (
-            <img
-              src={getAgentAvatarUrl(name)}
-              alt={name}
-              className="w-10 h-10 rounded-lg flex-shrink-0"
+      {formVisible && (
+        <>
+          <FormField label={t('nameLabel')} required error={fieldErrors['name']}>
+            <div className="flex items-center gap-3">
+              {name && (
+                <img
+                  src={getAgentAvatarUrl(name)}
+                  alt={name}
+                  className="w-10 h-10 rounded-lg flex-shrink-0"
+                />
+              )}
+              <Input
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setSelectedPreset(null);
+                }}
+                placeholder={t('namePlaceholder')}
+                required
+                maxLength={100}
+              />
+            </div>
+          </FormField>
+
+          <FormField label={t('descriptionLabel')} error={fieldErrors['description']}>
+            <TextArea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={t('descriptionPlaceholder')}
+              rows={2}
+              maxLength={500}
             />
-          )}
-          <Input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={t('namePlaceholder')}
-            required
-            maxLength={100}
-          />
-        </div>
-      </FormField>
+          </FormField>
 
-      <FormField label={t('descriptionLabel')} error={fieldErrors['description']}>
-        <TextArea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder={t('descriptionPlaceholder')}
-          rows={2}
-          maxLength={500}
-        />
-      </FormField>
-
-      <FormField label={t('instructionsLabel')} error={fieldErrors['instructions']} hint={t('instructionsHint')}>
-        <TextArea
-          value={instructions}
-          onChange={(e) => setInstructions(e.target.value)}
-          placeholder={t('instructionsPlaceholder')}
-          rows={6}
-        />
-      </FormField>
-
-      <div className="border border-border rounded-lg">
-        <button
-          type="button"
-          onClick={() => setShowAdvanced((v) => !v)}
-          className="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-foreground"
-        >
-          <span>{t('advancedToggle')}</span>
-          <ChevronDownIcon
-            className={`h-4 w-4 text-muted transition-transform ${showAdvanced ? 'rotate-180' : ''}`}
-          />
-        </button>
-        {showAdvanced && (
-          <div className="px-4 pb-4">
-            <AgentTypePicker
-              value={agentType}
-              onChange={setAgentType}
-              error={fieldErrors['type']}
+          <FormField label={t('instructionsLabel')} error={fieldErrors['instructions']} hint={t('instructionsHint')}>
+            <TextArea
+              value={instructions}
+              onChange={(e) => setInstructions(e.target.value)}
+              placeholder={t('instructionsPlaceholder')}
+              rows={6}
             />
+          </FormField>
+
+          <div className="border border-border rounded-lg">
+            <button
+              type="button"
+              onClick={() => setShowAdvanced((v) => !v)}
+              className="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-foreground"
+            >
+              <span>{t('advancedToggle')}</span>
+              <ChevronDownIcon
+                className={`h-4 w-4 text-muted transition-transform ${showAdvanced ? 'rotate-180' : ''}`}
+              />
+            </button>
+            {showAdvanced && (
+              <div className="px-4 pb-4">
+                <AgentTypePicker
+                  value={agentType}
+                  onChange={setAgentType}
+                  error={fieldErrors['type']}
+                />
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </>
+      )}
 
       {error && <ErrorAlert>{error}</ErrorAlert>}
 
