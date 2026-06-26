@@ -13,7 +13,7 @@ export * from './webhooks';
 export * from './agentic-teams';
 export * from './integrations';
 export * from './boards';
-export * from './agent-policies';
+export * from './agent-connections';
 export * from './agent-skills';
 export * from './skills';
 export * from './centrifugo';

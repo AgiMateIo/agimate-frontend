@@ -98,7 +98,9 @@ function ConnectorCard({ connector }: { connector: ConnectorCatalogEntry }) {
           <CapabilityBadge label={t(`capabilities.transportDirection.${caps.transportDirection}`)} />
           <CapabilityBadge label={t(`capabilities.executionLocus.${caps.executionLocus}`)} />
           <CapabilityBadge label={t(`capabilities.toolBinding.${caps.toolBinding}`)} />
-          <CapabilityBadge label={t(`capabilities.sharingScope.${caps.sharingScope}`)} />
+          {caps.supportedScopes.map((scope) => (
+            <CapabilityBadge key={scope} label={t(`capabilities.supportedScopes.${scope}`)} />
+          ))}
         </div>
       )}
     </div>

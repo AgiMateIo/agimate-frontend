@@ -3,14 +3,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { AgentResponse, PagedResponse, PolicyDiffResponse } from '@/types';
+import { AgentResponse, PagedResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
-import PolicyDiffPreview from '@/components/agents/PolicyDiffPreview';
 
 const PAGE_SIZE = 10;
 
@@ -31,9 +30,6 @@ export default function AddSkillAgentModal({ skillId, onClose, onSuccess }: AddS
   const [agentsLoading, setAgentsLoading] = useState(true);
   const [agentsError, setAgentsError] = useState('');
   const [selectedAgent, setSelectedAgent] = useState<AgentResponse | null>(null);
-
-  const [diff, setDiff] = useState<PolicyDiffResponse | null>(null);
-  const [diffLoading, setDiffLoading] = useState(false);
 
   useEffect(() => {
     setPage(0);
@@ -59,20 +55,6 @@ export default function AddSkillAgentModal({ skillId, onClose, onSuccess }: AddS
   useEffect(() => {
     fetchAgents();
   }, [fetchAgents]);
-
-  useEffect(() => {
-    if (!selectedAgent) {
-      setDiff(null);
-      return;
-    }
-    let cancelled = false;
-    setDiffLoading(true);
-    apiService.getSkillPolicyDiff(selectedAgent.id, skillId, 'add')
-      .then(data => { if (!cancelled) setDiff(data); })
-      .catch(() => { if (!cancelled) setDiff(null); })
-      .finally(() => { if (!cancelled) setDiffLoading(false); });
-    return () => { cancelled = true; };
-  }, [skillId, selectedAgent]);
 
   const { loading, error, handleSubmit } = useAsyncForm<void>({
     onSuccess,
@@ -192,18 +174,6 @@ export default function AddSkillAgentModal({ skillId, onClose, onSuccess }: AddS
                 <ChevronRightIcon className="h-4 w-4" />
               </button>
             </div>
-          </div>
-        )}
-
-        {/* Policy diff preview */}
-        {selectedAgent && (
-          <div className="bg-surface-secondary rounded-lg border border-border p-3">
-            <div className="text-xs font-medium text-foreground mb-2">{tAgents('policyChangesPreview')}</div>
-            {diffLoading ? (
-              <div className="text-xs text-muted">{tAgents('loadingPolicyDiff')}</div>
-            ) : diff ? (
-              <PolicyDiffPreview diff={diff} />
-            ) : null}
           </div>
         )}
 

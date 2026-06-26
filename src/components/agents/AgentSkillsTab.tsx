@@ -8,7 +8,7 @@ import apiService from '@/services/api';
 import { AgentSkillResponse, PagedResponse } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Button } from '@/components/ui/Button';
-import { PlusIcon, TrashIcon, ArrowPathIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { formatDate } from '@/utils/date';
 import AddAgentSkillModal from './AddAgentSkillModal';
 import DeleteAgentSkillModal from './DeleteAgentSkillModal';
@@ -29,7 +29,6 @@ export default function AgentSkillsTab({ agentId }: AgentSkillsTabProps) {
 
   const [showAdd, setShowAdd] = useState(false);
   const [deletingBinding, setDeletingBinding] = useState<AgentSkillResponse | null>(null);
-  const [syncing, setSyncing] = useState(false);
 
   const fetchData = useCallback(async (silent: boolean = false) => {
     if (!silent) {
@@ -69,20 +68,6 @@ export default function AgentSkillsTab({ agentId }: AgentSkillsTabProps) {
     fetchData(false);
   };
 
-  const hasNeedsReinstall = bindings.some(b => b.needsReinstall);
-
-  const handleSyncPolicies = async () => {
-    setSyncing(true);
-    try {
-      await apiService.syncAgentSkillPolicies(agentId);
-      await fetchData(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sync policies');
-    } finally {
-      setSyncing(false);
-    }
-  };
-
   if (error) {
     return <ErrorAlert>{error}</ErrorAlert>;
   }
@@ -97,24 +82,10 @@ export default function AgentSkillsTab({ agentId }: AgentSkillsTabProps) {
         <div className="text-sm text-muted">
           {pageInfo ? t('skillsTotal', { count: pageInfo.totalElements }) : ''}
         </div>
-        <div className="flex items-center gap-2">
-          {hasNeedsReinstall && (
-            <Button
-              variant="warning"
-              onClick={handleSyncPolicies}
-              loading={syncing}
-              disabled={syncing}
-              className="flex items-center gap-2"
-            >
-              <ArrowPathIcon className="h-4 w-4" />
-              {t('syncPolicies')}
-            </Button>
-          )}
-          <Button onClick={() => setShowAdd(true)} className="flex items-center gap-2">
-            <PlusIcon className="h-4 w-4" />
-            {t('addSkill')}
-          </Button>
-        </div>
+        <Button onClick={() => setShowAdd(true)} className="flex items-center gap-2">
+          <PlusIcon className="h-4 w-4" />
+          {t('addSkill')}
+        </Button>
       </div>
 
       {bindings.length === 0 ? (
@@ -126,7 +97,6 @@ export default function AgentSkillsTab({ agentId }: AgentSkillsTabProps) {
               <thead>
                 <tr className="border-b border-border">
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('skillName')}</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('statusColumn')}</th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('addedAt')}</th>
                   <th className="text-right py-3 px-4 text-sm font-medium text-muted"></th>
                 </tr>
@@ -144,18 +114,6 @@ export default function AgentSkillsTab({ agentId }: AgentSkillsTabProps) {
                         </Link>
                       ) : (
                         <span className="text-muted italic">{t('skillDeleted')}</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4">
-                      {binding.needsReinstall ? (
-                        <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-warning/10 text-warning">
-                          <ExclamationTriangleIcon className="h-3 w-3" />
-                          {t('needsReinstall')}
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-success/10 text-success">
-                          {t('upToDate')}
-                        </span>
                       )}
                     </td>
                     <td className="py-3 px-4 text-sm text-muted">

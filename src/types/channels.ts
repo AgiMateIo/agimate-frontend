@@ -14,7 +14,7 @@ export interface ChannelResponse {
   // null if the underlying resource was deleted.
   identityName: string | null;
   config: Record<string, unknown>;
-  // Optional filter stored on the underlying AgentTriggerPolicy
+  // Optional chat/input filter stored on the channel itself (filters delivery by trigger params).
   inputFilter: Record<string, unknown> | null;
   createdAt: string;
   updatedAt: string;

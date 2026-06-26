@@ -12,12 +12,12 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { getAgentAvatarUrl } from '@/utils/avatar';
 import { formatDate } from '@/utils/date';
 import { Link } from '@/i18n/navigation';
-import AgentPoliciesTab from '@/components/agents/AgentPoliciesTab';
+import AgentConnectionsTab from '@/components/agents/AgentConnectionsTab';
 import AgentSkillsTab from '@/components/agents/AgentSkillsTab';
 import AgentModelsTab from '@/components/agents/AgentModelsTab';
 import AgentChannelsTab from '@/components/agents/AgentChannelsTab';
 
-type Tab = 'general' | 'models' | 'channels' | 'skills' | 'trigger-rules' | 'tool-rules';
+type Tab = 'general' | 'models' | 'channels' | 'skills' | 'connections';
 
 export default function AgentDetailPage() {
   const t = useTranslations('Agents');
@@ -52,8 +52,7 @@ export default function AgentDetailPage() {
     { key: 'models', label: t('tabModels') },
     { key: 'channels', label: t('tabChannels') },
     { key: 'skills', label: t('tabSkills') },
-    { key: 'trigger-rules', label: t('tabTriggerRules') },
-    { key: 'tool-rules', label: t('tabToolRules') },
+    { key: 'connections', label: t('tabConnections') },
   ];
 
   const getAgentTypeColor = (dest: string) => {
@@ -226,15 +225,9 @@ export default function AgentDetailPage() {
         </div>
       )}
 
-      {activeTab === 'trigger-rules' && (
+      {activeTab === 'connections' && (
         <div className="bg-surface rounded-xl border border-border p-6">
-          <AgentPoliciesTab kind="trigger" agentId={agentId} />
-        </div>
-      )}
-
-      {activeTab === 'tool-rules' && (
-        <div className="bg-surface rounded-xl border border-border p-6">
-          <AgentPoliciesTab kind="tool" agentId={agentId} />
+          <AgentConnectionsTab agentId={agentId} />
         </div>
       )}
     </div>

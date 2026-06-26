@@ -66,13 +66,18 @@ export type TransportDirection = 'OUTBOUND' | 'INBOUND';
 export type ExecutionLocus = 'BACKEND' | 'EXTERNAL' | 'AGENT';
 // fixed tool set (STATIC) vs per-instance discovered tools (DYNAMIC)
 export type ToolBinding = 'STATIC' | 'DYNAMIC';
-export type SharingScope = 'PRIVATE' | 'TEAM_SHARED' | 'GLOBAL';
+// under which key a connector instance lives. INSTANCE = explicit user-created instance
+// (telegram/mcp/app); AGENT/TEAM/USER/GLOBAL = contextual instances materialised on binding.
+export type IdentityScope = 'INSTANCE' | 'AGENT' | 'TEAM' | 'USER' | 'GLOBAL';
 
 export interface ConnectorCapabilities {
   transportDirection: TransportDirection;
   executionLocus: ExecutionLocus;
   toolBinding: ToolBinding;
-  sharingScope: SharingScope;
+  // scopes this connector supports; if length > 1 the UI must let the user pick one when binding
+  supportedScopes: IdentityScope[];
+  // preselected scope (∈ supportedScopes)
+  defaultScope: IdentityScope;
 }
 
 export interface ConnectorCatalogEntry {

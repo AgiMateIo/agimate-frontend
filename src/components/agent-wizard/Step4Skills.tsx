@@ -99,9 +99,6 @@ export default function Step4Skills({ data, setData, goNext, goBack }: WizardSte
       for (const skill of toBind) {
         await apiService.bindAgentSkill(data.agent.id, { skillId: skill.id });
       }
-      if (toBind.length > 0) {
-        await apiService.syncAgentSkillPolicies(data.agent.id).catch(() => {});
-      }
       setData({ skills: Object.values(selected) });
       goNext();
     });

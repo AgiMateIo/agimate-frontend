@@ -31,9 +31,11 @@ import type {
   UpdateIntegrationRequest,
   UpdateIntegrationCredentialsRequest,
   IntegrationTestResult,
-  AgentPolicyResponse,
-  CreateAgentPolicyRequest,
-  UpdateAgentPolicyRequest,
+  AgentConnectionResponse,
+  BindConnectionRequest,
+  AgentConnectionPolicyResponse,
+  CreatePolicyRequest,
+  UpdatePolicyRequest,
   DeviceToolInfo,
   DeviceTriggerInfo,
   Board,
@@ -54,7 +56,6 @@ import type {
   ConnectorCatalogEntry,
   AgentSkillResponse,
   CreateAgentSkillRequest,
-  PolicyDiffResponse,
   CentrifugoTokenResponse,
   LlmProviderResponse,
   CreateLlmProviderRequest,
@@ -436,75 +437,34 @@ class ApiService {
     return this.post<AgentCreatedResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${id}/regenerate`, {});
   }
 
-  // Agent Policies (tool & trigger) — normalized to AgentPolicyResponse
-  private mapPolicyPage(
-    raw: PagedResponse<Record<string, unknown>>,
-    resourceField: string,
-  ): PagedResponse<AgentPolicyResponse> {
-    return {
-      ...raw,
-      content: raw.content.map((p) => ({
-        ...p,
-        resourceName: (p[resourceField] as string | null) ?? null,
-      })) as unknown as AgentPolicyResponse[],
-    };
+  // Agent connections (bindings) — give an agent access to a connector instance
+  async getAgentConnections(agentId: string): Promise<AgentConnectionResponse[]> {
+    return this.get<AgentConnectionResponse[]>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/connections/`);
   }
 
-  private mapPolicy(raw: Record<string, unknown>, resourceField: string): AgentPolicyResponse {
-    return { ...raw, resourceName: (raw[resourceField] as string | null) ?? null } as unknown as AgentPolicyResponse;
+  async bindAgentConnection(agentId: string, data: BindConnectionRequest): Promise<AgentConnectionResponse> {
+    return this.post<AgentConnectionResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/connections/`, data);
   }
 
-  private toRawPolicyBody(data: CreateAgentPolicyRequest | UpdateAgentPolicyRequest, resourceField: string) {
-    const { resourceName, ...rest } = data as CreateAgentPolicyRequest & { resourceName?: string | null };
-    return { ...rest, [resourceField]: resourceName };
+  async unbindAgentConnection(agentId: string, connectionId: string): Promise<void> {
+    return this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/connections/${connectionId}`);
   }
 
-  // Tool policies
-  async getAgentToolPolicies(params: { agentId: string; page?: number; size?: number }): Promise<PagedResponse<AgentPolicyResponse>> {
-    const searchParams = new URLSearchParams();
-    searchParams.set('agentId', params.agentId);
-    searchParams.set('page', String(params.page ?? 0));
-    searchParams.set('size', String(params.size ?? 20));
-    const raw = await this.get<PagedResponse<Record<string, unknown>>>(`${API.ENDPOINTS.CONTROL_API}/manage/agent-tool-policies/?${searchParams}`);
-    return this.mapPolicyPage(raw, 'toolName');
+  // Connection policies — refine a binding (default-allow; policies narrow access)
+  async getAgentConnectionPolicies(agentConnectionId: string): Promise<AgentConnectionPolicyResponse[]> {
+    return this.get<AgentConnectionPolicyResponse[]>(`${API.ENDPOINTS.CONTROL_API}/manage/agent-connections/${agentConnectionId}/policies/`);
   }
 
-  async createAgentToolPolicy(data: CreateAgentPolicyRequest): Promise<AgentPolicyResponse> {
-    const raw = await this.post<Record<string, unknown>>(`${API.ENDPOINTS.CONTROL_API}/manage/agent-tool-policies/`, this.toRawPolicyBody(data, 'toolName'));
-    return this.mapPolicy(raw, 'toolName');
+  async createAgentConnectionPolicy(agentConnectionId: string, data: CreatePolicyRequest): Promise<AgentConnectionPolicyResponse> {
+    return this.post<AgentConnectionPolicyResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agent-connections/${agentConnectionId}/policies/`, data);
   }
 
-  async updateAgentToolPolicy(id: string, data: UpdateAgentPolicyRequest): Promise<AgentPolicyResponse> {
-    const raw = await this.put<Record<string, unknown>>(`${API.ENDPOINTS.CONTROL_API}/manage/agent-tool-policies/${id}`, this.toRawPolicyBody(data, 'toolName'));
-    return this.mapPolicy(raw, 'toolName');
+  async updateAgentConnectionPolicy(agentConnectionId: string, policyId: string, data: UpdatePolicyRequest): Promise<AgentConnectionPolicyResponse> {
+    return this.patch<AgentConnectionPolicyResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agent-connections/${agentConnectionId}/policies/${policyId}`, data);
   }
 
-  async deleteAgentToolPolicy(id: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agent-tool-policies/${id}`);
-  }
-
-  // Trigger policies
-  async getAgentTriggerPolicies(params: { agentId: string; page?: number; size?: number }): Promise<PagedResponse<AgentPolicyResponse>> {
-    const searchParams = new URLSearchParams();
-    searchParams.set('agentId', params.agentId);
-    searchParams.set('page', String(params.page ?? 0));
-    searchParams.set('size', String(params.size ?? 20));
-    const raw = await this.get<PagedResponse<Record<string, unknown>>>(`${API.ENDPOINTS.CONTROL_API}/manage/agent-trigger-policies/?${searchParams}`);
-    return this.mapPolicyPage(raw, 'triggerName');
-  }
-
-  async createAgentTriggerPolicy(data: CreateAgentPolicyRequest): Promise<AgentPolicyResponse> {
-    const raw = await this.post<Record<string, unknown>>(`${API.ENDPOINTS.CONTROL_API}/manage/agent-trigger-policies/`, this.toRawPolicyBody(data, 'triggerName'));
-    return this.mapPolicy(raw, 'triggerName');
-  }
-
-  async updateAgentTriggerPolicy(id: string, data: UpdateAgentPolicyRequest): Promise<AgentPolicyResponse> {
-    const raw = await this.put<Record<string, unknown>>(`${API.ENDPOINTS.CONTROL_API}/manage/agent-trigger-policies/${id}`, this.toRawPolicyBody(data, 'triggerName'));
-    return this.mapPolicy(raw, 'triggerName');
-  }
-
-  async deleteAgentTriggerPolicy(id: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agent-trigger-policies/${id}`);
+  async deleteAgentConnectionPolicy(agentConnectionId: string, policyId: string): Promise<void> {
+    return this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agent-connections/${agentConnectionId}/policies/${policyId}`);
   }
 
   // Agent-Skill bindings
@@ -521,16 +481,6 @@ class ApiService {
 
   async unbindAgentSkill(agentId: string, skillId: string): Promise<void> {
     return this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/skills/${skillId}`);
-  }
-
-  async getSkillPolicyDiff(agentId: string, skillId: string, action: 'add' | 'remove' | 'sync'): Promise<PolicyDiffResponse> {
-    const q = new URLSearchParams();
-    q.set('action', action);
-    return this.get<PolicyDiffResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/skills/${skillId}/policy-diff?${q}`);
-  }
-
-  async syncAgentSkillPolicies(agentId: string): Promise<void> {
-    return this.post<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/skills/sync-policies`, {});
   }
 
   // LLM Providers
