@@ -1,7 +1,7 @@
 {
   "Sidebar": {
     "dashboard": "Dashboard",
-    "agentWizard": "Мастер агента",
+    "agentWizard": "Фабрика агентов",
     "llmProviders": "LLM-провайдеры",
     "connectors": "Коннекторы",
     "apps": "Приложения",
@@ -20,7 +20,7 @@
   "TopBar": {
     "breadcrumbs": {
       "dashboard": "Dashboard",
-      "agentWizard": "Мастер агента",
+      "agentWizard": "Фабрика агентов",
       "apps": "Приложения",
       "connectors": "Коннекторы",
       "agents": "Агенты",
@@ -43,11 +43,11 @@
     "logOut": "Выйти"
   },
   "AgentWizard": {
-    "title": "Мастер агента",
-    "subtitle": "Создайте агента за несколько шагов: опишите, подключите модель, канал и навыки",
-    "stepDescribe": "Описание",
-    "stepProvider": "Модель",
-    "stepChannel": "Канал",
+    "title": "Фабрика агентов",
+    "subtitle": "Соберите агента за несколько шагов: роль, мозги, управление и навыки",
+    "stepDescribe": "Роль",
+    "stepProvider": "Мозги",
+    "stepChannel": "Управление",
     "stepSkills": "Навыки",
     "stepDone": "Готово",
     "next": "Далее",
@@ -55,7 +55,7 @@
     "skipStep": "Пропустить",
     "copy": "Копировать",
     "loading": "Загрузка...",
-    "step1Title": "Опишите агента",
+    "step1Title": "Роль агента",
     "step1Subtitle": "Дайте агенту имя и расскажите, чем он занимается",
     "agentCreated": "Агент создан",
     "agentKeyWarning": "Сохраните ключ сейчас — он показывается только один раз.",
@@ -101,7 +101,7 @@
         "instructions": "Ты воодушевляющий фитнес-тренер. Составляй программы тренировок и питания под цели, уровень и доступный инвентарь. Давай советы безопасно, конкретно и мотивирующе."
       }
     },
-    "step2Title": "Подключите модель",
+    "step2Title": "Подключите мозги",
     "step2Subtitle": "Выберите провайдера, подключите ключ и выберите модель",
     "existingProviders": "Существующие провайдеры",
     "modelsCount": "{count, plural, =0 {нет моделей} one {# модель} few {# модели} many {# моделей} other {# моделей}}",
@@ -121,7 +121,7 @@
     "step2Error": "Не удалось привязать модель",
     "modelBound": "Модель привязана",
     "changeModel": "Изменить",
-    "step3Title": "Как общаться с агентом",
+    "step3Title": "Управление агентом",
     "step3Subtitle": "Подключите Telegram-бота, чтобы писать агенту в мессенджере",
     "telegramDesc": "Агент будет отвечать на сообщения вашего Telegram-бота",
     "channelNameLabel": "Название канала",
@@ -146,8 +146,8 @@
     "step4Error": "Не удалось добавить навыки",
     "step5Title": "Поздравляем!",
     "step5Subtitle": "Агент «{name}» готов к работе",
-    "summaryModel": "Модель",
-    "summaryChannel": "Канал",
+    "summaryModel": "Мозги",
+    "summaryChannel": "Управление",
     "summaryCapabilities": "Способности",
     "summaryTools": "Инструменты",
     "summaryTriggers": "Реагирует на",

@@ -1,7 +1,7 @@
 {
   "Sidebar": {
     "dashboard": "Dashboard",
-    "agentWizard": "Agent Wizard",
+    "agentWizard": "Agent Factory",
     "llmProviders": "LLM Providers",
     "connectors": "Connectors",
     "apps": "Apps",
@@ -20,7 +20,7 @@
   "TopBar": {
     "breadcrumbs": {
       "dashboard": "Dashboard",
-      "agentWizard": "Agent Wizard",
+      "agentWizard": "Agent Factory",
       "apps": "Apps",
       "connectors": "Connectors",
       "agents": "Agents",
@@ -43,11 +43,11 @@
     "logOut": "Log out"
   },
   "AgentWizard": {
-    "title": "Agent Wizard",
-    "subtitle": "Create an agent in a few steps: describe it, connect a model, a channel and skills",
-    "stepDescribe": "Describe",
-    "stepProvider": "Model",
-    "stepChannel": "Channel",
+    "title": "Agent Factory",
+    "subtitle": "Build an agent in a few steps: role, brains, control and skills",
+    "stepDescribe": "Role",
+    "stepProvider": "Brains",
+    "stepChannel": "Control",
     "stepSkills": "Skills",
     "stepDone": "Done",
     "next": "Next",
@@ -55,7 +55,7 @@
     "skipStep": "Skip",
     "copy": "Copy",
     "loading": "Loading...",
-    "step1Title": "Describe the agent",
+    "step1Title": "Define the agent's role",
     "step1Subtitle": "Give the agent a name and tell it what it does",
     "agentCreated": "Agent created",
     "agentKeyWarning": "Save this key now — it is shown only once.",
@@ -101,7 +101,7 @@
         "instructions": "You are an encouraging fitness coach. Design workout and nutrition plans matched to the user's goals, level and available equipment. Keep advice safe, specific and motivating."
       }
     },
-    "step2Title": "Connect a model",
+    "step2Title": "Connect the brains",
     "step2Subtitle": "Pick a provider, connect a key and choose a model",
     "existingProviders": "Existing providers",
     "modelsCount": "{count, plural, =0 {no models} one {# model} other {# models}}",
@@ -121,7 +121,7 @@
     "step2Error": "Failed to bind the model",
     "modelBound": "Model bound",
     "changeModel": "Change",
-    "step3Title": "How to talk to the agent",
+    "step3Title": "Control the agent",
     "step3Subtitle": "Connect a Telegram bot to message the agent in a messenger",
     "telegramDesc": "The agent will reply to messages from your Telegram bot",
     "channelNameLabel": "Channel name",
@@ -146,8 +146,8 @@
     "step4Error": "Failed to add skills",
     "step5Title": "Congratulations!",
     "step5Subtitle": "Agent \"{name}\" is ready to work",
-    "summaryModel": "Model",
-    "summaryChannel": "Channel",
+    "summaryModel": "Brains",
+    "summaryChannel": "Control",
     "summaryCapabilities": "Capabilities",
     "summaryTools": "Tools",
     "summaryTriggers": "Reacts to",
