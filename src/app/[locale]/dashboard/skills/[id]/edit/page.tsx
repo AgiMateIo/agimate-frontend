@@ -10,6 +10,8 @@ import { SkillDetailResponse, SkillResponse } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
+import { useUser } from '@/contexts/UserContext';
+import { buildSkillMd } from '@/utils/skill';
 import SkillForm from '@/components/skills/SkillForm';
 
 export default function EditSkillPage() {
@@ -18,6 +20,7 @@ export default function EditSkillPage() {
   const params = useParams();
   const skillId = params.id as string;
 
+  const { user } = useUser();
   const [skill, setSkill] = useState<SkillDetailResponse | null>(null);
   const [pageLoading, setPageLoading] = useState(true);
   const [pageError, setPageError] = useState<string | null>(null);
@@ -29,22 +32,25 @@ export default function EditSkillPage() {
     try {
       setPageError(null);
       const data = await apiService.getSkill(skillId);
-      if (data.parentId != null) {
-        setRedirecting(true);
-        router.replace(`/dashboard/skills/${skillId}`);
-        return;
-      }
       setSkill(data);
     } catch (err) {
       setPageError(err instanceof Error ? err.message : 'Failed to load skill');
     } finally {
       setPageLoading(false);
     }
-  }, [skillId, router]);
+  }, [skillId]);
 
   useEffect(() => {
     fetchSkill();
   }, [fetchSkill]);
+
+  // Only the owner can edit; bounce others to the read-only detail page.
+  useEffect(() => {
+    if (skill && user && user.id !== skill.userId) {
+      setRedirecting(true);
+      router.replace(`/dashboard/skills/${skillId}`);
+    }
+  }, [skill, user, skillId, router]);
 
   const { loading, error, fieldErrors, handleSubmit } = useAsyncForm<SkillResponse>({
     onSuccess: () => {
@@ -103,7 +109,7 @@ export default function EditSkillPage() {
       {/* Form Card */}
       <div className="bg-surface rounded-xl border border-border p-6">
         <SkillForm
-          initialSkillMd={skill.skillMd}
+          initialSkillMd={buildSkillMd(skill)}
           initialIsPublic={skill.isPublic}
           loading={loading}
           error={error}

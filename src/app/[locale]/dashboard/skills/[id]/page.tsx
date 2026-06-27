@@ -16,12 +16,11 @@ import { useUser } from '@/contexts/UserContext';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { formatDate } from '@/utils/date';
-import SkillFilesTab from '@/components/skills/SkillFilesTab';
-import SkillConnectorsTab from '@/components/skills/SkillConnectorsTab';
+import { buildSkillMd } from '@/utils/skill';
 import SkillAgentsTab from '@/components/skills/SkillAgentsTab';
 import DeleteSkillModal from '@/components/skills/DeleteSkillModal';
 
-type Tab = 'overview' | 'files' | 'connectors' | 'agents';
+type Tab = 'overview' | 'agents';
 
 export default function SkillDetailPage() {
   const t = useTranslations('Skills');
@@ -43,16 +42,14 @@ export default function SkillDetailPage() {
 
   useSetBreadcrumb(skillId, skill?.name);
 
-  const isOwner = !!(user?.id && user.id === skill?.userId);
-  const isFeaturedClone = skill?.parentId != null;
-  const isEditable = isOwner && !isFeaturedClone;
+  const isEditable = !!(user?.id && user.id === skill?.userId);
 
   const fetchSkill = useCallback(async () => {
     try {
       setPageError(null);
       const data = await apiService.getSkill(skillId);
       setSkill(data);
-      setEditSkillMd(data.skillMd);
+      setEditSkillMd(buildSkillMd(data));
       setEditIsPublic(data.isPublic);
     } catch (err) {
       setPageError(err instanceof Error ? err.message : 'Failed to load skill');
@@ -66,7 +63,7 @@ export default function SkillDetailPage() {
   }, [fetchSkill]);
 
   const isDirty = skill !== null && (
-    editSkillMd !== skill.skillMd || editIsPublic !== skill.isPublic
+    editSkillMd !== buildSkillMd(skill) || editIsPublic !== skill.isPublic
   );
 
   const { loading: saving, error: saveError, handleSubmit } = useAsyncForm<void>({
@@ -89,8 +86,6 @@ export default function SkillDetailPage() {
 
   const tabs: { key: Tab; label: string }[] = [
     { key: 'overview', label: t('tabOverview') },
-    { key: 'files', label: t('tabFiles') },
-    { key: 'connectors', label: t('tabConnectors') },
     { key: 'agents', label: t('tabAgents') },
   ];
 
@@ -137,16 +132,6 @@ export default function SkillDetailPage() {
                 {t('public')}
               </span>
             )}
-            {skill.isFeatured && (
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-warning/10 text-warning">
-                {t('featured')}
-              </span>
-            )}
-            {isFeaturedClone && (
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-muted/10 text-muted">
-                {t('systemSkill')}
-              </span>
-            )}
             <span className="text-xs text-muted">
               {t('version', { version: skill.version })}
             </span>
@@ -155,14 +140,21 @@ export default function SkillDetailPage() {
           {skill.description && (
             <p className="text-muted mt-1">{skill.description}</p>
           )}
+          {skill.connectorCodes.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5 mt-2">
+              <span className="text-xs text-muted">{t('connectorsLabel')}:</span>
+              {skill.connectorCodes.map((code) => (
+                <span
+                  key={code}
+                  className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent"
+                >
+                  {code}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
-
-      {isFeaturedClone && (
-        <div className="text-sm text-muted bg-surface-secondary rounded-lg px-4 py-3 border border-border">
-          {t('featuredCloneReadOnly')}
-        </div>
-      )}
 
       {/* Tabs */}
       <div className="border-b border-border">
@@ -227,7 +219,7 @@ export default function SkillDetailPage() {
             ) : (
               <div className="bg-surface-secondary rounded-lg border border-border/50 p-4">
                 <pre className="text-sm text-foreground whitespace-pre-wrap font-mono">
-                  {skill.skillMd}
+                  {skill.mdContent}
                 </pre>
               </div>
             )}
@@ -253,18 +245,6 @@ export default function SkillDetailPage() {
               </button>
             </div>
           )}
-        </div>
-      )}
-
-      {activeTab === 'files' && (
-        <div className="bg-surface rounded-xl border border-border p-6">
-          <SkillFilesTab skillId={skill.id} isOwner={isEditable} />
-        </div>
-      )}
-
-      {activeTab === 'connectors' && (
-        <div className="bg-surface rounded-xl border border-border p-6">
-          <SkillConnectorsTab skillId={skill.id} isOwner={isEditable} />
         </div>
       )}
 

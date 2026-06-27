@@ -8,16 +8,18 @@ import apiService from '@/services/api';
 import { AgentSkillResponse, PagedResponse } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Button } from '@/components/ui/Button';
-import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, ExclamationTriangleIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { formatDate } from '@/utils/date';
 import AddAgentSkillModal from './AddAgentSkillModal';
 import DeleteAgentSkillModal from './DeleteAgentSkillModal';
 
 interface AgentSkillsTabProps {
   agentId: string;
+  // Switch the agent page to its Connections tab (CTA for a missing connector).
+  onConnectConnector?: () => void;
 }
 
-export default function AgentSkillsTab({ agentId }: AgentSkillsTabProps) {
+export default function AgentSkillsTab({ agentId, onConnectConnector }: AgentSkillsTabProps) {
   const t = useTranslations('Agents');
   const locale = useLocale();
 
@@ -97,6 +99,7 @@ export default function AgentSkillsTab({ agentId }: AgentSkillsTabProps) {
               <thead>
                 <tr className="border-b border-border">
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('skillName')}</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('skillConnectors')}</th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('addedAt')}</th>
                   <th className="text-right py-3 px-4 text-sm font-medium text-muted"></th>
                 </tr>
@@ -105,15 +108,55 @@ export default function AgentSkillsTab({ agentId }: AgentSkillsTabProps) {
                 {bindings.map((binding) => (
                   <tr key={binding.id} className="border-b border-border last:border-b-0 hover:bg-surface-secondary transition-colors">
                     <td className="py-3 px-4 text-sm">
-                      {binding.skillName ? (
-                        <Link
-                          href={`/dashboard/skills/${binding.skillId}`}
-                          className="text-accent hover:text-accent/80 transition-colors"
-                        >
-                          {binding.skillName}
-                        </Link>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {binding.skillName ? (
+                          <Link
+                            href={`/dashboard/skills/${binding.skillId}`}
+                            className="text-accent hover:text-accent/80 transition-colors"
+                          >
+                            {binding.skillName}
+                          </Link>
+                        ) : (
+                          <span className="text-muted italic">{t('skillDeleted')}</span>
+                        )}
+                        {binding.needsReinstall && (
+                          <span
+                            className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-warning/10 text-warning"
+                            title={t('needsReinstallHint')}
+                          >
+                            <ArrowPathIcon className="h-3 w-3" />
+                            {t('needsReinstall')}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-sm">
+                      {binding.connectors.length === 0 ? (
+                        <span className="text-muted">—</span>
                       ) : (
-                        <span className="text-muted italic">{t('skillDeleted')}</span>
+                        <div className="flex flex-wrap gap-1">
+                          {binding.connectors.map((c) =>
+                            c.connectionId ? (
+                              <span
+                                key={c.connectorCode}
+                                className="text-xs font-medium px-2 py-0.5 rounded-full bg-success/10 text-success"
+                              >
+                                {c.connectorCode}
+                              </span>
+                            ) : (
+                              <button
+                                key={c.connectorCode}
+                                type="button"
+                                onClick={onConnectConnector}
+                                title={t('connectConnectorHint', { code: c.connectorCode })}
+                                className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-warning/10 text-warning hover:bg-warning/20 transition-colors"
+                              >
+                                <ExclamationTriangleIcon className="h-3 w-3" />
+                                {c.connectorCode}
+                              </button>
+                            ),
+                          )}
+                        </div>
                       )}
                     </td>
                     <td className="py-3 px-4 text-sm text-muted">

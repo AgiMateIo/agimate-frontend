@@ -4,20 +4,23 @@ export interface SkillResponse {
   id: string;
   name: string;
   description: string | null;
+  // Connector codes declared in the SKILL.md frontmatter (`connectors: [...]`).
+  connectorCodes: string[];
   version: number;
   isPublic: boolean;
-  isFeatured: boolean;
   userId: string;
-  parentId: string | null;
-  myCopyId: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface SkillDetailResponse extends SkillResponse {
-  skillMd: string;
+  // SKILL.md body WITHOUT frontmatter. Name/description/connectors live in the
+  // dedicated fields above — do not parse frontmatter on the frontend.
+  mdContent: string;
 }
 
+// Request bodies still send the full SKILL.md (frontmatter + body) as `skillMd`;
+// the backend parses name/description/connectors out of the frontmatter.
 export interface CreateSkillRequest {
   skillMd: string;
   isPublic?: boolean;
@@ -26,30 +29,6 @@ export interface CreateSkillRequest {
 export interface UpdateSkillRequest {
   skillMd: string;
   isPublic?: boolean;
-}
-
-export interface SkillFileEntry {
-  path: string;
-  name: string;
-  size: number;
-  directory: boolean;
-}
-
-// Skill connector bindings
-
-export type SkillConnectorType = 'TOOL' | 'TRIGGER';
-
-export interface SkillConnectorResponse {
-  id: string;
-  connectorCode: string;
-  type: SkillConnectorType | null;
-  name: string | null;
-}
-
-export interface SkillConnectorRequest {
-  connectorCode: string;
-  type?: SkillConnectorType | null;
-  name?: string | null;
 }
 
 // Connector catalog entry (from GET /control/manage/connectors/)

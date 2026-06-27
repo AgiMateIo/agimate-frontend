@@ -7,7 +7,6 @@ import apiService from '@/services/api';
 import {
   ConnectorCatalogEntry,
   IntegrationResponse,
-  SkillConnectorResponse,
   SkillResponse,
 } from '@/types';
 import { Button } from '@/components/ui/Button';
@@ -26,8 +25,6 @@ export default function Step4Skills({ data, setData, goNext, goBack }: WizardSte
   const [selected, setSelected] = useState<Record<string, SkillResponse>>(
     Object.fromEntries(data.skills.map((s) => [s.id, s])),
   );
-  // skillId -> its connector bindings (lazy-loaded on selection).
-  const [skillConnectors, setSkillConnectors] = useState<Record<string, SkillConnectorResponse[]>>({});
 
   const [catalog, setCatalog] = useState<ConnectorCatalogEntry[]>([]);
   const [creds, setCreds] = useState<IntegrationResponse[]>([]);
@@ -38,11 +35,11 @@ export default function Step4Skills({ data, setData, goNext, goBack }: WizardSte
   useEffect(() => {
     Promise.all([
       apiService.getSkills({ size: 100 }),
-      apiService.getFeaturedSkills({ size: 100 }),
+      apiService.getPublicSkills({ size: 100 }),
     ])
-      .then(([mine, featured]) => {
+      .then(([mine, pub]) => {
         const byId = new Map<string, SkillResponse>();
-        [...mine.content, ...featured.content].forEach((s) => byId.set(s.id, s));
+        [...mine.content, ...pub.content].forEach((s) => byId.set(s.id, s));
         setSkills([...byId.values()]);
       })
       .catch(() => {});
@@ -60,29 +57,25 @@ export default function Step4Skills({ data, setData, goNext, goBack }: WizardSte
     [catalog],
   );
 
-  const toggle = async (skill: SkillResponse) => {
+  const toggle = (skill: SkillResponse) => {
     setSelected((prev) => {
       const next = { ...prev };
       if (next[skill.id]) delete next[skill.id];
       else next[skill.id] = skill;
       return next;
     });
-    if (!skillConnectors[skill.id]) {
-      const conns = await apiService.getSkillConnectors(skill.id).catch(() => []);
-      setSkillConnectors((prev) => ({ ...prev, [skill.id]: conns }));
-    }
   };
 
   // Integration connector codes required by the currently selected skills.
   const requiredIntegrations = useMemo(() => {
     const codes = new Set<string>();
-    for (const id of Object.keys(selected)) {
-      for (const conn of skillConnectors[id] ?? []) {
-        if (integrationCodes.has(conn.connectorCode)) codes.add(conn.connectorCode);
+    for (const skill of Object.values(selected)) {
+      for (const code of skill.connectorCodes) {
+        if (integrationCodes.has(code)) codes.add(code);
       }
     }
     return [...codes];
-  }, [selected, skillConnectors, integrationCodes]);
+  }, [selected, integrationCodes]);
 
   const filtered = skills.filter(
     (s) =>

@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   AcademicCapIcon,
-  BoltIcon,
   CheckBadgeIcon,
   ChatBubbleLeftRightIcon,
   CpuChipIcon,
@@ -12,7 +11,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
-import { ConnectorCatalogEntry, SkillConnectorResponse } from '@/types';
+import { ConnectorCatalogEntry } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { WizardStepProps } from './AgentWizard';
 
@@ -28,41 +27,23 @@ interface SummaryItem {
 export default function Step5Done({ data, goBack, onReset }: Step5Props) {
   const t = useTranslations('AgentWizard');
   const router = useRouter();
-  const [tools, setTools] = useState<SummaryItem[]>([]);
-  const [triggers, setTriggers] = useState<SummaryItem[]>([]);
+  const [connectors, setConnectors] = useState<SummaryItem[]>([]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const catalog: ConnectorCatalogEntry[] = await apiService.getConnectorCatalog().catch(() => []);
+      if (cancelled) return;
       const byCode = new Map(catalog.map((c) => [c.code, c.name]));
 
-      const perSkill = await Promise.all(
-        data.skills.map((s) => apiService.getSkillConnectors(s.id).catch(() => [] as SkillConnectorResponse[])),
-      );
-      if (cancelled) return;
-
-      const toolItems: SummaryItem[] = [];
-      const triggerItems: SummaryItem[] = [];
-      for (const conns of perSkill) {
-        for (const conn of conns) {
-          const label = byCode.get(conn.connectorCode) ?? conn.connectorCode;
-          const item: SummaryItem = { label, sub: conn.name ?? undefined };
-          if (conn.type === 'TOOL') toolItems.push(item);
-          else if (conn.type === 'TRIGGER') triggerItems.push(item);
-          else toolItems.push(item);
-        }
-      }
-      if (data.channel) {
-        triggerItems.unshift({ label: t('telegramMessages'), sub: data.channel.name });
-      }
-      setTools(toolItems);
-      setTriggers(triggerItems);
+      // Deduped connector codes declared by the selected skills.
+      const codes = [...new Set(data.skills.flatMap((s) => s.connectorCodes))];
+      setConnectors(codes.map((code) => ({ label: byCode.get(code) ?? code })));
     })();
     return () => {
       cancelled = true;
     };
-  }, [data.skills, data.channel, t]);
+  }, [data.skills]);
 
   const capabilities: SummaryItem[] = data.skills.map((s) => ({
     label: s.name,
@@ -102,17 +83,9 @@ export default function Step5Done({ data, goBack, onReset }: Step5Props) {
           )}
         </SummaryCard>
 
-        <SummaryCard icon={WrenchScrewdriverIcon} title={t('summaryTools')}>
-          {tools.length ? (
-            tools.map((c, i) => <SummaryLine key={i} label={c.label} sub={c.sub} />)
-          ) : (
-            <Empty t={t} />
-          )}
-        </SummaryCard>
-
-        <SummaryCard icon={BoltIcon} title={t('summaryTriggers')} wide>
-          {triggers.length ? (
-            triggers.map((c, i) => <SummaryLine key={i} label={c.label} sub={c.sub} />)
+        <SummaryCard icon={WrenchScrewdriverIcon} title={t('summaryConnectors')} wide>
+          {connectors.length ? (
+            connectors.map((c, i) => <SummaryLine key={i} label={c.label} sub={c.sub} />)
           ) : (
             <Empty t={t} />
           )}

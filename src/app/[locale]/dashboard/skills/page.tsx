@@ -13,7 +13,7 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { Link } from '@/i18n/navigation';
 import SkillsList from '@/components/skills/SkillsList';
 
-type SkillTab = 'my' | 'public' | 'featured';
+type SkillTab = 'my' | 'public';
 
 function SkillsContent({
   dataPromise,
@@ -44,17 +44,12 @@ function SkillsContent({
     onUpdate(); // Refetch for correct pagination
   };
 
-  const handleCloneSuccess = () => {
-    onUpdate();
-  };
-
   return (
     <div className="space-y-4">
       <SkillsList
         skills={skills}
         variant={tab}
         onDeleteSuccess={handleDeleteSuccess}
-        onCloneSuccess={handleCloneSuccess}
       />
 
       {/* Pagination */}
@@ -95,7 +90,6 @@ export default function SkillsPage() {
   const fetchFn = useCallback(() => {
     const params = { search: debouncedSearch || undefined, page, size: 20 };
     if (activeTab === 'my') return apiService.getSkills(params);
-    if (activeTab === 'featured') return apiService.getFeaturedSkills(params);
     return apiService.getPublicSkills(params);
   }, [activeTab, debouncedSearch, page]);
 
@@ -162,7 +156,6 @@ export default function SkillsPage() {
       <Tabs
         tabs={[
           { id: 'my', label: t('mySkills'), content: tabContent },
-          { id: 'featured', label: t('featuredSkills'), content: tabContent },
           { id: 'public', label: t('publicSkills'), content: tabContent },
         ]}
         activeTab={activeTab}

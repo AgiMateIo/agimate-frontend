@@ -22,6 +22,7 @@ interface AddAgentSkillModalProps {
 export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, onSuccess }: AddAgentSkillModalProps) {
   const t = useTranslations('Agents');
 
+  const [source, setSource] = useState<'my' | 'public'>('my');
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(0);
@@ -39,22 +40,26 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
     return () => clearTimeout(timer);
   }, [search]);
 
+  useEffect(() => {
+    setPage(0);
+    setSelectedSkill(null);
+  }, [source]);
+
   const fetchSkills = useCallback(async () => {
     setSkillsLoading(true);
     setSkillsError('');
     try {
-      const data = await apiService.getSkills({
-        search: debouncedSearch || undefined,
-        page,
-        size: PAGE_SIZE,
-      });
+      const params = { search: debouncedSearch || undefined, page, size: PAGE_SIZE };
+      const data = source === 'my'
+        ? await apiService.getSkills(params)
+        : await apiService.getPublicSkills(params);
       setPagedData(data);
     } catch (err) {
       setSkillsError(err instanceof Error ? err.message : 'Failed to load skills');
     } finally {
       setSkillsLoading(false);
     }
-  }, [debouncedSearch, page]);
+  }, [source, debouncedSearch, page]);
 
   useEffect(() => {
     fetchSkills();
@@ -78,6 +83,24 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
   return (
     <Modal isOpen={true} onClose={onClose} title={t('addSkill')} size="lg">
       <form onSubmit={onSubmit} className="space-y-4">
+        {/* Source toggle: own skills vs the public catalogue (incl. system skills) */}
+        <div className="inline-flex rounded-lg bg-surface-secondary p-1 gap-1">
+          {(['my', 'public'] as const).map((key) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setSource(key)}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                source === key
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted hover:text-foreground'
+              }`}
+            >
+              {key === 'my' ? t('skillsMine') : t('skillsPublic')}
+            </button>
+          ))}
+        </div>
+
         {/* Search */}
         <div className="relative">
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
@@ -130,6 +153,18 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
                     </div>
                     {skill.description && (
                       <p className="text-xs text-muted mt-0.5 line-clamp-1">{skill.description}</p>
+                    )}
+                    {skill.connectorCodes.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {skill.connectorCodes.map((code) => (
+                          <span
+                            key={code}
+                            className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-accent/10 text-accent"
+                          >
+                            {code}
+                          </span>
+                        ))}
+                      </div>
                     )}
                   </button>
                 );

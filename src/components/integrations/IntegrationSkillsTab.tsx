@@ -13,7 +13,7 @@ import { formatDate } from '@/utils/date';
 
 const PAGE_SIZE = 20;
 
-type SkillFilter = 'my' | 'featured' | 'public';
+type SkillFilter = 'my' | 'public';
 
 interface IntegrationSkillsTabProps {
   connectorCode: string;
@@ -35,14 +35,9 @@ export default function IntegrationSkillsTab({ connectorCode }: IntegrationSkill
     setError(null);
     try {
       const params = { connectorCode, page, size: PAGE_SIZE };
-      let data: PagedResponse<SkillResponse>;
-      if (filter === 'my') {
-        data = await apiService.getSkills(params);
-      } else if (filter === 'featured') {
-        data = await apiService.getFeaturedSkills(params);
-      } else {
-        data = await apiService.getPublicSkills(params);
-      }
+      const data = filter === 'my'
+        ? await apiService.getSkills(params)
+        : await apiService.getPublicSkills(params);
       setPagedData(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load skills');
@@ -61,7 +56,6 @@ export default function IntegrationSkillsTab({ connectorCode }: IntegrationSkill
 
   const filters: { key: SkillFilter; label: string }[] = [
     { key: 'my', label: t('mySkills') },
-    { key: 'featured', label: t('featuredSkills') },
     { key: 'public', label: t('publicSkills') },
   ];
 
@@ -69,10 +63,7 @@ export default function IntegrationSkillsTab({ connectorCode }: IntegrationSkill
   const totalElements = pagedData?.totalElements ?? 0;
   const totalPages = pagedData?.totalPages ?? 0;
 
-  const emptyMessage =
-    filter === 'my' ? t('noSkills') :
-    filter === 'featured' ? t('noFeaturedSkills') :
-    t('noPublicSkills');
+  const emptyMessage = filter === 'my' ? t('noSkills') : t('noPublicSkills');
 
   return (
     <div className="space-y-4">
@@ -131,11 +122,6 @@ export default function IntegrationSkillsTab({ connectorCode }: IntegrationSkill
                     {tSkills('updatedAt')}: {formatDate(skill.updatedAt, locale)}
                   </div>
                 </div>
-                {filter !== 'my' && skill.myCopyId != null && (
-                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent whitespace-nowrap self-start mt-0.5">
-                    {tSkills('alreadyAdded')}
-                  </span>
-                )}
               </div>
             </Link>
           ))}

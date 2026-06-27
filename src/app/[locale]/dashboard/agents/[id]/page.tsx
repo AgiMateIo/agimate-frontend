@@ -221,7 +221,7 @@ export default function AgentDetailPage() {
 
       {activeTab === 'skills' && (
         <div className="bg-surface rounded-xl border border-border p-6">
-          <AgentSkillsTab agentId={agentId} />
+          <AgentSkillsTab agentId={agentId} onConnectConnector={() => setActiveTab('connections')} />
         </div>
       )}
 

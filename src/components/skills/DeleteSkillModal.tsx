@@ -38,19 +38,6 @@ export default function DeleteSkillModal({
     }
   };
 
-  if (skill.parentId != null) {
-    return (
-      <Modal isOpen={true} onClose={onClose} title={t('deleteSkillTitle')} size="sm">
-        <div className="space-y-4">
-          <Alert variant="warning">{t('featuredCloneReadOnly')}</Alert>
-          <div className="flex justify-end pt-2">
-            <Button variant="secondary" onClick={onClose}>{t('cancel')}</Button>
-          </div>
-        </div>
-      </Modal>
-    );
-  }
-
   return (
     <Modal isOpen={true} onClose={onClose} title={t('deleteSkillTitle')} size="sm">
       <div className="space-y-4">

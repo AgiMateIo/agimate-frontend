@@ -50,9 +50,6 @@ import type {
   SkillDetailResponse,
   CreateSkillRequest,
   UpdateSkillRequest,
-  SkillFileEntry,
-  SkillConnectorResponse,
-  SkillConnectorRequest,
   ConnectorCatalogEntry,
   AgentSkillResponse,
   CreateAgentSkillRequest,
@@ -834,15 +831,6 @@ class ApiService {
     return this.get<PagedResponse<SkillResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/public/?${q}`);
   }
 
-  async getFeaturedSkills(params?: { search?: string; connectorCode?: string; page?: number; size?: number }): Promise<PagedResponse<SkillResponse>> {
-    const q = new URLSearchParams();
-    if (params?.search) q.set('search', params.search);
-    if (params?.connectorCode) q.set('connectorCode', params.connectorCode);
-    q.set('page', String(params?.page ?? 0));
-    q.set('size', String(params?.size ?? 20));
-    return this.get<PagedResponse<SkillResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/featured/?${q}`);
-  }
-
   async getSkill(id: string): Promise<SkillDetailResponse> {
     return this.get<SkillDetailResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/${id}`);
   }
@@ -859,10 +847,6 @@ class ApiService {
     return this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/${id}`);
   }
 
-  async cloneSkill(id: string): Promise<SkillResponse> {
-    return this.post<SkillResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/${id}/clone`, {});
-  }
-
   async getSkillAgents(
     skillId: string,
     params?: { search?: string; page?: number; size?: number }
@@ -874,66 +858,6 @@ class ApiService {
     return this.get<PagedResponse<AgentSummaryResponse>>(
       `${API.ENDPOINTS.CONTROL_API}/manage/skills/${skillId}/agents/?${q}`
     );
-  }
-
-  async getSkillFiles(skillId: string): Promise<SkillFileEntry[]> {
-    return this.get<SkillFileEntry[]>(`${API.ENDPOINTS.CONTROL_API}/manage/skill-files/${skillId}/`);
-  }
-
-  async uploadSkillFile(skillId: string, formData: FormData): Promise<void> {
-    return this.postFormData<void>(`${API.ENDPOINTS.CONTROL_API}/manage/skill-files/${skillId}/`, formData);
-  }
-
-  async deleteSkillFile(skillId: string, filePath: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/skill-files/${skillId}/${filePath}`);
-  }
-
-  async downloadSkillFile(skillId: string, filePath: string): Promise<Blob> {
-    const url = `${getApiBaseUrl()}${API.ENDPOINTS.CONTROL_API}/manage/skill-files/${skillId}/${filePath}`;
-    const token = getAccessToken();
-    const headers: HeadersInit = {
-      ...(token && { Authorization: `Bearer ${token}` }),
-    };
-
-    let response = await safeFetch(url, { headers });
-
-    if (response.status === 401) {
-      const refreshed = await this.refreshAccessToken();
-      if (refreshed) {
-        const newToken = getAccessToken();
-        const retryHeaders: HeadersInit = {
-          ...(newToken && { Authorization: `Bearer ${newToken}` }),
-        };
-        response = await safeFetch(url, { headers: retryHeaders });
-      }
-      if (response.status === 401) {
-        throw new Error(ACCESS_DENIED_MESSAGE);
-      }
-    }
-
-    if (!response.ok) {
-      return handleErrorResponse(response);
-    }
-
-    return response.blob();
-  }
-
-  // ========== SKILL CONNECTORS ==========
-
-  async getSkillConnectors(skillId: string): Promise<SkillConnectorResponse[]> {
-    return this.get<SkillConnectorResponse[]>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/${skillId}/connectors/`);
-  }
-
-  async replaceSkillConnectors(skillId: string, connectors: SkillConnectorRequest[]): Promise<SkillConnectorResponse[]> {
-    return this.put<SkillConnectorResponse[]>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/${skillId}/connectors/`, { connectors });
-  }
-
-  async addSkillConnector(skillId: string, data: SkillConnectorRequest): Promise<SkillConnectorResponse> {
-    return this.post<SkillConnectorResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/${skillId}/connectors/`, data);
-  }
-
-  async deleteSkillConnector(skillId: string, bindingId: string): Promise<void> {
-    return this.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/${skillId}/connectors/${bindingId}`);
   }
 
   // ========== CONNECTOR CATALOG ==========

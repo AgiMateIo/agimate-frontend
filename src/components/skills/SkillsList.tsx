@@ -4,61 +4,45 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { SkillResponse } from '@/types';
-import { TrashIcon, PencilIcon, DocumentDuplicateIcon, LockClosedIcon } from '@heroicons/react/24/outline';
-import { useRouter, Link } from '@/i18n/navigation';
-import { Alert } from '@/components/ui/Alert';
+import { TrashIcon, PencilIcon, LinkIcon } from '@heroicons/react/24/outline';
+import { useRouter } from '@/i18n/navigation';
 import { formatDate } from '@/utils/date';
 import DeleteSkillModal from './DeleteSkillModal';
-import CloneSkillModal from './CloneSkillModal';
+import AddSkillAgentModal from './AddSkillAgentModal';
 
 interface SkillsListProps {
   skills: SkillResponse[];
-  variant: 'my' | 'public' | 'featured';
+  variant: 'my' | 'public';
   onDeleteSuccess: (skillId: string) => void;
-  onCloneSuccess: () => void;
 }
 
 export default function SkillsList({
   skills,
   variant,
   onDeleteSuccess,
-  onCloneSuccess,
 }: SkillsListProps) {
   const t = useTranslations('Skills');
   const locale = useLocale();
   const router = useRouter();
 
   const [deletingSkill, setDeletingSkill] = useState<SkillResponse | null>(null);
-  const [cloningSkill, setCloningSkill] = useState<SkillResponse | null>(null);
-  const [cloneSuccessMessage, setCloneSuccessMessage] = useState<string | null>(null);
+  const [bindingSkill, setBindingSkill] = useState<SkillResponse | null>(null);
 
   const handleDeleteSuccess = (skillId: string) => {
     setDeletingSkill(null);
     onDeleteSuccess(skillId);
   };
 
-  const handleCloneSuccess = () => {
-    setCloneSuccessMessage(t('cloneSuccess'));
-    setCloningSkill(null);
-    onCloneSuccess();
-    // Auto-clear success message after 3 seconds
-    setTimeout(() => setCloneSuccessMessage(null), 3000);
-  };
-
   if (skills.length === 0) {
     return (
       <div className="text-center py-8 text-muted">
-        {variant === 'my' ? t('noSkills') : variant === 'featured' ? t('noFeaturedSkills') : t('noPublicSkills')}
+        {variant === 'my' ? t('noSkills') : t('noPublicSkills')}
       </div>
     );
   }
 
   return (
     <>
-      {cloneSuccessMessage && (
-        <Alert variant="success">{cloneSuccessMessage}</Alert>
-      )}
-
       <div className="space-y-3">
         {skills.map((skill) => (
           <div
@@ -74,11 +58,6 @@ export default function SkillsList({
                       {t('public')}
                     </span>
                   )}
-                  {skill.isFeatured && (
-                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-warning/10 text-warning">
-                      {t('featured')}
-                    </span>
-                  )}
                   <span className="text-xs text-muted">
                     {t('version', { version: skill.version })}
                   </span>
@@ -92,6 +71,19 @@ export default function SkillsList({
                   </p>
                 )}
 
+                {skill.connectorCodes.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {skill.connectorCodes.map((code) => (
+                      <span
+                        key={code}
+                        className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent"
+                      >
+                        {code}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
                 <div className="text-xs text-muted mt-2">
                   <span>{t('updatedAt')}: {formatDate(skill.updatedAt, locale)}</span>
                 </div>
@@ -99,47 +91,30 @@ export default function SkillsList({
 
               <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                 {variant === 'my' && (
-                  skill.parentId != null ? (
-                    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-muted/10 text-muted">
-                      <LockClosedIcon className="h-3 w-3" />
-                      {t('systemSkill')}
-                    </span>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => router.push(`/dashboard/skills/${skill.id}/edit`)}
-                        className="p-2 text-muted hover:text-foreground transition-colors rounded-lg"
-                      >
-                        <PencilIcon className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => setDeletingSkill(skill)}
-                        className="p-2 text-muted hover:text-error transition-colors rounded-lg"
-                      >
-                        <TrashIcon className="h-5 w-5" />
-                      </button>
-                    </>
-                  )
+                  <>
+                    <button
+                      onClick={() => router.push(`/dashboard/skills/${skill.id}/edit`)}
+                      className="p-2 text-muted hover:text-foreground transition-colors rounded-lg"
+                    >
+                      <PencilIcon className="h-5 w-5" />
+                    </button>
+                    <button
+                      onClick={() => setDeletingSkill(skill)}
+                      className="p-2 text-muted hover:text-error transition-colors rounded-lg"
+                    >
+                      <TrashIcon className="h-5 w-5" />
+                    </button>
+                  </>
                 )}
 
-                {(variant === 'public' || variant === 'featured') && (
-                  skill.myCopyId != null ? (
-                    <Link
-                      href={`/dashboard/skills/${skill.myCopyId}`}
-                      onClick={(e: React.MouseEvent) => e.stopPropagation()}
-                      className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent hover:bg-accent/20 transition-colors whitespace-nowrap"
-                    >
-                      {t('alreadyAdded')}
-                    </Link>
-                  ) : (
-                    <button
-                      onClick={() => setCloningSkill(skill)}
-                      className="p-2 text-muted hover:text-accent transition-colors rounded-lg"
-                      title={t('cloneSkill')}
-                    >
-                      <DocumentDuplicateIcon className="h-5 w-5" />
-                    </button>
-                  )
+                {variant === 'public' && (
+                  <button
+                    onClick={() => setBindingSkill(skill)}
+                    className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 transition-colors whitespace-nowrap"
+                  >
+                    <LinkIcon className="h-4 w-4" />
+                    {t('bindToAgent')}
+                  </button>
                 )}
               </div>
             </div>
@@ -155,11 +130,11 @@ export default function SkillsList({
         />
       )}
 
-      {cloningSkill && (
-        <CloneSkillModal
-          skill={cloningSkill}
-          onClose={() => setCloningSkill(null)}
-          onSuccess={handleCloneSuccess}
+      {bindingSkill && (
+        <AddSkillAgentModal
+          skillId={bindingSkill.id}
+          onClose={() => setBindingSkill(null)}
+          onSuccess={() => setBindingSkill(null)}
         />
       )}
     </>
