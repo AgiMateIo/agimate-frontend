@@ -12,11 +12,13 @@ import { Button } from '@/components/ui/Button';
 import { FormField, TextArea } from '@/components/ui/FormField';
 import { Toggle } from '@/components/ui/Toggle';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { Tabs } from '@/components/ui/Tabs';
 import { useUser } from '@/contexts/UserContext';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { formatDate } from '@/utils/date';
 import { buildSkillMd } from '@/utils/skill';
+import { getErrorMessage } from '@/utils/error';
 import SkillAgentsTab from '@/components/skills/SkillAgentsTab';
 import DeleteSkillModal from '@/components/skills/DeleteSkillModal';
 
@@ -52,7 +54,7 @@ export default function SkillDetailPage() {
       setEditSkillMd(buildSkillMd(data));
       setEditIsPublic(data.isPublic);
     } catch (err) {
-      setPageError(err instanceof Error ? err.message : 'Failed to load skill');
+      setPageError(getErrorMessage(err, 'Failed to load skill'));
     } finally {
       setPageLoading(false);
     }
@@ -83,11 +85,6 @@ export default function SkillDetailPage() {
   const handleDeleteSuccess = () => {
     router.push('/dashboard/skills');
   };
-
-  const tabs: { key: Tab; label: string }[] = [
-    { key: 'overview', label: t('tabOverview') },
-    { key: 'agents', label: t('tabAgents') },
-  ];
 
   if (pageLoading) {
     return (
@@ -157,102 +154,96 @@ export default function SkillDetailPage() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-border">
-        <div className="flex gap-6">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab.key
-                  ? 'border-accent text-foreground'
-                  : 'border-transparent text-muted hover:text-foreground'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <Tabs
+        tabs={[
+          {
+            id: 'overview',
+            label: t('tabOverview'),
+            content: (
+              <div className="bg-surface rounded-xl border border-border p-6 space-y-6">
+                {/* Metadata */}
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-muted">{t('createdAt')}</span>
+                    <p className="text-foreground">{formatDate(skill.createdAt, locale)}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted">{t('updatedAt')}</span>
+                    <p className="text-foreground">{formatDate(skill.updatedAt, locale)}</p>
+                  </div>
+                </div>
 
-      {/* Tab Content */}
-      {activeTab === 'overview' && (
-        <div className="bg-surface rounded-xl border border-border p-6 space-y-6">
-          {/* Metadata */}
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="text-muted">{t('createdAt')}</span>
-              <p className="text-foreground">{formatDate(skill.createdAt, locale)}</p>
-            </div>
-            <div>
-              <span className="text-muted">{t('updatedAt')}</span>
-              <p className="text-foreground">{formatDate(skill.updatedAt, locale)}</p>
-            </div>
-          </div>
+                {/* Public toggle */}
+                {isEditable ? (
+                  <FormField label={t('isPublic')} hint={t('isPublicHint')}>
+                    <Toggle
+                      checked={editIsPublic}
+                      onChange={setEditIsPublic}
+                    />
+                  </FormField>
+                ) : (
+                  <div className="text-sm">
+                    <span className="text-muted">{t('isPublic')}</span>
+                    <p className="text-foreground mt-0.5">{skill.isPublic ? t('public') : t('private')}</p>
+                  </div>
+                )}
 
-          {/* Public toggle */}
-          {isEditable ? (
-            <FormField label={t('isPublic')} hint={t('isPublicHint')}>
-              <Toggle
-                checked={editIsPublic}
-                onChange={setEditIsPublic}
-              />
-            </FormField>
-          ) : (
-            <div className="text-sm">
-              <span className="text-muted">{t('isPublic')}</span>
-              <p className="text-foreground mt-0.5">{skill.isPublic ? t('public') : t('private')}</p>
-            </div>
-          )}
+                {/* SKILL.md Content */}
+                <div>
+                  <h3 className="text-sm font-medium text-muted mb-2">{t('skillMd')}</h3>
+                  {isEditable ? (
+                    <TextArea
+                      value={editSkillMd}
+                      onChange={(e) => setEditSkillMd(e.target.value)}
+                      placeholder={t('skillMdPlaceholder')}
+                      rows={16}
+                      className="font-mono text-sm"
+                    />
+                  ) : (
+                    <div className="bg-surface-secondary rounded-lg border border-border/50 p-4">
+                      <pre className="text-sm text-foreground whitespace-pre-wrap font-mono">
+                        {skill.mdContent}
+                      </pre>
+                    </div>
+                  )}
+                </div>
 
-          {/* SKILL.md Content */}
-          <div>
-            <h3 className="text-sm font-medium text-muted mb-2">{t('skillMd')}</h3>
-            {isEditable ? (
-              <TextArea
-                value={editSkillMd}
-                onChange={(e) => setEditSkillMd(e.target.value)}
-                placeholder={t('skillMdPlaceholder')}
-                rows={16}
-                className="font-mono text-sm"
-              />
-            ) : (
-              <div className="bg-surface-secondary rounded-lg border border-border/50 p-4">
-                <pre className="text-sm text-foreground whitespace-pre-wrap font-mono">
-                  {skill.mdContent}
-                </pre>
+                {saveError && <ErrorAlert>{saveError}</ErrorAlert>}
+
+                {/* Actions */}
+                {isEditable && (
+                  <div className="flex items-center gap-3 pt-2 border-t border-border">
+                    <Button
+                      onClick={onSave}
+                      disabled={!isDirty || saving || !editSkillMd.trim()}
+                      loading={saving}
+                    >
+                      {t('save')}
+                    </Button>
+                    <button
+                      onClick={() => setShowDeleteModal(true)}
+                      className="px-4 py-2 rounded-lg font-medium text-sm border border-error text-error hover:bg-error/10 transition-colors"
+                    >
+                      {t('delete')}
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-
-          {saveError && <ErrorAlert>{saveError}</ErrorAlert>}
-
-          {/* Actions */}
-          {isEditable && (
-            <div className="flex items-center gap-3 pt-2 border-t border-border">
-              <Button
-                onClick={onSave}
-                disabled={!isDirty || saving || !editSkillMd.trim()}
-                loading={saving}
-              >
-                {t('save')}
-              </Button>
-              <button
-                onClick={() => setShowDeleteModal(true)}
-                className="px-4 py-2 rounded-lg font-medium text-sm border border-error text-error hover:bg-error/10 transition-colors"
-              >
-                {t('delete')}
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {activeTab === 'agents' && (
-        <div className="bg-surface rounded-xl border border-border p-6">
-          <SkillAgentsTab skillId={skill.id} skillName={skill.name} />
-        </div>
-      )}
+            ),
+          },
+          {
+            id: 'agents',
+            label: t('tabAgents'),
+            content: (
+              <div className="bg-surface rounded-xl border border-border p-6">
+                <SkillAgentsTab skillId={skill.id} skillName={skill.name} />
+              </div>
+            ),
+          },
+        ]}
+        activeTab={activeTab}
+        onTabChange={(id) => setActiveTab(id as Tab)}
+      />
 
       {showDeleteModal && (
         <DeleteSkillModal

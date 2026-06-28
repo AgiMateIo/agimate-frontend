@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
 import { AgentLlmResponse, LlmProviderResponse, LlmProviderType } from '@/types';
+import { getErrorMessage } from '@/utils/error';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Button } from '@/components/ui/Button';
 import { Link } from '@/i18n/navigation';
@@ -46,7 +47,7 @@ export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
       setBindings(bindingsData);
       setProviders(providersData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load model bindings');
+      setError(getErrorMessage(err, 'Failed to load model bindings'));
     } finally {
       setLoading(false);
     }

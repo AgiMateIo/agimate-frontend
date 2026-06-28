@@ -1,84 +1,27 @@
 'use client';
 
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
 import {
-  AppResponse,
-  ChannelHandlerResponse,
   ChannelResponse,
-  ConnectorCatalogEntry,
   CreateChannelRequest,
-  IntegrationResponse,
-  ToolJsonSchema,
   UpdateChannelRequest,
 } from '@/types';
-import { getConnectorKind, ConnectorKind } from '@/utils/connector';
+import { getConnectorKind } from '@/utils/connector';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input } from '@/components/ui/FormField';
 import { Alert } from '@/components/ui/Alert';
-import { Toggle } from '@/components/ui/Toggle';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
+import { buildConfig, seedConfigState, tryParseJsonObject } from './channelConfig';
+import { ConfigFieldRenderer } from './ConfigFieldRenderer';
+import { useChannelConfigData } from './useChannelConfigData';
 
 interface ChannelConfigFormProps {
   agentId: string;
   channel: ChannelResponse | null;
   onCancel: () => void;
   onSuccess: (channel: ChannelResponse) => void;
-}
-
-interface IdentityOption {
-  value: string;
-  label: string;
-  hint?: string;
-}
-
-function tryParseJsonObject(
-  text: string,
-): { ok: true; value: Record<string, unknown> } | { ok: false; error: string } {
-  if (!text.trim()) return { ok: true, value: {} };
-  try {
-    const parsed = JSON.parse(text);
-    if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      return { ok: false, error: 'Must be a JSON object' };
-    }
-    return { ok: true, value: parsed as Record<string, unknown> };
-  } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : 'Invalid JSON' };
-  }
-}
-
-// Seed editable form state for each config property from an existing config value (edit)
-// or from empty defaults (create). Object-typed properties are edited as JSON text and
-// kept in `jsonText`; everything else lives in `values`.
-function seedConfigState(
-  schema: ToolJsonSchema | undefined,
-  config: Record<string, unknown>,
-): { values: Record<string, unknown>; jsonText: Record<string, string> } {
-  const values: Record<string, unknown> = {};
-  const jsonText: Record<string, string> = {};
-  const props = schema?.properties ?? {};
-  for (const [name, prop] of Object.entries(props)) {
-    const existing = config[name];
-    switch (prop.type) {
-      case 'boolean':
-        values[name] = typeof existing === 'boolean' ? existing : false;
-        break;
-      case 'array':
-        values[name] = Array.isArray(existing) ? existing.map((v) => String(v)) : [];
-        break;
-      case 'object':
-        jsonText[name] = existing != null ? JSON.stringify(existing, null, 2) : '';
-        break;
-      case 'integer':
-      case 'number':
-        values[name] = existing == null ? '' : String(existing);
-        break;
-      default:
-        values[name] = existing == null ? '' : String(existing);
-    }
-  }
-  return { values, jsonText };
 }
 
 export default function ChannelConfigForm({
@@ -93,12 +36,12 @@ export default function ChannelConfigForm({
   const [name, setName] = useState(channel?.name ?? '');
   const [channelHandler, setChannelHandler] = useState(channel?.channelHandler ?? '');
   const [connectorCode, setConnectorCode] = useState(channel?.connectorCode ?? '');
-  const [connectorType, setConnectorType] = useState<ConnectorKind | null>(null);
   const [identity, setIdentity] = useState(channel?.identity ?? '');
 
-  const [handlers, setHandlers] = useState<ChannelHandlerResponse[]>([]);
-  const [connectors, setConnectors] = useState<ConnectorCatalogEntry[]>([]);
-  const [identities, setIdentities] = useState<IdentityOption[]>([]);
+  const { handlers, connectors, setConnectorType, identities } = useChannelConfigData({
+    channel,
+    connectorCode,
+  });
 
   // Per-property editable state for the dynamic config form.
   const [configValues, setConfigValues] = useState<Record<string, unknown>>({});
@@ -123,20 +66,6 @@ export default function ChannelConfigForm({
   );
   const configSchema = selectedHandler?.configFields;
 
-  // Load handlers + connector catalog once.
-  useEffect(() => {
-    apiService.getChannelHandlers().then(setHandlers).catch(() => {});
-    apiService
-      .getConnectorCatalog()
-      .then((all) => {
-        const filtered = all.filter((c) => getConnectorKind(c) !== 'SERVICE');
-        setConnectors(filtered);
-        const conn = filtered.find((c) => c.code === channel?.connectorCode);
-        if (conn) setConnectorType(getConnectorKind(conn));
-      })
-      .catch(() => {});
-  }, [channel?.connectorCode]);
-
   // Once handlers are loaded, (re)seed the config form for the active handler.
   // On create this fires when the user picks a handler; on edit it seeds from channel.config.
   useEffect(() => {
@@ -147,93 +76,12 @@ export default function ChannelConfigForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedHandler?.name]);
 
-  const loadIdentities = useCallback(
-    async (code: string, type: ConnectorKind | null): Promise<IdentityOption[]> => {
-      if (!code || !type) return [];
-      if (type === 'INTEGRATION') {
-        const creds = await apiService.getIntegrationCredentials(code);
-        return creds.map((c: IntegrationResponse) => ({
-          value: c.id,
-          label: c.name || c.fullCode,
-          hint: c.name ? c.subCode : undefined,
-        }));
-      }
-      const apps = await apiService.getApps({ size: 100 });
-      return apps.content.map((a: AppResponse) => ({ value: a.id, label: a.name }));
-    },
-    [],
-  );
-
-  useEffect(() => {
-    if (isEdit || !connectorCode || !connectorType) return;
-    let cancelled = false;
-    loadIdentities(connectorCode, connectorType)
-      .then((opts) => { if (!cancelled) setIdentities(opts); })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, [isEdit, connectorCode, connectorType, loadIdentities]);
-
   const filterValidation = useMemo(() => tryParseJsonObject(inputFilterText), [inputFilterText]);
 
   const setConfigValue = (key: string, value: unknown) =>
     setConfigValues((prev) => ({ ...prev, [key]: value }));
   const setConfigJson = (key: string, value: string) =>
     setConfigJsonText((prev) => ({ ...prev, [key]: value }));
-
-  // Assemble the typed `config` object from the per-property editable state.
-  function buildConfig(): { ok: true; value: Record<string, unknown> } | { ok: false; error: string } {
-    if (!configSchema) {
-      return tryParseJsonObject(rawConfigText);
-    }
-    const required = new Set(configSchema.required ?? []);
-    const out: Record<string, unknown> = {};
-    for (const [key, prop] of Object.entries(configSchema.properties ?? {})) {
-      const isRequired = required.has(key);
-      switch (prop.type) {
-        case 'boolean':
-          out[key] = Boolean(configValues[key]);
-          break;
-        case 'array': {
-          const items = (configValues[key] as string[] | undefined) ?? [];
-          const trimmed = items.map((s) => s.trim()).filter((s) => s !== '');
-          if (prop.items?.type === 'integer' || prop.items?.type === 'number') {
-            const nums = trimmed.map(Number);
-            if (nums.some((n) => Number.isNaN(n))) {
-              return { ok: false, error: `${key}: ${t('invalidNumberList')}` };
-            }
-            if (nums.length > 0 || isRequired) out[key] = nums;
-          } else if (trimmed.length > 0 || isRequired) {
-            out[key] = trimmed;
-          }
-          break;
-        }
-        case 'integer':
-        case 'number': {
-          const raw = String(configValues[key] ?? '').trim();
-          if (raw === '') {
-            if (isRequired) return { ok: false, error: `${key}: ${t('fieldRequired')}` };
-            break;
-          }
-          const n = Number(raw);
-          if (Number.isNaN(n)) return { ok: false, error: `${key}: ${t('invalidNumber')}` };
-          out[key] = n;
-          break;
-        }
-        case 'object': {
-          const parsed = tryParseJsonObject(configJsonText[key] ?? '');
-          if (!parsed.ok) return { ok: false, error: `${key}: ${parsed.error}` };
-          if (Object.keys(parsed.value).length > 0 || isRequired) out[key] = parsed.value;
-          break;
-        }
-        default: {
-          const raw = String(configValues[key] ?? '');
-          if (raw.trim() === '' && !isRequired) break;
-          out[key] = raw;
-        }
-      }
-    }
-    return { ok: true, value: out };
-  }
 
   const INLINE_FIELD_ERROR_KEYS = ['name'];
   const unmappedFieldErrors = Object.fromEntries(
@@ -242,7 +90,7 @@ export default function ChannelConfigForm({
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, async () => {
-      const config = buildConfig();
+      const config = buildConfig(configSchema, configValues, configJsonText, rawConfigText, t);
       if (!config.ok) throw new Error(config.error);
       if (inputFilterText.trim() && !filterValidation.ok) {
         throw new Error(`inputFilter: ${filterValidation.error}`);
@@ -426,122 +274,6 @@ export default function ChannelConfigForm({
         </Button>
       </div>
     </form>
-  );
-}
-
-interface ConfigFieldRendererProps {
-  name: string;
-  schema: ToolJsonSchema;
-  required: boolean;
-  value: unknown;
-  jsonText: string;
-  addLabel: string;
-  onValueChange: (value: unknown) => void;
-  onJsonChange: (value: string) => void;
-}
-
-function ConfigFieldRenderer({
-  name,
-  schema,
-  required,
-  value,
-  jsonText,
-  addLabel,
-  onValueChange,
-  onJsonChange,
-}: ConfigFieldRendererProps) {
-  const label = schema.title || name;
-  const hint = schema.description;
-
-  if (schema.type === 'boolean') {
-    return (
-      <FormField label={label} required={required} hint={hint} layout="inline">
-        <Toggle checked={Boolean(value)} onChange={(checked) => onValueChange(checked)} />
-      </FormField>
-    );
-  }
-
-  if (schema.type === 'array') {
-    const items = (value as string[] | undefined) ?? [];
-    const numeric = schema.items?.type === 'integer' || schema.items?.type === 'number';
-    const update = (next: string[]) => onValueChange(next);
-    return (
-      <FormField label={label} required={required} hint={hint}>
-        <div className="space-y-2">
-          {items.map((item, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <Input
-                value={item}
-                inputMode={numeric ? 'numeric' : undefined}
-                onChange={(e) => {
-                  const next = [...items];
-                  next[i] = e.target.value;
-                  update(next);
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => update(items.filter((_, idx) => idx !== i))}
-                className="shrink-0 px-2 py-1 rounded-lg text-muted hover:text-error hover:bg-error/10 transition-colors"
-                aria-label="remove"
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={() => update([...items, ''])}
-            className="text-xs font-medium px-2 py-1 rounded bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
-          >
-            + {addLabel}
-          </button>
-        </div>
-      </FormField>
-    );
-  }
-
-  if (schema.type === 'object') {
-    return (
-      <FormField label={label} required={required} hint={hint}>
-        <textarea
-          value={jsonText}
-          onChange={(e) => onJsonChange(e.target.value)}
-          rows={6}
-          spellCheck={false}
-          placeholder="{ }"
-          className="w-full px-3 py-2 bg-surface-secondary border border-border rounded-lg text-foreground font-mono text-xs resize-y"
-        />
-      </FormField>
-    );
-  }
-
-  if (schema.enum && schema.enum.length > 0) {
-    return (
-      <FormField label={label} required={required} hint={hint} layout="inline">
-        <select
-          value={String(value ?? '')}
-          onChange={(e) => onValueChange(e.target.value)}
-          className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground"
-        >
-          <option value=""></option>
-          {schema.enum.map((opt) => (
-            <option key={String(opt)} value={String(opt)}>{String(opt)}</option>
-          ))}
-        </select>
-      </FormField>
-    );
-  }
-
-  const numeric = schema.type === 'integer' || schema.type === 'number';
-  return (
-    <FormField label={label} required={required} hint={hint} layout="inline">
-      <Input
-        type={numeric ? 'number' : 'text'}
-        value={String(value ?? '')}
-        onChange={(e) => onValueChange(e.target.value)}
-      />
-    </FormField>
   );
 }
 

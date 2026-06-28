@@ -51,6 +51,16 @@ export const LLM_PROVIDER_PRESETS: LlmProviderPreset[] = [
 
 export const DEFAULT_PROVIDER_PRESET = LLM_PROVIDER_PRESETS[0];
 
+// Label i18n key per backend provider type, derived from the canonical preset whose
+// `key` equals the type (the generic entry, not an alias like OpenRouter which shares
+// the OPENAI_COMPATIBLE type). Single source of truth for the type label shown in the
+// providers list.
+export const PROVIDER_TYPE_LABEL_KEY: Partial<Record<LlmProviderType, string>> =
+  LLM_PROVIDER_PRESETS.reduce<Partial<Record<LlmProviderType, string>>>((acc, preset) => {
+    if (preset.key === preset.providerType) acc[preset.providerType] = preset.labelKey;
+    return acc;
+  }, {});
+
 // Derive a provider name from a base URL's domain, e.g.
 // "https://openrouter.ai/api/v1" -> "openrouter.ai", "https://api.openai.com/v1" -> "openai.com".
 // Strips leading "www." / "api." for a cleaner name. Returns "" when the URL is empty/invalid.

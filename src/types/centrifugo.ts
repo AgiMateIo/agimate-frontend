@@ -31,8 +31,3 @@ export interface BoardTaskCommentCreatedPayload {
   agentId: string;
   content: string;
 }
-
-export type BoardEvent =
-  | { type: 'board.task.created'; payload: BoardTaskCreatedPayload }
-  | { type: 'board.task.statusChanged'; payload: BoardTaskStatusChangedPayload }
-  | { type: 'board.task.commentAdded'; payload: BoardTaskCommentCreatedPayload };

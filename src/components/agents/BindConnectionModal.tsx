@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { MagnifyingGlassIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 const CONNECTOR_PAGE_SIZE = 10;
@@ -35,7 +36,7 @@ export default function BindConnectionModal({ agentId, onClose, onSuccess }: Bin
 
   // connector search (server-side, paginated)
   const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300);
   const [page, setPage] = useState(0);
   const [connectorsData, setConnectorsData] = useState<PagedResponse<ConnectorCatalogEntry> | null>(null);
   const [connectorsLoading, setConnectorsLoading] = useState(true);
@@ -53,13 +54,10 @@ export default function BindConnectionModal({ agentId, onClose, onSuccess }: Bin
     defaultError: 'Failed to bind connector',
   });
 
+  // Reset to the first page when the debounced search changes
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search);
-      setPage(0);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [search]);
+    setPage(0);
+  }, [debouncedSearch]);
 
   const fetchConnectors = useCallback(async () => {
     setConnectorsLoading(true);

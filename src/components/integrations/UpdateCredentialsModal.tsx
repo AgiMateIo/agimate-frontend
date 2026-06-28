@@ -1,16 +1,14 @@
 'use client';
 
-import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
 import { IntegrationResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { FormField } from '@/components/ui/FormField';
-import { PasswordInput } from '@/components/ui/PasswordInput';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
+import CredentialFieldsForm, { useCredentialFields } from './CredentialFieldsForm';
 
 interface UpdateCredentialsModalProps {
   integration: IntegrationResponse;
@@ -27,18 +25,12 @@ export default function UpdateCredentialsModal({
   onSuccess,
 }: UpdateCredentialsModalProps) {
   const t = useTranslations('Integrations');
-  const [credentials, setCredentials] = useState<Record<string, string>>({});
+  const { credentials, handleFieldChange, allFieldsFilled } = useCredentialFields(credentialFields);
 
   const { loading, error, fieldErrors, handleSubmit } = useAsyncForm<IntegrationResponse>({
     onSuccess,
     defaultError: t('updateCredentialsError'),
   });
-
-  const handleFieldChange = (fieldName: string, value: string) => {
-    setCredentials(prev => ({ ...prev, [fieldName]: value }));
-  };
-
-  const allFieldsFilled = Object.keys(credentialFields).every(field => credentials[field]?.trim());
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
@@ -52,21 +44,12 @@ export default function UpdateCredentialsModal({
           {t('updateCredentialsWarning')}
         </Alert>
 
-        {Object.entries(credentialFields).map(([fieldName, label]) => (
-          <FormField
-            key={fieldName}
-            label={label}
-            required
-            error={fieldErrors[fieldName]}
-          >
-            <PasswordInput
-              value={credentials[fieldName] || ''}
-              onChange={(e) => handleFieldChange(fieldName, e.target.value)}
-              placeholder={`Enter ${label}`}
-              required
-            />
-          </FormField>
-        ))}
+        <CredentialFieldsForm
+          credentialFields={credentialFields}
+          credentials={credentials}
+          fieldErrors={fieldErrors}
+          onFieldChange={handleFieldChange}
+        />
 
         {error && <ErrorAlert>{error}</ErrorAlert>}
 

@@ -12,6 +12,7 @@ import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { useUser } from '@/contexts/UserContext';
 import { buildSkillMd } from '@/utils/skill';
+import { getErrorMessage } from '@/utils/error';
 import SkillForm from '@/components/skills/SkillForm';
 
 export default function EditSkillPage() {
@@ -34,7 +35,7 @@ export default function EditSkillPage() {
       const data = await apiService.getSkill(skillId);
       setSkill(data);
     } catch (err) {
-      setPageError(err instanceof Error ? err.message : 'Failed to load skill');
+      setPageError(getErrorMessage(err, 'Failed to load skill'));
     } finally {
       setPageLoading(false);
     }

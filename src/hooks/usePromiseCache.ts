@@ -1,4 +1,4 @@
-import { use, useMemo, useCallback, useState, useEffect } from 'react';
+import { useMemo, useCallback, useState, useEffect } from 'react';
 
 // Global cache for promises to survive Strict Mode double mounting
 const promiseCache = new Map<string, Promise<unknown>>();
@@ -34,7 +34,7 @@ const promiseCache = new Map<string, Promise<unknown>>();
 export function usePromiseCache<T>(
   fetchFn: () => Promise<T>,
   dependencies: unknown[] = [],
-  cacheKeyPrefix = 'default'
+  cacheKeyPrefix: string
 ) {
   const [version, setVersion] = useState(0);
 
@@ -78,22 +78,4 @@ export function usePromiseCache<T>(
   }, [cacheKey]);
 
   return { promise, invalidate };
-}
-
-/**
- * Hook to consume a promise with Suspense
- *
- * This is a simple wrapper around React's use() hook for better semantics.
- * Your component must be wrapped in a <Suspense> boundary.
- *
- * @example
- * ```tsx
- * function UserDetails({ userPromise }: { userPromise: Promise<User> }) {
- *   const user = usePromise(userPromise);
- *   return <div>{user.name}</div>;
- * }
- * ```
- */
-export function usePromise<T>(promise: Promise<T>): T {
-  return use(promise);
 }

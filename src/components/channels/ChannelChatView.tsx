@@ -7,6 +7,7 @@ import { ChannelSessionMessageResponse, ChannelSessionResponse } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Button } from '@/components/ui/Button';
 import { formatDate } from '@/utils/date';
+import { getErrorMessage } from '@/utils/error';
 
 interface ChannelChatViewProps {
   session: ChannelSessionResponse;
@@ -28,7 +29,7 @@ export default function ChannelChatView({ session, onClosed }: ChannelChatViewPr
     apiService
       .getChannelSessionMessages(session.id)
       .then((data) => { if (!cancelled) setMessages(data); })
-      .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load messages'); })
+      .catch((err) => { if (!cancelled) setError(getErrorMessage(err, 'Failed to load messages')); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [session.id]);
@@ -39,7 +40,7 @@ export default function ChannelChatView({ session, onClosed }: ChannelChatViewPr
       const updated = await apiService.closeChannelSession(session.id);
       onClosed(updated);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to close session');
+      setError(getErrorMessage(err, 'Failed to close session'));
     } finally {
       setClosing(false);
     }

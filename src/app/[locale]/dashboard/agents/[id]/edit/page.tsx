@@ -8,14 +8,13 @@ import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { AgentResponse, AgentType } from '@/types';
 import { Button } from '@/components/ui/Button';
-import { FormField, TextArea, Input } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Alert } from '@/components/ui/Alert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { useClipboard } from '@/hooks/useClipboard';
-import { getAgentAvatarUrl } from '@/utils/avatar';
+import { getErrorMessage } from '@/utils/error';
 import DeleteAgentModal from '@/components/agents/DeleteAgentModal';
-import AgentTypePicker from '@/components/agents/AgentTypePicker';
+import AgentForm from '@/components/agents/AgentForm';
 
 export default function EditAgentPage() {
   const t = useTranslations('Agents');
@@ -53,7 +52,7 @@ export default function EditAgentPage() {
       setAgentType(agentData.type);
       setWebhookUrl(agentData.webhookUrl ?? '');
     } catch (err) {
-      setDataError(err instanceof Error ? err.message : 'Failed to load data');
+      setDataError(getErrorMessage(err, 'Failed to load data'));
     } finally {
       setDataLoading(false);
     }
@@ -69,13 +68,6 @@ export default function EditAgentPage() {
     },
     defaultError: 'Failed to update agent configuration',
   });
-
-  const getFieldError = (prefix: string) =>
-    Object.entries(fieldErrors)
-      .filter(([key]) => key.startsWith(prefix))
-      .map(([, value]) => value)
-      .join('; ')
-    || '';
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
@@ -96,7 +88,7 @@ export default function EditAgentPage() {
       const result = await apiService.regenerateAgentKey(agentId);
       setRegeneratedKey(result.fullKey);
     } catch (err) {
-      setRegenerateError(err instanceof Error ? err.message : 'Failed to regenerate key');
+      setRegenerateError(getErrorMessage(err, 'Failed to regenerate key'));
     } finally {
       setRegenerating(false);
     }
@@ -189,82 +181,23 @@ export default function EditAgentPage() {
       {/* Form Card */}
       <div className="bg-surface rounded-xl border border-border p-6">
         <form onSubmit={onSubmit} className="space-y-4">
-          <FormField label={t('nameLabel')} required error={getFieldError('name')}>
-            <div className="flex items-center gap-3">
-              {name && (
-                <img
-                  src={getAgentAvatarUrl(name)}
-                  alt={name}
-                  className="w-10 h-10 rounded-lg flex-shrink-0"
-                />
-              )}
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={t('namePlaceholder')}
-                required
-                maxLength={100}
-              />
-            </div>
-          </FormField>
-
-          <FormField label={t('description')} error={getFieldError('description')}>
-            <TextArea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder={t('descriptionPlaceholder')}
-              rows={2}
-              maxLength={500}
-            />
-          </FormField>
-
-          <FormField label="Prompt" error={getFieldError('instructions')}>
-            <TextArea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Enter instructions for the agent..."
-              rows={6}
-            />
-          </FormField>
-
-          <AgentTypePicker
-            value={agentType}
-            onChange={(next) => {
-              setAgentType(next);
-              if (next !== 'WEBHOOK') {
-                setWebhookUrl('');
-                setWebhookAuthHeader('');
-              }
-            }}
-            error={getFieldError('type')}
+          <AgentForm
+            name={name}
+            onNameChange={setName}
+            description={description}
+            onDescriptionChange={setDescription}
+            prompt={prompt}
+            onPromptChange={setPrompt}
+            agentType={agentType}
+            onAgentTypeChange={setAgentType}
+            webhookUrl={webhookUrl}
+            onWebhookUrlChange={setWebhookUrl}
+            webhookAuthHeader={webhookAuthHeader}
+            onWebhookAuthHeaderChange={setWebhookAuthHeader}
+            fieldErrors={fieldErrors}
+            error={error}
+            webhookAuthConfigured={agent.hasWebhookAuth}
           />
-
-          {agentType === 'WEBHOOK' && (
-            <>
-              <FormField label={t('webhookUrl')} required error={getFieldError('webhookUrl')} hint={t('webhookUrlHint')}>
-                <Input
-                  value={webhookUrl}
-                  onChange={(e) => setWebhookUrl(e.target.value)}
-                  placeholder={t('webhookUrlPlaceholder')}
-                  pattern="^https?://.+"
-                  required
-                />
-              </FormField>
-
-              <FormField label={t('webhookAuthHeader')} error={getFieldError('webhookAuthHeader')}>
-                <Input
-                  value={webhookAuthHeader}
-                  onChange={(e) => setWebhookAuthHeader(e.target.value)}
-                  placeholder={t('webhookAuthHeaderPlaceholder')}
-                />
-                {agent.hasWebhookAuth && (
-                  <p className="text-xs text-muted mt-1">{t('webhookAuthConfigured')}</p>
-                )}
-              </FormField>
-            </>
-          )}
-
-          {error && <ErrorAlert>{error}</ErrorAlert>}
 
           <div className="flex gap-3 pt-2">
             <Button

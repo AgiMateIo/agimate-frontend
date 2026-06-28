@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { ArrowTopRightOnSquareIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { LlmModel, LlmProviderResponse } from '@/types';
+import { getErrorMessage } from '@/utils/error';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
@@ -92,7 +93,7 @@ export default function Step2Provider({ data, setData, goNext, goBack }: WizardS
       setExisting((prev) => [created, ...prev]);
       if (res.availableModels.length === 1) setSelectedModel(res.availableModels[0].id);
     } catch (e) {
-      setVerifyError(e instanceof Error ? e.message : t('verifyFailed'));
+      setVerifyError(getErrorMessage(e, t('verifyFailed')));
     } finally {
       setVerifying(false);
     }

@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { LlmProviderResponse, LlmProviderType } from '@/types';
+import { LlmProviderResponse } from '@/types';
 import { TrashIcon, PencilIcon, KeyIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { Toggle } from '@/components/ui/Toggle';
 import { localeMap } from '@/i18n/routing';
 import { formatDate } from '@/utils/date';
+import { getErrorMessage } from '@/utils/error';
+import { PROVIDER_TYPE_LABEL_KEY } from './providerPresets';
 import EditLlmProviderModal from './EditLlmProviderModal';
 import RotateLlmProviderKeyModal from './RotateLlmProviderKeyModal';
 import DeleteLlmProviderModal from './DeleteLlmProviderModal';
@@ -16,13 +18,6 @@ interface LlmProvidersListProps {
   providers: LlmProviderResponse[];
   onUpdate: (providers: LlmProviderResponse[]) => void;
 }
-
-const providerTypeLabelKey: Record<LlmProviderType, string> = {
-  OPENAI: 'providerTypeOpenAI',
-  ANTHROPIC: 'providerTypeAnthropic',
-  GEMINI: 'providerTypeGemini',
-  OPENAI_COMPATIBLE: 'providerTypeOpenAICompatible',
-};
 
 export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersListProps) {
   const t = useTranslations('LlmProviders');
@@ -65,7 +60,7 @@ export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersLi
         ? { ...p, availableModels: result.availableModels, modelsRefreshedAt: result.refreshedAt }
         : p));
     } catch (err) {
-      const message = err instanceof Error ? err.message : t('refreshFailed');
+      const message = getErrorMessage(err, t('refreshFailed'));
       // surface the upstream error message to the user
       window.alert(message);
     } finally {
@@ -113,7 +108,7 @@ export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersLi
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent">
-                      {t(providerTypeLabelKey[provider.providerType])}
+                      {t(PROVIDER_TYPE_LABEL_KEY[provider.providerType] ?? 'providerTypeOpenAICompatible')}
                     </span>
                     {!provider.enabled && (
                       <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-muted/10 text-muted">

@@ -17,7 +17,8 @@ export default function AgenticTeamsPage() {
 
   const { promise, invalidate } = usePromiseCache(
     () => apiService.getAgenticTeams(),
-    []
+    [],
+    'agentic-teams'
   );
 
   const handleCreated = () => {

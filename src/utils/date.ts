@@ -28,46 +28,34 @@ export function formatDate(
 }
 
 /**
- * Format date as relative time
- *
- * @param dateString - Date string in backend format
- * @param locale - BCP 47 locale string
- * @param labels - Localized labels for relative time
- * @returns Relative time string
+ * Format a full absolute timestamp ("yyyy-MM-dd HH:mm:ss"), e.g. for tooltips.
+ * Returns the input unchanged if it cannot be parsed.
  */
-export function formatRelativeTime(
-  dateString: string,
-  locale: string,
-  labels: { today: string; yesterday: string; daysAgo: (count: number) => string }
-): string {
-  const date = parseBackendDate(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) return labels.today;
-  if (diffDays === 1) return labels.yesterday;
-  if (diffDays < 7) return labels.daysAgo(diffDays);
-
-  // For older dates, show formatted date
-  return formatDate(dateString, locale);
+export function formatDateTimeFull(dateStr: string): string {
+  try {
+    const d = new Date(dateStr);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  } catch {
+    return dateStr;
+  }
 }
 
 /**
- * Format date in short format (without time)
- *
- * @param dateString - Date string in backend format
- * @param locale - BCP 47 locale string
- * @returns Short formatted date
+ * Format a compact timestamp: "HH:mm" when the date is today, otherwise "dd.MM HH:mm".
+ * Returns the input unchanged if it cannot be parsed.
  */
-export function formatShortDate(
-  dateString: string,
-  locale: string
-): string {
-  const date = parseBackendDate(dateString);
-  return new Intl.DateTimeFormat(locale, {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  }).format(date);
+export function formatDateTimeShort(dateStr: string): string {
+  try {
+    const d = new Date(dateStr);
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const time = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate()) {
+      return time;
+    }
+    return `${pad(d.getDate())}.${pad(d.getMonth() + 1)} ${time}`;
+  } catch {
+    return dateStr;
+  }
 }

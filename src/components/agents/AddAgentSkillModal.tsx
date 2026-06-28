@@ -8,6 +8,8 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { getErrorMessage } from '@/utils/error';
 import { MagnifyingGlassIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 const PAGE_SIZE = 10;
@@ -24,21 +26,17 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
 
   const [source, setSource] = useState<'my' | 'public'>('my');
   const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300);
   const [page, setPage] = useState(0);
   const [pagedData, setPagedData] = useState<PagedResponse<SkillResponse> | null>(null);
   const [skillsLoading, setSkillsLoading] = useState(true);
   const [skillsError, setSkillsError] = useState('');
   const [selectedSkill, setSelectedSkill] = useState<SkillResponse | null>(null);
 
-  // Debounce search input
+  // Reset to the first page when the debounced search changes
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search);
-      setPage(0);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [search]);
+    setPage(0);
+  }, [debouncedSearch]);
 
   useEffect(() => {
     setPage(0);
@@ -55,7 +53,7 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
         : await apiService.getPublicSkills(params);
       setPagedData(data);
     } catch (err) {
-      setSkillsError(err instanceof Error ? err.message : 'Failed to load skills');
+      setSkillsError(getErrorMessage(err, 'Failed to load skills'));
     } finally {
       setSkillsLoading(false);
     }

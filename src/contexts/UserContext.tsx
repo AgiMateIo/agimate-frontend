@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback, useRef } from 'react';
 import { User } from '@/services/types';
+import { getErrorMessage } from '@/utils/error';
 
 interface UserContextType {
   user: User | null;
@@ -38,7 +39,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
       const userData = await ApiService.getUserInfo();
       setUser(userData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch user information');
+      setError(getErrorMessage(err, 'Failed to fetch user information'));
       setUser(null);
     } finally {
       setLoading(false);

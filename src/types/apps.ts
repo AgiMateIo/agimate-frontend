@@ -48,19 +48,6 @@ export interface DeviceTriggerInfo {
   description: string;
 }
 
-export interface DeviceTriggerGroup {
-  connectorId: string;
-  deviceId: string;
-  deviceName: string;
-  triggers: DeviceTriggerInfo[];
-}
-
-// Device tool info returned by GET /control/manage/tools/
-export interface DeviceToolInfo {
-  name: string;
-  description: string;
-}
-
 // JSON Schema node (draft 2020-12 subset, as in MCP) used by ConnectorToolSpec.
 // Fields are JsonInclude.NON_NULL on the backend, so absent properties are omitted.
 // An empty schema {} means "any type".
@@ -97,13 +84,6 @@ export interface ConnectorToolSpec {
   _meta?: Record<string, string>;
 }
 
-export interface DeviceToolGroup {
-  connectorId: string;
-  deviceId: string;
-  deviceName: string;
-  tools: DeviceToolInfo[];
-}
-
 // Trigger log entry returned by GET /control/manage/trigger-logs/
 export interface TriggerLog {
   id: string;
@@ -115,12 +95,4 @@ export interface TriggerLog {
   input: Record<string, unknown>;
   agentsCount: number;
   createdAt: string;
-}
-
-// Response of POST /control/manage/trigger-logs/probe — issues a short-lived
-// probe code that the user pastes into a real bot/app/channel to make the
-// backend capture the resulting TriggerLog without delivering it to agents.
-export interface TriggerLogProbeResponse {
-  code: string;       // agm-probe-(block|pass)-[a-z0-9]{10}
-  issuedAt: string;   // LocalDateTime ISO (yyyy-MM-dd'T'HH:mm:ss), no timezone
 }

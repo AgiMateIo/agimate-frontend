@@ -2,14 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { useLocale } from 'next-intl';
-import { Link } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { SkillResponse } from '@/types';
 import { PagedResponse } from '@/types/tool-use-logs';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
-import { formatDate } from '@/utils/date';
+import SkillCard from '@/components/skills/SkillCard';
+import { getErrorMessage } from '@/utils/error';
 
 const PAGE_SIZE = 20;
 
@@ -21,8 +20,6 @@ interface IntegrationSkillsTabProps {
 
 export default function IntegrationSkillsTab({ connectorCode }: IntegrationSkillsTabProps) {
   const t = useTranslations('IntegrationDetail');
-  const tSkills = useTranslations('Skills');
-  const locale = useLocale();
 
   const [filter, setFilter] = useState<SkillFilter>('my');
   const [pagedData, setPagedData] = useState<PagedResponse<SkillResponse> | null>(null);
@@ -40,7 +37,7 @@ export default function IntegrationSkillsTab({ connectorCode }: IntegrationSkill
         : await apiService.getPublicSkills(params);
       setPagedData(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load skills');
+      setError(getErrorMessage(err, 'Failed to load skills'));
     } finally {
       setLoading(false);
     }
@@ -94,36 +91,11 @@ export default function IntegrationSkillsTab({ connectorCode }: IntegrationSkill
       ) : (
         <div className="space-y-3">
           {skills.map((skill) => (
-            <Link
+            <SkillCard
               key={skill.id}
+              skill={skill}
               href={`/dashboard/skills/${skill.id}`}
-              className="block bg-surface-secondary rounded-lg p-4 border border-border hover:border-accent/30 transition-colors"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {skill.isPublic && (
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-success/10 text-success">
-                        {tSkills('public')}
-                      </span>
-                    )}
-                    <span className="text-xs text-muted">
-                      {tSkills('version', { version: skill.version })}
-                    </span>
-                  </div>
-
-                  <h3 className="font-medium text-foreground mt-1">{skill.name}</h3>
-
-                  {skill.description && (
-                    <p className="text-sm text-muted mt-0.5 line-clamp-2">{skill.description}</p>
-                  )}
-
-                  <div className="text-xs text-muted mt-2">
-                    {tSkills('updatedAt')}: {formatDate(skill.updatedAt, locale)}
-                  </div>
-                </div>
-              </div>
-            </Link>
+            />
           ))}
 
           {/* Pagination */}

@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { MagnifyingGlassIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { AgentSummaryResponse, PagedResponse } from '@/types';
+import { getErrorMessage } from '@/utils/error';
 import { Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/Button';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
@@ -42,7 +43,7 @@ export default function SkillAgentsTab({ skillId, skillName }: SkillAgentsTabPro
       });
       setData(result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load agents');
+      setError(getErrorMessage(err, 'Failed to load agents'));
     } finally {
       setLoading(false);
     }

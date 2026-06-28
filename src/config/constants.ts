@@ -5,23 +5,7 @@
  * and other constants used throughout the application.
  */
 
-export const VALIDATION = {
-  // Form field length limits
-  NAME_MAX_LENGTH: 100,
-  DESCRIPTION_MAX_LENGTH: 500,
-
-  // UI interaction timeouts
-  COPIED_TIMEOUT_MS: 2000,
-} as const;
-
 export const UI = {
-  // Modal size classes
-  MODAL_SIZES: {
-    SM: 'max-w-md',
-    MD: 'max-w-lg',
-    LG: 'max-w-2xl',
-  },
-
   // Date format options for Intl.DateTimeFormat
   DATE_FORMAT_OPTIONS: {
     day: '2-digit',
@@ -39,7 +23,4 @@ export const API = {
     USER_API: 'user',
     CONTROL_API: 'control',
   },
-
-  // Request timeouts (if needed in future)
-  DEFAULT_TIMEOUT_MS: 30000,
 } as const;

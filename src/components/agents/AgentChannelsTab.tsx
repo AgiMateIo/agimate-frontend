@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import apiService from '@/services/api';
 import { ChannelResponse } from '@/types';
+import { getErrorMessage } from '@/utils/error';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import ChannelsList from '@/components/channels/ChannelsList';
 import ChannelDetailPane from '@/components/channels/ChannelDetailPane';
@@ -30,7 +31,7 @@ export default function AgentChannelsTab({ agentId }: AgentChannelsTabProps) {
         setSelectedId(data[0].id);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load channels');
+      setError(getErrorMessage(err, 'Failed to load channels'));
     } finally {
       setLoading(false);
     }

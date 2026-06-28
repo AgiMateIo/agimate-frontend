@@ -9,6 +9,7 @@ import { localeMap } from '@/i18n/routing';
 import apiService from '@/services/api';
 import type { IntegrationResponse, ConnectorCatalogEntry } from '@/types';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { Tabs } from '@/components/ui/Tabs';
 import { usePromiseCache } from '@/hooks/usePromiseCache';
 import { Toggle } from '@/components/ui/Toggle';
 import EditIntegrationModal from '@/components/integrations/EditIntegrationModal';
@@ -92,11 +93,6 @@ function IntegrationDetailContent({
     router.push('/dashboard/integrations');
   };
 
-  const tabs: { key: Tab; label: string }[] = [
-    { key: 'info', label: t('tabInfo') },
-    { key: 'skills', label: t('tabSkills') },
-  ];
-
   return (
     <>
       {/* Header */}
@@ -174,82 +170,74 @@ function IntegrationDetailContent({
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-border">
-        <nav className="flex gap-6">
-          {tabs.map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab.key
-                  ? 'border-accent text-accent'
-                  : 'border-transparent text-muted hover:text-foreground'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-      </div>
-
-      {/* Tab Content */}
-      {activeTab === 'info' && (
-        <div className="bg-surface rounded-xl border border-border p-5">
-          <h2 className="text-lg font-semibold text-foreground mb-4">{t('integrationInfo')}</h2>
-          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
-            <div>
-              <dt className="text-sm text-muted">{t('platform')}</dt>
-              <dd className="text-foreground mt-0.5">{connector.name}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-muted">{t('instanceHandle')}</dt>
-              <dd className="text-foreground mt-0.5 font-mono text-sm">{integration.fullCode}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-muted">{t('platformIdentifier')}</dt>
-              <dd className="text-foreground mt-0.5 font-mono text-sm">{integration.subCode}</dd>
-            </div>
-            {integration.name && (
-              <div>
-                <dt className="text-sm text-muted">{tInt('name')}</dt>
-                <dd className="text-foreground mt-0.5">{integration.name}</dd>
+      <Tabs
+        tabs={[
+          {
+            id: 'info',
+            label: t('tabInfo'),
+            content: (
+              <div className="bg-surface rounded-xl border border-border p-5">
+                <h2 className="text-lg font-semibold text-foreground mb-4">{t('integrationInfo')}</h2>
+                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+                  <div>
+                    <dt className="text-sm text-muted">{t('platform')}</dt>
+                    <dd className="text-foreground mt-0.5">{connector.name}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-muted">{t('instanceHandle')}</dt>
+                    <dd className="text-foreground mt-0.5 font-mono text-sm">{integration.fullCode}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-muted">{t('platformIdentifier')}</dt>
+                    <dd className="text-foreground mt-0.5 font-mono text-sm">{integration.subCode}</dd>
+                  </div>
+                  {integration.name && (
+                    <div>
+                      <dt className="text-sm text-muted">{tInt('name')}</dt>
+                      <dd className="text-foreground mt-0.5">{integration.name}</dd>
+                    </div>
+                  )}
+                  <div>
+                    <dt className="text-sm text-muted">{t('connectorCode')}</dt>
+                    <dd className="text-foreground mt-0.5 font-mono text-sm">{integration.connectorCode}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-muted">{t('status')}</dt>
+                    <dd className="mt-0.5">
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                          integration.enabled
+                            ? 'bg-success/10 text-success'
+                            : 'bg-muted/10 text-muted'
+                        }`}
+                      >
+                        {integration.enabled ? tInt('enabled') : tInt('disabled')}
+                      </span>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-muted">{tInt('created')}</dt>
+                    <dd className="text-foreground mt-0.5">{formatDate(integration.createdAt)}</dd>
+                  </div>
+                  {integration.lastUsedAt && (
+                    <div>
+                      <dt className="text-sm text-muted">{tInt('lastUsed')}</dt>
+                      <dd className="text-foreground mt-0.5">{formatDate(integration.lastUsedAt)}</dd>
+                    </div>
+                  )}
+                </dl>
               </div>
-            )}
-            <div>
-              <dt className="text-sm text-muted">{t('connectorCode')}</dt>
-              <dd className="text-foreground mt-0.5 font-mono text-sm">{integration.connectorCode}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-muted">{t('status')}</dt>
-              <dd className="mt-0.5">
-                <span
-                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                    integration.enabled
-                      ? 'bg-success/10 text-success'
-                      : 'bg-muted/10 text-muted'
-                  }`}
-                >
-                  {integration.enabled ? tInt('enabled') : tInt('disabled')}
-                </span>
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm text-muted">{tInt('created')}</dt>
-              <dd className="text-foreground mt-0.5">{formatDate(integration.createdAt)}</dd>
-            </div>
-            {integration.lastUsedAt && (
-              <div>
-                <dt className="text-sm text-muted">{tInt('lastUsed')}</dt>
-                <dd className="text-foreground mt-0.5">{formatDate(integration.lastUsedAt)}</dd>
-              </div>
-            )}
-          </dl>
-        </div>
-      )}
-
-      {activeTab === 'skills' && (
-        <IntegrationSkillsTab connectorCode={integration.connectorCode} />
-      )}
+            ),
+          },
+          {
+            id: 'skills',
+            label: t('tabSkills'),
+            content: <IntegrationSkillsTab connectorCode={integration.connectorCode} />,
+          },
+        ]}
+        activeTab={activeTab}
+        onTabChange={(id) => setActiveTab(id as Tab)}
+      />
 
       {/* Modals */}
       {editingIntegration && (

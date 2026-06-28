@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
 import { LlmProviderResponse } from '@/types';
+import { getErrorMessage } from '@/utils/error';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input } from '@/components/ui/FormField';
@@ -55,7 +56,7 @@ export default function AddAgentLlmModal({
         setModel(result.availableModels[0].id);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to refresh models');
+      setError(getErrorMessage(err, 'Failed to refresh models'));
     } finally {
       setRefreshing(false);
     }
@@ -78,7 +79,7 @@ export default function AddAgentLlmModal({
       });
       onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create binding');
+      setError(getErrorMessage(err, 'Failed to create binding'));
     } finally {
       setSubmitting(false);
     }

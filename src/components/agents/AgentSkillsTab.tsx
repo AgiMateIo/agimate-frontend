@@ -10,6 +10,7 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Button } from '@/components/ui/Button';
 import { PlusIcon, TrashIcon, ExclamationTriangleIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { formatDate } from '@/utils/date';
+import { getErrorMessage } from '@/utils/error';
 import AddAgentSkillModal from './AddAgentSkillModal';
 import DeleteAgentSkillModal from './DeleteAgentSkillModal';
 
@@ -53,7 +54,7 @@ export default function AgentSkillsTab({ agentId, onConnectConnector }: AgentSki
       if (silent) setError('');
     } catch (err) {
       if (!silent) {
-        setError(err instanceof Error ? err.message : 'Failed to load skills');
+        setError(getErrorMessage(err, 'Failed to load skills'));
       }
     } finally {
       if (!silent) setLoading(false);

@@ -24,6 +24,7 @@ import TaskSlideOver from '@/components/boards/TaskSlideOver';
 import CreateTaskModal from '@/components/boards/CreateTaskModal';
 import { useBoardSubscription } from '@/realtime/useBoardSubscription';
 import { animateCardMove } from '@/utils/animateCardMove';
+import { getErrorMessage } from '@/utils/error';
 
 function buildAgentMap(agents: AgentResponse[]): Map<string, string> {
   return new Map(agents.map((a) => [a.id, a.name]));
@@ -79,7 +80,7 @@ export default function BoardPage() {
       setBoard(teamBoard);
       setColumns(buildColumnMap(tasksByStatus));
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('loadError'));
+      setError(getErrorMessage(err, t('loadError')));
     } finally {
       setLoading(false);
     }

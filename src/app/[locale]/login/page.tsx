@@ -1,10 +1,10 @@
 'use client';
 
 import { useMemo, useState, useSyncExternalStore } from 'react';
-import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { API } from '@/config/constants';
 import { getApiBaseUrl } from '@/utils/api-url';
+import AuthShell from '@/components/landing/AuthShell';
 
 const subscribe = () => () => {};
 const getSnapshot = () => window.location.origin;
@@ -20,26 +20,8 @@ export default function LoginPage() {
   const [pendingProvider, setPendingProvider] = useState<'google' | 'yandex' | null>(null);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Background gradient mesh */}
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#F0EEE9] to-[#F8F7F5] dark:from-[#1a1715] dark:to-[#0f0e0d]" />
-        <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-[#A47764]/30 dark:bg-[#A47764]/15 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full bg-[#A47764]/20 dark:bg-[#A47764]/10 blur-3xl" />
-      </div>
-
-      {/* Header */}
-      <header className="border-b border-border/50 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-6 py-4">
-          <Link href="/" className="text-xl font-bold text-foreground">
-            AgiMate
-          </Link>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="bg-surface/80 backdrop-blur-sm border border-border/50 rounded-xl shadow-sm p-8 max-w-md w-full">
+    <AuthShell>
+      <div className="bg-surface/80 backdrop-blur-sm border border-border/50 rounded-xl shadow-sm p-8 max-w-md w-full">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-foreground mb-2">{t('title')}</h1>
             <p className="text-muted text-sm">{t('subtitle')}</p>
@@ -112,7 +94,6 @@ export default function LoginPage() {
             </p>
           </div>
         </div>
-      </div>
-    </div>
+    </AuthShell>
   );
 }

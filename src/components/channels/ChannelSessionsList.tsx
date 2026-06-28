@@ -6,6 +6,7 @@ import apiService from '@/services/api';
 import { ChannelSessionResponse } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { formatDate } from '@/utils/date';
+import { getErrorMessage } from '@/utils/error';
 import ChannelChatView from './ChannelChatView';
 
 interface ChannelSessionsListProps {
@@ -38,7 +39,7 @@ export default function ChannelSessionsList({ channelId }: ChannelSessionsListPr
         setSelectedId(data[0].id);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load sessions');
+      setError(getErrorMessage(err, 'Failed to load sessions'));
     } finally {
       setLoading(false);
     }

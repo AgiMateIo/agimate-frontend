@@ -1,9 +1,9 @@
 'use client';
 
 import { use, useState, Suspense } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import Link from 'next/link';
+import { Link, useRouter } from '@/i18n/navigation';
 import {
   PencilIcon,
   UserGroupIcon,
@@ -117,7 +117,8 @@ export default function AgenticTeamDetailPage() {
 
   const { promise, invalidate } = usePromiseCache(
     () => apiService.getAgenticTeams(),
-    []
+    [],
+    'agentic-team-detail'
   );
 
   const handleUpdated = () => {

@@ -1,9 +1,9 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { ApiError } from '@/services/api';
+import { getErrorMessage } from '@/utils/error';
 
 interface UseAsyncFormOptions<T> {
   onSuccess?: (result: T) => void;
-  onError?: (error: Error) => void;
   defaultError?: string;
 }
 
@@ -30,13 +30,9 @@ export function useAsyncForm<T = void>(options: UseAsyncFormOptions<T> = {}) {
         if (err instanceof ApiError && err.details && Object.keys(err.details).length > 0) {
           setFieldErrors(err.details);
         } else {
-          const errorMessage =
-            err instanceof Error
-              ? err.message
-              : optionsRef.current.defaultError || 'An error occurred';
+          const errorMessage = getErrorMessage(err, optionsRef.current.defaultError || 'An error occurred');
           setError(errorMessage);
         }
-        optionsRef.current.onError?.(err instanceof Error ? err : new Error(optionsRef.current.defaultError || 'An error occurred'));
         throw err;
       } finally {
         setLoading(false);

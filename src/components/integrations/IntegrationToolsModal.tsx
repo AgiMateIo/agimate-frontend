@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
 import { ConnectorToolSpec } from '@/types';
+import { getErrorMessage } from '@/utils/error';
 import { Modal } from '@/components/ui/Modal';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 
@@ -30,7 +31,7 @@ export default function IntegrationToolsModal({
       const res = await apiService.getIntegrationCredentialTools(integrationId);
       setTools(res);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('toolsError'));
+      setError(getErrorMessage(err, t('toolsError')));
     } finally {
       setLoading(false);
     }

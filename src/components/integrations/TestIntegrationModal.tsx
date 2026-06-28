@@ -9,6 +9,7 @@ import {
 } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { IntegrationTestResult } from '@/types';
+import { getErrorMessage } from '@/utils/error';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 
@@ -36,7 +37,7 @@ export default function TestIntegrationModal({
       const res = await apiService.testIntegration(integrationId);
       setResult(res);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('testError'));
+      setError(getErrorMessage(err, t('testError')));
     } finally {
       setLoading(false);
     }

@@ -4,10 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
 import { AgentConnectionResponse, AgentConnectionPolicyResponse } from '@/types';
+import { getErrorMessage } from '@/utils/error';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Button } from '@/components/ui/Button';
-import { Modal } from '@/components/ui/Modal';
-import { useAsyncForm } from '@/hooks/useAsyncForm';
+import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import AddConnectionPolicyModal from './AddConnectionPolicyModal';
 
@@ -31,7 +31,7 @@ export default function ConnectionPoliciesPanel({ connection }: ConnectionPolici
       const data = await apiService.getAgentConnectionPolicies(connection.id);
       setPolicies(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load policies');
+      setError(getErrorMessage(err, 'Failed to load policies'));
     } finally {
       setLoading(false);
     }
@@ -144,33 +144,22 @@ function DeletePolicyModal({
   onSuccess: () => void;
 }) {
   const t = useTranslations('Agents');
-  const { loading, error, handleSubmit } = useAsyncForm<void>({
-    onSuccess,
-    defaultError: 'Failed to delete policy',
-  });
-
-  const onSubmit = (e: React.FormEvent) =>
-    handleSubmit(e, async () => {
-      await apiService.deleteAgentConnectionPolicy(connection.id, policy.id);
-    });
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={t('deletePolicy')}>
-      <form onSubmit={onSubmit} className="space-y-4">
-        <p className="text-foreground">{t('deletePolicyConfirm')}</p>
-        <div className="text-sm text-muted font-mono">
-          {policy.kind} · {policy.name ?? t('policyResourceAll')} · {policy.effect}
-        </div>
-        {error && <ErrorAlert>{error}</ErrorAlert>}
-        <div className="flex gap-3 pt-2">
-          <Button type="button" variant="secondary" onClick={onClose} disabled={loading} className="flex-1">
-            {t('cancel')}
-          </Button>
-          <Button type="submit" variant="danger" loading={loading} disabled={loading} className="flex-1">
-            {t('deletePolicy')}
-          </Button>
-        </div>
-      </form>
-    </Modal>
+    <ConfirmDeleteModal
+      title={t('deletePolicy')}
+      confirmLabel={t('deletePolicy')}
+      cancelLabel={t('cancel')}
+      defaultError="Failed to delete policy"
+      fullWidthButtons
+      onConfirm={() => apiService.deleteAgentConnectionPolicy(connection.id, policy.id)}
+      onClose={onClose}
+      onSuccess={onSuccess}
+    >
+      <p className="text-foreground">{t('deletePolicyConfirm')}</p>
+      <div className="text-sm text-muted font-mono">
+        {policy.kind} · {policy.name ?? t('policyResourceAll')} · {policy.effect}
+      </div>
+    </ConfirmDeleteModal>
   );
 }

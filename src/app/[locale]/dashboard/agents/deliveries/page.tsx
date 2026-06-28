@@ -8,6 +8,7 @@ import { ArrowLeftIcon, ArrowPathIcon, ChevronLeftIcon, ChevronRightIcon, CheckC
 import apiService from '@/services/api';
 import { WebhookDeliveryLog, AgentResponse } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { getErrorMessage } from '@/utils/error';
 
 const REFRESH_OPTIONS = [
   { value: null, label: 'Off' },
@@ -52,7 +53,7 @@ export default function WebhookDeliveriesPage() {
       if (silent) setError('');
     } catch (err) {
       if (!silent) {
-        setError(err instanceof Error ? err.message : 'Failed to load delivery logs');
+        setError(getErrorMessage(err, 'Failed to load delivery logs'));
         setDeliveries([]);
       }
     } finally {

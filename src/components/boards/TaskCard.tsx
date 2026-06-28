@@ -5,6 +5,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { UserCircleIcon } from '@heroicons/react/24/outline';
 import type { BoardTask } from '@/types';
+import { TYPE_BADGE } from './taskBadges';
 
 interface TaskCardProps {
   task: BoardTask;
@@ -13,12 +14,6 @@ interface TaskCardProps {
   isDragOverlay?: boolean;
   highlighted?: boolean;
 }
-
-const TYPE_BADGE: Record<string, string> = {
-  EPIC: 'bg-purple-500/20 text-purple-400',
-  TASK: 'bg-blue-500/20 text-blue-400',
-  SUBTASK: 'bg-surface-secondary text-muted',
-};
 
 export default function TaskCard({
   task,

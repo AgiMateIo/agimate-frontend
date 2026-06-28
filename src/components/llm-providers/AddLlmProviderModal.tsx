@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
 import { CreateLlmProviderRequest } from '@/types';
+import { getErrorMessage } from '@/utils/error';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input } from '@/components/ui/FormField';
@@ -79,7 +80,7 @@ export default function AddLlmProviderModal({ onClose, onSuccess }: AddLlmProvid
       const created = await apiService.createLlmProvider(body);
       createdId = created.id;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create provider');
+      setError(getErrorMessage(err, 'Failed to create provider'));
       setCreating(false);
       return;
     }
@@ -91,7 +92,7 @@ export default function AddLlmProviderModal({ onClose, onSuccess }: AddLlmProvid
       await apiService.refreshLlmProviderModels(createdId);
       onSuccess();
     } catch (err) {
-      setRefreshError(err instanceof Error ? err.message : t('refreshFailed'));
+      setRefreshError(getErrorMessage(err, t('refreshFailed')));
     } finally {
       setRefreshing(false);
     }

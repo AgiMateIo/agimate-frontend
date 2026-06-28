@@ -28,7 +28,7 @@ async function fetchToken(forceRefresh = false): Promise<CentrifugoTokenResponse
 }
 
 export async function getChannelToken(): Promise<CentrifugoTokenResponse> {
-  return cachedToken ?? fetchToken();
+  return fetchToken();
 }
 
 export async function initCentrifuge(): Promise<Centrifuge> {
@@ -54,10 +54,6 @@ export async function initCentrifuge(): Promise<Centrifuge> {
   });
 
   centrifuge.connect();
-  return centrifuge;
-}
-
-export function getCentrifuge(): Centrifuge | null {
   return centrifuge;
 }
 

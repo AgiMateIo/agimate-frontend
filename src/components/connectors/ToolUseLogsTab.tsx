@@ -1,75 +1,34 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { ToolUseLogResponse, PagedResponse } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
-import { ArrowPathIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
-
-const REFRESH_OPTIONS = [
-  { value: null, label: 'Off' },
-  { value: 5, label: '5s' },
-  { value: 10, label: '10s' },
-  { value: 30, label: '30s' },
-] as const;
-
-const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
-const DEFAULT_PAGE_SIZE = 20;
+import { RefreshControls } from '@/components/ui/RefreshControls';
+import { Pagination } from '@/components/ui/Pagination';
+import { useAutoRefreshPagedData } from '@/hooks/useAutoRefreshPagedData';
+import { formatDateTimeFull, formatDateTimeShort } from '@/utils/date';
 
 export default function ToolUseLogsTab() {
   const t = useTranslations('Connectors');
-  const [pagedData, setPagedData] = useState<PagedResponse<ToolUseLogResponse> | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-  const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
-  const [refreshOpen, setRefreshOpen] = useState(false);
-  const refreshRef = useRef<HTMLDivElement>(null);
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-
-  const fetchData = useCallback(async (silent: boolean = false) => {
-    if (!silent) {
-      setLoading(true);
-      setError('');
-    }
-    try {
-      const data = await apiService.getToolUseLogs({ page, size: pageSize });
-      setPagedData(data);
-      if (silent) setError('');
-    } catch (err) {
-      if (!silent) {
-        setError(err instanceof Error ? err.message : 'Failed to load tool use logs');
-      }
-    } finally {
-      if (!silent) setLoading(false);
-    }
-  }, [page, pageSize]);
-
-  useEffect(() => {
-    fetchData(false);
-  }, [fetchData]);
-
-  useEffect(() => {
-    if (refreshInterval === null) return;
-    const intervalId = setInterval(() => {
-      fetchData(true);
-    }, refreshInterval * 1000);
-    return () => clearInterval(intervalId);
-  }, [refreshInterval, fetchData]);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (refreshRef.current && !refreshRef.current.contains(e.target as Node)) {
-        setRefreshOpen(false);
-      }
-    };
-    if (refreshOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [refreshOpen]);
+  const {
+    content: logs,
+    totalElements,
+    totalPages,
+    loading,
+    error,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    refreshInterval,
+    setRefreshInterval,
+    refresh,
+  } = useAutoRefreshPagedData(
+    (params) => apiService.getToolUseLogs(params),
+    { defaultError: 'Failed to load tool use logs' },
+  );
 
   const toggleExpand = (id: string) => {
     setExpandedIds(prev => {
@@ -83,118 +42,20 @@ export default function ToolUseLogsTab() {
     });
   };
 
-  const formatDateTimeFull = (dateStr: string) => {
-    try {
-      const d = new Date(dateStr);
-      const pad = (n: number) => String(n).padStart(2, '0');
-      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    } catch {
-      return dateStr;
-    }
-  };
-
-  const formatDateTimeShort = (dateStr: string) => {
-    try {
-      const d = new Date(dateStr);
-      const now = new Date();
-      const pad = (n: number) => String(n).padStart(2, '0');
-      const time = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
-      if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate()) {
-        return time;
-      }
-      return `${pad(d.getDate())}.${pad(d.getMonth() + 1)} ${time}`;
-    } catch {
-      return dateStr;
-    }
-  };
-
-  const handlePageSizeChange = (newSize: number) => {
-    setPageSize(newSize);
-    setPage(0);
-  };
-
-  const logs = pagedData?.content ?? [];
-  const totalElements = pagedData?.totalElements ?? 0;
-  const totalPages = pagedData?.totalPages ?? 0;
-
-  const currentLabel = REFRESH_OPTIONS.find((o) => o.value === refreshInterval)?.label ?? 'Off';
-
   const refreshControls = (
-    <div className="flex items-center gap-2">
-      <div ref={refreshRef} className="relative">
-        <button
-          onClick={() => setRefreshOpen((v) => !v)}
-          className="px-2 py-1 rounded-lg bg-surface-secondary text-xs font-medium text-muted hover:text-foreground transition-colors"
-        >
-          {refreshInterval === null ? 'Auto' : currentLabel}
-        </button>
-        {refreshOpen && (
-          <div className="absolute right-0 mt-1 rounded-lg bg-surface-secondary shadow-lg border border-border py-1 z-50 min-w-[48px]">
-            {REFRESH_OPTIONS.map(({ value, label }) => (
-              <button
-                key={label}
-                onClick={() => {
-                  setRefreshInterval(value);
-                  setRefreshOpen(false);
-                }}
-                className={`block w-full px-3 py-1 text-xs font-medium transition-colors ${
-                  value === refreshInterval
-                    ? 'text-accent'
-                    : 'text-muted hover:text-foreground'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-      <button
-        onClick={() => fetchData(false)}
-        className="p-1 rounded-lg text-muted hover:text-foreground hover:bg-surface-secondary transition-colors"
-        title="Refresh"
-      >
-        <ArrowPathIcon className="h-4 w-4" />
-      </button>
-    </div>
+    <RefreshControls value={refreshInterval} onChange={setRefreshInterval} onRefresh={refresh} />
   );
 
-  const pagination = totalElements > 10 && (
-    <div className="flex items-center justify-between pt-2">
-      <div className="flex items-center gap-2 text-xs text-muted">
-        <span>{t('rowsPerPage')}:</span>
-        <select
-          value={pageSize}
-          onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-          className="bg-surface-secondary border border-border rounded px-1.5 py-0.5 text-xs text-foreground"
-        >
-          {PAGE_SIZE_OPTIONS.map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
-      </div>
-      <div className="flex items-center gap-3 text-xs text-muted">
-        <span>
-          {page * pageSize + 1}–{Math.min((page + 1) * pageSize, totalElements)} / {totalElements}
-        </span>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setPage((p) => p - 1)}
-            disabled={page === 0}
-            className="p-1 rounded hover:bg-surface-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            <ChevronLeftIcon className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => setPage((p) => p + 1)}
-            disabled={page >= totalPages - 1}
-            className="p-1 rounded hover:bg-surface-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            <ChevronRightIcon className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-    </div>
+  const pagination = (
+    <Pagination
+      page={page}
+      pageSize={pageSize}
+      totalElements={totalElements}
+      totalPages={totalPages}
+      onPageChange={setPage}
+      onPageSizeChange={setPageSize}
+      rowsPerPageLabel={t('rowsPerPage')}
+    />
   );
 
   if (error) {

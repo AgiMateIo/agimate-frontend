@@ -4,11 +4,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
 import { AgentConnectionResponse } from '@/types';
+import { getErrorMessage } from '@/utils/error';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Button } from '@/components/ui/Button';
-import { Modal } from '@/components/ui/Modal';
 import { Alert } from '@/components/ui/Alert';
-import { useAsyncForm } from '@/hooks/useAsyncForm';
+import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
 import { PlusIcon, TrashIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import BindConnectionModal from './BindConnectionModal';
 import ConnectionPoliciesPanel from './ConnectionPoliciesPanel';
@@ -33,7 +33,7 @@ export default function AgentConnectionsTab({ agentId }: AgentConnectionsTabProp
       const data = await apiService.getAgentConnections(agentId);
       setConnections(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load connections');
+      setError(getErrorMessage(err, 'Failed to load connections'));
     } finally {
       setLoading(false);
     }
@@ -149,34 +149,24 @@ function UnbindConnectionModal({
   onSuccess: () => void;
 }) {
   const t = useTranslations('Agents');
-  const { loading, error, handleSubmit } = useAsyncForm<void>({
-    onSuccess,
-    defaultError: 'Failed to remove connection',
-  });
-
-  const onSubmit = (e: React.FormEvent) =>
-    handleSubmit(e, async () => {
-      await apiService.unbindAgentConnection(agentId, connection.id);
-    });
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={t('unbindConnection')}>
-      <form onSubmit={onSubmit} className="space-y-4">
-        <p className="text-foreground">{t('unbindConnectionConfirm')}</p>
-        <div className="text-sm text-muted">
-          <strong>{connection.name}</strong> <span className="font-mono">{connection.fullCode}</span>
-        </div>
-        <Alert variant="warning">{t('unbindConnectionWarning')}</Alert>
-        {error && <ErrorAlert>{error}</ErrorAlert>}
-        <div className="flex gap-3 pt-2">
-          <Button type="button" variant="secondary" onClick={onClose} disabled={loading} className="flex-1">
-            {t('cancel')}
-          </Button>
-          <Button type="submit" variant="danger" loading={loading} disabled={loading} className="flex-1">
-            {t('unbindConnection')}
-          </Button>
-        </div>
-      </form>
-    </Modal>
+    <ConfirmDeleteModal
+      title={t('unbindConnection')}
+      confirmLabel={t('unbindConnection')}
+      cancelLabel={t('cancel')}
+      defaultError="Failed to remove connection"
+      fullWidthButtons
+      confirmVariant="danger"
+      onConfirm={() => apiService.unbindAgentConnection(agentId, connection.id)}
+      onClose={onClose}
+      onSuccess={onSuccess}
+    >
+      <p className="text-foreground">{t('unbindConnectionConfirm')}</p>
+      <div className="text-sm text-muted">
+        <strong>{connection.name}</strong> <span className="font-mono">{connection.fullCode}</span>
+      </div>
+      <Alert variant="warning">{t('unbindConnectionWarning')}</Alert>
+    </ConfirmDeleteModal>
   );
 }

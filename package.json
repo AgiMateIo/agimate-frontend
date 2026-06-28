@@ -13,13 +13,11 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@heroicons/react": "^2.2.0",
-    "@heroui/react": "^2.8.6",
     "centrifuge": "^5.5.3",
     "next": "16.0.10",
     "next-intl": "^4.8.2",
     "react": "19.2.1",
-    "react-dom": "19.2.1",
-    "recharts": "^3.6.0"
+    "react-dom": "19.2.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

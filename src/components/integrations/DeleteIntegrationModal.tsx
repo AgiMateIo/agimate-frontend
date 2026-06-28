@@ -1,13 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
 import { IntegrationResponse } from '@/types';
-import { Modal } from '@/components/ui/Modal';
-import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
-import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
 
 interface DeleteIntegrationModalProps {
   integration: IntegrationResponse;
@@ -21,55 +18,26 @@ export default function DeleteIntegrationModal({
   onSuccess,
 }: DeleteIntegrationModalProps) {
   const t = useTranslations('Integrations');
-  const [deleting, setDeleting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleDelete = async () => {
-    setDeleting(true);
-    setError(null);
-
-    try {
-      await apiService.deleteIntegration(integration.id);
-      onSuccess(integration.id);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t('deleteError'));
-    } finally {
-      setDeleting(false);
-    }
-  };
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={t('deleteIntegration')} size="sm">
-      <div className="space-y-4">
-        <p className="text-foreground">
-          {t('deleteConfirm', { name: integration.name || integration.fullCode })}
-        </p>
+    <ConfirmDeleteModal
+      title={t('deleteIntegration')}
+      confirmLabel={t('delete')}
+      cancelLabel={t('cancel')}
+      defaultError={t('deleteError')}
+      size="sm"
+      fullWidthButtons
+      onConfirm={() => apiService.deleteIntegration(integration.id)}
+      onClose={onClose}
+      onSuccess={() => onSuccess(integration.id)}
+    >
+      <p className="text-foreground">
+        {t('deleteConfirm', { name: integration.name || integration.fullCode })}
+      </p>
 
-        <Alert variant="warning">
-          {t('deleteWarning')}
-        </Alert>
-
-        {error && <ErrorAlert>{error}</ErrorAlert>}
-
-        <div className="flex gap-3 pt-2">
-          <Button
-            variant="secondary"
-            onClick={onClose}
-            disabled={deleting}
-            className="flex-1"
-          >
-            {t('cancel')}
-          </Button>
-          <Button
-            variant="danger"
-            onClick={handleDelete}
-            loading={deleting}
-            className="flex-1"
-          >
-            {t('delete')}
-          </Button>
-        </div>
-      </div>
-    </Modal>
+      <Alert variant="warning">
+        {t('deleteWarning')}
+      </Alert>
+    </ConfirmDeleteModal>
   );
 }

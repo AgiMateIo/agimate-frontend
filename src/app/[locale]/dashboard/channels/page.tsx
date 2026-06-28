@@ -7,6 +7,7 @@ import apiService from '@/services/api';
 import { AgentResponse, ChannelResponse } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { formatDate } from '@/utils/date';
+import { getErrorMessage } from '@/utils/error';
 
 export default function ChannelsPage() {
   const t = useTranslations('Channels');
@@ -29,7 +30,7 @@ export default function ChannelsPage() {
         ag.content.forEach((a) => { map[a.id] = a; });
         setAgents(map);
       })
-      .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load channels'); })
+      .catch((err) => { if (!cancelled) setError(getErrorMessage(err, 'Failed to load channels')); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, []);

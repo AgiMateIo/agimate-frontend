@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
 import { AgentLlmResponse, LlmProviderResponse } from '@/types';
+import { getErrorMessage } from '@/utils/error';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField } from '@/components/ui/FormField';
@@ -49,7 +50,7 @@ export default function EditAgentLlmModal({
         : p);
       onProvidersUpdate(updated);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to refresh models');
+      setError(getErrorMessage(err, 'Failed to refresh models'));
     } finally {
       setRefreshing(false);
     }
@@ -67,7 +68,7 @@ export default function EditAgentLlmModal({
       });
       onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update binding');
+      setError(getErrorMessage(err, 'Failed to update binding'));
     } finally {
       setSubmitting(false);
     }

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
 import { AgentResponse, PagedResponse } from '@/types';
+import { getErrorMessage } from '@/utils/error';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
@@ -46,7 +47,7 @@ export default function AddSkillAgentModal({ skillId, onClose, onSuccess }: AddS
       });
       setPagedData(data);
     } catch (err) {
-      setAgentsError(err instanceof Error ? err.message : 'Failed to load agents');
+      setAgentsError(getErrorMessage(err, 'Failed to load agents'));
     } finally {
       setAgentsLoading(false);
     }

@@ -2,16 +2,14 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { ClipboardDocumentIcon, CheckIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { AppCreatedResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { FormField, Input } from '@/components/ui/FormField';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
-import { useClipboard } from '@/hooks/useClipboard';
+import SecretKeyReveal from './SecretKeyReveal';
 
 interface RegenerateConnectorKeyModalProps {
   connectorId: string;
@@ -23,7 +21,6 @@ interface RegenerateConnectorKeyModalProps {
 export default function RegenerateConnectorKeyModal({ connectorId, connectorName, onClose, onSuccess }: RegenerateConnectorKeyModalProps) {
   const t = useTranslations('Connectors');
   const [regeneratedKey, setRegeneratedKey] = useState<AppCreatedResponse | null>(null);
-  const { copied, copy } = useClipboard();
 
   const { loading, error, handleSubmit } = useAsyncForm<AppCreatedResponse>({
     onSuccess: setRegeneratedKey,
@@ -40,53 +37,10 @@ export default function RegenerateConnectorKeyModal({ connectorId, connectorName
     onClose();
   };
 
-  const handleCopy = () => {
-    if (regeneratedKey) {
-      copy(regeneratedKey.fullKey);
-    }
-  };
-
   if (regeneratedKey) {
     return (
       <Modal isOpen={true} onClose={handleClose} title={t('keyRegenerated')}>
-        <div className="space-y-4">
-          <Alert variant="warning">
-            <p className="font-medium">
-              {t('saveKeyWarning')}
-            </p>
-            <p className="text-xs mt-1">
-              {t('saveKeyWarningDetail')}
-            </p>
-          </Alert>
-
-          <FormField label={t('appKey')}>
-            <div className="flex gap-2">
-              <Input
-                type="text"
-                value={regeneratedKey.fullKey}
-                readOnly
-                className="flex-1 font-mono text-sm select-all"
-              />
-              <Button onClick={handleCopy} className="flex items-center gap-2 whitespace-nowrap">
-                {copied ? (
-                  <>
-                    <CheckIcon className="h-5 w-5" />
-                    {t('copied')}
-                  </>
-                ) : (
-                  <>
-                    <ClipboardDocumentIcon className="h-5 w-5" />
-                    {t('copy')}
-                  </>
-                )}
-              </Button>
-            </div>
-          </FormField>
-
-          <Button onClick={handleClose} className="w-full">
-            {t('done')}
-          </Button>
-        </div>
+        <SecretKeyReveal secret={regeneratedKey.fullKey} onDone={handleClose} />
       </Modal>
     );
   }

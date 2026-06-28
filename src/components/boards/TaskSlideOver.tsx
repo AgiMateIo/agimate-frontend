@@ -12,18 +12,14 @@ import { Alert } from '@/components/ui/Alert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import apiService from '@/services/api';
 import type { BoardTask, BoardTaskComment } from '@/types';
+import { TYPE_BADGE } from './taskBadges';
+import { getErrorMessage } from '@/utils/error';
 
 interface TaskSlideOverProps {
   task: BoardTask;
   agentMap: Map<string, string>;
   onClose: () => void;
 }
-
-const TYPE_BADGE: Record<string, string> = {
-  EPIC: 'bg-purple-500/20 text-purple-400',
-  TASK: 'bg-blue-500/20 text-blue-400',
-  SUBTASK: 'bg-surface-secondary text-muted',
-};
 
 export default function TaskSlideOver({
   task,
@@ -45,7 +41,7 @@ export default function TaskSlideOver({
       const data = await apiService.getTaskComments(task.id);
       setComments(data);
     } catch (err) {
-      setCommentsError(err instanceof Error ? err.message : t('loadError'));
+      setCommentsError(getErrorMessage(err, t('loadError')));
     } finally {
       setCommentsLoading(false);
     }

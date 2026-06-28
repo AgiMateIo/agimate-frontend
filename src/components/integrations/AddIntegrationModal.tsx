@@ -7,9 +7,9 @@ import { ConnectorCatalogEntry, IntegrationResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input } from '@/components/ui/FormField';
-import { PasswordInput } from '@/components/ui/PasswordInput';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
+import CredentialFieldsForm, { useCredentialFields } from './CredentialFieldsForm';
 
 interface AddIntegrationModalProps {
   platforms: ConnectorCatalogEntry[];
@@ -26,7 +26,11 @@ export default function AddIntegrationModal({
   const [step, setStep] = useState<1 | 2>(1);
   const [selectedPlatform, setSelectedPlatform] = useState<ConnectorCatalogEntry | null>(null);
   const [name, setName] = useState('');
-  const [credentials, setCredentials] = useState<Record<string, string>>({});
+
+  // field code → human-readable label
+  const credentialFields = selectedPlatform?.integrationMeta?.credentialFields ?? {};
+  const { credentials, handleFieldChange, allFieldsFilled, reset: resetCredentials } =
+    useCredentialFields(credentialFields);
 
   const { loading, error, fieldErrors, handleSubmit, clearError } = useAsyncForm<IntegrationResponse>({
     onSuccess,
@@ -35,7 +39,7 @@ export default function AddIntegrationModal({
 
   const handlePlatformSelect = (platform: ConnectorCatalogEntry) => {
     setSelectedPlatform(platform);
-    setCredentials({});
+    resetCredentials();
     setName('');
     clearError();
     setStep(2);
@@ -46,15 +50,6 @@ export default function AddIntegrationModal({
     setSelectedPlatform(null);
     clearError();
   };
-
-  const handleFieldChange = (fieldName: string, value: string) => {
-    setCredentials(prev => ({ ...prev, [fieldName]: value }));
-  };
-
-  // field code → human-readable label
-  const credentialFields = selectedPlatform?.integrationMeta?.credentialFields ?? {};
-
-  const allFieldsFilled = Object.keys(credentialFields).every(field => credentials[field]?.trim());
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, async () => {
@@ -124,21 +119,12 @@ export default function AddIntegrationModal({
             />
           </FormField>
 
-          {Object.entries(credentialFields).map(([fieldName, label]) => (
-            <FormField
-              key={fieldName}
-              label={label}
-              required
-              error={fieldErrors[fieldName]}
-            >
-              <PasswordInput
-                value={credentials[fieldName] || ''}
-                onChange={(e) => handleFieldChange(fieldName, e.target.value)}
-                placeholder={`Enter ${label}`}
-                required
-              />
-            </FormField>
-          ))}
+          <CredentialFieldsForm
+            credentialFields={credentialFields}
+            credentials={credentials}
+            fieldErrors={fieldErrors}
+            onFieldChange={handleFieldChange}
+          />
 
           {error && <ErrorAlert>{error}</ErrorAlert>}
 
