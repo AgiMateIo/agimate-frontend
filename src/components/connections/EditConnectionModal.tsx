@@ -39,7 +39,7 @@ export default function EditConnectionModal({
     );
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={t('editIntegration')}>
+    <Modal isOpen={true} onClose={onClose} title={t('editConnection')}>
       <form onSubmit={onSubmit} className="space-y-4">
         <FormField label={t('platformName')}>
           <Input

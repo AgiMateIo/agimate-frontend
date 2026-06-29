@@ -162,13 +162,13 @@ export default function Step3Channel({ data, setData, goNext, goBack }: WizardSt
           </FormField>
 
           {existing.length > 0 && (
-            <FormField label={t('existingIntegration')}>
+            <FormField label={t('existingConnection')}>
               <select
                 value={identity}
                 onChange={(e) => setIdentity(e.target.value)}
                 className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground"
               >
-                <option value="">{t('newIntegration')}</option>
+                <option value="">{t('newConnection')}</option>
                 {existing.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name || c.fullCode}

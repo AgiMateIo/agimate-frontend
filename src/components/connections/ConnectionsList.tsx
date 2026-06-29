@@ -35,7 +35,7 @@ export default function ConnectionsList({
   if (connections.length === 0) {
     return (
       <div className="text-center py-8 text-muted">
-        {t('noIntegrations')}
+        {t('noConnections')}
       </div>
     );
   }

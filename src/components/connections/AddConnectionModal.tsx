@@ -74,7 +74,7 @@ export default function AddConnectionModal({
     <Modal
       isOpen={true}
       onClose={onClose}
-      title={step === 1 ? t('selectPlatform') : t('configureIntegration')}
+      title={step === 1 ? t('selectPlatform') : t('configureConnection')}
       size={step === 1 ? 'lg' : 'md'}
     >
       {step === 1 ? (

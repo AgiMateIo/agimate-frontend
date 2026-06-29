@@ -50,7 +50,7 @@ export default function TestConnectionModal({
   }, []);
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={t('testIntegration')} size="md">
+    <Modal isOpen={true} onClose={onClose} title={t('testConnection')} size="md">
       <div className="space-y-4">
         <p className="text-sm text-muted">{connectionName}</p>
 

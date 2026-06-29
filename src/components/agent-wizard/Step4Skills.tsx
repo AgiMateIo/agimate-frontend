@@ -67,7 +67,7 @@ export default function Step4Skills({ data, setData, goNext, goBack }: WizardSte
   };
 
   // Integration connector codes required by the currently selected skills.
-  const requiredIntegrations = useMemo(() => {
+  const requiredConnections = useMemo(() => {
     const codes = new Set<string>();
     for (const skill of Object.values(selected)) {
       for (const code of skill.connectorCodes) {
@@ -140,10 +140,10 @@ export default function Step4Skills({ data, setData, goNext, goBack }: WizardSte
         )}
       </div>
 
-      {requiredIntegrations.length > 0 && (
+      {requiredConnections.length > 0 && (
         <div className="border border-border rounded-lg p-4 space-y-2">
-          <h3 className="text-sm font-semibold text-foreground">{t('requiredIntegrations')}</h3>
-          {requiredIntegrations.map((code) => {
+          <h3 className="text-sm font-semibold text-foreground">{t('requiredConnections')}</h3>
+          {requiredConnections.map((code) => {
             const configured = credCodes.has(code);
             const name = catalogByCode.get(code)?.name ?? code;
             return (
@@ -152,7 +152,7 @@ export default function Step4Skills({ data, setData, goNext, goBack }: WizardSte
                 {configured ? (
                   <span className="inline-flex items-center gap-1 text-success text-xs">
                     <CheckIcon className="h-4 w-4" />
-                    {t('integrationConfigured')}
+                    {t('connectionConfigured')}
                   </span>
                 ) : (
                   <button
@@ -161,7 +161,7 @@ export default function Step4Skills({ data, setData, goNext, goBack }: WizardSte
                     className="inline-flex items-center gap-1 text-warning text-xs hover:underline"
                   >
                     <ExclamationTriangleIcon className="h-4 w-4" />
-                    {t('integrationMissing')} · {t('addIntegration')}
+                    {t('connectionMissing')} · {t('addConnection')}
                   </button>
                 )}
               </div>

@@ -130,7 +130,7 @@ function ConnectionDetailContent({
             className="inline-flex items-center gap-2 !py-2 text-sm"
           >
             <BeakerIcon className="h-4 w-4" />
-            {t('testIntegration')}
+            {t('testConnection')}
           </Button>
           <Button
             variant="secondary"
@@ -177,7 +177,7 @@ function ConnectionDetailContent({
             label: t('tabInfo'),
             content: (
               <div className="bg-surface rounded-xl border border-border p-5">
-                <h2 className="text-lg font-semibold text-foreground mb-4">{t('integrationInfo')}</h2>
+                <h2 className="text-lg font-semibold text-foreground mb-4">{t('connectionInfo')}</h2>
                 <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
                   <div>
                     <dt className="text-sm text-muted">{t('platform')}</dt>
@@ -310,7 +310,7 @@ export default function ConnectionDetailPage() {
         href="/dashboard/connections"
         className="text-sm text-primary hover:text-primary/80 transition-colors"
       >
-        &larr; {t('backToIntegrations')}
+        &larr; {t('backToConnections')}
       </Link>
 
       <ErrorBoundary>

@@ -21,7 +21,7 @@ export default function DeleteConnectionModal({
 
   return (
     <ConfirmDeleteModal
-      title={t('deleteIntegration')}
+      title={t('deleteConnection')}
       confirmLabel={t('delete')}
       cancelLabel={t('cancel')}
       defaultError={t('deleteError')}

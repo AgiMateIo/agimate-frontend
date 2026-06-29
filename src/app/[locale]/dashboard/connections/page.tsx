@@ -42,7 +42,7 @@ function ConnectionsContent({
           <p className="text-muted mt-1">{t('subtitle')}</p>
         </div>
         <Button onClick={() => setShowAddModal(true)}>
-          {t('addIntegration')}
+          {t('addConnection')}
         </Button>
       </div>
 
