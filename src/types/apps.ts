@@ -43,7 +43,7 @@ export interface UpdateAppRequest {
 }
 
 // Trigger catalog entry returned by GET /control/manage/connectors/{code}/triggers/
-export interface DeviceTriggerInfo {
+export interface TriggerInfo {
   name: string;
   description: string;
 }

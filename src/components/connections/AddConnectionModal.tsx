@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { ConnectorCatalogEntry, IntegrationResponse } from '@/types';
+import { ConnectorCatalogEntry, ConnectionResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input } from '@/components/ui/FormField';
@@ -11,18 +11,18 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import CredentialFieldsForm, { useCredentialFields } from './CredentialFieldsForm';
 
-interface AddIntegrationModalProps {
+interface AddConnectionModalProps {
   platforms: ConnectorCatalogEntry[];
   onClose: () => void;
-  onSuccess: (integration: IntegrationResponse) => void;
+  onSuccess: (connection: ConnectionResponse) => void;
 }
 
-export default function AddIntegrationModal({
+export default function AddConnectionModal({
   platforms,
   onClose,
   onSuccess,
-}: AddIntegrationModalProps) {
-  const t = useTranslations('Integrations');
+}: AddConnectionModalProps) {
+  const t = useTranslations('Connections');
   const [step, setStep] = useState<1 | 2>(1);
   const [selectedPlatform, setSelectedPlatform] = useState<ConnectorCatalogEntry | null>(null);
   const [name, setName] = useState('');
@@ -32,7 +32,7 @@ export default function AddIntegrationModal({
   const { credentials, handleFieldChange, allFieldsFilled, reset: resetCredentials } =
     useCredentialFields(credentialFields);
 
-  const { loading, error, fieldErrors, handleSubmit, clearError } = useAsyncForm<IntegrationResponse>({
+  const { loading, error, fieldErrors, handleSubmit, clearError } = useAsyncForm<ConnectionResponse>({
     onSuccess,
     defaultError: t('createError'),
   });
@@ -53,7 +53,7 @@ export default function AddIntegrationModal({
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, async () => {
-      const created = await apiService.createIntegration({
+      const created = await apiService.createConnection({
         connectorCode: selectedPlatform!.code,
         credentials,
         name: name.trim() || undefined,
@@ -62,9 +62,9 @@ export default function AddIntegrationModal({
       // tools cache right after connecting. Don't fail creation if this errors.
       if (selectedPlatform!.capabilities?.toolBinding === 'DYNAMIC') {
         try {
-          await apiService.testIntegration(created.id);
+          await apiService.testConnection(created.id);
         } catch (err) {
-          console.error('Failed to discover tools for new integration:', err);
+          console.error('Failed to discover tools for new connection:', err);
         }
       }
       return created;

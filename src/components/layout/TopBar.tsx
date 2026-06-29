@@ -31,7 +31,7 @@ export default function TopBar() {
     'trigger-logs': t('breadcrumbs.triggerLogs'),
     'tool-use-logs': t('breadcrumbs.toolUseLogs'),
     'connector-jobs': t('breadcrumbs.connectorJobs'),
-    integrations: t('breadcrumbs.integrations'),
+    connections: t('breadcrumbs.connections'),
     skills: t('breadcrumbs.skills'),
     settings: t('breadcrumbs.settings'),
     create: t('breadcrumbs.create'),

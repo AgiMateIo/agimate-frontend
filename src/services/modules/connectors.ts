@@ -4,10 +4,18 @@ import { API } from '@/config/constants';
 import type {
   PagedResponse,
   ConnectorCatalogEntry,
+  TriggerInfo,
 } from '@/types';
 
 export const connectorsApi = {
   // ========== CONNECTOR CATALOG ==========
+
+  // Trigger catalog for a connector *type* (predefined triggers).
+  async getConnectorTriggers(code: string): Promise<TriggerInfo[]> {
+    return httpClient.get<TriggerInfo[]>(
+      `${API.ENDPOINTS.CONTROL_API}/manage/connectors/${encodeURIComponent(code)}/triggers/`
+    );
+  },
 
   async getConnectorCatalog(): Promise<ConnectorCatalogEntry[]> {
     // Backend returns a paginated response; fetch a large page and unwrap content.

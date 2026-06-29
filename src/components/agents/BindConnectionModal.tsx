@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
 import {
   ConnectorCatalogEntry,
-  IntegrationResponse,
+  ConnectionResponse,
   IdentityScope,
   PagedResponse,
   BindConnectionRequest,
@@ -41,8 +41,8 @@ export default function BindConnectionModal({ agentId, onClose, onSuccess }: Bin
   const [connectorsData, setConnectorsData] = useState<PagedResponse<ConnectorCatalogEntry> | null>(null);
   const [connectorsLoading, setConnectorsLoading] = useState(true);
 
-  // instance picker (integration connectors)
-  const [credentials, setCredentials] = useState<IntegrationResponse[]>([]);
+  // instance picker (connection connectors)
+  const [credentials, setCredentials] = useState<ConnectionResponse[]>([]);
   const [credentialsLoading, setCredentialsLoading] = useState(false);
   const [connectionId, setConnectionId] = useState<string | undefined>(undefined);
 
@@ -85,13 +85,13 @@ export default function BindConnectionModal({ agentId, onClose, onSuccess }: Bin
   // contextual scopes the user might choose between (excludes INSTANCE)
   const contextualScopes = supportedScopes.filter((s) => s !== 'INSTANCE');
 
-  // Load integration instances when advancing to the target step for an integration connector.
+  // Load connection instances when advancing to the target step for an connection connector.
   useEffect(() => {
     if (step !== 'target' || !connector || !needsInstance || !isIntegration) return;
     let cancelled = false;
     setCredentialsLoading(true);
     apiService
-      .getIntegrationCredentials(connector.code)
+      .getConnections(connector.code)
       .then((data) => {
         if (!cancelled) setCredentials(data);
       })
@@ -129,9 +129,9 @@ export default function BindConnectionModal({ agentId, onClose, onSuccess }: Bin
   const totalPages = connectorsData?.totalPages ?? 0;
   const totalElements = connectorsData?.totalElements ?? 0;
 
-  // an integration connector with no instances → user must create one first
+  // an connection connector with no instances → user must create one first
   const noInstancesAvailable = needsInstance && isIntegration && !credentialsLoading && credentials.length === 0;
-  // INSTANCE connector that isn't an integration (e.g. an INBOUND app) — bound via a channel, not here
+  // INSTANCE connector that isn't an connection (e.g. an INBOUND app) — bound via a channel, not here
   const instanceUnsupported = needsInstance && !isIntegration;
 
   const canBind = step === 'target' && !!connector && (needsInstance ? !!connectionId : !!scope || contextualScopes.length === 0);
@@ -263,7 +263,7 @@ export default function BindConnectionModal({ agentId, onClose, onSuccess }: Bin
               </>
             )}
 
-            {/* INSTANCE connector that isn't an integration (e.g. INBOUND app) */}
+            {/* INSTANCE connector that isn't an connection (e.g. INBOUND app) */}
             {instanceUnsupported && <Alert variant="info">{t('instanceViaChannel')}</Alert>}
 
             {/* Contextual → pick a scope (e.g. memory: personal vs team) */}

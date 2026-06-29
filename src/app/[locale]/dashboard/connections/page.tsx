@@ -3,30 +3,30 @@
 import { useState, Suspense, use } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { ConnectorCatalogEntry, IntegrationResponse } from '@/types';
+import { ConnectorCatalogEntry, ConnectionResponse } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { usePromiseCache } from '@/hooks/usePromiseCache';
-import IntegrationsList from '@/components/integrations/IntegrationsList';
-import AddIntegrationModal from '@/components/integrations/AddIntegrationModal';
+import ConnectionsList from '@/components/connections/ConnectionsList';
+import AddConnectionModal from '@/components/connections/AddConnectionModal';
 
-function IntegrationsContent({
+function ConnectionsContent({
   dataPromise,
   onUpdate,
 }: {
-  dataPromise: Promise<[ConnectorCatalogEntry[], IntegrationResponse[]]>;
+  dataPromise: Promise<[ConnectorCatalogEntry[], ConnectionResponse[]]>;
   onUpdate: () => void;
 }) {
-  const t = useTranslations('Integrations');
-  const [platforms, initialIntegrations] = use(dataPromise);
-  const [integrations, setIntegrations] = useState(initialIntegrations);
+  const t = useTranslations('Connections');
+  const [platforms, initialConnections] = use(dataPromise);
+  const [connections, setConnections] = useState(initialConnections);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [lastInitial, setLastInitial] = useState(initialIntegrations);
+  const [lastInitial, setLastInitial] = useState(initialConnections);
 
   // Sync local state when fresh data arrives after invalidation
-  if (initialIntegrations !== lastInitial) {
-    setLastInitial(initialIntegrations);
-    setIntegrations(initialIntegrations);
+  if (initialConnections !== lastInitial) {
+    setLastInitial(initialConnections);
+    setConnections(initialConnections);
   }
 
   const handleAddSuccess = () => {
@@ -46,14 +46,14 @@ function IntegrationsContent({
         </Button>
       </div>
 
-      <IntegrationsList
-        integrations={integrations}
+      <ConnectionsList
+        connections={connections}
         platforms={platforms}
-        onUpdate={setIntegrations}
+        onUpdate={setConnections}
       />
 
       {showAddModal && (
-        <AddIntegrationModal
+        <AddConnectionModal
           platforms={platforms}
           onClose={() => setShowAddModal(false)}
           onSuccess={handleAddSuccess}
@@ -63,15 +63,15 @@ function IntegrationsContent({
   );
 }
 
-export default function IntegrationsPage() {
-  const t = useTranslations('Integrations');
+export default function ConnectionsPage() {
+  const t = useTranslations('Connections');
   const { promise, invalidate } = usePromiseCache(
     () => Promise.all([
       apiService.getConnectors({ size: 200 }).then(r => r.content.filter(c => c.integrationMeta)),
-      apiService.getIntegrationCredentials(),
+      apiService.getConnections(),
     ]),
     [],
-    'integrations'
+    'connections'
   );
 
   return (
@@ -86,7 +86,7 @@ export default function IntegrationsPage() {
             <div className="text-center py-12 text-muted">{t('loading')}</div>
           </>
         }>
-          <IntegrationsContent dataPromise={promise} onUpdate={invalidate} />
+          <ConnectionsContent dataPromise={promise} onUpdate={invalidate} />
         </Suspense>
       </ErrorBoundary>
     </div>

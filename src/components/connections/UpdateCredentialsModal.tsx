@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { IntegrationResponse } from '@/types';
+import { ConnectionResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
@@ -11,30 +11,30 @@ import { useAsyncForm } from '@/hooks/useAsyncForm';
 import CredentialFieldsForm, { useCredentialFields } from './CredentialFieldsForm';
 
 interface UpdateCredentialsModalProps {
-  integration: IntegrationResponse;
+  connection: ConnectionResponse;
   // field code → human-readable label
   credentialFields: Record<string, string>;
   onClose: () => void;
-  onSuccess: (integration: IntegrationResponse) => void;
+  onSuccess: (connection: ConnectionResponse) => void;
 }
 
 export default function UpdateCredentialsModal({
-  integration,
+  connection,
   credentialFields,
   onClose,
   onSuccess,
 }: UpdateCredentialsModalProps) {
-  const t = useTranslations('Integrations');
+  const t = useTranslations('Connections');
   const { credentials, handleFieldChange, allFieldsFilled } = useCredentialFields(credentialFields);
 
-  const { loading, error, fieldErrors, handleSubmit } = useAsyncForm<IntegrationResponse>({
+  const { loading, error, fieldErrors, handleSubmit } = useAsyncForm<ConnectionResponse>({
     onSuccess,
     defaultError: t('updateCredentialsError'),
   });
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
-      apiService.updateIntegrationSecret(integration.id, { credentials })
+      apiService.updateConnectionSecret(connection.id, { credentials })
     );
 
   return (

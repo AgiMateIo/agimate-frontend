@@ -11,7 +11,7 @@ export * from './agents';
 export * from './tool-use-logs';
 export * from './webhooks';
 export * from './agentic-teams';
-export * from './integrations';
+export * from './connections';
 export * from './boards';
 export * from './agent-connections';
 export * from './agent-skills';

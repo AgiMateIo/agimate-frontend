@@ -1,6 +1,8 @@
 import type { IdentityScope } from './skills';
 
-export interface IntegrationResponse {
+// A connector *instance* (Connection on the backend) — e.g. a specific Telegram
+// bot or MCP server. Listed in the UI under "Connections" when INSTANCE-scoped.
+export interface ConnectionResponse {
   id: string;
   connectorCode: string;
   // canonical instance discriminator on the platform (telegram username, MCP URL).
@@ -15,23 +17,23 @@ export interface IntegrationResponse {
   createdAt: string;
 }
 
-export interface CreateIntegrationRequest {
+export interface CreateConnectionRequest {
   connectorCode: string;
   credentials: Record<string, string>;
   name?: string;
 }
 
-export interface UpdateIntegrationRequest {
+export interface UpdateConnectionRequest {
   enabled?: boolean;
   name?: string;
 }
 
-export interface UpdateIntegrationCredentialsRequest {
+export interface UpdateConnectionSecretRequest {
   credentials: Record<string, string>;
 }
 
 // Result of POST /manage/connections/{id}/test
-export interface IntegrationTestResult {
+export interface ConnectionTestResponse {
   valid: boolean;
   identifier: string | null;
   displayName: string | null;

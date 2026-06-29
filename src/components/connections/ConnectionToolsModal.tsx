@@ -8,18 +8,18 @@ import { getErrorMessage } from '@/utils/error';
 import { Modal } from '@/components/ui/Modal';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 
-interface IntegrationToolsModalProps {
-  integrationId: string;
-  integrationName: string;
+interface ConnectionToolsModalProps {
+  connectionId: string;
+  connectionName: string;
   onClose: () => void;
 }
 
-export default function IntegrationToolsModal({
-  integrationId,
-  integrationName,
+export default function ConnectionToolsModal({
+  connectionId,
+  connectionName,
   onClose,
-}: IntegrationToolsModalProps) {
-  const t = useTranslations('IntegrationDetail');
+}: ConnectionToolsModalProps) {
+  const t = useTranslations('ConnectionDetail');
   const [loading, setLoading] = useState(true);
   const [tools, setTools] = useState<ConnectorToolSpec[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -28,14 +28,14 @@ export default function IntegrationToolsModal({
     setLoading(true);
     setError(null);
     try {
-      const res = await apiService.getIntegrationCredentialTools(integrationId);
+      const res = await apiService.getConnectionTools(connectionId);
       setTools(res);
     } catch (err) {
       setError(getErrorMessage(err, t('toolsError')));
     } finally {
       setLoading(false);
     }
-  }, [integrationId, t]);
+  }, [connectionId, t]);
 
   useEffect(() => {
     load();
@@ -44,7 +44,7 @@ export default function IntegrationToolsModal({
   return (
     <Modal isOpen={true} onClose={onClose} title={t('toolsTitle')} size="lg">
       <div className="space-y-4">
-        <p className="text-sm text-muted">{integrationName}</p>
+        <p className="text-sm text-muted">{connectionName}</p>
 
         {loading && (
           <div className="text-center py-8 text-muted">{t('toolsLoading')}</div>

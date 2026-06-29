@@ -3,37 +3,37 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { IntegrationResponse } from '@/types';
+import { ConnectionResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 
-interface EditIntegrationModalProps {
-  integration: IntegrationResponse;
+interface EditConnectionModalProps {
+  connection: ConnectionResponse;
   connectorName: string;
   onClose: () => void;
-  onSuccess: (integration: IntegrationResponse) => void;
+  onSuccess: (connection: ConnectionResponse) => void;
 }
 
-export default function EditIntegrationModal({
-  integration,
+export default function EditConnectionModal({
+  connection,
   connectorName,
   onClose,
   onSuccess,
-}: EditIntegrationModalProps) {
-  const t = useTranslations('Integrations');
-  const [name, setName] = useState(integration.name || '');
+}: EditConnectionModalProps) {
+  const t = useTranslations('Connections');
+  const [name, setName] = useState(connection.name || '');
 
-  const { loading, error, handleSubmit } = useAsyncForm<IntegrationResponse>({
+  const { loading, error, handleSubmit } = useAsyncForm<ConnectionResponse>({
     onSuccess,
     defaultError: t('updateError'),
   });
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
-      apiService.updateIntegration(integration.id, {
+      apiService.updateConnection(connection.id, {
         name: name.trim() || undefined,
       })
     );

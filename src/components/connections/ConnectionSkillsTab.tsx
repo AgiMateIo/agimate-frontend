@@ -14,12 +14,12 @@ const PAGE_SIZE = 20;
 
 type SkillFilter = 'my' | 'public';
 
-interface IntegrationSkillsTabProps {
+interface ConnectionSkillsTabProps {
   connectorCode: string;
 }
 
-export default function IntegrationSkillsTab({ connectorCode }: IntegrationSkillsTabProps) {
-  const t = useTranslations('IntegrationDetail');
+export default function ConnectionSkillsTab({ connectorCode }: ConnectionSkillsTabProps) {
+  const t = useTranslations('ConnectionDetail');
 
   const [filter, setFilter] = useState<SkillFilter>('my');
   const [pagedData, setPagedData] = useState<PagedResponse<SkillResponse> | null>(null);

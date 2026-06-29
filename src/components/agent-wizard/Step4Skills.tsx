@@ -6,7 +6,7 @@ import { CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import apiService from '@/services/api';
 import {
   ConnectorCatalogEntry,
-  IntegrationResponse,
+  ConnectionResponse,
   SkillResponse,
 } from '@/types';
 import { Button } from '@/components/ui/Button';
@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { isIntegrationConnector } from '@/utils/connector';
-import AddIntegrationModal from '@/components/integrations/AddIntegrationModal';
+import AddConnectionModal from '@/components/connections/AddConnectionModal';
 import { WizardStepProps } from './AgentWizard';
 
 export default function Step4Skills({ data, setData, goNext, goBack }: WizardStepProps) {
@@ -27,8 +27,8 @@ export default function Step4Skills({ data, setData, goNext, goBack }: WizardSte
   );
 
   const [catalog, setCatalog] = useState<ConnectorCatalogEntry[]>([]);
-  const [creds, setCreds] = useState<IntegrationResponse[]>([]);
-  const [showAddIntegration, setShowAddIntegration] = useState(false);
+  const [creds, setCreds] = useState<ConnectionResponse[]>([]);
+  const [showAddConnection, setShowAddConnection] = useState(false);
 
   const { loading, error, handleSubmit } = useAsyncForm({ defaultError: t('step4Error') });
 
@@ -44,7 +44,7 @@ export default function Step4Skills({ data, setData, goNext, goBack }: WizardSte
       })
       .catch(() => {});
     apiService.getConnectorCatalog().then(setCatalog).catch(() => {});
-    apiService.getIntegrationCredentials().then(setCreds).catch(() => {});
+    apiService.getConnections().then(setCreds).catch(() => {});
   }, []);
 
   const integrationCodes = useMemo(
@@ -157,7 +157,7 @@ export default function Step4Skills({ data, setData, goNext, goBack }: WizardSte
                 ) : (
                   <button
                     type="button"
-                    onClick={() => setShowAddIntegration(true)}
+                    onClick={() => setShowAddConnection(true)}
                     className="inline-flex items-center gap-1 text-warning text-xs hover:underline"
                   >
                     <ExclamationTriangleIcon className="h-4 w-4" />
@@ -182,13 +182,13 @@ export default function Step4Skills({ data, setData, goNext, goBack }: WizardSte
         </div>
       </div>
 
-      {showAddIntegration && (
-        <AddIntegrationModal
+      {showAddConnection && (
+        <AddConnectionModal
           platforms={catalog}
-          onClose={() => setShowAddIntegration(false)}
-          onSuccess={(integration) => {
-            setCreds((prev) => [integration, ...prev]);
-            setShowAddIntegration(false);
+          onClose={() => setShowAddConnection(false)}
+          onSuccess={(connection) => {
+            setCreds((prev) => [connection, ...prev]);
+            setShowAddConnection(false);
           }}
         />
       )}

@@ -65,8 +65,8 @@ export default function AddConnectionPolicyModal({
     const code = connection.connectorCode;
     const fetcher =
       kind === 'TOOL'
-        ? apiService.getIntegrationCredentialTools(connection.connectionId).then((tools) => tools.map((x) => x.name))
-        : apiService.getIntegrationTriggers(code).then((trg) => trg.map((x) => x.name));
+        ? apiService.getConnectionTools(connection.connectionId).then((tools) => tools.map((x) => x.name))
+        : apiService.getConnectorTriggers(code).then((trg) => trg.map((x) => x.name));
     fetcher
       .then((names) => {
         if (!cancelled) setSuggestions(names);

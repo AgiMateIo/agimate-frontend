@@ -7,50 +7,50 @@ import { useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { localeMap } from '@/i18n/routing';
 import apiService from '@/services/api';
-import type { IntegrationResponse, ConnectorCatalogEntry } from '@/types';
+import type { ConnectionResponse, ConnectorCatalogEntry } from '@/types';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { Tabs } from '@/components/ui/Tabs';
 import { usePromiseCache } from '@/hooks/usePromiseCache';
 import { Toggle } from '@/components/ui/Toggle';
-import EditIntegrationModal from '@/components/integrations/EditIntegrationModal';
-import UpdateCredentialsModal from '@/components/integrations/UpdateCredentialsModal';
-import DeleteIntegrationModal from '@/components/integrations/DeleteIntegrationModal';
-import TestIntegrationModal from '@/components/integrations/TestIntegrationModal';
-import IntegrationToolsModal from '@/components/integrations/IntegrationToolsModal';
+import EditConnectionModal from '@/components/connections/EditConnectionModal';
+import UpdateCredentialsModal from '@/components/connections/UpdateCredentialsModal';
+import DeleteConnectionModal from '@/components/connections/DeleteConnectionModal';
+import TestConnectionModal from '@/components/connections/TestConnectionModal';
+import ConnectionToolsModal from '@/components/connections/ConnectionToolsModal';
 import { Button } from '@/components/ui/Button';
 import { PencilIcon, KeyIcon, TrashIcon, BeakerIcon, WrenchScrewdriverIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
-import IntegrationSkillsTab from '@/components/integrations/IntegrationSkillsTab';
+import ConnectionSkillsTab from '@/components/connections/ConnectionSkillsTab';
 
 type Tab = 'info' | 'skills';
 
-function IntegrationDetailContent({
+function ConnectionDetailContent({
   dataPromise,
   onUpdate,
 }: {
-  dataPromise: Promise<[IntegrationResponse, ConnectorCatalogEntry]>;
+  dataPromise: Promise<[ConnectionResponse, ConnectorCatalogEntry]>;
   onUpdate: () => void;
 }) {
-  const t = useTranslations('IntegrationDetail');
-  const tInt = useTranslations('Integrations');
+  const t = useTranslations('ConnectionDetail');
+  const tInt = useTranslations('Connections');
   const locale = useLocale();
   const bcp47Locale = localeMap[locale];
   const router = useRouter();
 
-  const [initialIntegration, connector] = use(dataPromise);
-  const [integration, setIntegration] = useState(initialIntegration);
-  const [lastInitial, setLastInitial] = useState(initialIntegration);
+  const [initialConnection, connector] = use(dataPromise);
+  const [connection, setConnection] = useState(initialConnection);
+  const [lastInitial, setLastInitial] = useState(initialConnection);
   const [activeTab, setActiveTab] = useState<Tab>('info');
   const [updating, setUpdating] = useState(false);
-  const [editingIntegration, setEditingIntegration] = useState(false);
+  const [editingConnection, setEditingConnection] = useState(false);
   const [updatingCreds, setUpdatingCreds] = useState(false);
-  const [deletingIntegration, setDeletingIntegration] = useState(false);
-  const [testingIntegration, setTestingIntegration] = useState(false);
+  const [deletingConnection, setDeletingConnection] = useState(false);
+  const [testingConnection, setTestingConnection] = useState(false);
   const [showingTools, setShowingTools] = useState(false);
 
-  if (initialIntegration !== lastInitial) {
-    setLastInitial(initialIntegration);
-    setIntegration(initialIntegration);
+  if (initialConnection !== lastInitial) {
+    setLastInitial(initialConnection);
+    setConnection(initialConnection);
   }
 
   const formatDate = (dateString: string) => {
@@ -66,31 +66,31 @@ function IntegrationDetailContent({
 
   const handleToggleEnabled = async () => {
     setUpdating(true);
-    const newEnabled = !integration.enabled;
-    setIntegration(prev => ({ ...prev, enabled: newEnabled }));
+    const newEnabled = !connection.enabled;
+    setConnection(prev => ({ ...prev, enabled: newEnabled }));
 
     try {
-      await apiService.updateIntegration(integration.id, { enabled: newEnabled });
+      await apiService.updateConnection(connection.id, { enabled: newEnabled });
     } catch (error) {
-      console.error('Failed to update integration:', error);
-      setIntegration(prev => ({ ...prev, enabled: !newEnabled }));
+      console.error('Failed to update connection:', error);
+      setConnection(prev => ({ ...prev, enabled: !newEnabled }));
     } finally {
       setUpdating(false);
     }
   };
 
-  const handleEditSuccess = (updated: IntegrationResponse) => {
-    setIntegration(updated);
-    setEditingIntegration(false);
+  const handleEditSuccess = (updated: ConnectionResponse) => {
+    setConnection(updated);
+    setEditingConnection(false);
   };
 
-  const handleUpdateCredsSuccess = (updated: IntegrationResponse) => {
-    setIntegration(updated);
+  const handleUpdateCredsSuccess = (updated: ConnectionResponse) => {
+    setConnection(updated);
     setUpdatingCreds(false);
   };
 
-  const handleDeleteSuccess = (_integrationId: string) => {
-    router.push('/dashboard/integrations');
+  const handleDeleteSuccess = (_connectionId: string) => {
+    router.push('/dashboard/connections');
   };
 
   return (
@@ -100,25 +100,25 @@ function IntegrationDetailContent({
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-foreground">
-              {integration.name || integration.fullCode}
+              {connection.name || connection.fullCode}
             </h1>
             <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-accent/10 text-accent">
               {connector.name}
             </span>
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                integration.enabled
+                connection.enabled
                   ? 'bg-success/10 text-success'
                   : 'bg-muted/10 text-muted'
               }`}
             >
-              {integration.enabled ? tInt('enabled') : tInt('disabled')}
+              {connection.enabled ? tInt('enabled') : tInt('disabled')}
             </span>
           </div>
-          <p className="text-sm text-muted mt-1 font-mono">{integration.fullCode}</p>
-          {integration.name && (
+          <p className="text-sm text-muted mt-1 font-mono">{connection.fullCode}</p>
+          {connection.name && (
             <p className="text-sm text-muted mt-1">
-              {tInt('identifier')}: {integration.subCode}
+              {tInt('identifier')}: {connection.subCode}
             </p>
           )}
         </div>
@@ -126,7 +126,7 @@ function IntegrationDetailContent({
         <div className="flex items-center gap-2">
           <Button
             variant="primary"
-            onClick={() => setTestingIntegration(true)}
+            onClick={() => setTestingConnection(true)}
             className="inline-flex items-center gap-2 !py-2 text-sm"
           >
             <BeakerIcon className="h-4 w-4" />
@@ -141,7 +141,7 @@ function IntegrationDetailContent({
             {t('toolsTitle')}
           </Button>
           <Toggle
-            checked={integration.enabled}
+            checked={connection.enabled}
             onChange={handleToggleEnabled}
             disabled={updating}
           />
@@ -155,13 +155,13 @@ function IntegrationDetailContent({
             </button>
           )}
           <button
-            onClick={() => setEditingIntegration(true)}
+            onClick={() => setEditingConnection(true)}
             className="p-2 text-muted hover:text-foreground transition-colors rounded-lg"
           >
             <PencilIcon className="h-5 w-5" />
           </button>
           <button
-            onClick={() => setDeletingIntegration(true)}
+            onClick={() => setDeletingConnection(true)}
             className="p-2 text-muted hover:text-error transition-colors rounded-lg"
           >
             <TrashIcon className="h-5 w-5" />
@@ -185,48 +185,48 @@ function IntegrationDetailContent({
                   </div>
                   <div>
                     <dt className="text-sm text-muted">{t('instanceHandle')}</dt>
-                    <dd className="text-foreground mt-0.5 font-mono text-sm">{integration.fullCode}</dd>
+                    <dd className="text-foreground mt-0.5 font-mono text-sm">{connection.fullCode}</dd>
                   </div>
                   <div>
                     <dt className="text-sm text-muted">{t('platformIdentifier')}</dt>
-                    <dd className="text-foreground mt-0.5 font-mono text-sm">{integration.subCode}</dd>
+                    <dd className="text-foreground mt-0.5 font-mono text-sm">{connection.subCode}</dd>
                   </div>
                   <div>
                     <dt className="text-sm text-muted">{t('scope')}</dt>
-                    <dd className="text-foreground mt-0.5 font-mono text-sm">{integration.scope}</dd>
+                    <dd className="text-foreground mt-0.5 font-mono text-sm">{connection.scope}</dd>
                   </div>
-                  {integration.name && (
+                  {connection.name && (
                     <div>
                       <dt className="text-sm text-muted">{tInt('name')}</dt>
-                      <dd className="text-foreground mt-0.5">{integration.name}</dd>
+                      <dd className="text-foreground mt-0.5">{connection.name}</dd>
                     </div>
                   )}
                   <div>
                     <dt className="text-sm text-muted">{t('connectorCode')}</dt>
-                    <dd className="text-foreground mt-0.5 font-mono text-sm">{integration.connectorCode}</dd>
+                    <dd className="text-foreground mt-0.5 font-mono text-sm">{connection.connectorCode}</dd>
                   </div>
                   <div>
                     <dt className="text-sm text-muted">{t('status')}</dt>
                     <dd className="mt-0.5">
                       <span
                         className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                          integration.enabled
+                          connection.enabled
                             ? 'bg-success/10 text-success'
                             : 'bg-muted/10 text-muted'
                         }`}
                       >
-                        {integration.enabled ? tInt('enabled') : tInt('disabled')}
+                        {connection.enabled ? tInt('enabled') : tInt('disabled')}
                       </span>
                     </dd>
                   </div>
                   <div>
                     <dt className="text-sm text-muted">{tInt('created')}</dt>
-                    <dd className="text-foreground mt-0.5">{formatDate(integration.createdAt)}</dd>
+                    <dd className="text-foreground mt-0.5">{formatDate(connection.createdAt)}</dd>
                   </div>
-                  {integration.lastUsedAt && (
+                  {connection.lastUsedAt && (
                     <div>
                       <dt className="text-sm text-muted">{tInt('lastUsed')}</dt>
-                      <dd className="text-foreground mt-0.5">{formatDate(integration.lastUsedAt)}</dd>
+                      <dd className="text-foreground mt-0.5">{formatDate(connection.lastUsedAt)}</dd>
                     </div>
                   )}
                 </dl>
@@ -236,7 +236,7 @@ function IntegrationDetailContent({
           {
             id: 'skills',
             label: t('tabSkills'),
-            content: <IntegrationSkillsTab connectorCode={integration.connectorCode} />,
+            content: <ConnectionSkillsTab connectorCode={connection.connectorCode} />,
           },
         ]}
         activeTab={activeTab}
@@ -244,47 +244,47 @@ function IntegrationDetailContent({
       />
 
       {/* Modals */}
-      {editingIntegration && (
-        <EditIntegrationModal
-          integration={integration}
+      {editingConnection && (
+        <EditConnectionModal
+          connection={connection}
           connectorName={connector.name}
-          onClose={() => setEditingIntegration(false)}
+          onClose={() => setEditingConnection(false)}
           onSuccess={handleEditSuccess}
         />
       )}
 
-      {deletingIntegration && (
-        <DeleteIntegrationModal
-          integration={integration}
-          onClose={() => setDeletingIntegration(false)}
+      {deletingConnection && (
+        <DeleteConnectionModal
+          connection={connection}
+          onClose={() => setDeletingConnection(false)}
           onSuccess={handleDeleteSuccess}
         />
       )}
 
       {updatingCreds && connector.integrationMeta && (
         <UpdateCredentialsModal
-          integration={integration}
+          connection={connection}
           credentialFields={connector.integrationMeta.credentialFields}
           onClose={() => setUpdatingCreds(false)}
           onSuccess={handleUpdateCredsSuccess}
         />
       )}
 
-      {testingIntegration && (
-        <TestIntegrationModal
-          integrationId={integration.id}
-          integrationName={integration.name || integration.fullCode}
+      {testingConnection && (
+        <TestConnectionModal
+          connectionId={connection.id}
+          connectionName={connection.name || connection.fullCode}
           onClose={() => {
-            setTestingIntegration(false);
+            setTestingConnection(false);
             onUpdate();
           }}
         />
       )}
 
       {showingTools && (
-        <IntegrationToolsModal
-          integrationId={integration.id}
-          integrationName={integration.name || integration.fullCode}
+        <ConnectionToolsModal
+          connectionId={connection.id}
+          connectionName={connection.name || connection.fullCode}
           onClose={() => setShowingTools(false)}
         />
       )}
@@ -292,22 +292,22 @@ function IntegrationDetailContent({
   );
 }
 
-export default function IntegrationDetailPage() {
+export default function ConnectionDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const t = useTranslations('IntegrationDetail');
+  const t = useTranslations('ConnectionDetail');
   const { promise, invalidate } = usePromiseCache(
-    () => apiService.getIntegrationCredential(id).then(async (integration) => {
-      const connector = await apiService.getConnector(integration.connectorCode);
-      return [integration, connector] as [IntegrationResponse, ConnectorCatalogEntry];
+    () => apiService.getConnection(id).then(async (connection) => {
+      const connector = await apiService.getConnector(connection.connectorCode);
+      return [connection, connector] as [ConnectionResponse, ConnectorCatalogEntry];
     }),
     [id],
-    'integration-detail'
+    'connection-detail'
   );
 
   return (
     <div className="space-y-6">
       <Link
-        href="/dashboard/integrations"
+        href="/dashboard/connections"
         className="text-sm text-primary hover:text-primary/80 transition-colors"
       >
         &larr; {t('backToIntegrations')}
@@ -315,7 +315,7 @@ export default function IntegrationDetailPage() {
 
       <ErrorBoundary>
         <Suspense fallback={<div className="text-center py-12 text-muted">{t('loading')}</div>}>
-          <IntegrationDetailContent dataPromise={promise} onUpdate={invalidate} />
+          <ConnectionDetailContent dataPromise={promise} onUpdate={invalidate} />
         </Suspense>
       </ErrorBoundary>
     </div>

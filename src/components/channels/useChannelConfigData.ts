@@ -7,7 +7,7 @@ import {
   ChannelHandlerResponse,
   ChannelResponse,
   ConnectorCatalogEntry,
-  IntegrationResponse,
+  ConnectionResponse,
 } from '@/types';
 import { getConnectorKind, ConnectorKind } from '@/utils/connector';
 
@@ -52,8 +52,8 @@ export function useChannelConfigData({ channel, connectorCode }: UseChannelConfi
     async (code: string, type: ConnectorKind | null): Promise<IdentityOption[]> => {
       if (!code || !type) return [];
       if (type === 'INTEGRATION') {
-        const creds = await apiService.getIntegrationCredentials(code);
-        return creds.map((c: IntegrationResponse) => ({
+        const creds = await apiService.getConnections(code);
+        return creds.map((c: ConnectionResponse) => ({
           value: c.id,
           label: c.name || c.fullCode,
           hint: c.name ? c.subCode : undefined,

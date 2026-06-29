@@ -8,25 +8,25 @@ import {
   XCircleIcon,
 } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
-import { IntegrationTestResult } from '@/types';
+import { ConnectionTestResponse } from '@/types';
 import { getErrorMessage } from '@/utils/error';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 
-interface TestIntegrationModalProps {
-  integrationId: string;
-  integrationName: string;
+interface TestConnectionModalProps {
+  connectionId: string;
+  connectionName: string;
   onClose: () => void;
 }
 
-export default function TestIntegrationModal({
-  integrationId,
-  integrationName,
+export default function TestConnectionModal({
+  connectionId,
+  connectionName,
   onClose,
-}: TestIntegrationModalProps) {
-  const t = useTranslations('IntegrationDetail');
+}: TestConnectionModalProps) {
+  const t = useTranslations('ConnectionDetail');
   const [loading, setLoading] = useState(true);
-  const [result, setResult] = useState<IntegrationTestResult | null>(null);
+  const [result, setResult] = useState<ConnectionTestResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const runTest = useCallback(async () => {
@@ -34,14 +34,14 @@ export default function TestIntegrationModal({
     setError(null);
     setResult(null);
     try {
-      const res = await apiService.testIntegration(integrationId);
+      const res = await apiService.testConnection(connectionId);
       setResult(res);
     } catch (err) {
       setError(getErrorMessage(err, t('testError')));
     } finally {
       setLoading(false);
     }
-  }, [integrationId, t]);
+  }, [connectionId, t]);
 
   useEffect(() => {
     runTest();
@@ -52,7 +52,7 @@ export default function TestIntegrationModal({
   return (
     <Modal isOpen={true} onClose={onClose} title={t('testIntegration')} size="md">
       <div className="space-y-4">
-        <p className="text-sm text-muted">{integrationName}</p>
+        <p className="text-sm text-muted">{connectionName}</p>
 
         {loading && (
           <div className="text-center py-8 text-muted">{t('testRunning')}</div>
@@ -91,8 +91,8 @@ export default function TestIntegrationModal({
   );
 }
 
-function TestResultView({ result }: { result: IntegrationTestResult }) {
-  const t = useTranslations('IntegrationDetail');
+function TestResultView({ result }: { result: ConnectionTestResponse }) {
+  const t = useTranslations('ConnectionDetail');
 
   if (!result.valid) {
     return (

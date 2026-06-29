@@ -2,22 +2,22 @@
 
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { IntegrationResponse } from '@/types';
+import { ConnectionResponse } from '@/types';
 import { Alert } from '@/components/ui/Alert';
 import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
 
-interface DeleteIntegrationModalProps {
-  integration: IntegrationResponse;
+interface DeleteConnectionModalProps {
+  connection: ConnectionResponse;
   onClose: () => void;
-  onSuccess: (integrationId: string) => void;
+  onSuccess: (connectionId: string) => void;
 }
 
-export default function DeleteIntegrationModal({
-  integration,
+export default function DeleteConnectionModal({
+  connection,
   onClose,
   onSuccess,
-}: DeleteIntegrationModalProps) {
-  const t = useTranslations('Integrations');
+}: DeleteConnectionModalProps) {
+  const t = useTranslations('Connections');
 
   return (
     <ConfirmDeleteModal
@@ -27,12 +27,12 @@ export default function DeleteIntegrationModal({
       defaultError={t('deleteError')}
       size="sm"
       fullWidthButtons
-      onConfirm={() => apiService.deleteIntegration(integration.id)}
+      onConfirm={() => apiService.deleteConnection(connection.id)}
       onClose={onClose}
-      onSuccess={() => onSuccess(integration.id)}
+      onSuccess={() => onSuccess(connection.id)}
     >
       <p className="text-foreground">
-        {t('deleteConfirm', { name: integration.name || integration.fullCode })}
+        {t('deleteConfirm', { name: connection.name || connection.fullCode })}
       </p>
 
       <Alert variant="warning">

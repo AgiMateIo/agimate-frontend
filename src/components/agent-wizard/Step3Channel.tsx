@@ -7,7 +7,7 @@ import apiService from '@/services/api';
 import {
   ChannelHandlerResponse,
   ConnectorCatalogEntry,
-  IntegrationResponse,
+  ConnectionResponse,
   ToolJsonSchema,
 } from '@/types';
 import { Button } from '@/components/ui/Button';
@@ -27,8 +27,8 @@ export default function Step3Channel({ data, setData, goNext, goBack }: WizardSt
   const [handler, setHandler] = useState<ChannelHandlerResponse | null>(null);
   const [discovered, setDiscovered] = useState(false);
 
-  const [existing, setExisting] = useState<IntegrationResponse[]>([]);
-  // '' = create new; otherwise an existing integration id.
+  const [existing, setExisting] = useState<ConnectionResponse[]>([]);
+  // '' = create new; otherwise an existing connection id.
   const [identity, setIdentity] = useState('');
   const [credentials, setCredentials] = useState<Record<string, string>>({});
   const [channelName, setChannelName] = useState('');
@@ -59,7 +59,7 @@ export default function Step3Channel({ data, setData, goNext, goBack }: WizardSt
         setConnector(conn);
         setHandler(hnd);
         if (conn) {
-          const creds = await apiService.getIntegrationCredentials(conn.code);
+          const creds = await apiService.getConnections(conn.code);
           if (!cancelled) setExisting(creds);
         }
       } finally {
@@ -93,15 +93,15 @@ export default function Step3Channel({ data, setData, goNext, goBack }: WizardSt
     handleSubmit(e, async () => {
       if (!data.agent || !connector || !handler) return;
 
-      let integrationId = identity;
-      if (!integrationId) {
-        const integration = await apiService.createIntegration({
+      let connectionId = identity;
+      if (!connectionId) {
+        const connection = await apiService.createConnection({
           connectorCode: connector.code,
           credentials,
           name: channelName.trim() || undefined,
         });
-        integrationId = integration.id;
-        setExisting((prev) => [integration, ...prev]);
+        connectionId = connection.id;
+        setExisting((prev) => [connection, ...prev]);
       }
 
       const channel = await apiService.createChannel({
@@ -109,7 +109,7 @@ export default function Step3Channel({ data, setData, goNext, goBack }: WizardSt
         name: channelName.trim(),
         channelHandler: handler.name,
         connectorCode: connector.code,
-        identity: integrationId,
+        identity: connectionId,
         config,
       });
       setData({ channel });

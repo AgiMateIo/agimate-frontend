@@ -10,7 +10,7 @@ export interface ChannelResponse {
   channelHandler: string;
   connectorCode: string;
   identity: string;
-  // Denormalised name of the connector source (App.name / IntegrationCredentials.name);
+  // Denormalised name of the connector source (App.name / Connection.name);
   // null if the underlying resource was deleted.
   identityName: string | null;
   config: Record<string, unknown>;

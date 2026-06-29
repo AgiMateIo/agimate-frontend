@@ -37,10 +37,10 @@ const getNavItems = (t: ReturnType<typeof useTranslations>, teams: AgenticTeam[]
   { label: t('llmProviders'), icon: SparklesIcon, href: '/dashboard/llm-providers' },
   {
     label: t('connectors'), icon: CpuChipIcon, href: '/dashboard/connectors',
-    activePaths: ['/dashboard/connectors', '/dashboard/apps', '/dashboard/integrations', '/dashboard/channels', '/dashboard/connector-jobs'],
+    activePaths: ['/dashboard/connectors', '/dashboard/apps', '/dashboard/connections', '/dashboard/channels', '/dashboard/connector-jobs'],
     children: [
       { label: t('apps'), icon: DevicePhoneMobileIcon, href: '/dashboard/apps' },
-      { label: t('integrations'), icon: LinkIcon, href: '/dashboard/integrations' },
+      { label: t('connections'), icon: LinkIcon, href: '/dashboard/connections' },
       { label: t('channels'), icon: ChatBubbleLeftRightIcon, href: '/dashboard/channels' },
       { label: t('connectorJobs'), icon: ClockIcon, href: '/dashboard/connector-jobs' },
     ],

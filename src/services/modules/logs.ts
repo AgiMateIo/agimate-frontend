@@ -37,7 +37,7 @@ export const logsApi = {
     await httpClient.post<void>(`${API.ENDPOINTS.CONTROL_API}/manage/connector-jobs/${encodeURIComponent(id)}/run-now`, {});
   },
 
-  // SYSTEM tasks cannot be deleted (backend returns 400) — pause them or delete the integration.
+  // SYSTEM tasks cannot be deleted (backend returns 400) — pause them or delete the connection.
   async deleteConnectorJob(id: string): Promise<void> {
     await httpClient.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/connector-jobs/${encodeURIComponent(id)}`);
   },

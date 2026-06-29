@@ -10,7 +10,7 @@ import { skillsApi } from './modules/skills';
 import { llmProvidersApi } from './modules/llmProviders';
 import { channelsApi } from './modules/channels';
 import { boardsApi } from './modules/boards';
-import { integrationsApi } from './modules/integrations';
+import { connectionsApi } from './modules/connections';
 import { connectorsApi } from './modules/connectors';
 import { agenticTeamsApi } from './modules/agenticTeams';
 import { logsApi } from './modules/logs';
@@ -23,7 +23,7 @@ const apiService = {
   ...llmProvidersApi,
   ...channelsApi,
   ...boardsApi,
-  ...integrationsApi,
+  ...connectionsApi,
   ...connectorsApi,
   ...agenticTeamsApi,
   ...logsApi,
