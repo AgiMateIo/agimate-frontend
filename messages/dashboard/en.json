@@ -707,7 +707,6 @@
     "connectionInfo": "Connection Details",
     "platform": "Platform",
     "platformIdentifier": "Platform Identifier",
-    "scope": "Scope",
     "instanceHandle": "Handle",
     "connectorCode": "Connector Code",
     "status": "Status",

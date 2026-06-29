@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { localeMap } from '@/i18n/routing';
 import { ConnectionResponse, ConnectorCatalogEntry } from '@/types';
+import { formatDate } from '@/utils/date';
 
 interface ConnectionsListProps {
   connections: ConnectionResponse[];
@@ -20,17 +21,6 @@ export default function ConnectionsList({
   const bcp47Locale = localeMap[locale];
 
   const getConnector = (code: string) => platforms.find(p => p.code === code);
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString.replace(' ', 'T'));
-    return new Intl.DateTimeFormat(bcp47Locale, {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(date);
-  };
 
   if (connections.length === 0) {
     return (
@@ -68,9 +58,9 @@ export default function ConnectionsList({
                   {t('identifier')}: {connection.subCode}
                 </p>
                 <div className="text-xs text-muted mt-2 space-y-1">
-                  <p>{t('created')}: {formatDate(connection.createdAt)}</p>
+                  <p>{t('created')}: {formatDate(connection.createdAt, bcp47Locale)}</p>
                   {connection.lastUsedAt && (
-                    <p>{t('lastUsed')}: {formatDate(connection.lastUsedAt)}</p>
+                    <p>{t('lastUsed')}: {formatDate(connection.lastUsedAt, bcp47Locale)}</p>
                   )}
                 </div>
               </div>

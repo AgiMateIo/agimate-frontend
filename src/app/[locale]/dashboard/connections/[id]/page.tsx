@@ -8,6 +8,7 @@ import { Link } from '@/i18n/navigation';
 import { localeMap } from '@/i18n/routing';
 import apiService from '@/services/api';
 import type { ConnectionResponse, ConnectorCatalogEntry } from '@/types';
+import { formatDate } from '@/utils/date';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { Tabs } from '@/components/ui/Tabs';
 import { usePromiseCache } from '@/hooks/usePromiseCache';
@@ -53,16 +54,6 @@ function ConnectionDetailContent({
     setConnection(initialConnection);
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString.replace(' ', 'T'));
-    return new Intl.DateTimeFormat(bcp47Locale, {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(date);
-  };
 
   const handleToggleEnabled = async () => {
     setUpdating(true);
@@ -191,10 +182,6 @@ function ConnectionDetailContent({
                     <dt className="text-sm text-muted">{t('platformIdentifier')}</dt>
                     <dd className="text-foreground mt-0.5 font-mono text-sm">{connection.subCode}</dd>
                   </div>
-                  <div>
-                    <dt className="text-sm text-muted">{t('scope')}</dt>
-                    <dd className="text-foreground mt-0.5 font-mono text-sm">{connection.scope}</dd>
-                  </div>
                   {connection.name && (
                     <div>
                       <dt className="text-sm text-muted">{tInt('name')}</dt>
@@ -221,12 +208,12 @@ function ConnectionDetailContent({
                   </div>
                   <div>
                     <dt className="text-sm text-muted">{tInt('created')}</dt>
-                    <dd className="text-foreground mt-0.5">{formatDate(connection.createdAt)}</dd>
+                    <dd className="text-foreground mt-0.5">{formatDate(connection.createdAt, bcp47Locale)}</dd>
                   </div>
                   {connection.lastUsedAt && (
                     <div>
                       <dt className="text-sm text-muted">{tInt('lastUsed')}</dt>
-                      <dd className="text-foreground mt-0.5">{formatDate(connection.lastUsedAt)}</dd>
+                      <dd className="text-foreground mt-0.5">{formatDate(connection.lastUsedAt, bcp47Locale)}</dd>
                     </div>
                   )}
                 </dl>
