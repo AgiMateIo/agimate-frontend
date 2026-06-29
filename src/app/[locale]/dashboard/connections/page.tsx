@@ -18,16 +18,8 @@ function ConnectionsContent({
   onUpdate: () => void;
 }) {
   const t = useTranslations('Connections');
-  const [platforms, initialConnections] = use(dataPromise);
-  const [connections, setConnections] = useState(initialConnections);
+  const [platforms, connections] = use(dataPromise);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [lastInitial, setLastInitial] = useState(initialConnections);
-
-  // Sync local state when fresh data arrives after invalidation
-  if (initialConnections !== lastInitial) {
-    setLastInitial(initialConnections);
-    setConnections(initialConnections);
-  }
 
   const handleAddSuccess = () => {
     onUpdate();
@@ -49,7 +41,6 @@ function ConnectionsContent({
       <ConnectionsList
         connections={connections}
         platforms={platforms}
-        onUpdate={setConnections}
       />
 
       {showAddModal && (

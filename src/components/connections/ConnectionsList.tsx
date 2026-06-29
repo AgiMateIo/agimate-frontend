@@ -9,7 +9,6 @@ import { formatDate } from '@/utils/date';
 interface ConnectionsListProps {
   connections: ConnectionResponse[];
   platforms: ConnectorCatalogEntry[];
-  onUpdate: (connections: ConnectionResponse[]) => void;
 }
 
 export default function ConnectionsList({
