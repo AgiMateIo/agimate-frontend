@@ -706,6 +706,7 @@
     "integrationInfo": "Детали интеграции",
     "platform": "Платформа",
     "platformIdentifier": "Идентификатор платформы",
+    "scope": "Область",
     "instanceHandle": "Хэндл",
     "connectorCode": "Код коннектора",
     "status": "Статус",

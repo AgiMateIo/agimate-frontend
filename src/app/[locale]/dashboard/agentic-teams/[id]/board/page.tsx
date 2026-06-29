@@ -97,7 +97,7 @@ export default function BoardPage() {
 
   const handleTaskMove = useCallback(
     async (taskId: string, fromStatus: TaskStatus, toStatus: TaskStatus) => {
-      if (!columns) return;
+      if (!columns || !board) return;
 
       // Deep copy for safe rollback
       const snapshot = {} as Record<TaskStatus, BoardTask[]>;
@@ -119,12 +119,12 @@ export default function BoardPage() {
       animateCardMove(taskId, () => setColumns(updated));
 
       try {
-        await apiService.changeTaskStatus(taskId, { status: toStatus, agentId });
+        await apiService.changeTaskStatus(board.id, taskId, { status: toStatus, agentId });
       } catch {
         animateCardMove(taskId, () => setColumns(snapshot));
       }
     },
-    [columns, agents]
+    [columns, agents, board]
   );
 
   const handleTaskCreated = useCallback(() => {
@@ -280,8 +280,9 @@ export default function BoardPage() {
       )}
 
       {/* Slide-over */}
-      {selectedTask && (
+      {selectedTask && board && (
         <TaskSlideOver
+          boardId={board.id}
           task={selectedTask}
           agentMap={agentMap}
           onClose={() => setSelectedTaskId(null)}

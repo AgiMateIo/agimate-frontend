@@ -42,7 +42,7 @@ export interface UpdateAppRequest {
   enabled?: boolean;
 }
 
-// Device trigger info returned by GET /control/manage/triggers/
+// Trigger catalog entry returned by GET /control/manage/connectors/{code}/triggers/
 export interface DeviceTriggerInfo {
   name: string;
   description: string;
@@ -72,8 +72,9 @@ export interface ToolAnnotations {
 }
 
 // MCP-compatible tool spec (replaces the old ToolSpecification with `parameters`):
-// GET /control/manage/tools/{connectorCode}/{toolName}, and the element type of
-// GET /control/manage/tools/{connectorCode}/ and /manage/integrations/tools/.
+// element type of the connector-type tool catalog GET /control/manage/connectors/{code}/tools/
+// (and GET .../{toolName} for a single schema), and of the instance tools
+// GET /control/manage/connections/{connectionId}/tools/.
 export interface ConnectorToolSpec {
   name: string;
   title?: string;

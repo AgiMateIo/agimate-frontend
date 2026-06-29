@@ -16,12 +16,14 @@ import { TYPE_BADGE } from './taskBadges';
 import { getErrorMessage } from '@/utils/error';
 
 interface TaskSlideOverProps {
+  boardId: string;
   task: BoardTask;
   agentMap: Map<string, string>;
   onClose: () => void;
 }
 
 export default function TaskSlideOver({
+  boardId,
   task,
   agentMap,
   onClose,
@@ -38,14 +40,14 @@ export default function TaskSlideOver({
     setCommentsLoading(true);
     setCommentsError(null);
     try {
-      const data = await apiService.getTaskComments(task.id);
+      const data = await apiService.getTaskComments(boardId, task.id);
       setComments(data);
     } catch (err) {
       setCommentsError(getErrorMessage(err, t('loadError')));
     } finally {
       setCommentsLoading(false);
     }
-  }, [task.id, t]);
+  }, [boardId, task.id, t]);
 
   // Lock body scroll while panel is open
   useEffect(() => {
@@ -69,7 +71,7 @@ export default function TaskSlideOver({
 
   const onCommentSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
-      apiService.createTaskComment(task.id, {
+      apiService.createTaskComment(boardId, task.id, {
         agentId: commentAgentId,
         content: newComment.trim(),
       })

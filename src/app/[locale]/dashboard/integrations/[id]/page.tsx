@@ -191,6 +191,10 @@ function IntegrationDetailContent({
                     <dt className="text-sm text-muted">{t('platformIdentifier')}</dt>
                     <dd className="text-foreground mt-0.5 font-mono text-sm">{integration.subCode}</dd>
                   </div>
+                  <div>
+                    <dt className="text-sm text-muted">{t('scope')}</dt>
+                    <dd className="text-foreground mt-0.5 font-mono text-sm">{integration.scope}</dd>
+                  </div>
                   {integration.name && (
                     <div>
                       <dt className="text-sm text-muted">{tInt('name')}</dt>

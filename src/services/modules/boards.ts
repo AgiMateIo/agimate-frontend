@@ -31,15 +31,15 @@ export const boardsApi = {
     return httpClient.post<BoardTask>(`${API.ENDPOINTS.CONTROL_API}/manage/boards/${boardId}/tasks/`, data);
   },
 
-  async changeTaskStatus(taskId: string, data: ChangeTaskStatusRequest): Promise<BoardTask> {
-    return httpClient.patch<BoardTask>(`${API.ENDPOINTS.CONTROL_API}/manage/boards/tasks/${taskId}/status`, data);
+  async changeTaskStatus(boardId: string, taskId: string, data: ChangeTaskStatusRequest): Promise<BoardTask> {
+    return httpClient.patch<BoardTask>(`${API.ENDPOINTS.CONTROL_API}/manage/boards/${boardId}/tasks/${taskId}/status`, data);
   },
 
-  async getTaskComments(taskId: string): Promise<BoardTaskComment[]> {
-    return httpClient.get<BoardTaskComment[]>(`${API.ENDPOINTS.CONTROL_API}/manage/boards/tasks/${taskId}/comments/`);
+  async getTaskComments(boardId: string, taskId: string): Promise<BoardTaskComment[]> {
+    return httpClient.get<BoardTaskComment[]>(`${API.ENDPOINTS.CONTROL_API}/manage/boards/${boardId}/tasks/${taskId}/comments/`);
   },
 
-  async createTaskComment(taskId: string, data: CreateCommentRequest): Promise<BoardTaskComment> {
-    return httpClient.post<BoardTaskComment>(`${API.ENDPOINTS.CONTROL_API}/manage/boards/tasks/${taskId}/comments/`, data);
+  async createTaskComment(boardId: string, taskId: string, data: CreateCommentRequest): Promise<BoardTaskComment> {
+    return httpClient.post<BoardTaskComment>(`${API.ENDPOINTS.CONTROL_API}/manage/boards/${boardId}/tasks/${taskId}/comments/`, data);
   },
 };

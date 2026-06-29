@@ -1,3 +1,5 @@
+import type { IdentityScope } from './skills';
+
 export interface IntegrationResponse {
   id: string;
   connectorCode: string;
@@ -6,6 +8,7 @@ export interface IntegrationResponse {
   subCode: string;
   // stable per-user instance handle, e.g. `mcp_context7` — used as the instance label in UI.
   fullCode: string;
+  scope: IdentityScope;
   name: string;
   enabled: boolean;
   lastUsedAt: string | null;
@@ -27,7 +30,7 @@ export interface UpdateIntegrationCredentialsRequest {
   credentials: Record<string, string>;
 }
 
-// Result of POST /manage/integrations/credentials/{id}/test
+// Result of POST /manage/connections/{id}/test
 export interface IntegrationTestResult {
   valid: boolean;
   identifier: string | null;
