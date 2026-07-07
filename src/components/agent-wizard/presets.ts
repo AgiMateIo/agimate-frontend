@@ -15,7 +15,7 @@ export interface AgentPreset {
   gradient: string;
 }
 
-export const AGENT_PRESETS: AgentPreset[] = [
+export const AGENT_PRESETS = [
   {
     id: 'general-assistant',
     i18nKey: 'generalAssistant',
@@ -46,4 +46,4 @@ export const AGENT_PRESETS: AgentPreset[] = [
     emoji: '💪',
     gradient: 'from-rose-500 to-red-500',
   },
-];
+] as const satisfies readonly AgentPreset[];

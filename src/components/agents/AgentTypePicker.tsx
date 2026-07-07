@@ -20,7 +20,7 @@ interface OptionMeta {
   checkClass: string;
 }
 
-const OPTIONS: OptionMeta[] = [
+const OPTIONS = [
   {
     value: 'GENERIC',
     titleKey: 'generic',
@@ -48,7 +48,7 @@ const OPTIONS: OptionMeta[] = [
     selectedTitleClass: 'text-success',
     checkClass: 'bg-success text-white',
   },
-];
+] as const satisfies readonly OptionMeta[];
 
 export default function AgentTypePicker({ value, onChange, error }: AgentTypePickerProps) {
   const t = useTranslations('Agents');

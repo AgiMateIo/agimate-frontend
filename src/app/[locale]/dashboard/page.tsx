@@ -11,8 +11,8 @@ import apiService from '@/services/api';
 
 interface ResourceCard {
   key: string;
-  nameKey: string;
-  emptyKey: string;
+  nameKey: 'apps' | 'agents';
+  emptyKey: 'noApps' | 'noAgents';
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   href: string;
   count: number | null;

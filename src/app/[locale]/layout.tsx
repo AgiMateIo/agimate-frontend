@@ -1,7 +1,7 @@
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { getMessages, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { routing } from '@/i18n/routing';
+import { resolveLocale, routing } from '@/i18n/routing';
 import { UserProvider } from '@/contexts/UserContext';
 import { Geist, Geist_Mono } from 'next/font/google';
 import '../globals.css';
@@ -21,7 +21,8 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
+  const { locale: requested } = await params;
+  const locale = resolveLocale(requested);
   const t = await getTranslations({ locale, namespace: 'Metadata' });
   return {
     title: t('title'),
