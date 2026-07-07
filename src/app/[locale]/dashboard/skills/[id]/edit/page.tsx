@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
-import { SkillDetailResponse, SkillResponse } from '@/types';
+import { SkillResponse } from '@/types';
+import { useSkillDetailQuery, useSkillsCacheActions } from '@/queries/skills';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
@@ -22,39 +23,22 @@ export default function EditSkillPage() {
   const skillId = params.id as string;
 
   const { user } = useUser();
-  const [skill, setSkill] = useState<SkillDetailResponse | null>(null);
-  const [pageLoading, setPageLoading] = useState(true);
-  const [pageError, setPageError] = useState<string | null>(null);
-  const [redirecting, setRedirecting] = useState(false);
+  const { data: skill, isPending: pageLoading, error: queryError } = useSkillDetailQuery(skillId);
+  const { invalidateSkill, invalidateLists } = useSkillsCacheActions();
+  const pageError = queryError ? getErrorMessage(queryError, 'Failed to load skill') : null;
 
   useSetBreadcrumb(skillId, skill?.name);
 
-  const fetchSkill = useCallback(async () => {
-    try {
-      setPageError(null);
-      const data = await apiService.getSkill(skillId);
-      setSkill(data);
-    } catch (err) {
-      setPageError(getErrorMessage(err, 'Failed to load skill'));
-    } finally {
-      setPageLoading(false);
-    }
-  }, [skillId]);
-
-  useEffect(() => {
-    fetchSkill();
-  }, [fetchSkill]);
-
   // Only the owner can edit; bounce others to the read-only detail page.
+  const redirecting = !!(skill && user && user.id !== skill.userId);
   useEffect(() => {
-    if (skill && user && user.id !== skill.userId) {
-      setRedirecting(true);
-      router.replace(`/dashboard/skills/${skillId}`);
-    }
-  }, [skill, user, skillId, router]);
+    if (redirecting) router.replace(`/dashboard/skills/${skillId}`);
+  }, [redirecting, skillId, router]);
 
   const { loading, error, fieldErrors, handleSubmit } = useAsyncForm<SkillResponse>({
     onSuccess: () => {
+      invalidateSkill(skillId);
+      invalidateLists();
       router.push(`/dashboard/skills/${skillId}`);
     },
   });

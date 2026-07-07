@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { ArrowLeftIcon, ClipboardDocumentIcon, ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { AgentResponse, AgentType } from '@/types';
+import { useAgentDetailQuery, useAgentCacheActions } from '@/queries/agents';
 import { Button } from '@/components/ui/Button';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Alert } from '@/components/ui/Alert';
@@ -22,9 +23,9 @@ export default function EditAgentPage() {
   const params = useParams();
   const agentId = params.id as string;
 
-  const [agent, setAgent] = useState<AgentResponse | null>(null);
-  const [dataLoading, setDataLoading] = useState(true);
-  const [dataError, setDataError] = useState<string | null>(null);
+  const { data: agent, isPending: dataLoading, error: queryError } = useAgentDetailQuery(agentId);
+  const { invalidateAll } = useAgentCacheActions();
+  const dataError = queryError ? getErrorMessage(queryError, 'Failed to load data') : null;
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -32,6 +33,17 @@ export default function EditAgentPage() {
   const [agentType, setAgentType] = useState<AgentType>('CENTRIFUGO');
   const [webhookUrl, setWebhookUrl] = useState('');
   const [webhookAuthHeader, setWebhookAuthHeader] = useState('');
+
+  // Seed the form whenever fresh agent data arrives.
+  const [seededFrom, setSeededFrom] = useState<AgentResponse | null>(null);
+  if (agent && agent !== seededFrom) {
+    setSeededFrom(agent);
+    setName(agent.name);
+    setDescription(agent.description ?? '');
+    setPrompt(agent.instructions);
+    setAgentType(agent.type);
+    setWebhookUrl(agent.webhookUrl ?? '');
+  }
 
   // Regenerate key state
   const [regeneratedKey, setRegeneratedKey] = useState<string | null>(null);
@@ -41,29 +53,9 @@ export default function EditAgentPage() {
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const fetchData = useCallback(async () => {
-    try {
-      setDataError(null);
-      const agentData = await apiService.getAgent(agentId);
-      setAgent(agentData);
-      setName(agentData.name);
-      setDescription(agentData.description ?? '');
-      setPrompt(agentData.instructions);
-      setAgentType(agentData.type);
-      setWebhookUrl(agentData.webhookUrl ?? '');
-    } catch (err) {
-      setDataError(getErrorMessage(err, 'Failed to load data'));
-    } finally {
-      setDataLoading(false);
-    }
-  }, [agentId]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
   const { loading, error, fieldErrors, handleSubmit } = useAsyncForm<AgentResponse>({
     onSuccess: () => {
+      invalidateAll();
       router.push('/dashboard/agents');
     },
     defaultError: 'Failed to update agent configuration',

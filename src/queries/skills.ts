@@ -1,4 +1,9 @@
-import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
+import {
+  queryOptions,
+  useQuery,
+  useQueryClient,
+  useSuspenseQuery,
+} from '@tanstack/react-query';
 import apiService from '@/services/api';
 import type { PagedResponse, SkillResponse } from '@/types';
 
@@ -9,7 +14,19 @@ export const skillKeys = {
   lists: () => [...skillKeys.all, 'list'] as const,
   list: (tab: SkillListTab, search: string, page: number) =>
     [...skillKeys.lists(), tab, search, page] as const,
+  detail: (id: string) => [...skillKeys.all, 'detail', id] as const,
 };
+
+export const skillDetailOptions = (id: string) =>
+  queryOptions({
+    queryKey: skillKeys.detail(id),
+    queryFn: () => apiService.getSkill(id),
+  });
+
+// Non-suspense: the detail pages render their own loading/error states.
+export function useSkillDetailQuery(id: string) {
+  return useQuery(skillDetailOptions(id));
+}
 
 export function useSkillsListQuery(tab: SkillListTab, search: string, page: number) {
   return useSuspenseQuery({
@@ -40,5 +57,7 @@ export function useSkillsCacheActions() {
     },
     invalidateLists: () =>
       queryClient.invalidateQueries({ queryKey: skillKeys.lists() }),
+    invalidateSkill: (id: string) =>
+      queryClient.invalidateQueries({ queryKey: skillKeys.detail(id) }),
   };
 }

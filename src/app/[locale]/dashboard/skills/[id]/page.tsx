@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
@@ -8,6 +8,7 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { SkillDetailResponse } from '@/types';
+import { useSkillDetailQuery, useSkillsCacheActions } from '@/queries/skills';
 import { Button } from '@/components/ui/Button';
 import { FormField, TextArea } from '@/components/ui/FormField';
 import { Toggle } from '@/components/ui/Toggle';
@@ -32,45 +33,33 @@ export default function SkillDetailPage() {
   const skillId = params.id as string;
   const { user } = useUser();
 
-  const [skill, setSkill] = useState<SkillDetailResponse | null>(null);
-  const [pageLoading, setPageLoading] = useState(true);
-  const [pageError, setPageError] = useState<string | null>(null);
+  const { data: skill, isPending: pageLoading, error: queryError } = useSkillDetailQuery(skillId);
+  const { invalidateSkill } = useSkillsCacheActions();
+  const pageError = queryError ? getErrorMessage(queryError, 'Failed to load skill') : null;
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  // Inline edit state
+  // Inline edit state, re-seeded whenever fresh skill data arrives.
   const [editSkillMd, setEditSkillMd] = useState('');
   const [editIsPublic, setEditIsPublic] = useState(false);
+  const [seededFrom, setSeededFrom] = useState<SkillDetailResponse | null>(null);
+  if (skill && skill !== seededFrom) {
+    setSeededFrom(skill);
+    setEditSkillMd(buildSkillMd(skill));
+    setEditIsPublic(skill.isPublic);
+  }
 
   useSetBreadcrumb(skillId, skill?.name);
 
   const isEditable = !!(user?.id && user.id === skill?.userId);
 
-  const fetchSkill = useCallback(async () => {
-    try {
-      setPageError(null);
-      const data = await apiService.getSkill(skillId);
-      setSkill(data);
-      setEditSkillMd(buildSkillMd(data));
-      setEditIsPublic(data.isPublic);
-    } catch (err) {
-      setPageError(getErrorMessage(err, 'Failed to load skill'));
-    } finally {
-      setPageLoading(false);
-    }
-  }, [skillId]);
-
-  useEffect(() => {
-    fetchSkill();
-  }, [fetchSkill]);
-
-  const isDirty = skill !== null && (
+  const isDirty = !!skill && (
     editSkillMd !== buildSkillMd(skill) || editIsPublic !== skill.isPublic
   );
 
   const { loading: saving, error: saveError, handleSubmit } = useAsyncForm<void>({
     onSuccess: () => {
-      fetchSkill();
+      invalidateSkill(skillId);
     },
   });
 

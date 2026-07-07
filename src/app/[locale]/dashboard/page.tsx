@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import {
   DevicePhoneMobileIcon,
   SparklesIcon,
 } from '@heroicons/react/24/outline';
-import apiService from '@/services/api';
+import { appsListOptions } from '@/queries/apps';
+import { agentsListOptions } from '@/queries/agents';
+import { getErrorMessage } from '@/utils/error';
 
 interface ResourceCard {
   key: string;
@@ -21,34 +23,30 @@ interface ResourceCard {
 
 export default function DashboardPage() {
   const t = useTranslations('DashboardHome');
-  const [resources, setResources] = useState<ResourceCard[]>([
-    { key: 'connectors', nameKey: 'apps', emptyKey: 'noApps', icon: DevicePhoneMobileIcon, href: '/dashboard/apps', count: null, error: null },
-    { key: 'agents', nameKey: 'agents', emptyKey: 'noAgents', icon: SparklesIcon, href: '/dashboard/agents', count: null, error: null },
-  ]);
-  const [loading, setLoading] = useState(true);
+  const appsQuery = useQuery(appsListOptions());
+  const agentsQuery = useQuery(agentsListOptions());
+  const loading = appsQuery.isPending || agentsQuery.isPending;
 
-  useEffect(() => {
-    let cancelled = false;
-
-    Promise.allSettled([
-      apiService.getApps().then(d => d.totalElements),
-      apiService.getAgentsList().then(a => a.totalElements),
-    ]).then(results => {
-      if (cancelled) return;
-      setResources(prev =>
-        prev.map((card, i) => ({
-          ...card,
-          count: results[i].status === 'fulfilled' ? results[i].value : null,
-          error: results[i].status === 'rejected'
-            ? (results[i].reason instanceof Error ? results[i].reason.message : 'Error')
-            : null,
-        }))
-      );
-      setLoading(false);
-    });
-
-    return () => { cancelled = true; };
-  }, []);
+  const resources: ResourceCard[] = [
+    {
+      key: 'connectors',
+      nameKey: 'apps',
+      emptyKey: 'noApps',
+      icon: DevicePhoneMobileIcon,
+      href: '/dashboard/apps',
+      count: appsQuery.data?.totalElements ?? null,
+      error: appsQuery.error ? getErrorMessage(appsQuery.error, 'Error') : null,
+    },
+    {
+      key: 'agents',
+      nameKey: 'agents',
+      emptyKey: 'noAgents',
+      icon: SparklesIcon,
+      href: '/dashboard/agents',
+      count: agentsQuery.data?.totalElements ?? null,
+      error: agentsQuery.error ? getErrorMessage(agentsQuery.error, 'Error') : null,
+    },
+  ];
 
   return (
     <div className="space-y-6">

@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { ArrowLeftIcon, PencilIcon, LockClosedIcon, KeyIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
-import apiService from '@/services/api';
-import { AgentResponse } from '@/types';
+import { useAgentDetailQuery } from '@/queries/agents';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Tabs } from '@/components/ui/Tabs';
 import { getAgentAvatarUrl } from '@/utils/avatar';
@@ -28,26 +27,9 @@ export default function AgentDetailPage() {
   const params = useParams();
   const agentId = params.id as string;
 
-  const [agent, setAgent] = useState<AgentResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: agent, isPending: loading, error: queryError } = useAgentDetailQuery(agentId);
+  const error = queryError ? getErrorMessage(queryError, 'Failed to load agent') : null;
   const [activeTab, setActiveTab] = useState<Tab>('general');
-
-  const fetchAgent = useCallback(async () => {
-    try {
-      setError(null);
-      const data = await apiService.getAgent(agentId);
-      setAgent(data);
-    } catch (err) {
-      setError(getErrorMessage(err, 'Failed to load agent'));
-    } finally {
-      setLoading(false);
-    }
-  }, [agentId]);
-
-  useEffect(() => {
-    fetchAgent();
-  }, [fetchAgent]);
 
   const getAgentTypeColor = (dest: string) => {
     switch (dest) {

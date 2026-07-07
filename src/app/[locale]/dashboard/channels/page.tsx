@@ -1,41 +1,33 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
-import apiService from '@/services/api';
-import { AgentResponse, ChannelResponse } from '@/types';
+import { AgentResponse } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { formatDate } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
+import { channelsListOptions } from '@/queries/channels';
+import { allAgentsOptions } from '@/queries/agents';
 
 export default function ChannelsPage() {
   const t = useTranslations('Channels');
   const locale = useLocale();
-  const [channels, setChannels] = useState<ChannelResponse[]>([]);
-  const [agents, setAgents] = useState<Record<string, AgentResponse>>({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const channelsQuery = useQuery(channelsListOptions());
+  const agentsQuery = useQuery(allAgentsOptions());
 
-  useEffect(() => {
-    let cancelled = false;
-    Promise.all([
-      apiService.getChannels(),
-      apiService.getAgentsList({ size: 200 }),
-    ])
-      .then(([ch, ag]) => {
-        if (cancelled) return;
-        setChannels(ch);
-        const map: Record<string, AgentResponse> = {};
-        ag.content.forEach((a) => { map[a.id] = a; });
-        setAgents(map);
-      })
-      .catch((err) => { if (!cancelled) setError(getErrorMessage(err, 'Failed to load channels')); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, []);
+  const loading = channelsQuery.isPending || agentsQuery.isPending;
+  const queryError = channelsQuery.error ?? agentsQuery.error;
+  const error = queryError ? getErrorMessage(queryError, 'Failed to load channels') : '';
 
-  const rows = useMemo(() => channels, [channels]);
+  const agents = useMemo(() => {
+    const map: Record<string, AgentResponse> = {};
+    agentsQuery.data?.content.forEach((a) => { map[a.id] = a; });
+    return map;
+  }, [agentsQuery.data]);
+
+  const rows = channelsQuery.data ?? [];
 
   return (
     <div className="space-y-6">
