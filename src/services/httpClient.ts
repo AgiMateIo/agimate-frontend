@@ -1,8 +1,8 @@
 // httpClient.ts
-// Transport core extracted from the former ApiService god-object.
-// The logic below is copied verbatim from the original api.ts — do not edit it.
+// Transport core: fetch wrapper, token refresh, error mapping, GET dedup.
 import { API } from '@/config/constants';
 import { getApiBaseUrl } from '@/utils/api-url';
+import { routing } from '@/i18n/routing';
 
 const SERVICE_UNAVAILABLE_MESSAGE = 'SERVICE_UNAVAILABLE';
 const ACCESS_DENIED_MESSAGE = 'ACCESS_DENIED';
@@ -35,6 +35,18 @@ const getRefreshTokenId = (): string | null => typeof window !== 'undefined' ? l
 const clearTokens = () => {
   sessionStorage.removeItem('access_token');
   localStorage.removeItem('refresh_token_id');
+};
+
+// Hard-redirects to the login page, preserving the current locale prefix
+// (the next-intl middleware would otherwise bounce through the default locale).
+const clearTokensAndRedirectToLogin = () => {
+  clearTokens();
+  if (typeof window === 'undefined') return;
+  const [, maybeLocale] = window.location.pathname.split('/');
+  const prefix = (routing.locales as readonly string[]).includes(maybeLocale)
+    ? `/${maybeLocale}`
+    : '';
+  window.location.href = `${prefix}/login`;
 };
 
 // Helper function to extract data from nested response
@@ -149,38 +161,36 @@ class HttpClient {
     }
   }
 
-  private async makeRequest<T>(url: string, options: RequestInit = {}): Promise<T> {
-    // Add authorization header if token exists
+  // Builds request headers with the current access token attached.
+  private buildHeaders(options: RequestInit): HeadersInit {
     const token = getAccessToken();
-    const headers = {
+    return {
       'Content-Type': 'application/json',
       ...(token && { 'Authorization': `Bearer ${token}` }),
       ...options.headers,
     };
+  }
 
-    const config: RequestInit = {
-      ...options,
-      headers,
-    };
+  private async makeRequest<T>(url: string, options: RequestInit = {}): Promise<T> {
+    const isUserMeRequest = url.includes('/user/me');
 
-    let response = await safeFetch(url, config);
+    let response = await safeFetch(url, { ...options, headers: this.buildHeaders(options) });
 
-    // 403 Forbidden — permission denied, token refresh won't help
+    // 403 Forbidden — permission denied, token refresh won't help. For /user/me
+    // it means the session is unusable: clear tokens and start over at login.
     if (response.status === 403) {
+      if (isUserMeRequest) {
+        clearTokensAndRedirectToLogin();
+      }
       return handleErrorResponse(response);
     }
 
     if (response.status === 401) {
-      const isUserMeRequest = url.includes('/user/me');
-
       // Try to refresh the token once if unauthorized
       const refreshTokenId = getRefreshTokenId();
       if (!refreshTokenId) {
         if (isUserMeRequest) {
-          clearTokens();
-          if (typeof window !== 'undefined') {
-            window.location.href = '/login';
-          }
+          clearTokensAndRedirectToLogin();
         }
         throw new Error(isUserMeRequest ? 'No refresh token available' : ACCESS_DENIED_MESSAGE);
       }
@@ -188,14 +198,7 @@ class HttpClient {
       const refreshed = await this.refreshAccessToken(refreshTokenId);
       if (refreshed) {
         // Retry the request with the new token
-        const newToken = getAccessToken();
-        const retryHeaders = {
-          'Content-Type': 'application/json',
-          ...(newToken && { 'Authorization': `Bearer ${newToken}` }),
-          ...options.headers,
-        };
-
-        response = await safeFetch(url, { ...options, headers: retryHeaders });
+        response = await safeFetch(url, { ...options, headers: this.buildHeaders(options) });
 
         if (response.status === 403) {
           return handleErrorResponse(response);
@@ -203,19 +206,13 @@ class HttpClient {
 
         if (response.status === 401) {
           if (isUserMeRequest) {
-            clearTokens();
-            if (typeof window !== 'undefined') {
-              window.location.href = '/login';
-            }
+            clearTokensAndRedirectToLogin();
           }
           throw new Error(isUserMeRequest ? `HTTP ${response.status}: Unauthorized` : ACCESS_DENIED_MESSAGE);
         }
       } else {
         if (isUserMeRequest) {
-          clearTokens();
-          if (typeof window !== 'undefined') {
-            window.location.href = '/login';
-          }
+          clearTokensAndRedirectToLogin();
         }
         throw new Error(isUserMeRequest ? `HTTP ${response.status}: Unauthorized` : ACCESS_DENIED_MESSAGE);
       }
@@ -309,8 +306,8 @@ class HttpClient {
     } finally {
       // Clear all stored tokens regardless of backend response
       clearTokens();
-      return true;
     }
+    return true;
   }
 }
 
