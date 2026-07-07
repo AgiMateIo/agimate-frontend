@@ -7,7 +7,7 @@ import type {
   PagedResponse,
   ConnectorJobResponse,
   ConnectorJobKind,
-  WebhookDeliveryLogsResponse,
+  WebhookDeliveryLog,
 } from '@/types';
 
 export const logsApi = {
@@ -53,13 +53,13 @@ export const logsApi = {
   },
 
   // Webhook Delivery Logs
-  async getWebhookDeliveryLogs(params?: { agentId?: string; page?: number; size?: number }): Promise<WebhookDeliveryLogsResponse> {
+  async getWebhookDeliveryLogs(params?: { agentId?: string; page?: number; size?: number }): Promise<PagedResponse<WebhookDeliveryLog>> {
     const searchParams = new URLSearchParams();
     if (params?.agentId) searchParams.set('agentId', params.agentId);
     if (params?.page !== undefined) searchParams.set('page', String(params.page));
     if (params?.size !== undefined) searchParams.set('size', String(params.size));
     const query = searchParams.toString();
-    return httpClient.get<WebhookDeliveryLogsResponse>(
+    return httpClient.get<PagedResponse<WebhookDeliveryLog>>(
       `${API.ENDPOINTS.CONTROL_API}/manage/webhook-deliveries/${query ? `?${query}` : ''}`
     );
   },

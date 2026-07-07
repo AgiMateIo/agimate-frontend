@@ -57,7 +57,7 @@ export default function ConnectorJobsTab() {
     setActionError('');
     try {
       await action();
-      await fetchData(true);
+      await fetchData();
     } catch (err) {
       setActionError(getErrorMessage(err, t('actionFailed')));
     } finally {
@@ -75,9 +75,9 @@ export default function ConnectorJobsTab() {
     try {
       // Fire-and-forget: 200 means "queued". The actual run happens within ~1s.
       await apiService.runConnectorJobNow(id);
-      await fetchData(true);
+      await fetchData();
       // Re-fetch after a short delay so the user sees the status transition (PENDING → RUNNING → …).
-      setTimeout(() => { fetchData(true); }, 1500);
+      setTimeout(() => { fetchData(); }, 1500);
     } catch (err) {
       setActionError(getErrorMessage(err, t('actionFailed')));
     } finally {
@@ -96,7 +96,7 @@ export default function ConnectorJobsTab() {
     try {
       await apiService.deleteConnectorJob(deleteTarget.id);
       setDeleteTarget(null);
-      await fetchData(true);
+      await fetchData();
     } catch (err) {
       setActionError(getErrorMessage(err, t('actionFailed')));
       setDeleteTarget(null);
@@ -114,7 +114,7 @@ export default function ConnectorJobsTab() {
     <RefreshControls
       value={refreshInterval}
       onChange={setRefreshInterval}
-      onRefresh={() => fetchData(false)}
+      onRefresh={() => fetchData()}
     />
   );
 

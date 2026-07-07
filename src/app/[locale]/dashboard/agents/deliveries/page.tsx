@@ -1,89 +1,57 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { localeMap } from '@/i18n/routing';
 import { Link } from '@/i18n/navigation';
-import { ArrowLeftIcon, ArrowPathIcon, ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
-import { WebhookDeliveryLog, AgentResponse } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
-import { getErrorMessage } from '@/utils/error';
-
-const REFRESH_OPTIONS = [
-  { value: null, label: 'Off' },
-  { value: 5, label: '5s' },
-  { value: 10, label: '10s' },
-  { value: 30, label: '30s' },
-] as const;
+import { RefreshControls } from '@/components/ui/RefreshControls';
+import { usePagedLogsQuery } from '@/queries/logs';
+import { allAgentsOptions } from '@/queries/agents';
+import { parseBackendDate } from '@/utils/date';
 
 export default function WebhookDeliveriesPage() {
   const t = useTranslations('Agents');
   const locale = useLocale();
   const bcp47Locale = localeMap[locale];
 
-  const [agents, setAgents] = useState<AgentResponse[]>([]);
   const [selectedAgent, setSelectedAgent] = useState<string>('');
-  const [deliveries, setDeliveries] = useState<WebhookDeliveryLog[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  const agentsQuery = useQuery(allAgentsOptions());
+  const agents = agentsQuery.data?.content ?? [];
 
-  const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
-  const [refreshOpen, setRefreshOpen] = useState(false);
-  const refreshRef = useRef<HTMLDivElement>(null);
-  const pageSize = 20;
-
-  // Load agents on mount
-  useEffect(() => {
-    apiService.getAgentsList().then(r => setAgents(r.content)).catch(() => {});
-  }, []);
-
-  const fetchDeliveries = useCallback(async (silent = false) => {
-    if (!silent) { setLoading(true); setError(''); }
-    try {
-      const response = await apiService.getWebhookDeliveryLogs({
+  const {
+    content: deliveries,
+    totalPages,
+    loading,
+    error,
+    page,
+    setPage,
+    refreshInterval,
+    setRefreshInterval,
+    refresh,
+  } = usePagedLogsQuery(
+    'webhook-deliveries',
+    [selectedAgent],
+    ({ page, size }) =>
+      apiService.getWebhookDeliveryLogs({
         agentId: selectedAgent || undefined,
         page,
-        size: pageSize,
-      });
-      setDeliveries(response.content);
-      setTotalPages(response.totalPages);
-      if (silent) setError('');
-    } catch (err) {
-      if (!silent) {
-        setError(getErrorMessage(err, 'Failed to load delivery logs'));
-        setDeliveries([]);
-      }
-    } finally {
-      if (!silent) setLoading(false);
-    }
-  }, [selectedAgent, page]);
+        size,
+      }),
+    { defaultError: 'Failed to load delivery logs' },
+  );
 
-  useEffect(() => { fetchDeliveries(false); }, [fetchDeliveries]);
-
-  // Auto-refresh
-  useEffect(() => {
-    if (refreshInterval === null) return;
-    const id = setInterval(() => fetchDeliveries(true), refreshInterval * 1000);
-    return () => clearInterval(id);
-  }, [refreshInterval, fetchDeliveries]);
-
-  // Close refresh dropdown on outside click
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (refreshRef.current && !refreshRef.current.contains(e.target as Node)) setRefreshOpen(false);
-    };
-    if (refreshOpen) document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [refreshOpen]);
-
-  // Reset page when filter changes
-  useEffect(() => { setPage(0); }, [selectedAgent]);
+  const handleAgentChange = (agentId: string) => {
+    setSelectedAgent(agentId);
+    setPage(0);
+  };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+    const date = parseBackendDate(dateString);
+    if (Number.isNaN(date.getTime())) return dateString;
     return new Intl.DateTimeFormat(bcp47Locale, {
       day: '2-digit', month: 'short', year: 'numeric',
       hour: '2-digit', minute: '2-digit', second: '2-digit',
@@ -96,32 +64,6 @@ export default function WebhookDeliveriesPage() {
     if (code >= 500) return 'bg-error/10 text-error border-error/20';
     return 'bg-muted/10 text-muted border-muted/20';
   };
-
-  const currentLabel = REFRESH_OPTIONS.find(o => o.value === refreshInterval)?.label ?? t('autoRefreshOff');
-
-  // Render refresh controls inline
-  const refreshControls = (
-    <div className="flex items-center gap-2">
-      <div ref={refreshRef} className="relative">
-        <button onClick={() => setRefreshOpen(v => !v)} className="px-2 py-1 rounded-lg bg-surface-secondary text-xs font-medium text-muted hover:text-foreground transition-colors">
-          {refreshInterval === null ? t('autoRefresh') : currentLabel}
-        </button>
-        {refreshOpen && (
-          <div className="absolute right-0 mt-1 rounded-lg bg-surface-secondary shadow-lg border border-border py-1 z-50 min-w-[48px]">
-            {REFRESH_OPTIONS.map(({ value, label }) => (
-              <button key={label} onClick={() => { setRefreshInterval(value); setRefreshOpen(false); }}
-                className={`block w-full px-3 py-1 text-xs font-medium transition-colors ${value === refreshInterval ? 'text-accent' : 'text-muted hover:text-foreground'}`}>
-                {label}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-      <button onClick={() => fetchDeliveries(false)} className="p-1 rounded-lg text-muted hover:text-foreground hover:bg-surface-secondary transition-colors" title={t('refresh')}>
-        <ArrowPathIcon className="h-4 w-4" />
-      </button>
-    </div>
-  );
 
   return (
     <div className="space-y-6">
@@ -139,7 +81,7 @@ export default function WebhookDeliveriesPage() {
       <div className="flex items-center justify-between gap-4">
         <select
           value={selectedAgent}
-          onChange={e => setSelectedAgent(e.target.value)}
+          onChange={e => handleAgentChange(e.target.value)}
           className="px-3 py-2 bg-surface-secondary border border-border rounded-lg text-sm text-foreground"
         >
           <option value="">{t('allAgents')}</option>
@@ -147,7 +89,11 @@ export default function WebhookDeliveriesPage() {
             <option key={a.id} value={a.id}>{a.name}</option>
           ))}
         </select>
-        {refreshControls}
+        <RefreshControls
+          value={refreshInterval}
+          onChange={setRefreshInterval}
+          onRefresh={refresh}
+        />
       </div>
 
       {/* Content */}
@@ -215,11 +161,11 @@ export default function WebhookDeliveriesPage() {
                 {t('page', { current: page + 1, total: totalPages })}
               </p>
               <div className="flex gap-2">
-                <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
+                <button onClick={() => setPage(Math.max(0, page - 1))} disabled={page === 0}
                   className="flex items-center gap-1 px-3 py-2 rounded-lg bg-surface-secondary text-foreground hover:bg-surface disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm">
                   <ChevronLeftIcon className="h-4 w-4" /> {t('previous')}
                 </button>
-                <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}
+                <button onClick={() => setPage(Math.min(totalPages - 1, page + 1))} disabled={page >= totalPages - 1}
                   className="flex items-center gap-1 px-3 py-2 rounded-lg bg-surface-secondary text-foreground hover:bg-surface disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm">
                   {t('next')} <ChevronRightIcon className="h-4 w-4" />
                 </button>

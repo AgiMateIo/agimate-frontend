@@ -6,7 +6,7 @@ import apiService from '@/services/api';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { RefreshControls } from '@/components/ui/RefreshControls';
 import { Pagination } from '@/components/ui/Pagination';
-import { useAutoRefreshPagedData } from '@/hooks/useAutoRefreshPagedData';
+import { usePagedLogsQuery } from '@/queries/logs';
 import { formatDateTimeFull, formatDateTimeShort } from '@/utils/date';
 
 export default function ToolUseLogsTab() {
@@ -25,7 +25,9 @@ export default function ToolUseLogsTab() {
     refreshInterval,
     setRefreshInterval,
     refresh,
-  } = useAutoRefreshPagedData(
+  } = usePagedLogsQuery(
+    'tool-use-logs',
+    [],
     (params) => apiService.getToolUseLogs(params),
     { defaultError: 'Failed to load tool use logs' },
   );
