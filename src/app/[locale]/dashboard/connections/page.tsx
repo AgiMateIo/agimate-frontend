@@ -1,28 +1,23 @@
 'use client';
 
-import { useState, Suspense, use } from 'react';
+import { useState, Suspense } from 'react';
 import { useTranslations } from 'next-intl';
-import apiService from '@/services/api';
-import { ConnectorCatalogEntry, ConnectionResponse } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { usePromiseCache } from '@/hooks/usePromiseCache';
+import { useConnectionsQuery, useConnectionCacheActions } from '@/queries/connections';
+import { useIntegrationPlatformsQuery } from '@/queries/connectors';
 import ConnectionsList from '@/components/connections/ConnectionsList';
 import AddConnectionModal from '@/components/connections/AddConnectionModal';
 
-function ConnectionsContent({
-  dataPromise,
-  onUpdate,
-}: {
-  dataPromise: Promise<[ConnectorCatalogEntry[], ConnectionResponse[]]>;
-  onUpdate: () => void;
-}) {
+function ConnectionsContent() {
   const t = useTranslations('Connections');
-  const [platforms, connections] = use(dataPromise);
+  const { data: platforms } = useIntegrationPlatformsQuery();
+  const { data: connections } = useConnectionsQuery();
+  const { invalidateLists } = useConnectionCacheActions();
   const [showAddModal, setShowAddModal] = useState(false);
 
   const handleAddSuccess = () => {
-    onUpdate();
+    invalidateLists();
     setShowAddModal(false);
   };
 
@@ -56,14 +51,6 @@ function ConnectionsContent({
 
 export default function ConnectionsPage() {
   const t = useTranslations('Connections');
-  const { promise, invalidate } = usePromiseCache(
-    () => Promise.all([
-      apiService.getConnectors({ size: 200 }).then(r => r.content.filter(c => c.integrationMeta)),
-      apiService.getConnections(),
-    ]),
-    [],
-    'connections'
-  );
 
   return (
     <div className="space-y-6">
@@ -77,7 +64,7 @@ export default function ConnectionsPage() {
             <div className="text-center py-12 text-muted">{t('loading')}</div>
           </>
         }>
-          <ConnectionsContent dataPromise={promise} onUpdate={invalidate} />
+          <ConnectionsContent />
         </Suspense>
       </ErrorBoundary>
     </div>

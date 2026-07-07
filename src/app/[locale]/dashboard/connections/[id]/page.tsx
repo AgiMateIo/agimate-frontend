@@ -1,18 +1,21 @@
 'use client';
 
-import { useState, Suspense, use } from 'react';
+import { useState, Suspense } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { localeMap } from '@/i18n/routing';
-import apiService from '@/services/api';
-import type { ConnectionResponse, ConnectorCatalogEntry } from '@/types';
+import type { ConnectionResponse } from '@/types';
 import { formatDate } from '@/utils/date';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { Tabs } from '@/components/ui/Tabs';
-import { usePromiseCache } from '@/hooks/usePromiseCache';
 import { Toggle } from '@/components/ui/Toggle';
+import {
+  useConnectionDetailQuery,
+  useUpdateConnectionMutation,
+  useConnectionCacheActions,
+} from '@/queries/connections';
 import EditConnectionModal from '@/components/connections/EditConnectionModal';
 import UpdateCredentialsModal from '@/components/connections/UpdateCredentialsModal';
 import DeleteConnectionModal from '@/components/connections/DeleteConnectionModal';
@@ -25,49 +28,26 @@ import ConnectionSkillsTab from '@/components/connections/ConnectionSkillsTab';
 
 type Tab = 'info' | 'skills';
 
-function ConnectionDetailContent({
-  dataPromise,
-  onUpdate,
-}: {
-  dataPromise: Promise<[ConnectionResponse, ConnectorCatalogEntry]>;
-  onUpdate: () => void;
-}) {
+function ConnectionDetailContent({ id }: { id: string }) {
   const t = useTranslations('ConnectionDetail');
   const tInt = useTranslations('Connections');
   const locale = useLocale();
   const bcp47Locale = localeMap[locale];
   const router = useRouter();
 
-  const [initialConnection, connector] = use(dataPromise);
-  const [connection, setConnection] = useState(initialConnection);
-  const [lastInitial, setLastInitial] = useState(initialConnection);
+  const { data: { connection, connector } } = useConnectionDetailQuery(id);
+  const updateMutation = useUpdateConnectionMutation(id);
+  const { setConnection, invalidateConnection, removeConnection } = useConnectionCacheActions();
+
   const [activeTab, setActiveTab] = useState<Tab>('info');
-  const [updating, setUpdating] = useState(false);
   const [editingConnection, setEditingConnection] = useState(false);
   const [updatingCreds, setUpdatingCreds] = useState(false);
   const [deletingConnection, setDeletingConnection] = useState(false);
   const [testingConnection, setTestingConnection] = useState(false);
   const [showingTools, setShowingTools] = useState(false);
 
-  if (initialConnection !== lastInitial) {
-    setLastInitial(initialConnection);
-    setConnection(initialConnection);
-  }
-
-
-  const handleToggleEnabled = async () => {
-    setUpdating(true);
-    const newEnabled = !connection.enabled;
-    setConnection(prev => ({ ...prev, enabled: newEnabled }));
-
-    try {
-      await apiService.updateConnection(connection.id, { enabled: newEnabled });
-    } catch (error) {
-      console.error('Failed to update connection:', error);
-      setConnection(prev => ({ ...prev, enabled: !newEnabled }));
-    } finally {
-      setUpdating(false);
-    }
+  const handleToggleEnabled = () => {
+    updateMutation.mutate({ enabled: !connection.enabled });
   };
 
   const handleEditSuccess = (updated: ConnectionResponse) => {
@@ -81,6 +61,7 @@ function ConnectionDetailContent({
   };
 
   const handleDeleteSuccess = () => {
+    removeConnection(id);
     router.push('/dashboard/connections');
   };
 
@@ -134,7 +115,7 @@ function ConnectionDetailContent({
           <Toggle
             checked={connection.enabled}
             onChange={handleToggleEnabled}
-            disabled={updating}
+            disabled={updateMutation.isPending}
           />
           {connector.integrationMeta && (
             <button
@@ -263,7 +244,7 @@ function ConnectionDetailContent({
           connectionName={connection.name || connection.fullCode}
           onClose={() => {
             setTestingConnection(false);
-            onUpdate();
+            invalidateConnection(id);
           }}
         />
       )}
@@ -282,14 +263,6 @@ function ConnectionDetailContent({
 export default function ConnectionDetailPage() {
   const { id } = useParams<{ id: string }>();
   const t = useTranslations('ConnectionDetail');
-  const { promise, invalidate } = usePromiseCache(
-    () => apiService.getConnection(id).then(async (connection) => {
-      const connector = await apiService.getConnector(connection.connectorCode);
-      return [connection, connector] as [ConnectionResponse, ConnectorCatalogEntry];
-    }),
-    [id],
-    'connection-detail'
-  );
 
   return (
     <div className="space-y-6">
@@ -302,7 +275,7 @@ export default function ConnectionDetailPage() {
 
       <ErrorBoundary>
         <Suspense fallback={<div className="text-center py-12 text-muted">{t('loading')}</div>}>
-          <ConnectionDetailContent dataPromise={promise} onUpdate={invalidate} />
+          <ConnectionDetailContent id={id} />
         </Suspense>
       </ErrorBoundary>
     </div>
