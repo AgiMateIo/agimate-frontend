@@ -856,39 +856,10 @@
       "notSet": "Не задано",
       "unknown": "Неизвестно"
     },
-    "notifications": {
-      "title": "Уведомления",
-      "description": "Настройка получения уведомлений",
-      "emailNotifications": "Email уведомления",
-      "smartActionsAlerts": "Оповещения Smart Actions",
-      "weeklyReports": "Еженедельные отчёты",
-      "enabled": "Включены",
-      "criticalHigh": "Критичные и Высокие"
-    },
     "security": {
       "title": "Безопасность",
       "description": "Защита аккаунта",
-      "twoFactor": "Двухфакторная аутентификация",
-      "activeSessions": "Активные сессии",
-      "lastLogin": "Последний вход",
-      "disabled": "Выключена",
-      "devices": "{count} устройств"
-    },
-    "billing": {
-      "title": "Биллинг",
-      "description": "Управление подпиской",
-      "currentPlan": "Текущий план",
-      "nextBillingDate": "Следующее списание",
-      "paymentMethod": "Способ оплаты"
-    },
-    "dangerZone": {
-      "title": "Опасная зона",
-      "description": "Необратимые и разрушительные действия",
-      "deleteData": "Удалить все данные",
-      "deleteDataDescription": "Безвозвратно удалить все данные аналитики",
-      "deleteAccount": "Удалить аккаунт",
-      "deleteAccountDescription": "Безвозвратно удалить аккаунт и все данные",
-      "change": "Изменить"
+      "lastLogin": "Последний вход"
     }
   },
   "Channels": {

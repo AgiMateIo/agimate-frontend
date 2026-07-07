@@ -856,39 +856,10 @@
       "notSet": "Not set",
       "unknown": "Unknown"
     },
-    "notifications": {
-      "title": "Notifications",
-      "description": "Configure how you receive alerts",
-      "emailNotifications": "Email notifications",
-      "smartActionsAlerts": "Smart Actions alerts",
-      "weeklyReports": "Weekly reports",
-      "enabled": "Enabled",
-      "criticalHigh": "Critical & High"
-    },
     "security": {
       "title": "Security",
       "description": "Keep your account secure",
-      "twoFactor": "Two-factor authentication",
-      "activeSessions": "Active sessions",
-      "lastLogin": "Last login",
-      "disabled": "Disabled",
-      "devices": "{count} devices"
-    },
-    "billing": {
-      "title": "Billing",
-      "description": "Manage your subscription",
-      "currentPlan": "Current plan",
-      "nextBillingDate": "Next billing date",
-      "paymentMethod": "Payment method"
-    },
-    "dangerZone": {
-      "title": "Danger Zone",
-      "description": "Irreversible and destructive actions",
-      "deleteData": "Delete all data",
-      "deleteDataDescription": "Permanently delete all your analytics data",
-      "deleteAccount": "Delete account",
-      "deleteAccountDescription": "Permanently delete your account and all data",
-      "change": "Change"
+      "lastLogin": "Last login"
     }
   },
   "Channels": {
