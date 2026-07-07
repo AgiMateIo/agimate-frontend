@@ -1,17 +1,15 @@
 'use client';
 
-import { use } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { AgenticTeam } from '@/types/agentic-teams';
 
 interface AgenticTeamsListProps {
-  teamsPromise: Promise<AgenticTeam[]>;
+  teams: AgenticTeam[];
 }
 
-export default function AgenticTeamsList({ teamsPromise }: AgenticTeamsListProps) {
+export default function AgenticTeamsList({ teams }: AgenticTeamsListProps) {
   const t = useTranslations('AgenticTeams');
-  const teams = use(teamsPromise);
 
   if (teams.length === 0) {
     return (

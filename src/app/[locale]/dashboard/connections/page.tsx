@@ -1,18 +1,20 @@
 'use client';
 
 import { useState, Suspense } from 'react';
+import { useSuspenseQueries } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { useConnectionsQuery, useConnectionCacheActions } from '@/queries/connections';
-import { useIntegrationPlatformsQuery } from '@/queries/connectors';
+import { connectionsListOptions, useConnectionCacheActions } from '@/queries/connections';
+import { integrationPlatformsOptions } from '@/queries/connectors';
 import ConnectionsList from '@/components/connections/ConnectionsList';
 import AddConnectionModal from '@/components/connections/AddConnectionModal';
 
 function ConnectionsContent() {
   const t = useTranslations('Connections');
-  const { data: platforms } = useIntegrationPlatformsQuery();
-  const { data: connections } = useConnectionsQuery();
+  const [{ data: platforms }, { data: connections }] = useSuspenseQueries({
+    queries: [integrationPlatformsOptions(), connectionsListOptions()],
+  });
   const { invalidateLists } = useConnectionCacheActions();
   const [showAddModal, setShowAddModal] = useState(false);
 

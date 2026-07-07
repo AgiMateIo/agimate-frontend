@@ -1,16 +1,12 @@
 'use client';
 
-import { useState, Suspense, use, useCallback } from 'react';
+import { useState, Suspense } from 'react';
 import { useTranslations } from 'next-intl';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import apiService from '@/services/api';
-import {
-  ConnectorCatalogEntry,
-  PagedResponse,
-} from '@/types';
+import { ConnectorCatalogEntry } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { usePromiseCache } from '@/hooks/usePromiseCache';
+import { useConnectorSearchQuery } from '@/queries/connectors';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { getConnectorKind, ConnectorKind } from '@/utils/connector';
 
@@ -21,16 +17,16 @@ const KIND_BADGE: Record<ConnectorKind, string> = {
 };
 
 function ConnectorsContent({
-  dataPromise,
+  search,
   page,
   onPageChange,
 }: {
-  dataPromise: Promise<PagedResponse<ConnectorCatalogEntry>>;
+  search: string;
   page: number;
   onPageChange: (page: number) => void;
 }) {
   const t = useTranslations('ConnectorCatalog');
-  const data = use(dataPromise);
+  const { data } = useConnectorSearchQuery(search, page);
 
   if (data.empty) {
     return (
@@ -121,22 +117,6 @@ export default function ConnectorsPage() {
   const [page, setPage] = useState(0);
   const debouncedSearch = useDebouncedValue(search, 300);
 
-  const fetchFn = useCallback(
-    () =>
-      apiService.getConnectors({
-        search: debouncedSearch || undefined,
-        page,
-        size: 20,
-      }),
-    [debouncedSearch, page]
-  );
-
-  const { promise } = usePromiseCache(
-    fetchFn,
-    [debouncedSearch, page],
-    'connectors-list'
-  );
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -163,7 +143,7 @@ export default function ConnectorsPage() {
       {/* List */}
       <ErrorBoundary>
         <Suspense fallback={<div className="text-center py-12 text-muted">{t('loading')}</div>}>
-          <ConnectorsContent dataPromise={promise} page={page} onPageChange={setPage} />
+          <ConnectorsContent search={debouncedSearch} page={page} onPageChange={setPage} />
         </Suspense>
       </ErrorBoundary>
     </div>

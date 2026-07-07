@@ -1,21 +1,15 @@
 'use client';
 
-import { Suspense, use } from 'react';
+import { Suspense } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
-import apiService from '@/services/api';
-import { AgentResponse, PagedResponse } from '@/types';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { usePromiseCache } from '@/hooks/usePromiseCache';
+import { useAgentsListQuery } from '@/queries/agents';
 import AgentsList from '@/components/agents/AgentsList';
 
-function AgentsContent({
-  dataPromise,
-}: {
-  dataPromise: Promise<PagedResponse<AgentResponse>>;
-}) {
+function AgentsContent() {
   const t = useTranslations('Agents');
-  const { content: agents } = use(dataPromise);
+  const { data: { content: agents } } = useAgentsListQuery();
 
   return (
     <div className="bg-surface rounded-xl border border-border p-6 space-y-6">
@@ -36,11 +30,6 @@ function AgentsContent({
 
 export default function AgentsPage() {
   const t = useTranslations('Agents');
-  const { promise } = usePromiseCache(
-    () => apiService.getAgentsList(),
-    [],
-    'agents'
-  );
 
   return (
     <div className="space-y-6">
@@ -53,7 +42,7 @@ export default function AgentsPage() {
       {/* Agents Section */}
       <ErrorBoundary>
         <Suspense fallback={<div className="text-center py-12 text-muted">{t('loadingAgents')}</div>}>
-          <AgentsContent dataPromise={promise} />
+          <AgentsContent />
         </Suspense>
       </ErrorBoundary>
     </div>

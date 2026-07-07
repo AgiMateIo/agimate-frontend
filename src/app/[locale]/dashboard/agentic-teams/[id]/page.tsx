@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/i18n/navigation';
@@ -13,33 +13,21 @@ import {
 } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { usePromiseCache } from '@/hooks/usePromiseCache';
+import { useAgenticTeamQuery, useAgenticTeamCacheActions } from '@/queries/agentic-teams';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
-import apiService from '@/services/api';
 import { AgenticTeam } from '@/types/agentic-teams';
 import EditTeamModal from '@/components/agentic-teams/EditTeamModal';
 
 function TeamDetail({
-  teamsPromise,
   teamId,
   onEdit,
 }: {
-  teamsPromise: Promise<AgenticTeam[]>;
   teamId: string;
   onEdit: (team: AgenticTeam) => void;
 }) {
   const t = useTranslations('AgenticTeams');
-  const teams = use(teamsPromise);
-  const team = teams.find((t) => t.id === teamId);
+  const { data: team } = useAgenticTeamQuery(teamId);
   useSetBreadcrumb(teamId, team?.name);
-
-  if (!team) {
-    return (
-      <div className="text-center py-12 text-muted">
-        {t('teamNotFound')}
-      </div>
-    );
-  }
 
   const tiles = [
     {
@@ -114,15 +102,10 @@ export default function AgenticTeamDetailPage() {
   const params = useParams();
   const teamId = params.id as string;
   const [teamToEdit, setTeamToEdit] = useState<AgenticTeam | null>(null);
-
-  const { promise, invalidate } = usePromiseCache(
-    () => apiService.getAgenticTeams(),
-    [],
-    'agentic-team-detail'
-  );
+  const { invalidateAll } = useAgenticTeamCacheActions();
 
   const handleUpdated = () => {
-    invalidate();
+    invalidateAll();
     setTeamToEdit(null);
   };
 
@@ -135,7 +118,7 @@ export default function AgenticTeamDetailPage() {
     <div className="space-y-6">
       <ErrorBoundary>
         <Suspense fallback={<div className="text-muted">{t('loading')}</div>}>
-          <TeamDetail teamsPromise={promise} teamId={teamId} onEdit={setTeamToEdit} />
+          <TeamDetail teamId={teamId} onEdit={setTeamToEdit} />
         </Suspense>
       </ErrorBoundary>
 

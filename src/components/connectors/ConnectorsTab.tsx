@@ -1,57 +1,47 @@
 'use client';
 
-import { useState, Suspense, use } from 'react';
+import { useState, Suspense } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { localeMap } from '@/i18n/routing';
 import apiService from '@/services/api';
-import { AppResponse, PagedResponse } from '@/types';
+import { AppResponse } from '@/types';
 import { TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { Toggle } from '@/components/ui/Toggle';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { usePromiseCache } from '@/hooks/usePromiseCache';
+import { useAppsQuery, useAppCacheActions } from '@/queries/apps';
+import { formatDate } from '@/utils/date';
 import AddConnectorModal from './AddConnectorModal';
 import EditConnectorModal from './EditConnectorModal';
 import DeleteConnectorModal from './DeleteConnectorModal';
 
 function ConnectorsListView({
-  connectorsPromise,
-  onUpdate,
+  page,
+  onPageChange,
 }: {
-  connectorsPromise: Promise<PagedResponse<AppResponse>>;
-  onUpdate: () => void;
+  page: number;
+  onPageChange: (page: number) => void;
 }) {
   const t = useTranslations('Connectors');
   const locale = useLocale();
   const bcp47Locale = localeMap[locale];
-  const initialData = use(connectorsPromise);
-  const [connectors, setConnectors] = useState(initialData.content);
-  const [pageInfo, setPageInfo] = useState(initialData);
-  const [lastInitial, setLastInitial] = useState(initialData);
+  const { data: pageInfo } = useAppsQuery(page);
+  const { patchAppInLists, removeAppFromLists, invalidateLists } = useAppCacheActions();
+  const connectors = pageInfo.content;
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingConnector, setEditingConnector] = useState<AppResponse | null>(null);
   const [deletingConnector, setDeletingConnector] = useState<AppResponse | null>(null);
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
-  const [page, setPage] = useState(0);
-
-  // Sync local state when fresh data arrives after invalidation
-  if (initialData !== lastInitial) {
-    setLastInitial(initialData);
-    setConnectors(initialData.content);
-    setPageInfo(initialData);
-  }
 
   const handleConnectorAdded = () => {
-    onUpdate();
+    invalidateLists();
     setShowAddModal(false);
   };
 
   const handleToggleEnabled = async (connector: AppResponse) => {
     setUpdatingIds(prev => new Set(prev).add(connector.id));
-
-    setConnectors(prev =>
-      prev.map(a => a.id === connector.id ? { ...a, enabled: !a.enabled } : a)
-    );
+    patchAppInLists(connector.id, { enabled: !connector.enabled });
 
     try {
       await apiService.updateApp(connector.id, {
@@ -59,9 +49,7 @@ function ConnectorsListView({
       });
     } catch (err) {
       console.error('Failed to update app:', err);
-      setConnectors(prev =>
-        prev.map(a => a.id === connector.id ? { ...a, enabled: connector.enabled } : a)
-      );
+      patchAppInLists(connector.id, { enabled: connector.enabled });
     } finally {
       setUpdatingIds(prev => {
         const next = new Set(prev);
@@ -72,35 +60,13 @@ function ConnectorsListView({
   };
 
   const handleDeleteSuccess = (connectorId: string) => {
-    setConnectors(prev => prev.filter(a => a.id !== connectorId));
+    removeAppFromLists(connectorId);
     setDeletingConnector(null);
   };
 
   const handleEditSuccess = (updated: AppResponse) => {
-    setConnectors(prev => prev.map(a => a.id === updated.id ? updated : a));
+    patchAppInLists(updated.id, updated);
     setEditingConnector(null);
-  };
-
-  const handlePageChange = async (newPage: number) => {
-    try {
-      const data = await apiService.getApps({ page: newPage });
-      setConnectors(data.content);
-      setPageInfo(data);
-      setPage(newPage);
-    } catch (err) {
-      console.error('Failed to load page:', err);
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString.replace(' ', 'T'));
-    return new Intl.DateTimeFormat(bcp47Locale, {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(date);
   };
 
   return (
@@ -136,7 +102,7 @@ function ConnectorsListView({
                     )}
                     <div className="text-xs text-muted mt-2 space-y-1">
                       <p>{t('key')}: <span className="font-mono">{connector.maskedKeyId}</span></p>
-                      <p>{t('created')}: {formatDate(connector.createdAt)}</p>
+                      <p>{t('created')}: {formatDate(connector.createdAt, bcp47Locale)}</p>
                     </div>
                   </div>
 
@@ -180,14 +146,14 @@ function ConnectorsListView({
             </div>
             <div className="flex gap-2">
               <button
-                onClick={() => handlePageChange(page - 1)}
+                onClick={() => onPageChange(page - 1)}
                 disabled={pageInfo.first}
                 className="px-3 py-1 text-xs font-medium rounded-lg bg-surface-secondary text-muted hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {t('previous')}
               </button>
               <button
-                onClick={() => handlePageChange(page + 1)}
+                onClick={() => onPageChange(page + 1)}
                 disabled={pageInfo.last}
                 className="px-3 py-1 text-xs font-medium rounded-lg bg-surface-secondary text-muted hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
@@ -226,18 +192,13 @@ function ConnectorsListView({
 
 export default function ConnectorsTab() {
   const t = useTranslations('Connectors');
-  const { promise, invalidate } = usePromiseCache(
-    () => apiService.getApps(),
-    [],
-    'connectors-tab'
-  );
+  const [page, setPage] = useState(0);
 
   return (
     <ErrorBoundary>
       <Suspense fallback={<div className="text-center py-12 text-muted">{t('loadingApps')}</div>}>
-        <ConnectorsListView connectorsPromise={promise} onUpdate={invalidate} />
+        <ConnectorsListView page={page} onPageChange={setPage} />
       </Suspense>
-
     </ErrorBoundary>
   );
 }

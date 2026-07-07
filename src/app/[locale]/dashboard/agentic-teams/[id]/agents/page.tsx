@@ -1,27 +1,22 @@
 'use client';
 
-import { Suspense, use } from 'react';
+import { Suspense } from 'react';
 import { useParams } from 'next/navigation';
+import { useSuspenseQueries } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
-import apiService from '@/services/api';
-import { AgentResponse, PagedResponse } from '@/types';
-import { AgenticTeam } from '@/types/agentic-teams';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { usePromiseCache } from '@/hooks/usePromiseCache';
+import { agentsListOptions } from '@/queries/agents';
+import { agenticTeamOptions } from '@/queries/agentic-teams';
 import AgentsList from '@/components/agents/AgentsList';
 
-function TeamAgentsContent({
-  dataPromise,
-  teamId,
-}: {
-  dataPromise: Promise<[PagedResponse<AgentResponse>, AgenticTeam]>;
-  teamId: string;
-}) {
+function TeamAgentsContent({ teamId }: { teamId: string }) {
   const t = useTranslations('AgenticTeams');
   const tAgents = useTranslations('Agents');
-  const [{ content: agents }, team] = use(dataPromise);
+  const [{ data: { content: agents } }, { data: team }] = useSuspenseQueries({
+    queries: [agentsListOptions(teamId), agenticTeamOptions(teamId)],
+  });
 
   useSetBreadcrumb(teamId, team?.name);
 
@@ -47,15 +42,6 @@ export default function TeamAgentsPage() {
   const params = useParams();
   const teamId = params.id as string;
 
-  const { promise } = usePromiseCache(
-    () => Promise.all([
-      apiService.getAgentsList({ agenticTeamId: teamId }),
-      apiService.getAgenticTeam(teamId),
-    ]),
-    [teamId],
-    'team-agents'
-  );
-
   return (
     <div className="space-y-6">
       {/* Header — always visible */}
@@ -65,7 +51,7 @@ export default function TeamAgentsPage() {
 
       <ErrorBoundary>
         <Suspense fallback={<div className="text-center py-12 text-muted">{t('loadingAgents')}</div>}>
-          <TeamAgentsContent dataPromise={promise} teamId={teamId} />
+          <TeamAgentsContent teamId={teamId} />
         </Suspense>
       </ErrorBoundary>
     </div>

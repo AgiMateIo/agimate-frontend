@@ -1,4 +1,5 @@
 import {
+  queryOptions,
   useMutation,
   useQueryClient,
   useSuspenseQuery,
@@ -23,11 +24,14 @@ export interface ConnectionWithConnector {
   connector: ConnectorCatalogEntry;
 }
 
-export function useConnectionsQuery(connectorCode?: string) {
-  return useSuspenseQuery({
+export const connectionsListOptions = (connectorCode?: string) =>
+  queryOptions({
     queryKey: connectionKeys.list(connectorCode),
     queryFn: () => apiService.getConnections(connectorCode),
   });
+
+export function useConnectionsQuery(connectorCode?: string) {
+  return useSuspenseQuery(connectionsListOptions(connectorCode));
 }
 
 // The detail page needs the connection plus its connector-catalog entry

@@ -1,22 +1,16 @@
 'use client';
 
-import { useState, Suspense, use } from 'react';
+import { useState, Suspense } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
-import apiService from '@/services/api';
-import type { UserAppDetailResponse } from '@/types';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { usePromiseCache } from '@/hooks/usePromiseCache';
+import { useAppDetailQuery } from '@/queries/apps';
 import RegenerateConnectorKeyModal from '@/components/connectors/RegenerateConnectorKeyModal';
 
-function ConnectorContent({
-  connectorPromise,
-}: {
-  connectorPromise: Promise<UserAppDetailResponse>;
-}) {
+function ConnectorContent({ id }: { id: string }) {
   const t = useTranslations('Connectors');
-  const connector = use(connectorPromise);
+  const { data: connector } = useAppDetailQuery(id);
   const [showRegenerate, setShowRegenerate] = useState(false);
 
   const handleRegenerateSuccess = () => {
@@ -184,11 +178,6 @@ function ConnectorContent({
 export default function ConnectorDetailPage() {
   const { id } = useParams<{ id: string }>();
   const t = useTranslations('Connectors');
-  const { promise } = usePromiseCache(
-    () => apiService.getApp(id),
-    [id],
-    'connector-detail'
-  );
 
   return (
     <div className="space-y-6">
@@ -202,7 +191,7 @@ export default function ConnectorDetailPage() {
 
       <ErrorBoundary>
         <Suspense fallback={<div className="text-center py-12 text-muted">{t('loadingApp')}</div>}>
-          <ConnectorContent connectorPromise={promise} />
+          <ConnectorContent id={id} />
         </Suspense>
       </ErrorBoundary>
     </div>

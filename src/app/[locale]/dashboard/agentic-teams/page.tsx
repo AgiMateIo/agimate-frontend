@@ -6,23 +6,22 @@ import { PlusIcon } from '@heroicons/react/24/outline';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { usePromiseCache } from '@/hooks/usePromiseCache';
-import apiService from '@/services/api';
+import { useAgenticTeamsQuery, useAgenticTeamCacheActions } from '@/queries/agentic-teams';
 import AgenticTeamsList from '@/components/agentic-teams/AgenticTeamsList';
 import CreateTeamModal from '@/components/agentic-teams/CreateTeamModal';
+
+function TeamsGrid() {
+  const { data: teams } = useAgenticTeamsQuery();
+  return <AgenticTeamsList teams={teams} />;
+}
 
 export default function AgenticTeamsPage() {
   const t = useTranslations('AgenticTeams');
   const [showCreateModal, setShowCreateModal] = useState(false);
-
-  const { promise, invalidate } = usePromiseCache(
-    () => apiService.getAgenticTeams(),
-    [],
-    'agentic-teams'
-  );
+  const { invalidateAll } = useAgenticTeamCacheActions();
 
   const handleCreated = () => {
-    invalidate();
+    invalidateAll();
     setShowCreateModal(false);
   };
 
@@ -46,7 +45,7 @@ export default function AgenticTeamsPage() {
       {/* Teams grid */}
       <ErrorBoundary>
         <Suspense fallback={<div className="text-muted">{t('loading')}</div>}>
-          <AgenticTeamsList teamsPromise={promise} />
+          <TeamsGrid />
         </Suspense>
       </ErrorBoundary>
 
