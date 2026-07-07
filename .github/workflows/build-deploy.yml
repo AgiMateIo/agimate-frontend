@@ -7,13 +7,18 @@ on:
     paths:
       - 'src/**'
       - 'public/**'
+      - 'messages/**'
+      - 'scripts/**'
       - 'package.json'
-      - 'package-lock.json'
+      - 'pnpm-lock.yaml'
       - 'next.config.*'
       - 'tsconfig.json'
+      - 'global.d.ts'
+      - 'eslint.config.mjs'
       - 'postcss.config.*'
       - 'Dockerfile'
       - '.dockerignore'
+      - '.github/workflows/build-deploy.yml'
 
 jobs:
   validate-config:
@@ -34,8 +39,31 @@ jobs:
           fi
           echo "✅ All required variables and secrets are set"
 
+  quality:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: |
+          corepack enable
+          pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Check i18n key parity
+        run: pnpm check:i18n
+
   build:
-    needs: validate-config
+    needs: [validate-config, quality]
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
