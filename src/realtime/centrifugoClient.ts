@@ -5,6 +5,7 @@ import type { CentrifugoTokenResponse } from '@/types';
 const TOKEN_REFRESH_MARGIN_MS = 60_000;
 
 let centrifuge: Centrifuge | null = null;
+let initInFlight: Promise<Centrifuge> | null = null;
 let cachedToken: CentrifugoTokenResponse | null = null;
 let cachedAt = 0;
 let inFlight: Promise<CentrifugoTokenResponse> | null = null;
@@ -31,12 +32,10 @@ export async function getChannelToken(): Promise<CentrifugoTokenResponse> {
   return fetchToken();
 }
 
-export async function initCentrifuge(): Promise<Centrifuge> {
-  if (centrifuge) return centrifuge;
-
+async function createAndConnect(): Promise<Centrifuge> {
   const token = await fetchToken();
 
-  centrifuge = new Centrifuge(token.wsUrl, {
+  const client = new Centrifuge(token.wsUrl, {
     token: token.connectionToken,
     getToken: async () => {
       const fresh = await fetchToken(true);
@@ -44,7 +43,7 @@ export async function initCentrifuge(): Promise<Centrifuge> {
     },
   });
 
-  centrifuge.on('error', (ctx) => {
+  client.on('error', (ctx) => {
     console.error('[centrifugo] error', {
       type: ctx?.type,
       code: ctx?.error?.code,
@@ -53,8 +52,21 @@ export async function initCentrifuge(): Promise<Centrifuge> {
     });
   });
 
-  centrifuge.connect();
-  return centrifuge;
+  client.connect();
+  centrifuge = client;
+  return client;
+}
+
+export async function initCentrifuge(): Promise<Centrifuge> {
+  if (centrifuge) return centrifuge;
+  // Deduplicate concurrent init (e.g. two subscribers mounting at once) —
+  // without this, each caller would open its own WebSocket connection.
+  if (!initInFlight) {
+    initInFlight = createAndConnect().finally(() => {
+      initInFlight = null;
+    });
+  }
+  return initInFlight;
 }
 
 export function disconnectCentrifuge(): void {
