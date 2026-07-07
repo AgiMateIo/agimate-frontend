@@ -1,35 +1,21 @@
 'use client';
 
-import { useState, Suspense, use } from 'react';
+import { useState, Suspense } from 'react';
 import { useTranslations } from 'next-intl';
-import apiService from '@/services/api';
-import { LlmProviderResponse } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { usePromiseCache } from '@/hooks/usePromiseCache';
+import { useLlmProvidersQuery, useLlmProviderCacheActions } from '@/queries/llm-providers';
 import LlmProvidersList from '@/components/llm-providers/LlmProvidersList';
 import AddLlmProviderModal from '@/components/llm-providers/AddLlmProviderModal';
 
-function LlmProvidersContent({
-  dataPromise,
-  onUpdate,
-}: {
-  dataPromise: Promise<LlmProviderResponse[]>;
-  onUpdate: () => void;
-}) {
+function LlmProvidersContent() {
   const t = useTranslations('LlmProviders');
-  const initial = use(dataPromise);
-  const [providers, setProviders] = useState(initial);
-  const [lastInitial, setLastInitial] = useState(initial);
+  const { data: providers } = useLlmProvidersQuery();
+  const { setProviders, invalidate } = useLlmProviderCacheActions();
   const [showAddModal, setShowAddModal] = useState(false);
 
-  if (initial !== lastInitial) {
-    setLastInitial(initial);
-    setProviders(initial);
-  }
-
   const handleAddSuccess = () => {
-    onUpdate();
+    invalidate();
     setShowAddModal(false);
   };
 
@@ -62,11 +48,6 @@ function LlmProvidersContent({
 
 export default function LlmProvidersPage() {
   const t = useTranslations('LlmProviders');
-  const { promise, invalidate } = usePromiseCache(
-    () => apiService.getLlmProviders(),
-    [],
-    'llm-providers'
-  );
 
   return (
     <div className="space-y-6">
@@ -80,7 +61,7 @@ export default function LlmProvidersPage() {
             <div className="text-center py-12 text-muted">{t('loading')}</div>
           </>
         }>
-          <LlmProvidersContent dataPromise={promise} onUpdate={invalidate} />
+          <LlmProvidersContent />
         </Suspense>
       </ErrorBoundary>
     </div>

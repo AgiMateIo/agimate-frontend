@@ -1,55 +1,37 @@
 'use client';
 
-import { useState, Suspense, use, useCallback } from 'react';
+import { useState, Suspense } from 'react';
 import { useTranslations } from 'next-intl';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import apiService from '@/services/api';
-import { SkillResponse, PagedResponse } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { Tabs } from '@/components/ui/Tabs';
-import { usePromiseCache } from '@/hooks/usePromiseCache';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { useSkillsListQuery, useSkillsCacheActions, type SkillListTab } from '@/queries/skills';
 import { Link } from '@/i18n/navigation';
 import SkillsList from '@/components/skills/SkillsList';
 
-type SkillTab = 'my' | 'public';
-
 function SkillsContent({
-  dataPromise,
   tab,
-  onUpdate,
+  search,
   page,
   onPageChange,
 }: {
-  dataPromise: Promise<PagedResponse<SkillResponse>>;
-  tab: SkillTab;
-  onUpdate: () => void;
+  tab: SkillListTab;
+  search: string;
   page: number;
   onPageChange: (page: number) => void;
 }) {
   const t = useTranslations('Skills');
-  const data = use(dataPromise);
-  const [skills, setSkills] = useState(data.content);
-  const [lastContent, setLastContent] = useState(data.content);
-
-  // Sync local state when fresh data arrives after invalidation
-  if (data.content !== lastContent) {
-    setLastContent(data.content);
-    setSkills(data.content);
-  }
-
-  const handleDeleteSuccess = (skillId: string) => {
-    setSkills(prev => prev.filter(s => s.id !== skillId));
-    onUpdate(); // Refetch for correct pagination
-  };
+  const { data } = useSkillsListQuery(tab, search, page);
+  const { removeSkillFromLists } = useSkillsCacheActions();
 
   return (
     <div className="space-y-4">
       <SkillsList
-        skills={skills}
+        skills={data.content}
         variant={tab}
-        onDeleteSuccess={handleDeleteSuccess}
+        onDeleteSuccess={removeSkillFromLists}
       />
 
       {/* Pagination */}
@@ -82,25 +64,13 @@ function SkillsContent({
 
 export default function SkillsPage() {
   const t = useTranslations('Skills');
-  const [activeTab, setActiveTab] = useState<SkillTab>('my');
+  const [activeTab, setActiveTab] = useState<SkillListTab>('my');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const debouncedSearch = useDebouncedValue(search, 300);
 
-  const fetchFn = useCallback(() => {
-    const params = { search: debouncedSearch || undefined, page, size: 20 };
-    if (activeTab === 'my') return apiService.getSkills(params);
-    return apiService.getPublicSkills(params);
-  }, [activeTab, debouncedSearch, page]);
-
-  const { promise, invalidate } = usePromiseCache(
-    fetchFn,
-    [activeTab, debouncedSearch, page],
-    'skills-list'
-  );
-
   const handleTabChange = (tabId: string) => {
-    setActiveTab(tabId as SkillTab);
+    setActiveTab(tabId as SkillListTab);
     setSearch('');
     setPage(0);
   };
@@ -127,9 +97,8 @@ export default function SkillsPage() {
           <div className="text-center py-12 text-muted">{t('loading')}</div>
         }>
           <SkillsContent
-            dataPromise={promise}
             tab={activeTab}
-            onUpdate={invalidate}
+            search={debouncedSearch}
             page={page}
             onPageChange={setPage}
           />
