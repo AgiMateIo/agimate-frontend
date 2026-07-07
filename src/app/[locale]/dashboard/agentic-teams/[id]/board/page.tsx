@@ -16,6 +16,7 @@ import type {
   AgentResponse,
   BoardTaskCreatedPayload,
   BoardTaskStatusChangedPayload,
+  BoardTaskCommentCreatedPayload,
 } from '@/types';
 import { TASK_STATUSES } from '@/types';
 import KanbanBoard from '@/components/boards/KanbanBoard';
@@ -51,6 +52,7 @@ export default function BoardPage() {
 
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [showCreateTask, setShowCreateTask] = useState(false);
+  const [commentEvent, setCommentEvent] = useState<BoardTaskCommentCreatedPayload | null>(null);
   const [highlightedIds, setHighlightedIds] = useState<Set<string>>(() => new Set());
 
   const agentMap = useMemo(() => buildAgentMap(agents), [agents]);
@@ -208,6 +210,7 @@ export default function BoardPage() {
   useBoardSubscription(board?.id ?? null, {
     onTaskCreated: handleRealtimeTaskCreated,
     onTaskStatusChanged: handleRealtimeStatusChanged,
+    onCommentAdded: setCommentEvent,
   });
 
   // Find the selected task from columns
@@ -285,6 +288,7 @@ export default function BoardPage() {
           boardId={board.id}
           task={selectedTask}
           agentMap={agentMap}
+          lastCommentEvent={commentEvent}
           onClose={() => setSelectedTaskId(null)}
         />
       )}

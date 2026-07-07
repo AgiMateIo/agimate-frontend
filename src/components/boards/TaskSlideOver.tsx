@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import apiService from '@/services/api';
-import type { BoardTask, BoardTaskComment } from '@/types';
+import type { BoardTask, BoardTaskComment, BoardTaskCommentCreatedPayload } from '@/types';
 import { TYPE_BADGE } from './taskBadges';
 import { getErrorMessage } from '@/utils/error';
 
@@ -19,6 +19,9 @@ interface TaskSlideOverProps {
   boardId: string;
   task: BoardTask;
   agentMap: Map<string, string>;
+  // Latest realtime comment event on the board; triggers a silent refetch
+  // when it belongs to this task.
+  lastCommentEvent?: BoardTaskCommentCreatedPayload | null;
   onClose: () => void;
 }
 
@@ -26,6 +29,7 @@ export default function TaskSlideOver({
   boardId,
   task,
   agentMap,
+  lastCommentEvent,
   onClose,
 }: TaskSlideOverProps) {
   const t = useTranslations('Board');
@@ -36,8 +40,8 @@ export default function TaskSlideOver({
   const [newComment, setNewComment] = useState('');
   const [commentAgentId, setCommentAgentId] = useState('');
 
-  const fetchComments = useCallback(async () => {
-    setCommentsLoading(true);
+  const fetchComments = useCallback(async (silent = false) => {
+    if (!silent) setCommentsLoading(true);
     setCommentsError(null);
     try {
       const data = await apiService.getTaskComments(boardId, task.id);
@@ -48,6 +52,13 @@ export default function TaskSlideOver({
       setCommentsLoading(false);
     }
   }, [boardId, task.id, t]);
+
+  // Live-update the comment list when a realtime event arrives for this task.
+  useEffect(() => {
+    if (lastCommentEvent && lastCommentEvent.taskId === task.id) {
+      fetchComments(true);
+    }
+  }, [lastCommentEvent, task.id, fetchComments]);
 
   // Lock body scroll while panel is open
   useEffect(() => {
