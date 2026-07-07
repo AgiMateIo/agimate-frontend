@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode, useEffect, useCallback, useRef } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect, useCallback, useMemo, useRef } from 'react';
 import { User } from '@/services/types';
 import { getErrorMessage } from '@/utils/error';
 
@@ -47,7 +47,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     }
   }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       const { default: ApiService } = await import('@/services/api');
       await ApiService.logout();
@@ -59,7 +59,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
       setUser(null);
       setError(null);
     }
-  };
+  }, []);
 
   useEffect(() => {
     // Auto-fetch user on mount if refresh token exists
@@ -70,11 +70,12 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     }
   }, [fetchUser]);
 
-  return (
-    <UserContext.Provider value={{ user, loading, error, fetchUser, logout }}>
-      {children}
-    </UserContext.Provider>
+  const value = useMemo(
+    () => ({ user, loading, error, fetchUser, logout }),
+    [user, loading, error, fetchUser, logout]
   );
+
+  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };
 
 export const useUser = () => {

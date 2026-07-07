@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
 import { SkillResponse } from '@/types';
-import { PagedResponse } from '@/types/tool-use-logs';
+import { PagedResponse } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import SkillCard from '@/components/skills/SkillCard';

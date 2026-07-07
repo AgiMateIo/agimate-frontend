@@ -16,15 +16,3 @@ export interface ToolUseLogResponse {
   createdAt: string;
 }
 
-// Paginated response from GET /control/manage/tool-call-logs/
-export interface PagedResponse<T> {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
-  first: boolean;
-  last: boolean;
-  empty: boolean;
-  numberOfElements: number;
-}
