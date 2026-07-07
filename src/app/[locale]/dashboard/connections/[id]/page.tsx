@@ -80,7 +80,7 @@ function ConnectionDetailContent({
     setUpdatingCreds(false);
   };
 
-  const handleDeleteSuccess = (_connectionId: string) => {
+  const handleDeleteSuccess = () => {
     router.push('/dashboard/connections');
   };
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from '@/i18n/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
@@ -15,8 +15,8 @@ export default function LoginCheckPage() {
   const hasRun = useRef(false);
   const [error, setError] = useState(false);
 
-  const handleOAuthCallback = async () => {
-    setError(false);
+  // Returns false when the token exchange failed and the retry UI should show.
+  const runOAuthCallback = useCallback(async (): Promise<boolean> => {
     const hash = window.location.hash.substring(1);
 
     if (hash.startsWith('rti-')) {
@@ -27,22 +27,24 @@ export default function LoginCheckPage() {
         if (success) {
           await fetchUser();
           router.replace('/dashboard');
-          return;
+          return true;
         }
       } catch {
-        setError(true);
-        return;
+        return false;
       }
     }
 
     router.replace('/login');
-  };
+    return true;
+  }, [fetchUser, router]);
 
   useEffect(() => {
     if (hasRun.current) return;
     hasRun.current = true;
-    handleOAuthCallback();
-  }, []);
+    runOAuthCallback().then((ok) => {
+      if (!ok) setError(true);
+    });
+  }, [runOAuthCallback]);
 
   if (error) {
     return (
@@ -58,8 +60,10 @@ export default function LoginCheckPage() {
             <div className="flex flex-col gap-2">
               <button
                 onClick={() => {
-                  hasRun.current = false;
-                  handleOAuthCallback();
+                  setError(false);
+                  runOAuthCallback().then((ok) => {
+                    if (!ok) setError(true);
+                  });
                 }}
                 className="w-full py-2.5 px-4 rounded-lg bg-accent text-white font-medium hover:bg-accent/90 transition-colors"
               >
