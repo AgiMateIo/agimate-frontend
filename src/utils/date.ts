@@ -32,13 +32,10 @@ export function formatDate(
  * Returns the input unchanged if it cannot be parsed.
  */
 export function formatDateTimeFull(dateStr: string): string {
-  try {
-    const d = new Date(dateStr);
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-  } catch {
-    return dateStr;
-  }
+  const d = parseBackendDate(dateStr);
+  if (Number.isNaN(d.getTime())) return dateStr;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
 /**
@@ -46,16 +43,13 @@ export function formatDateTimeFull(dateStr: string): string {
  * Returns the input unchanged if it cannot be parsed.
  */
 export function formatDateTimeShort(dateStr: string): string {
-  try {
-    const d = new Date(dateStr);
-    const now = new Date();
-    const pad = (n: number) => String(n).padStart(2, '0');
-    const time = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate()) {
-      return time;
-    }
-    return `${pad(d.getDate())}.${pad(d.getMonth() + 1)} ${time}`;
-  } catch {
-    return dateStr;
+  const d = parseBackendDate(dateStr);
+  if (Number.isNaN(d.getTime())) return dateStr;
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const time = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate()) {
+    return time;
   }
+  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)} ${time}`;
 }
