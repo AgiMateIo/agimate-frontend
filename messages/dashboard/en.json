@@ -2,6 +2,7 @@
   "Sidebar": {
     "dashboard": "Dashboard",
     "agentWizard": "Agent Factory",
+    "chat": "Chat",
     "llmProviders": "LLM Providers",
     "connectors": "Connectors",
     "apps": "Apps",
@@ -21,6 +22,7 @@
     "breadcrumbs": {
       "dashboard": "Dashboard",
       "agentWizard": "Agent Factory",
+      "chat": "Chat",
       "apps": "Apps",
       "connectors": "Connectors",
       "agents": "Agents",
@@ -153,6 +155,29 @@
     "summaryEmpty": "—",
     "createAnother": "Create another",
     "openAgent": "Open agent"
+  },
+  "Chat": {
+    "pageTitle": "Chat",
+    "pageSubtitle": "Talk to your agents right from the dashboard",
+    "agentFilterLabel": "Agent",
+    "allAgents": "All agents",
+    "newSession": "New chat",
+    "selectAgentHint": "Select an agent to start a new chat",
+    "loadingSessions": "Loading sessions...",
+    "noSessions": "No sessions yet",
+    "untitledSession": "New conversation",
+    "closedBadge": "Closed",
+    "selectSessionTitle": "No conversation selected",
+    "selectSessionHint": "Choose a session on the left, or pick an agent and start a new chat",
+    "loadingMessages": "Loading messages...",
+    "noMessages": "No messages yet — say hello!",
+    "loadOlder": "Load earlier messages",
+    "agentThinking": "Agent is working...",
+    "sessionClosedNotice": "This session is closed. Start a new chat to continue the conversation.",
+    "closeSession": "Close session",
+    "closedAt": "closed {date}",
+    "composerPlaceholder": "Write a message... (Enter — send, Shift+Enter — new line)",
+    "send": "Send"
   },
   "DashboardHome": {
     "title": "Dashboard",

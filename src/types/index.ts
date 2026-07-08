@@ -18,6 +18,7 @@ export * from './agent-connections';
 export * from './agent-skills';
 export * from './skills';
 export * from './centrifugo';
+export * from './webchat';
 export * from './llm-providers';
 export * from './channels';
 export * from './connector-jobs';

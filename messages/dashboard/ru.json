@@ -2,6 +2,7 @@
   "Sidebar": {
     "dashboard": "Dashboard",
     "agentWizard": "Фабрика агентов",
+    "chat": "Чат",
     "llmProviders": "LLM-провайдеры",
     "connectors": "Коннекторы",
     "apps": "Приложения",
@@ -21,6 +22,7 @@
     "breadcrumbs": {
       "dashboard": "Dashboard",
       "agentWizard": "Фабрика агентов",
+      "chat": "Чат",
       "apps": "Приложения",
       "connectors": "Коннекторы",
       "agents": "Агенты",
@@ -153,6 +155,29 @@
     "summaryEmpty": "—",
     "createAnother": "Создать ещё одного",
     "openAgent": "Открыть агента"
+  },
+  "Chat": {
+    "pageTitle": "Чат",
+    "pageSubtitle": "Общайтесь со своими агентами прямо из дашборда",
+    "agentFilterLabel": "Агент",
+    "allAgents": "Все агенты",
+    "newSession": "Новый чат",
+    "selectAgentHint": "Выберите агента, чтобы начать новый чат",
+    "loadingSessions": "Загрузка сессий...",
+    "noSessions": "Сессий пока нет",
+    "untitledSession": "Новый диалог",
+    "closedBadge": "Закрыта",
+    "selectSessionTitle": "Диалог не выбран",
+    "selectSessionHint": "Выберите сессию слева или выберите агента и начните новый чат",
+    "loadingMessages": "Загрузка сообщений...",
+    "noMessages": "Сообщений пока нет — поздоровайтесь!",
+    "loadOlder": "Показать более ранние сообщения",
+    "agentThinking": "Агент работает...",
+    "sessionClosedNotice": "Сессия закрыта. Чтобы продолжить разговор, начните новый чат.",
+    "closeSession": "Закрыть сессию",
+    "closedAt": "закрыта {date}",
+    "composerPlaceholder": "Напишите сообщение... (Enter — отправить, Shift+Enter — новая строка)",
+    "send": "Отправить"
   },
   "DashboardHome": {
     "title": "Dashboard",

@@ -17,6 +17,7 @@ import {
   ChartBarIcon,
   SparklesIcon,
   ChatBubbleLeftRightIcon,
+  ChatBubbleOvalLeftEllipsisIcon,
   ClockIcon,
   RocketLaunchIcon,
 } from '@heroicons/react/24/outline';
@@ -34,6 +35,7 @@ type NavItem = {
 const getNavItems = (t: ReturnType<typeof useTranslations>, teams: AgenticTeam[]): NavItem[] => [
   { label: t('dashboard'), icon: HomeIcon, href: '/dashboard' },
   { label: t('agentWizard'), icon: RocketLaunchIcon, href: '/dashboard/agent-wizard' },
+  { label: t('chat'), icon: ChatBubbleOvalLeftEllipsisIcon, href: '/dashboard/chat' },
   { label: t('llmProviders'), icon: SparklesIcon, href: '/dashboard/llm-providers' },
   {
     label: t('connectors'), icon: CpuChipIcon, href: '/dashboard/connectors',
