@@ -10,7 +10,7 @@ export interface ConnectorJobResponse {
   id: string;
   kind: ConnectorJobKind;
   connectorCode: string;
-  identity: string | null;
+  connectionId: string | null;
   agentId: string | null;
   name: string;
   type: ConnectorJobType;

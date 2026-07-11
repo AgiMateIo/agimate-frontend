@@ -89,7 +89,7 @@ export interface ConnectorToolSpec {
 export interface TriggerLog {
   id: string;
   connectorCode: string;
-  identity: string;
+  connectionId: string;
   externalId: string;
   name: string;
   occurredAt: string;

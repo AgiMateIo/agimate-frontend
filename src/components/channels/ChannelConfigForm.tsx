@@ -36,9 +36,9 @@ export default function ChannelConfigForm({
   const [name, setName] = useState(channel?.name ?? '');
   const [channelHandler, setChannelHandler] = useState(channel?.channelHandler ?? '');
   const [connectorCode, setConnectorCode] = useState(channel?.connectorCode ?? '');
-  const [identity, setIdentity] = useState(channel?.identity ?? '');
+  const [connectionId, setConnectionId] = useState(channel?.connectionId ?? '');
 
-  const { handlers, connectors, setConnectorType, identities } = useChannelConfigData({
+  const { handlers, connectors, connections } = useChannelConfigData({
     channel,
     connectorCode,
   });
@@ -116,7 +116,7 @@ export default function ChannelConfigForm({
         name: name.trim(),
         channelHandler,
         connectorCode,
-        identity,
+        connectionId,
         config: config.value,
         inputFilter: filterValue,
       };
@@ -154,7 +154,7 @@ export default function ChannelConfigForm({
           <ReadonlyBinding
             handler={channel!.channelHandler}
             connectorCode={channel!.connectorCode}
-            identityName={channel!.identityName || channel!.identity}
+            connectionName={channel!.connectionName || channel!.connectionId || '—'}
           />
         ) : (
           <>
@@ -177,9 +177,7 @@ export default function ChannelConfigForm({
                 onChange={(e) => {
                   const code = e.target.value;
                   setConnectorCode(code);
-                  const conn = connectors.find((c) => c.code === code);
-                  setConnectorType(conn ? getConnectorKind(conn) : null);
-                  setIdentity('');
+                  setConnectionId('');
                 }}
                 className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground"
               >
@@ -192,18 +190,18 @@ export default function ChannelConfigForm({
               </select>
             </FormField>
 
-            <FormField label={t('fieldIdentity')} required layout="inline">
+            <FormField label={t('fieldConnection')} required layout="inline">
               <select
-                value={identity}
-                onChange={(e) => setIdentity(e.target.value)}
+                value={connectionId}
+                onChange={(e) => setConnectionId(e.target.value)}
                 disabled={!connectorCode}
                 className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground disabled:opacity-50"
               >
-                <option value="">{t('selectIdentity')}</option>
-                {identity && !identities.some((o) => o.value === identity) && (
-                  <option value={identity}>{identity}</option>
+                <option value="">{t('selectConnection')}</option>
+                {connectionId && !connections.some((o) => o.value === connectionId) && (
+                  <option value={connectionId}>{connectionId}</option>
                 )}
-                {identities.map((o) => (
+                {connections.map((o) => (
                   <option key={o.value} value={o.value}>
                     {o.label}{o.hint ? ` (${o.hint})` : ''}
                   </option>
@@ -280,8 +278,8 @@ export default function ChannelConfigForm({
 function ReadonlyBinding({
   handler,
   connectorCode,
-  identityName,
-}: { handler: string; connectorCode: string; identityName: string }) {
+  connectionName,
+}: { handler: string; connectorCode: string; connectionName: string }) {
   return (
     <div className="space-y-1 text-xs">
       <div className="flex items-baseline gap-2">
@@ -293,8 +291,8 @@ function ReadonlyBinding({
         <span className="font-mono text-foreground">{connectorCode}</span>
       </div>
       <div className="flex items-baseline gap-2">
-        <span className="text-muted w-20 shrink-0">identity</span>
-        <span className="text-foreground truncate">{identityName}</span>
+        <span className="text-muted w-20 shrink-0">connection</span>
+        <span className="text-foreground truncate">{connectionName}</span>
       </div>
     </div>
   );

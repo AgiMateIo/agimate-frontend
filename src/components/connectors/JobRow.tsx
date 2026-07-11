@@ -105,9 +105,9 @@ export function JobRow({
       </td>
       <td className="py-3 px-4 align-top">
         <span className="text-sm font-mono text-muted">{job.connectorCode}</span>
-        {job.identity && (
-          <div className="text-xs font-mono text-muted/60 truncate max-w-[150px] text-left" dir="rtl" title={job.identity}>
-            {job.identity}
+        {job.connectionId && (
+          <div className="text-xs font-mono text-muted/60 truncate max-w-[150px] text-left" dir="rtl" title={job.connectionId}>
+            {job.connectionId}
           </div>
         )}
       </td>

@@ -4,7 +4,7 @@ export interface ToolUseLogResponse {
   id: string;
   agentId: string;
   connectorCode: string;
-  identity: string;
+  connectionId: string;
   agentSessionId: string;
   externalId: string;
   name: string;

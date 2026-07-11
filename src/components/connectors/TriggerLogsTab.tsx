@@ -96,7 +96,7 @@ export default function TriggerLogsTab() {
           <tr className="border-b border-border">
             <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('occurredAt')}</th>
             <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('connectorCode')}</th>
-            <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('identity')}</th>
+            <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('connection')}</th>
             <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('triggerName')}</th>
             <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('triggerInput')}</th>
             <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('agentCount')}</th>
@@ -117,7 +117,7 @@ export default function TriggerLogsTab() {
                 <span className="text-sm font-mono text-muted">{log.connectorCode}</span>
               </td>
               <td className="py-3 px-4">
-                <span className="text-sm font-mono text-muted truncate block max-w-[150px] dir-rtl text-left" dir="rtl" title={log.identity}>{log.identity}</span>
+                <span className="text-sm font-mono text-muted truncate block max-w-[150px] dir-rtl text-left" dir="rtl" title={log.connectionId}>{log.connectionId}</span>
               </td>
               <td className="py-3 px-4">
                 <span className="text-sm font-medium text-foreground">{log.name}</span>

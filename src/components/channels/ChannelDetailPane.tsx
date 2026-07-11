@@ -152,9 +152,9 @@ function ConfigView({ channel }: { channel: ChannelResponse }) {
         <Row label={t('fieldHandler')} value={channel.channelHandler} mono />
         <Row label={t('fieldConnector')} value={channel.connectorCode} mono />
         <Row
-          label={t('fieldIdentity')}
-          value={channel.identityName || channel.identity}
-          mono={!channel.identityName}
+          label={t('fieldConnection')}
+          value={channel.connectionName || channel.connectionId || '—'}
+          mono={!channel.connectionName}
         />
       </Section>
 

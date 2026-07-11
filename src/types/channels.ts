@@ -9,10 +9,10 @@ export interface ChannelResponse {
   name: string;
   channelHandler: string;
   connectorCode: string;
-  identity: string;
-  // Denormalised name of the connector source (App.name / Connection.name);
-  // null if the underlying resource was deleted.
-  identityName: string | null;
+  // Connection instance id (connections.id UUID); null if the connection was deleted.
+  connectionId: string | null;
+  // Denormalised Connection.name; null if the underlying resource was deleted.
+  connectionName: string | null;
   config: Record<string, unknown>;
   // Optional chat/input filter stored on the channel itself (filters delivery by trigger params).
   inputFilter: Record<string, unknown> | null;
@@ -25,7 +25,8 @@ export interface CreateChannelRequest {
   name: string;
   channelHandler: string;
   connectorCode: string;
-  identity: string;
+  // connections.id of the connector instance the channel binds to.
+  connectionId: string;
   config: Record<string, unknown>;
   inputFilter?: Record<string, unknown> | null;
 }

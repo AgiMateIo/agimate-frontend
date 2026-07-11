@@ -53,7 +53,7 @@ export default function ChannelsList({
                   <span className="text-xs font-mono text-muted">{c.connectorCode}</span>
                   <span className="text-xs text-muted">·</span>
                   <span className="text-xs text-muted truncate">
-                    {c.identityName || c.identity.slice(0, 8)}
+                    {c.connectionName || c.connectionId?.slice(0, 8) || '—'}
                   </span>
                 </div>
                 <div className="mt-0.5 text-xs text-muted font-mono truncate">{c.channelHandler}</div>

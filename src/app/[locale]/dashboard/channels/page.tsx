@@ -81,7 +81,7 @@ export default function ChannelsPage() {
                       <td className="py-3 px-4 text-xs">
                         <div className="flex flex-col gap-0.5 max-w-[260px]">
                           <span className="font-mono text-foreground truncate">{c.connectorCode}</span>
-                          <span className="text-muted truncate">{c.identityName || c.identity.slice(0, 8)}</span>
+                          <span className="text-muted truncate">{c.connectionName || c.connectionId?.slice(0, 8) || '—'}</span>
                         </div>
                       </td>
                       <td className="py-3 px-4 text-xs text-muted">

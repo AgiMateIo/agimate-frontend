@@ -29,7 +29,7 @@ export default function Step3Channel({ data, setData, goNext, goBack }: WizardSt
 
   const [existing, setExisting] = useState<ConnectionResponse[]>([]);
   // '' = create new; otherwise an existing connection id.
-  const [identity, setIdentity] = useState('');
+  const [selectedConnectionId, setSelectedConnectionId] = useState('');
   const [credentials, setCredentials] = useState<Record<string, string>>({});
   const [channelName, setChannelName] = useState('');
   const [config, setConfig] = useState<Record<string, unknown>>({});
@@ -84,7 +84,8 @@ export default function Step3Channel({ data, setData, goNext, goBack }: WizardSt
   );
 
   const credsFilled =
-    identity !== '' || Object.keys(credentialFields).every((f) => credentials[f]?.trim());
+    selectedConnectionId !== '' ||
+    Object.keys(credentialFields).every((f) => credentials[f]?.trim());
 
   const setConfigValue = (key: string, value: unknown) =>
     setConfig((prev) => ({ ...prev, [key]: value }));
@@ -93,7 +94,7 @@ export default function Step3Channel({ data, setData, goNext, goBack }: WizardSt
     handleSubmit(e, async () => {
       if (!data.agent || !connector || !handler) return;
 
-      let connectionId = identity;
+      let connectionId = selectedConnectionId;
       if (!connectionId) {
         const connection = await apiService.createConnection({
           connectorCode: connector.code,
@@ -109,7 +110,7 @@ export default function Step3Channel({ data, setData, goNext, goBack }: WizardSt
         name: channelName.trim(),
         channelHandler: handler.name,
         connectorCode: connector.code,
-        identity: connectionId,
+        connectionId,
         config,
       });
       setData({ channel });
@@ -164,8 +165,8 @@ export default function Step3Channel({ data, setData, goNext, goBack }: WizardSt
           {existing.length > 0 && (
             <FormField label={t('existingConnection')}>
               <select
-                value={identity}
-                onChange={(e) => setIdentity(e.target.value)}
+                value={selectedConnectionId}
+                onChange={(e) => setSelectedConnectionId(e.target.value)}
                 className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground"
               >
                 <option value="">{t('newConnection')}</option>
@@ -178,7 +179,7 @@ export default function Step3Channel({ data, setData, goNext, goBack }: WizardSt
             </FormField>
           )}
 
-          {identity === '' && (
+          {selectedConnectionId === '' && (
             <>
               <Alert variant="info">{t('botTokenHowto')}</Alert>
               {Object.entries(credentialFields).map(([field, label]) => (
