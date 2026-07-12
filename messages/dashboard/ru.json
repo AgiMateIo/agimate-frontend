@@ -731,6 +731,7 @@
     "tabSkills": "Навыки",
     "tabTools": "Тулы",
     "tabTriggers": "Триггеры",
+    "tabJobs": "Задачи",
     "connectionInfo": "Детали подключения",
     "platform": "Платформа",
     "platformIdentifier": "Идентификатор платформы",
@@ -762,7 +763,8 @@
     "toolsRequired": "Обязательные",
     "triggersLoading": "Загрузка триггеров...",
     "triggersError": "Не удалось загрузить триггеры",
-    "triggersEmpty": "Для этого коннектора нет доступных триггеров"
+    "triggersEmpty": "Для этого подключения нет доступных триггеров",
+    "triggersParams": "Параметры"
   },
   "Board": {
     "title": "Доска задач",

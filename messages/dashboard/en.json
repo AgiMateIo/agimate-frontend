@@ -731,6 +731,7 @@
     "tabSkills": "Skills",
     "tabTools": "Tools",
     "tabTriggers": "Triggers",
+    "tabJobs": "Jobs",
     "connectionInfo": "Connection Details",
     "platform": "Platform",
     "platformIdentifier": "Platform Identifier",
@@ -762,7 +763,8 @@
     "toolsRequired": "Required",
     "triggersLoading": "Loading triggers...",
     "triggersError": "Failed to load triggers",
-    "triggersEmpty": "No triggers available for this connector"
+    "triggersEmpty": "No triggers available for this connection",
+    "triggersParams": "Parameters"
   },
   "Board": {
     "title": "Task Board",

@@ -26,8 +26,9 @@ import { useRouter } from '@/i18n/navigation';
 import ConnectionSkillsTab from '@/components/connections/ConnectionSkillsTab';
 import ConnectionToolsTab from '@/components/connections/ConnectionToolsTab';
 import ConnectionTriggersTab from '@/components/connections/ConnectionTriggersTab';
+import ConnectionJobsTab from '@/components/connections/ConnectionJobsTab';
 
-type Tab = 'info' | 'tools' | 'triggers' | 'skills';
+type Tab = 'info' | 'tools' | 'triggers' | 'jobs' | 'skills';
 
 function ConnectionDetailContent({ id }: { id: string }) {
   const t = useTranslations('ConnectionDetail');
@@ -201,7 +202,12 @@ function ConnectionDetailContent({ id }: { id: string }) {
           {
             id: 'triggers',
             label: t('tabTriggers'),
-            content: <ConnectionTriggersTab connectorCode={connection.connectorCode} />,
+            content: <ConnectionTriggersTab connectionId={connection.id} />,
+          },
+          {
+            id: 'jobs',
+            label: t('tabJobs'),
+            content: <ConnectionJobsTab connectionId={connection.id} />,
           },
           {
             id: 'skills',

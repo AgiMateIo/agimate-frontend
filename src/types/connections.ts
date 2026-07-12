@@ -45,3 +45,14 @@ export interface ConnectionTestResponse {
   errorMessage?: string | null;
   errorField?: string | null;
 }
+
+// A trigger *spec* (declaration) for a connection instance, returned by
+// GET /manage/connections/{id}/triggers/. The instance set is the union of the
+// connector type's declared triggers and any per-connection dynamic ones.
+export interface TriggerSpecificationResponse {
+  name: string;
+  description: string;
+  // Parameter names carried in `trigger.data`; best-effort for dynamic
+  // triggers, so it may be empty.
+  params: string[];
+}

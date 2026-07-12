@@ -8,9 +8,11 @@ import { httpClient } from '../httpClient';
 import { API } from '@/config/constants';
 import type {
   ConnectorToolSpec,
+  ConnectorJobResponse,
   ConnectionResponse,
   CreateConnectionRequest,
   IdentityScope,
+  TriggerSpecificationResponse,
   UpdateConnectionRequest,
   UpdateConnectionSecretRequest,
   ConnectionTestResponse,
@@ -53,8 +55,24 @@ export const connectionsApi = {
     return httpClient.post<ConnectionTestResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/connections/${id}/test`, {});
   },
 
-  // Cached tools for this connector instance (empty for non-MCP connections).
+  // ---- Per-instance capabilities (source of truth for a connection card) ----
+  // All three address the connection by id and return the instance's actual set.
+  // A missing capability is an empty list, not an error (only a wrong/foreign
+  // connection is a 404).
+
+  // Tool *specs* the instance exposes (empty for connectors without tools).
   async getConnectionTools(id: string): Promise<ConnectorToolSpec[]> {
     return httpClient.get<ConnectorToolSpec[]>(`${API.ENDPOINTS.CONTROL_API}/manage/connections/${id}/tools/`);
+  },
+
+  // Trigger *specs* (type-declared ∪ per-connection dynamic) the instance emits.
+  async getConnectionTriggers(id: string): Promise<TriggerSpecificationResponse[]> {
+    return httpClient.get<TriggerSpecificationResponse[]>(`${API.ENDPOINTS.CONTROL_API}/manage/connections/${id}/triggers/`);
+  },
+
+  // Background job *instances* scheduled/running for this connection. Runtime
+  // rows (status/nextRunAt/pausedAt/lastError); manage via connector-jobs/{id}/…
+  async getConnectionJobs(id: string): Promise<ConnectorJobResponse[]> {
+    return httpClient.get<ConnectorJobResponse[]>(`${API.ENDPOINTS.CONTROL_API}/manage/connections/${id}/jobs/`);
   },
 };

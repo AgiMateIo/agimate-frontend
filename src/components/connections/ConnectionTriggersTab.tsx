@@ -3,32 +3,32 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { TriggerInfo } from '@/types';
+import { TriggerSpecificationResponse } from '@/types';
 import { getErrorMessage } from '@/utils/error';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 
 interface ConnectionTriggersTabProps {
-  connectorCode: string;
+  connectionId: string;
 }
 
-export default function ConnectionTriggersTab({ connectorCode }: ConnectionTriggersTabProps) {
+export default function ConnectionTriggersTab({ connectionId }: ConnectionTriggersTabProps) {
   const t = useTranslations('ConnectionDetail');
   const [loading, setLoading] = useState(true);
-  const [triggers, setTriggers] = useState<TriggerInfo[]>([]);
+  const [triggers, setTriggers] = useState<TriggerSpecificationResponse[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await apiService.getConnectorTriggers(connectorCode);
+      const res = await apiService.getConnectionTriggers(connectionId);
       setTriggers(res);
     } catch (err) {
       setError(getErrorMessage(err, t('triggersError')));
     } finally {
       setLoading(false);
     }
-  }, [connectorCode, t]);
+  }, [connectionId, t]);
 
   useEffect(() => {
     load();
@@ -54,6 +54,12 @@ export default function ConnectionTriggersTab({ connectorCode }: ConnectionTrigg
           <span className="font-mono text-sm text-foreground">{trigger.name}</span>
           {trigger.description && (
             <p className="text-sm text-muted mt-1">{trigger.description}</p>
+          )}
+          {trigger.params.length > 0 && (
+            <p className="text-xs text-muted mt-2">
+              {t('triggersParams')}:{' '}
+              <span className="font-mono text-foreground">{trigger.params.join(', ')}</span>
+            </p>
           )}
         </div>
       ))}
