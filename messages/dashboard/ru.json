@@ -729,6 +729,8 @@
     "loading": "Загрузка подключения...",
     "tabInfo": "Информация",
     "tabSkills": "Навыки",
+    "tabTools": "Тулы",
+    "tabTriggers": "Триггеры",
     "connectionInfo": "Детали подключения",
     "platform": "Платформа",
     "platformIdentifier": "Идентификатор платформы",
@@ -757,7 +759,10 @@
     "toolsLoading": "Загрузка тулов...",
     "toolsError": "Не удалось загрузить тулы",
     "toolsEmpty": "Для этого подключения нет доступных тулов",
-    "toolsRequired": "Обязательные"
+    "toolsRequired": "Обязательные",
+    "triggersLoading": "Загрузка триггеров...",
+    "triggersError": "Не удалось загрузить триггеры",
+    "triggersEmpty": "Для этого коннектора нет доступных триггеров"
   },
   "Board": {
     "title": "Доска задач",

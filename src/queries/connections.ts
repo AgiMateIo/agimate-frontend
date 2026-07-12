@@ -8,14 +8,15 @@ import apiService from '@/services/api';
 import type {
   ConnectionResponse,
   ConnectorCatalogEntry,
+  IdentityScope,
   UpdateConnectionRequest,
 } from '@/types';
 
 export const connectionKeys = {
   all: ['connections'] as const,
   lists: () => [...connectionKeys.all, 'list'] as const,
-  list: (connectorCode?: string) =>
-    [...connectionKeys.lists(), connectorCode ?? 'all'] as const,
+  list: (connectorCode?: string, scope: IdentityScope | 'ALL' = 'INSTANCE') =>
+    [...connectionKeys.lists(), scope, connectorCode ?? 'all'] as const,
   detail: (id: string) => [...connectionKeys.all, 'detail', id] as const,
 };
 
@@ -24,14 +25,20 @@ export interface ConnectionWithConnector {
   connector: ConnectorCatalogEntry;
 }
 
-export const connectionsListOptions = (connectorCode?: string) =>
+export const connectionsListOptions = (
+  connectorCode?: string,
+  scope: IdentityScope | 'ALL' = 'INSTANCE',
+) =>
   queryOptions({
-    queryKey: connectionKeys.list(connectorCode),
-    queryFn: () => apiService.getConnections(connectorCode),
+    queryKey: connectionKeys.list(connectorCode, scope),
+    queryFn: () => apiService.getConnections(connectorCode, scope),
   });
 
-export function useConnectionsQuery(connectorCode?: string) {
-  return useSuspenseQuery(connectionsListOptions(connectorCode));
+export function useConnectionsQuery(
+  connectorCode?: string,
+  scope: IdentityScope | 'ALL' = 'INSTANCE',
+) {
+  return useSuspenseQuery(connectionsListOptions(connectorCode, scope));
 }
 
 // The detail page needs the connection plus its connector-catalog entry

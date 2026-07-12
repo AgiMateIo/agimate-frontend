@@ -6,14 +6,18 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { connectionsListOptions, useConnectionCacheActions } from '@/queries/connections';
-import { integrationPlatformsOptions } from '@/queries/connectors';
+import { connectorCatalogOptions, integrationPlatformsOptions } from '@/queries/connectors';
 import ConnectionsList from '@/components/connections/ConnectionsList';
 import AddConnectionModal from '@/components/connections/AddConnectionModal';
 
 function ConnectionsContent() {
   const t = useTranslations('Connections');
-  const [{ data: platforms }, { data: connections }] = useSuspenseQueries({
-    queries: [integrationPlatformsOptions(), connectionsListOptions()],
+  const [{ data: catalog }, { data: platforms }, { data: connections }] = useSuspenseQueries({
+    queries: [
+      connectorCatalogOptions(),
+      integrationPlatformsOptions(),
+      connectionsListOptions(undefined, 'ALL'),
+    ],
   });
   const { invalidateLists } = useConnectionCacheActions();
   const [showAddModal, setShowAddModal] = useState(false);
@@ -37,7 +41,7 @@ function ConnectionsContent() {
 
       <ConnectionsList
         connections={connections}
-        platforms={platforms}
+        platforms={catalog}
       />
 
       {showAddModal && (

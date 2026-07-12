@@ -8,7 +8,6 @@ import {
   ConnectorCatalogEntry,
   ConnectionResponse,
 } from '@/types';
-import { getConnectorKind } from '@/utils/connector';
 
 export interface ConnectionOption {
   value: string;
@@ -22,7 +21,7 @@ interface UseChannelConfigDataParams {
 }
 
 // Owns the three remote reads backing the channel config form:
-// the channel-handler list, the (non-SERVICE) connector catalog, and the
+// the channel-handler list, the full connector catalog, and the
 // connection options (connections.id) for the selected connector.
 export function useChannelConfigData({ channel, connectorCode }: UseChannelConfigDataParams) {
   const isEdit = !!channel;
@@ -36,15 +35,19 @@ export function useChannelConfigData({ channel, connectorCode }: UseChannelConfi
     apiService.getChannelHandlers().then(setHandlers).catch(() => {});
     apiService
       .getConnectorCatalog()
-      .then((all) => setConnectors(all.filter((c) => getConnectorKind(c) !== 'SERVICE')))
+      .then(setConnectors)
       .catch(() => {});
   }, []);
+
+  // Connections are fetched with the connector's default scope (e.g. USER for
+  // acp/webchat, INSTANCE for telegram/mcp); until the catalog loads, INSTANCE.
+  const scope = connectors.find((c) => c.code === connectorCode)?.capabilities?.defaultScope;
 
   useEffect(() => {
     if (isEdit || !connectorCode) return;
     let cancelled = false;
     apiService
-      .getConnections(connectorCode)
+      .getConnections(connectorCode, scope ?? 'INSTANCE')
       .then((creds) => {
         if (cancelled) return;
         setConnections(
@@ -57,7 +60,7 @@ export function useChannelConfigData({ channel, connectorCode }: UseChannelConfi
       })
       .catch(() => {});
     return () => { cancelled = true; };
-  }, [isEdit, connectorCode]);
+  }, [isEdit, connectorCode, scope]);
 
   return { handlers, connectors, connections };
 }

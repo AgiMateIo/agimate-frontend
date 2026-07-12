@@ -20,13 +20,14 @@ import EditConnectionModal from '@/components/connections/EditConnectionModal';
 import UpdateCredentialsModal from '@/components/connections/UpdateCredentialsModal';
 import DeleteConnectionModal from '@/components/connections/DeleteConnectionModal';
 import TestConnectionModal from '@/components/connections/TestConnectionModal';
-import ConnectionToolsModal from '@/components/connections/ConnectionToolsModal';
 import { Button } from '@/components/ui/Button';
-import { PencilIcon, KeyIcon, TrashIcon, BeakerIcon, WrenchScrewdriverIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, KeyIcon, TrashIcon, BeakerIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
 import ConnectionSkillsTab from '@/components/connections/ConnectionSkillsTab';
+import ConnectionToolsTab from '@/components/connections/ConnectionToolsTab';
+import ConnectionTriggersTab from '@/components/connections/ConnectionTriggersTab';
 
-type Tab = 'info' | 'skills';
+type Tab = 'info' | 'tools' | 'triggers' | 'skills';
 
 function ConnectionDetailContent({ id }: { id: string }) {
   const t = useTranslations('ConnectionDetail');
@@ -44,7 +45,6 @@ function ConnectionDetailContent({ id }: { id: string }) {
   const [updatingCreds, setUpdatingCreds] = useState(false);
   const [deletingConnection, setDeletingConnection] = useState(false);
   const [testingConnection, setTestingConnection] = useState(false);
-  const [showingTools, setShowingTools] = useState(false);
 
   const handleToggleEnabled = () => {
     updateMutation.mutate({ enabled: !connection.enabled });
@@ -103,14 +103,6 @@ function ConnectionDetailContent({ id }: { id: string }) {
           >
             <BeakerIcon className="h-4 w-4" />
             {t('testConnection')}
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() => setShowingTools(true)}
-            className="inline-flex items-center gap-2 !py-2 text-sm"
-          >
-            <WrenchScrewdriverIcon className="h-4 w-4" />
-            {t('toolsTitle')}
           </Button>
           <Toggle
             checked={connection.enabled}
@@ -202,6 +194,16 @@ function ConnectionDetailContent({ id }: { id: string }) {
             ),
           },
           {
+            id: 'tools',
+            label: t('tabTools'),
+            content: <ConnectionToolsTab connectionId={connection.id} />,
+          },
+          {
+            id: 'triggers',
+            label: t('tabTriggers'),
+            content: <ConnectionTriggersTab connectorCode={connection.connectorCode} />,
+          },
+          {
             id: 'skills',
             label: t('tabSkills'),
             content: <ConnectionSkillsTab connectorCode={connection.connectorCode} />,
@@ -249,13 +251,6 @@ function ConnectionDetailContent({ id }: { id: string }) {
         />
       )}
 
-      {showingTools && (
-        <ConnectionToolsModal
-          connectionId={connection.id}
-          connectionName={connection.name || connection.fullCode}
-          onClose={() => setShowingTools(false)}
-        />
-      )}
     </>
   );
 }

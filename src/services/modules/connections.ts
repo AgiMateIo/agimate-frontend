@@ -10,6 +10,7 @@ import type {
   ConnectorToolSpec,
   ConnectionResponse,
   CreateConnectionRequest,
+  IdentityScope,
   UpdateConnectionRequest,
   UpdateConnectionSecretRequest,
   ConnectionTestResponse,
@@ -18,8 +19,11 @@ import type {
 export const connectionsApi = {
   // ========== CONNECTIONS (connector instances) ==========
 
-  async getConnections(connectorCode?: string): Promise<ConnectionResponse[]> {
-    const params = new URLSearchParams({ scope: 'INSTANCE' });
+  // scope: an IdentityScope filters to that scope; 'ALL' omits the filter and
+  // returns connections of every scope (used by the Connections list page).
+  async getConnections(connectorCode?: string, scope: IdentityScope | 'ALL' = 'INSTANCE'): Promise<ConnectionResponse[]> {
+    const params = new URLSearchParams();
+    if (scope !== 'ALL') params.set('scope', scope);
     if (connectorCode) params.set('connectorCode', connectorCode);
     return httpClient.get<ConnectionResponse[]>(`${API.ENDPOINTS.CONTROL_API}/manage/connections/?${params}`);
   },
