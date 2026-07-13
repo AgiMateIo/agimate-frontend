@@ -2,30 +2,35 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import {
-  AgentLlmResponse,
-  AgentResponse,
-  ChannelResponse,
-  SkillResponse,
-} from '@/types';
+import { AgentCreatedResponse } from '@/types';
 import WizardStepper from './WizardStepper';
-import Step1Describe from './Step1Describe';
-import Step2Provider from './Step2Provider';
-import Step3Channel from './Step3Channel';
-import Step4Skills from './Step4Skills';
-import Step5Done from './Step5Done';
+import StepRole from './StepRole';
+import StepSkills from './StepSkills';
+import StepDone from './StepDone';
 
-// Shared state accumulated as the user moves through the wizard. Each step
-// persists its entity to the backend immediately (step-by-step), then records
-// the result here so later steps (and the summary) can use it.
+// A skill selected in the wizard. Preset skills arrive without per-skill
+// connector codes (the preset carries the union), library skills carry theirs.
+export interface WizardSkill {
+  id: string;
+  name: string;
+  description: string | null;
+  connectorCodes?: string[];
+}
+
+// Shared state accumulated as the user moves through the wizard. A preset is a
+// pure prefill: everything stays editable and nothing is persisted until the
+// single create request on the skills step.
 export interface WizardData {
-  agent: AgentResponse | null;
-  // One-time agent key, kept in memory so it can be shown/copied on later steps.
-  agentKey: string | null;
-  binding: AgentLlmResponse | null;
-  channel: ChannelResponse | null;
-  // Skills bound to the agent during the wizard.
-  skills: SkillResponse[];
+  // Code of the preset the wizard started from (funnel analytics); null = scratch.
+  presetCode: string | null;
+  // Union of connector codes of the selected preset, display only.
+  presetConnectorCodes: string[];
+  name: string;
+  description: string;
+  instructions: string;
+  skills: WizardSkill[];
+  // Result of the create call; fullKey is shown once on the final step.
+  created: AgentCreatedResponse | null;
 }
 
 export interface WizardStepProps {
@@ -33,19 +38,27 @@ export interface WizardStepProps {
   setData: (patch: Partial<WizardData>) => void;
   goNext: () => void;
   goBack: () => void;
+  teamId: string | null;
 }
 
 const EMPTY: WizardData = {
-  agent: null,
-  agentKey: null,
-  binding: null,
-  channel: null,
+  presetCode: null,
+  presetConnectorCodes: [],
+  name: '',
+  description: '',
+  instructions: '',
   skills: [],
+  created: null,
 };
 
-const STEP_COUNT = 5;
+const STEP_COUNT = 3;
 
-export default function AgentWizard() {
+interface AgentWizardProps {
+  // Creating inside an agentic team (?teamId=...) — sent as agenticTeamId.
+  teamId?: string | null;
+}
+
+export default function AgentWizard({ teamId = null }: AgentWizardProps) {
   const t = useTranslations('AgentWizard');
   const [current, setCurrent] = useState(0);
   const [maxReached, setMaxReached] = useState(0);
@@ -55,11 +68,18 @@ export default function AgentWizard() {
     setDataState((prev) => ({ ...prev, ...patch }));
 
   const goTo = (index: number) => {
+    // The agent exists after the create call — earlier steps are read-only history.
+    if (data.created) return;
     const clamped = Math.max(0, Math.min(index, STEP_COUNT - 1));
     setCurrent(clamped);
     setMaxReached((m) => Math.max(m, clamped));
   };
-  const goNext = () => goTo(current + 1);
+  const goNext = () => {
+    // Landing on the final step must work even right after creation.
+    const clamped = Math.min(current + 1, STEP_COUNT - 1);
+    setCurrent(clamped);
+    setMaxReached((m) => Math.max(m, clamped));
+  };
   const goBack = () => goTo(current - 1);
 
   const reset = () => {
@@ -69,14 +89,12 @@ export default function AgentWizard() {
   };
 
   const steps = [
-    { key: 'describe', label: t('stepDescribe') },
-    { key: 'provider', label: t('stepProvider') },
-    { key: 'channel', label: t('stepChannel') },
+    { key: 'role', label: t('stepRole') },
     { key: 'skills', label: t('stepSkills') },
     { key: 'done', label: t('stepDone') },
   ];
 
-  const stepProps: WizardStepProps = { data, setData, goNext, goBack };
+  const stepProps: WizardStepProps = { data, setData, goNext, goBack, teamId };
 
   return (
     <div className="space-y-6">
@@ -89,17 +107,15 @@ export default function AgentWizard() {
         <WizardStepper
           steps={steps}
           current={current}
-          maxReached={maxReached}
+          maxReached={data.created ? current : maxReached}
           onStepClick={goTo}
         />
       </div>
 
       <div className="bg-surface rounded-xl border border-border p-6">
-        {current === 0 && <Step1Describe {...stepProps} />}
-        {current === 1 && <Step2Provider {...stepProps} />}
-        {current === 2 && <Step3Channel {...stepProps} />}
-        {current === 3 && <Step4Skills {...stepProps} />}
-        {current === 4 && <Step5Done {...stepProps} onReset={reset} />}
+        {current === 0 && <StepRole {...stepProps} />}
+        {current === 1 && <StepSkills {...stepProps} />}
+        {current === 2 && <StepDone {...stepProps} onReset={reset} />}
       </div>
     </div>
   );

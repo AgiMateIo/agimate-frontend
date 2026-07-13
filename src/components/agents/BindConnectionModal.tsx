@@ -23,13 +23,21 @@ const CONNECTOR_PAGE_SIZE = 10;
 
 interface BindConnectionModalProps {
   agentId: string;
+  // Skip the connector-picker step with this connector already selected
+  // (e.g. clicking a "waiting for connection" badge on the skills tab).
+  initialConnectorCode?: string;
   onClose: () => void;
   onSuccess: () => void;
 }
 
 type Step = 'connector' | 'target';
 
-export default function BindConnectionModal({ agentId, onClose, onSuccess }: BindConnectionModalProps) {
+export default function BindConnectionModal({
+  agentId,
+  initialConnectorCode,
+  onClose,
+  onSuccess,
+}: BindConnectionModalProps) {
   const t = useTranslations('Agents');
   const [step, setStep] = useState<Step>('connector');
   const [connector, setConnector] = useState<ConnectorCatalogEntry | null>(null);
@@ -104,14 +112,32 @@ export default function BindConnectionModal({ agentId, onClose, onSuccess }: Bin
     };
   }, [step, connector, needsInstance, isIntegration]);
 
-  const selectConnector = (c: ConnectorCatalogEntry) => {
+  const selectConnector = useCallback((c: ConnectorCatalogEntry) => {
     setConnector(c);
     setConnectionId(undefined);
     const ctx = (c.capabilities?.supportedScopes ?? []).filter((s) => s !== 'INSTANCE');
     // preselect default scope when contextual
     const def = c.capabilities?.defaultScope;
     setScope(def && def !== 'INSTANCE' && ctx.includes(def) ? def : ctx[0]);
-  };
+  }, []);
+
+  // Preselected connector (skills-tab badge): resolve it and jump to the
+  // target step; falls back to the regular picker if the fetch fails.
+  useEffect(() => {
+    if (!initialConnectorCode) return;
+    let cancelled = false;
+    apiService
+      .getConnector(initialConnectorCode)
+      .then((c) => {
+        if (cancelled) return;
+        selectConnector(c);
+        setStep('target');
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [initialConnectorCode, selectConnector]);
 
   const onSubmit = () =>
     handleSubmit({ preventDefault: () => {} } as React.FormEvent, async () => {

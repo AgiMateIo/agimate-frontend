@@ -1,9 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { ChatBubbleOvalLeftEllipsisIcon } from '@heroicons/react/24/outline';
+import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import WebchatSessionsPane from '@/components/webchat/WebchatSessionsPane';
@@ -15,7 +17,11 @@ import type { AgentResponse } from '@/types';
 
 export default function ChatPage() {
   const t = useTranslations('Chat');
-  const [selectedAgentId, setSelectedAgentId] = useState('');
+  const router = useRouter();
+  // Deep-link from the agent wizard: ?agentId=<id> preselects the agent and
+  // opens a fresh session with it right away.
+  const deepLinkAgentId = useSearchParams().get('agentId');
+  const [selectedAgentId, setSelectedAgentId] = useState(deepLinkAgentId ?? '');
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [actionError, setActionError] = useState('');
@@ -23,6 +29,27 @@ export default function ChatPage() {
   const agentsQuery = useQuery(allAgentsOptions());
   const sessionsQuery = useWebchatSessionsQuery(selectedAgentId || undefined);
   const { addSession, patchSession, invalidateSessions } = useWebchatCacheActions();
+
+  const deepLinkHandled = useRef(false);
+  useEffect(() => {
+    if (!deepLinkAgentId || deepLinkHandled.current) return;
+    deepLinkHandled.current = true;
+    setCreating(true);
+    (async () => {
+      try {
+        const session = await apiService.createWebchatSession(deepLinkAgentId);
+        addSession(session);
+        invalidateSessions();
+        setActiveSessionId(session.sessionId);
+      } catch (err) {
+        setActionError(getErrorMessage(err, 'Failed to create session'));
+      } finally {
+        setCreating(false);
+        // Strip the param so a refresh doesn't open yet another session.
+        router.replace('/dashboard/chat');
+      }
+    })();
+  }, [deepLinkAgentId, addSession, invalidateSessions, router]);
 
   const agents = useMemo(() => agentsQuery.data?.content ?? [], [agentsQuery.data]);
   const agentsById = useMemo(() => {

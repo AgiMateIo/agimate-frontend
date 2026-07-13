@@ -16,6 +16,7 @@ export * from './connections';
 export * from './boards';
 export * from './agent-connections';
 export * from './agent-skills';
+export * from './agent-presets';
 export * from './skills';
 export * from './centrifugo';
 export * from './webchat';

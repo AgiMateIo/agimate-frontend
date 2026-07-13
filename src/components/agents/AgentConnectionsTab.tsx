@@ -15,9 +15,17 @@ import ConnectionPoliciesPanel from './ConnectionPoliciesPanel';
 
 interface AgentConnectionsTabProps {
   agentId: string;
+  // Connector code requested from the skills tab's "waiting" badge — opens the
+  // bind modal with it preselected. Cleared via onBindConnectorHandled.
+  bindConnectorCode?: string | null;
+  onBindConnectorHandled?: () => void;
 }
 
-export default function AgentConnectionsTab({ agentId }: AgentConnectionsTabProps) {
+export default function AgentConnectionsTab({
+  agentId,
+  bindConnectorCode,
+  onBindConnectorHandled,
+}: AgentConnectionsTabProps) {
   const t = useTranslations('Agents');
   const [connections, setConnections] = useState<AgentConnectionResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,6 +50,11 @@ export default function AgentConnectionsTab({ agentId }: AgentConnectionsTabProp
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // A badge click on the skills tab lands here with a connector to preselect.
+  useEffect(() => {
+    if (bindConnectorCode) setShowBind(true);
+  }, [bindConnectorCode]);
 
   if (error) {
     return <ErrorAlert>{error}</ErrorAlert>;
@@ -114,9 +127,14 @@ export default function AgentConnectionsTab({ agentId }: AgentConnectionsTabProp
       {showBind && (
         <BindConnectionModal
           agentId={agentId}
-          onClose={() => setShowBind(false)}
+          initialConnectorCode={bindConnectorCode ?? undefined}
+          onClose={() => {
+            setShowBind(false);
+            onBindConnectorHandled?.();
+          }}
           onSuccess={() => {
             setShowBind(false);
+            onBindConnectorHandled?.();
             fetchData();
           }}
         />

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { ArrowLeftIcon, PencilIcon, LockClosedIcon, KeyIcon } from '@heroicons/react/24/outline';
@@ -18,7 +18,10 @@ import AgentSkillsTab from '@/components/agents/AgentSkillsTab';
 import AgentModelsTab from '@/components/agents/AgentModelsTab';
 import AgentChannelsTab from '@/components/agents/AgentChannelsTab';
 
-type Tab = 'general' | 'models' | 'channels' | 'skills' | 'connections';
+const TABS = ['general', 'models', 'channels', 'skills', 'connections'] as const;
+type Tab = (typeof TABS)[number];
+
+const isTab = (value: string | null): value is Tab => TABS.includes(value as Tab);
 
 export default function AgentDetailPage() {
   const t = useTranslations('Agents');
@@ -26,10 +29,15 @@ export default function AgentDetailPage() {
   const router = useRouter();
   const params = useParams();
   const agentId = params.id as string;
+  // Deep link into a tab, e.g. ?tab=connections from the wizard's final step.
+  const tabParam = useSearchParams().get('tab');
 
   const { data: agent, isPending: loading, error: queryError } = useAgentDetailQuery(agentId);
   const error = queryError ? getErrorMessage(queryError, 'Failed to load agent') : null;
-  const [activeTab, setActiveTab] = useState<Tab>('general');
+  const [activeTab, setActiveTab] = useState<Tab>(isTab(tabParam) ? tabParam : 'general');
+  // Connector the user asked to connect from the skills tab's "waiting" badge;
+  // opens the bind modal on the connections tab with this connector preselected.
+  const [pendingConnectorCode, setPendingConnectorCode] = useState<string | null>(null);
 
   const getAgentTypeColor = (dest: string) => {
     switch (dest) {
@@ -192,7 +200,13 @@ export default function AgentDetailPage() {
             label: t('tabSkills'),
             content: (
               <div className="bg-surface rounded-xl border border-border p-6">
-                <AgentSkillsTab agentId={agentId} onConnectConnector={() => setActiveTab('connections')} />
+                <AgentSkillsTab
+                  agentId={agentId}
+                  onConnectConnector={(code) => {
+                    setPendingConnectorCode(code);
+                    setActiveTab('connections');
+                  }}
+                />
               </div>
             ),
           },
@@ -201,7 +215,11 @@ export default function AgentDetailPage() {
             label: t('tabConnections'),
             content: (
               <div className="bg-surface rounded-xl border border-border p-6">
-                <AgentConnectionsTab agentId={agentId} />
+                <AgentConnectionsTab
+                  agentId={agentId}
+                  bindConnectorCode={pendingConnectorCode}
+                  onBindConnectorHandled={() => setPendingConnectorCode(null)}
+                />
               </div>
             ),
           },

@@ -16,8 +16,9 @@ import DeleteAgentSkillModal from './DeleteAgentSkillModal';
 
 interface AgentSkillsTabProps {
   agentId: string;
-  // Switch the agent page to its Connections tab (CTA for a missing connector).
-  onConnectConnector?: () => void;
+  // CTA for a missing connector: switch the agent page to its Connections tab
+  // and open the bind modal with this connector preselected.
+  onConnectConnector?: (connectorCode: string) => void;
 }
 
 export default function AgentSkillsTab({ agentId, onConnectConnector }: AgentSkillsTabProps) {
@@ -148,7 +149,7 @@ export default function AgentSkillsTab({ agentId, onConnectConnector }: AgentSki
                               <button
                                 key={c.connectorCode}
                                 type="button"
-                                onClick={onConnectConnector}
+                                onClick={() => onConnectConnector?.(c.connectorCode)}
                                 title={t('connectConnectorHint', { code: c.connectorCode })}
                                 className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-warning/10 text-warning hover:bg-warning/20 transition-colors"
                               >

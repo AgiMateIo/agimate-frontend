@@ -5,6 +5,7 @@
 // `import { ApiError } from '@/services/api'` keeps working.
 import { httpClient, ApiError } from './httpClient';
 import { agentsApi } from './modules/agents';
+import { agentPresetsApi } from './modules/agentPresets';
 import { appsApi } from './modules/apps';
 import { skillsApi } from './modules/skills';
 import { llmProvidersApi } from './modules/llmProviders';
@@ -19,6 +20,7 @@ import { webchatApi } from './modules/webchat';
 
 const apiService = {
   ...agentsApi,
+  ...agentPresetsApi,
   ...appsApi,
   ...skillsApi,
   ...llmProvidersApi,

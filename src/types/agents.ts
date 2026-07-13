@@ -48,6 +48,11 @@ export interface CreateAgentRequest {
   webhookUrl?: string | null;
   webhookAuthHeader?: string | null;
   agenticTeamId?: string | null;
+  // Skills bound in the same transaction as the create (duplicates collapsed;
+  // a foreign private skill → 403, an unknown one → 404 and nothing is created).
+  skillIds?: string[];
+  // Preset the wizard started from — funnel analytics only. Omit for scratch.
+  presetCode?: string;
 }
 
 export interface UpdateAgentRequest {

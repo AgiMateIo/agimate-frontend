@@ -34,7 +34,7 @@ type NavItem = {
 
 const getNavItems = (t: ReturnType<typeof useTranslations>, teams: AgenticTeam[]): NavItem[] => [
   { label: t('dashboard'), icon: HomeIcon, href: '/dashboard' },
-  { label: t('agentWizard'), icon: RocketLaunchIcon, href: '/dashboard/agent-wizard' },
+  { label: t('agentWizard'), icon: RocketLaunchIcon, href: '/dashboard/agents/create' },
   { label: t('chat'), icon: ChatBubbleOvalLeftEllipsisIcon, href: '/dashboard/chat' },
   { label: t('llmProviders'), icon: SparklesIcon, href: '/dashboard/llm-providers' },
   {
