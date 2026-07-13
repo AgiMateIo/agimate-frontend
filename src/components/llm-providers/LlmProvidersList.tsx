@@ -2,31 +2,50 @@
 
 import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
+import { ClockIcon, CpuChipIcon, GlobeAltIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { LlmProviderResponse } from '@/types';
-import { TrashIcon, PencilIcon, KeyIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { Toggle } from '@/components/ui/Toggle';
+import { Link } from '@/i18n/navigation';
 import { localeMap } from '@/i18n/routing';
 import { formatDate } from '@/utils/date';
-import { getErrorMessage } from '@/utils/error';
-import { PROVIDER_TYPE_LABEL_KEY } from './providerPresets';
-import EditLlmProviderModal from './EditLlmProviderModal';
-import RotateLlmProviderKeyModal from './RotateLlmProviderKeyModal';
-import DeleteLlmProviderModal from './DeleteLlmProviderModal';
+import { PROVIDER_TYPE_LABEL_KEY, deriveProviderNameFromUrl } from './providerPresets';
+import { ProviderAvatar } from './ProviderAvatar';
 
 interface LlmProvidersListProps {
   providers: LlmProviderResponse[];
   onUpdate: (providers: LlmProviderResponse[]) => void;
 }
 
+// Compact metadata pill used along the card's second row.
+function Chip({
+  icon: Icon,
+  tone = 'default',
+  children,
+}: {
+  icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  tone?: 'default' | 'accent' | 'warning';
+  children: React.ReactNode;
+}) {
+  const tones = {
+    default: 'border border-border text-muted',
+    accent: 'bg-accent/10 text-accent',
+    warning: 'bg-warning/10 text-warning',
+  };
+  return (
+    <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${tones[tone]}`}>
+      {Icon && <Icon className="h-3 w-3 shrink-0" />}
+      <span className="truncate max-w-[14rem]">{children}</span>
+    </span>
+  );
+}
+
 export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersListProps) {
   const t = useTranslations('LlmProviders');
+  const tu = useTranslations('LlmUsage');
   const locale = useLocale();
   const bcp47 = localeMap[locale];
 
-  const [editing, setEditing] = useState<LlmProviderResponse | null>(null);
-  const [rotating, setRotating] = useState<LlmProviderResponse | null>(null);
-  const [deleting, setDeleting] = useState<LlmProviderResponse | null>(null);
   const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
 
   const setBusy = (id: string, on: boolean) => {
@@ -52,37 +71,6 @@ export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersLi
     }
   };
 
-  const handleRefreshModels = async (provider: LlmProviderResponse) => {
-    setBusy(provider.id, true);
-    try {
-      const result = await apiService.refreshLlmProviderModels(provider.id);
-      onUpdate(providers.map(p => p.id === provider.id
-        ? { ...p, availableModels: result.availableModels, modelsRefreshedAt: result.refreshedAt }
-        : p));
-    } catch (err) {
-      const message = getErrorMessage(err, t('refreshFailed'));
-      // surface the upstream error message to the user
-      window.alert(message);
-    } finally {
-      setBusy(provider.id, false);
-    }
-  };
-
-  const handleEditSuccess = (updated: LlmProviderResponse) => {
-    onUpdate(providers.map(p => p.id === updated.id ? updated : p));
-    setEditing(null);
-  };
-
-  const handleRotateSuccess = (updated: LlmProviderResponse) => {
-    onUpdate(providers.map(p => p.id === updated.id ? updated : p));
-    setRotating(null);
-  };
-
-  const handleDeleteSuccess = (id: string) => {
-    onUpdate(providers.filter(p => p.id !== id));
-    setDeleting(null);
-  };
-
   if (providers.length === 0) {
     return (
       <div className="text-center py-12 text-muted">
@@ -91,123 +79,100 @@ export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersLi
     );
   }
 
-  return (
-    <>
-      <div className="space-y-3">
-        {providers.map((provider) => {
-          const busy = busyIds.has(provider.id);
-          const modelsCount = provider.availableModels?.length ?? 0;
-          const hasModels = provider.availableModels !== null && modelsCount > 0;
+  // The platform row (admin-only, backend-gated) is presented in its own section
+  // above the user's personal providers.
+  const platformProviders = providers.filter(p => p.platform);
+  const personalProviders = providers.filter(p => !p.platform);
 
-          return (
-            <div
-              key={provider.id}
-              className="bg-surface-secondary rounded-lg p-4 border border-border"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent">
-                      {t(PROVIDER_TYPE_LABEL_KEY[provider.providerType] ?? 'providerTypeOpenAICompatible')}
-                    </span>
-                    {!provider.enabled && (
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-muted/10 text-muted">
-                        {t('disabled')}
-                      </span>
-                    )}
-                  </div>
+  const renderCard = (provider: LlmProviderResponse) => {
+    const busy = busyIds.has(provider.id);
+    const modelsCount = provider.availableModels?.length ?? 0;
+    const hasModels = provider.availableModels !== null && modelsCount > 0;
+    const isPlatform = provider.platform;
+    const displayName = isPlatform ? tu('platformProviderName') : provider.name;
 
-                  <h3 className="font-medium text-foreground mt-1">{provider.name}</h3>
+    const typeLabel = t(PROVIDER_TYPE_LABEL_KEY[provider.providerType] ?? 'providerTypeOpenAICompatible');
+    const host = provider.baseUrl ? deriveProviderNameFromUrl(provider.baseUrl) : '';
 
-                  <div className="text-xs text-muted mt-2 space-y-1 font-mono">
-                    <p>{t('apiKeyMask')}: {provider.apiKeyMask}</p>
-                    <p>{t('baseUrl')}: {provider.baseUrl ?? t('baseUrlPlaceholderDefault')}</p>
-                  </div>
+    return (
+      <div
+        key={provider.id}
+        className="group bg-surface-secondary rounded-xl border border-border hover:border-accent/50 transition-colors"
+      >
+        <div className="flex items-center gap-4 p-4">
+          {/* Card body links to the provider's usage & quotas detail page. */}
+          <Link
+            href={`/dashboard/llm-providers/${provider.id}`}
+            className="flex items-start gap-4 flex-1 min-w-0"
+          >
+            <ProviderAvatar providerType={provider.providerType} platform={isPlatform} />
 
-                  <div className="text-xs text-muted mt-2 space-y-1">
-                    {hasModels ? (
-                      <p>{t('availableModels', { count: modelsCount })}</p>
-                    ) : (
-                      <p className="text-warning">{t('noModelsYet')}</p>
-                    )}
-                    {provider.modelsRefreshedAt ? (
-                      <p>{t('modelsRefreshedAt', { when: formatDate(provider.modelsRefreshedAt, bcp47) })}</p>
-                    ) : (
-                      <p>{t('modelsNeverRefreshed')}</p>
-                    )}
-                    <p>{t('createdAt')}: {formatDate(provider.createdAt, bcp47)}</p>
-                  </div>
-                </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-semibold text-foreground truncate group-hover:text-accent transition-colors">
+                  {displayName}
+                </h3>
+                {isPlatform && (
+                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-success/10 text-success">
+                    {tu('platformBadge')}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-muted mt-0.5">{typeLabel}</p>
 
-                <div className="flex items-center gap-2">
-                  <Toggle
-                    checked={provider.enabled}
-                    onChange={() => handleToggleEnabled(provider)}
-                    disabled={busy}
-                  />
-
-                  <button
-                    onClick={() => handleRefreshModels(provider)}
-                    disabled={busy}
-                    className="p-2 text-muted hover:text-foreground transition-colors rounded-lg disabled:opacity-50"
-                    title={t('refreshModels')}
-                  >
-                    <ArrowPathIcon className={`h-5 w-5 ${busy ? 'animate-spin' : ''}`} />
-                  </button>
-
-                  <button
-                    onClick={() => setRotating(provider)}
-                    className="p-2 text-muted hover:text-foreground transition-colors rounded-lg"
-                    title={t('rotateKey')}
-                  >
-                    <KeyIcon className="h-5 w-5" />
-                  </button>
-
-                  <button
-                    onClick={() => setEditing(provider)}
-                    className="p-2 text-muted hover:text-foreground transition-colors rounded-lg"
-                    title={t('editProvider')}
-                  >
-                    <PencilIcon className="h-5 w-5" />
-                  </button>
-
-                  <button
-                    onClick={() => setDeleting(provider)}
-                    className="p-2 text-muted hover:text-error transition-colors rounded-lg"
-                    title={t('deleteProvider')}
-                  >
-                    <TrashIcon className="h-5 w-5" />
-                  </button>
-                </div>
+              <div className="flex items-center gap-1.5 flex-wrap mt-2">
+                {hasModels ? (
+                  <Chip tone="accent">{t('availableModels', { count: modelsCount })}</Chip>
+                ) : (
+                  <Chip tone="warning">{t('noModelsYet')}</Chip>
+                )}
+                {host && <Chip icon={GlobeAltIcon}>{host}</Chip>}
+                {provider.defaultModel && <Chip icon={CpuChipIcon}>{provider.defaultModel}</Chip>}
+                {provider.modelsRefreshedAt && (
+                  <Chip icon={ClockIcon}>{formatDate(provider.modelsRefreshedAt, bcp47)}</Chip>
+                )}
               </div>
             </div>
-          );
-        })}
+          </Link>
+
+          {/* Quick enable/disable stays here; all management (edit, key
+              rotation, model refresh, delete) lives on the detail page. */}
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="hidden sm:flex items-center gap-1.5 text-xs text-muted">
+              <span className={`h-2 w-2 rounded-full ${provider.enabled ? 'bg-success' : 'bg-muted'}`} />
+              {provider.enabled ? t('enabled') : isPlatform ? tu('freeTierOff') : t('disabled')}
+            </span>
+            <Toggle
+              checked={provider.enabled}
+              onChange={() => handleToggleEnabled(provider)}
+              disabled={busy}
+            />
+          </div>
+        </div>
       </div>
+    );
+  };
 
-      {editing && (
-        <EditLlmProviderModal
-          provider={editing}
-          onClose={() => setEditing(null)}
-          onSuccess={handleEditSuccess}
-        />
+  return (
+    <>
+      {platformProviders.length > 0 && (
+        <section className="space-y-3">
+          <div>
+            <h2 className="text-sm font-semibold text-foreground">{tu('platformSectionTitle')}</h2>
+            <p className="text-xs text-muted mt-0.5">{tu('platformSectionSubtitle')}</p>
+          </div>
+          {platformProviders.map(renderCard)}
+        </section>
       )}
 
-      {rotating && (
-        <RotateLlmProviderKeyModal
-          provider={rotating}
-          onClose={() => setRotating(null)}
-          onSuccess={handleRotateSuccess}
-        />
-      )}
-
-      {deleting && (
-        <DeleteLlmProviderModal
-          provider={deleting}
-          onClose={() => setDeleting(null)}
-          onSuccess={handleDeleteSuccess}
-        />
-      )}
+      <section className="space-y-3">
+        {platformProviders.length > 0 && (
+          <h2 className="text-sm font-semibold text-foreground">{tu('personalSectionTitle')}</h2>
+        )}
+        {personalProviders.length > 0
+          ? personalProviders.map(renderCard)
+          : <div className="text-sm text-muted py-4">{t('noProviders')}</div>}
+      </section>
     </>
   );
 }

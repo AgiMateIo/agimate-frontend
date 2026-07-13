@@ -15,10 +15,15 @@ export interface LlmProviderResponse {
   name: string;
   providerType: LlmProviderType;
   baseUrl: string | null;
+  // Fallback model on the platform row; a UI preselect on user providers.
+  defaultModel: string | null;
   apiKeyMask: string;
   availableModels: LlmModel[] | null;
   modelsRefreshedAt: string | null;
   enabled: boolean;
+  // true only for the system-owned platform provider (visible to ADMIN only).
+  // Its name is locked ("platform") and it cannot be deleted — only disabled.
+  platform: boolean;
   createdAt: string;
 }
 
@@ -26,6 +31,7 @@ export interface CreateLlmProviderRequest {
   name: string;
   providerType: LlmProviderType;
   baseUrl?: string | null;
+  defaultModel?: string | null;
   apiKey: string;
   enabled?: boolean;
 }
@@ -33,6 +39,7 @@ export interface CreateLlmProviderRequest {
 export interface UpdateLlmProviderRequest {
   name?: string;
   baseUrl?: string | null;
+  defaultModel?: string | null;
   apiKey?: string;
   enabled?: boolean;
 }
@@ -67,4 +74,45 @@ export interface CreateAgentLlmRequest {
 export interface UpdateAgentLlmRequest {
   llmProviderId: string;
   model: string;
+}
+
+// --- Token usage & quotas ---
+
+export type LlmUsageWindowKind = 'DAY' | 'MONTH';
+
+export interface LlmUsageWindow {
+  window: LlmUsageWindowKind;
+  // Start of the window in UTC: "yyyy-MM-dd" for DAY, first-of-month for MONTH.
+  windowStart: string;
+  usedTokens: number;
+  requests: number;
+  // null = no quota configured for this window (show usage, no progress bar).
+  limitTokens: number | null;
+  remainingTokens: number | null;
+}
+
+export interface LlmUsageResponse {
+  // null for the platform provider (system-owned, not addressable).
+  llmProviderId: string | null;
+  // Technical "platform" for the platform provider — the UI supplies a label.
+  providerName: string;
+  source: AgentLlmSource;
+  windows: LlmUsageWindow[];
+}
+
+// TOTAL — cap across all agents using this provider.
+// AGENT — per-agent cap. USER — per-user cap (only meaningful on the platform provider).
+export type LlmQuotaSubjectKind = 'TOTAL' | 'AGENT' | 'USER';
+
+export interface LlmQuota {
+  id: string;
+  subjectKind: LlmQuotaSubjectKind;
+  window: LlmUsageWindowKind;
+  limitTokens: number;
+}
+
+export interface CreateLlmQuotaRequest {
+  subjectKind: LlmQuotaSubjectKind;
+  window: LlmUsageWindowKind;
+  limitTokens: number;
 }

@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import apiService from '@/services/api';
 import { AgentLlmResponse, LlmProviderResponse, LlmProviderType } from '@/types';
 import { getErrorMessage } from '@/utils/error';
+import { localeMap } from '@/i18n/routing';
+import { useLlmUsageQuery } from '@/queries/llm-providers';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Button } from '@/components/ui/Button';
 import { Link } from '@/i18n/navigation';
@@ -26,6 +28,16 @@ const providerTypeBadge: Record<LlmProviderType, string> = {
 
 export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
   const t = useTranslations('Agents');
+  const tu = useTranslations('LlmUsage');
+  const locale = useLocale();
+  const bcp47 = localeMap[locale];
+
+  // Free-tier balance for the synthetic platform binding — supplementary, so a
+  // failed/absent usage response simply hides the remaining-tokens hint.
+  const { data: usage } = useLlmUsageQuery();
+  const platformDay = usage
+    ?.find((u) => u.source === 'PLATFORM')
+    ?.windows.find((w) => w.window === 'DAY');
 
   const [bindings, setBindings] = useState<AgentLlmResponse[]>([]);
   const [providers, setProviders] = useState<LlmProviderResponse[]>([]);
@@ -115,11 +127,21 @@ export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
                     <td className="py-3 px-4 text-sm">
                       <div className="flex items-center gap-2 flex-wrap">
                         {isPlatform ? (
-                          <span
-                            title={t('platformModelHint')}
-                            className="text-xs font-medium px-2 py-0.5 rounded-full bg-success/10 text-success"
-                          >
-                            {t('platformModel')}
+                          <span className="inline-flex items-center gap-2 flex-wrap">
+                            <span
+                              title={t('platformModelHint')}
+                              className="text-xs font-medium px-2 py-0.5 rounded-full bg-success/10 text-success"
+                            >
+                              {t('platformModel')}
+                            </span>
+                            {platformDay && platformDay.limitTokens !== null && (
+                              <span className="text-xs text-muted">
+                                {tu('remainingToday', {
+                                  remaining: (platformDay.remainingTokens ?? 0).toLocaleString(bcp47),
+                                  limit: platformDay.limitTokens.toLocaleString(bcp47),
+                                })}
+                              </span>
+                            )}
                           </span>
                         ) : (
                           <>
@@ -144,8 +166,16 @@ export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
                       {binding.model}
                     </td>
                     <td className="py-3 px-4 text-right">
-                      {/* PLATFORM is a virtual fallback — not editable/deletable. */}
-                      {!isPlatform && (
+                      {/* PLATFORM is a virtual fallback — not editable/deletable.
+                          Offer a shortcut to replace it with the user's own key. */}
+                      {isPlatform ? (
+                        <button
+                          onClick={() => setShowAdd(true)}
+                          className="text-sm text-accent hover:text-accent/80 transition-colors whitespace-nowrap"
+                        >
+                          {tu('connectOwnKey')} →
+                        </button>
+                      ) : (
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => setEditing(binding)}

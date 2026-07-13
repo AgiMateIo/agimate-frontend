@@ -1,16 +1,57 @@
-import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import apiService from '@/services/api';
-import type { LlmProviderResponse } from '@/types';
+import type { CreateLlmQuotaRequest, LlmProviderResponse } from '@/types';
 
 export const llmProviderKeys = {
   all: ['llm-providers'] as const,
   list: () => [...llmProviderKeys.all, 'list'] as const,
+  usage: () => [...llmProviderKeys.all, 'usage'] as const,
+  quotas: (providerId: string) => [...llmProviderKeys.all, 'quotas', providerId] as const,
 };
 
 export function useLlmProvidersQuery() {
   return useSuspenseQuery({
     queryKey: llmProviderKeys.list(),
     queryFn: () => apiService.getLlmProviders(),
+  });
+}
+
+// Non-suspense: usage is supplementary — a failure or slow response must never
+// block the surfaces that host it (agent models tab, dashboard widget).
+export function useLlmUsageQuery() {
+  return useQuery({
+    queryKey: llmProviderKeys.usage(),
+    queryFn: () => apiService.getLlmUsage(),
+    staleTime: 30_000,
+  });
+}
+
+export function useLlmProviderQuotasQuery(providerId: string) {
+  return useQuery({
+    queryKey: llmProviderKeys.quotas(providerId),
+    queryFn: () => apiService.getLlmProviderQuotas(providerId),
+  });
+}
+
+export function useCreateLlmQuotaMutation(providerId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CreateLlmQuotaRequest) => apiService.createLlmProviderQuota(providerId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: llmProviderKeys.quotas(providerId) });
+      queryClient.invalidateQueries({ queryKey: llmProviderKeys.usage() });
+    },
+  });
+}
+
+export function useDeleteLlmQuotaMutation(providerId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (quotaId: string) => apiService.deleteLlmProviderQuota(providerId, quotaId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: llmProviderKeys.quotas(providerId) });
+      queryClient.invalidateQueries({ queryKey: llmProviderKeys.usage() });
+    },
   });
 }
 
