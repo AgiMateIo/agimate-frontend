@@ -29,7 +29,8 @@ export default function EditAgentLlmModal({
 }: EditAgentLlmModalProps) {
   const t = useTranslations('Agents');
 
-  const [providerId, setProviderId] = useState(binding.llmProviderId);
+  // Only USER bindings reach this modal, so llmProviderId is always set here.
+  const [providerId, setProviderId] = useState(binding.llmProviderId ?? '');
   const [model, setModel] = useState(binding.model);
   const [submitting, setSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);

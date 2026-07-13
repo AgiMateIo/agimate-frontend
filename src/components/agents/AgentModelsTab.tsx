@@ -104,7 +104,8 @@ export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
             </thead>
             <tbody>
               {bindings.map((binding) => {
-                const provider = providerById(binding.llmProviderId);
+                const isPlatform = binding.source === 'PLATFORM';
+                const provider = binding.llmProviderId ? providerById(binding.llmProviderId) : undefined;
                 const providerDisabled = provider ? !provider.enabled : false;
                 return (
                   <tr key={binding.name} className="border-b border-border last:border-b-0 hover:bg-surface-secondary transition-colors">
@@ -113,18 +114,29 @@ export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
                     </td>
                     <td className="py-3 px-4 text-sm">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent">
-                          {providerTypeBadge[binding.providerType]}
-                        </span>
-                        <span className="text-foreground">{binding.llmProviderName}</span>
-                        {providerDisabled && (
+                        {isPlatform ? (
                           <span
-                            title={t('providerDisabledHint')}
-                            className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning"
+                            title={t('platformModelHint')}
+                            className="text-xs font-medium px-2 py-0.5 rounded-full bg-success/10 text-success"
                           >
-                            <ExclamationTriangleIcon className="h-3 w-3" />
-                            {t('providerDisabled')}
+                            {t('platformModel')}
                           </span>
+                        ) : (
+                          <>
+                            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent">
+                              {providerTypeBadge[binding.providerType]}
+                            </span>
+                            <span className="text-foreground">{binding.llmProviderName}</span>
+                            {providerDisabled && (
+                              <span
+                                title={t('providerDisabledHint')}
+                                className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning"
+                              >
+                                <ExclamationTriangleIcon className="h-3 w-3" />
+                                {t('providerDisabled')}
+                              </span>
+                            )}
+                          </>
                         )}
                       </div>
                     </td>
@@ -132,20 +144,23 @@ export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
                       {binding.model}
                     </td>
                     <td className="py-3 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <button
-                          onClick={() => setEditing(binding)}
-                          className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-secondary transition-colors"
-                        >
-                          <PencilIcon className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => setDeleting(binding)}
-                          className="p-1.5 rounded-lg text-muted hover:text-error hover:bg-error/10 transition-colors"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                      </div>
+                      {/* PLATFORM is a virtual fallback — not editable/deletable. */}
+                      {!isPlatform && (
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => setEditing(binding)}
+                            className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-secondary transition-colors"
+                          >
+                            <PencilIcon className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => setDeleting(binding)}
+                            className="p-1.5 rounded-lg text-muted hover:text-error hover:bg-error/10 transition-colors"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );

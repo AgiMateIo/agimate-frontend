@@ -282,11 +282,28 @@ export default function Step2Provider({ data, setData, goNext, goBack }: WizardS
 
       {error && <ErrorAlert>{error}</ErrorAlert>}
 
-      <div className="flex justify-between gap-3 pt-2">
+      {/* The model step is optional: an agent with no binding falls back to the
+          platform model. Let the user skip connecting their own provider. */}
+      <p className="text-xs text-muted">{t('step2SkipHint')}</p>
+
+      <div className="flex flex-wrap justify-between gap-3 pt-2">
         <Button type="button" variant="secondary" onClick={goBack}>{t('back')}</Button>
-        <Button type="submit" loading={loading} disabled={loading || !provider || !selectedModel}>
-          {t('next')}
-        </Button>
+        <div className="flex flex-wrap gap-3">
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={loading}
+            onClick={() => {
+              setData({ binding: null });
+              goNext();
+            }}
+          >
+            {t('step2Skip')}
+          </Button>
+          <Button type="submit" loading={loading} disabled={loading || !provider || !selectedModel}>
+            {t('next')}
+          </Button>
+        </div>
       </div>
     </form>
   );

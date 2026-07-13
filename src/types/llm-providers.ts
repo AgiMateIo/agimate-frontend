@@ -42,12 +42,20 @@ export interface RefreshModelsResponse {
   refreshedAt: string;
 }
 
+// USER — a real `agent_llms` row, editable/deletable as usual.
+// PLATFORM — a virtual free-tier fallback the backend synthesizes when the agent
+// has zero user bindings and the platform provider is enabled. Not addressable
+// (llmProviderId is null) and not persisted, so it must not be edited/deleted.
+export type AgentLlmSource = 'USER' | 'PLATFORM';
+
 export interface AgentLlmResponse {
   name: string;
   model: string;
-  llmProviderId: string;
+  // null for the synthetic PLATFORM record — the provider is system-owned.
+  llmProviderId: string | null;
   llmProviderName: string;
   providerType: LlmProviderType;
+  source: AgentLlmSource;
 }
 
 export interface CreateAgentLlmRequest {
