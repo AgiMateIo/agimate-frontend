@@ -44,6 +44,16 @@ export interface UpdateLlmProviderRequest {
   enabled?: boolean;
 }
 
+// Create the system-owned platform provider (ADMIN only). `name` is not accepted —
+// the backend forces it to "platform". The row is created disabled; enable it via
+// PATCH after configuring free-tier quotas.
+export interface CreatePlatformLlmProviderRequest {
+  providerType: LlmProviderType;
+  baseUrl?: string | null;
+  defaultModel?: string | null;
+  apiKey: string;
+}
+
 export interface RefreshModelsResponse {
   availableModels: LlmModel[];
   refreshedAt: string;
@@ -114,5 +124,11 @@ export interface LlmQuota {
 export interface CreateLlmQuotaRequest {
   subjectKind: LlmQuotaSubjectKind;
   window: LlmUsageWindowKind;
+  limitTokens: number;
+}
+
+// Change only the limit of an existing quota — subjectKind/window are the quota's
+// key and cannot change (delete + recreate to move a quota to another subject/window).
+export interface UpdateLlmQuotaRequest {
   limitTokens: number;
 }

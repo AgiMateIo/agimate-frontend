@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import apiService from '@/services/api';
-import type { CreateLlmQuotaRequest, LlmProviderResponse } from '@/types';
+import type { CreateLlmQuotaRequest, LlmProviderResponse, UpdateLlmQuotaRequest } from '@/types';
 
 export const llmProviderKeys = {
   all: ['llm-providers'] as const,
@@ -37,6 +37,18 @@ export function useCreateLlmQuotaMutation(providerId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateLlmQuotaRequest) => apiService.createLlmProviderQuota(providerId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: llmProviderKeys.quotas(providerId) });
+      queryClient.invalidateQueries({ queryKey: llmProviderKeys.usage() });
+    },
+  });
+}
+
+export function useUpdateLlmQuotaMutation(providerId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ quotaId, data }: { quotaId: string; data: UpdateLlmQuotaRequest }) =>
+      apiService.updateLlmProviderQuota(providerId, quotaId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: llmProviderKeys.quotas(providerId) });
       queryClient.invalidateQueries({ queryKey: llmProviderKeys.usage() });

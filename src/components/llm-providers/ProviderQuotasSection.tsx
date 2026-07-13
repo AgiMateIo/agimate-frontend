@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { LlmProviderResponse, LlmQuota } from '@/types';
 import { localeMap } from '@/i18n/routing';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
 import { useDeleteLlmQuotaMutation, useLlmProviderQuotasQuery } from '@/queries/llm-providers';
 import AddQuotaModal from './AddQuotaModal';
+import EditQuotaModal from './EditQuotaModal';
 
 interface ProviderQuotasSectionProps {
   provider: LlmProviderResponse;
@@ -24,6 +25,7 @@ export default function ProviderQuotasSection({ provider }: ProviderQuotasSectio
   const deleteMutation = useDeleteLlmQuotaMutation(provider.id);
 
   const [showAdd, setShowAdd] = useState(false);
+  const [editing, setEditing] = useState<LlmQuota | null>(null);
   const [deleting, setDeleting] = useState<LlmQuota | null>(null);
 
   const taken = new Set((quotas ?? []).map((q) => `${q.subjectKind}:${q.window}`));
@@ -60,20 +62,26 @@ export default function ProviderQuotasSection({ provider }: ProviderQuotasSectio
                   {t('limitValue', { limit: fmt(q.limitTokens) })}
                 </div>
               </div>
-              <button
-                onClick={() => setDeleting(q)}
-                className="p-1.5 rounded-lg text-muted hover:text-error hover:bg-error/10 transition-colors shrink-0"
-                title={t('deleteQuota')}
-              >
-                <TrashIcon className="h-4 w-4" />
-              </button>
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  onClick={() => setEditing(q)}
+                  className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-secondary transition-colors"
+                  title={t('editQuota')}
+                >
+                  <PencilIcon className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setDeleting(q)}
+                  className="p-1.5 rounded-lg text-muted hover:text-error hover:bg-error/10 transition-colors"
+                  title={t('deleteQuota')}
+                >
+                  <TrashIcon className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           ))}
         </div>
       )}
-
-      {/* To change a limit, delete and re-add — the backend has no PATCH for quotas. */}
-      <p className="text-xs text-muted">{t('quotaEditHint')}</p>
 
       {showAdd && (
         <AddQuotaModal
@@ -82,6 +90,15 @@ export default function ProviderQuotasSection({ provider }: ProviderQuotasSectio
           taken={taken}
           onClose={() => setShowAdd(false)}
           onSuccess={() => setShowAdd(false)}
+        />
+      )}
+
+      {editing && (
+        <EditQuotaModal
+          providerId={provider.id}
+          quota={editing}
+          onClose={() => setEditing(null)}
+          onSuccess={() => setEditing(null)}
         />
       )}
 
