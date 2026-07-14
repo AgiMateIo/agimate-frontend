@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   XMarkIcon,
@@ -11,7 +11,8 @@ import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import apiService from '@/services/api';
-import type { BoardTask, BoardTaskComment, BoardTaskCommentCreatedPayload } from '@/types';
+import type { BoardTask, BoardTaskComment } from '@/types';
+import { useTaskCommentsQuery, useBoardCacheActions } from '@/queries/boards';
 import { TYPE_BADGE } from './taskBadges';
 import { getErrorMessage } from '@/utils/error';
 
@@ -19,9 +20,6 @@ interface TaskSlideOverProps {
   boardId: string;
   task: BoardTask;
   agentMap: Map<string, string>;
-  // Latest realtime comment event on the board; triggers a silent refetch
-  // when it belongs to this task.
-  lastCommentEvent?: BoardTaskCommentCreatedPayload | null;
   onClose: () => void;
 }
 
@@ -29,36 +27,18 @@ export default function TaskSlideOver({
   boardId,
   task,
   agentMap,
-  lastCommentEvent,
   onClose,
 }: TaskSlideOverProps) {
   const t = useTranslations('Board');
 
-  const [comments, setComments] = useState<BoardTaskComment[]>([]);
-  const [commentsLoading, setCommentsLoading] = useState(true);
-  const [commentsError, setCommentsError] = useState<string | null>(null);
   const [newComment, setNewComment] = useState('');
   const [commentAgentId, setCommentAgentId] = useState('');
 
-  const fetchComments = useCallback(async (silent = false) => {
-    if (!silent) setCommentsLoading(true);
-    setCommentsError(null);
-    try {
-      const data = await apiService.getTaskComments(boardId, task.id);
-      setComments(data);
-    } catch (err) {
-      setCommentsError(getErrorMessage(err, t('loadError')));
-    } finally {
-      setCommentsLoading(false);
-    }
-  }, [boardId, task.id, t]);
-
-  // Live-update the comment list when a realtime event arrives for this task.
-  useEffect(() => {
-    if (lastCommentEvent && lastCommentEvent.taskId === task.id) {
-      fetchComments(true);
-    }
-  }, [lastCommentEvent, task.id, fetchComments]);
+  // Comments refetch on realtime events via cache invalidation at the board level.
+  const { data: comments = [], isPending: commentsLoading, error: commentsQueryError } =
+    useTaskCommentsQuery(boardId, task.id);
+  const commentsError = commentsQueryError ? getErrorMessage(commentsQueryError, t('loadError')) : null;
+  const { invalidateComments } = useBoardCacheActions();
 
   // Lock body scroll while panel is open
   useEffect(() => {
@@ -68,14 +48,10 @@ export default function TaskSlideOver({
     };
   }, []);
 
-  useEffect(() => {
-    fetchComments();
-  }, [fetchComments]);
-
   const { loading: commentLoading, error: commentError, handleSubmit } = useAsyncForm<BoardTaskComment>({
     onSuccess: () => {
       setNewComment('');
-      fetchComments();
+      invalidateComments(boardId, task.id);
     },
     defaultError: t('commentError'),
   });

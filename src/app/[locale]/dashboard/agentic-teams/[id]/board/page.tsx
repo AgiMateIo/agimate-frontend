@@ -1,147 +1,70 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, Suspense } from 'react';
 import { useParams } from 'next/navigation';
+import { useSuspenseQueries } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
-import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
-import apiService from '@/services/api';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import type {
   Board,
   BoardTask,
-  TasksByStatus,
-  TaskStatus,
   AgentResponse,
   BoardTaskCreatedPayload,
   BoardTaskStatusChangedPayload,
   BoardTaskCommentCreatedPayload,
 } from '@/types';
-import { TASK_STATUSES } from '@/types';
 import KanbanBoard from '@/components/boards/KanbanBoard';
 import BoardEmptyState from '@/components/boards/BoardEmptyState';
 import TaskSlideOver from '@/components/boards/TaskSlideOver';
 import CreateTaskModal from '@/components/boards/CreateTaskModal';
 import { useBoardSubscription } from '@/realtime/useBoardSubscription';
-import { animateCardMove } from '@/utils/animateCardMove';
-import { getErrorMessage } from '@/utils/error';
+import { agentsListOptions } from '@/queries/agents';
+import {
+  boardTasksOptions,
+  useBoardsListQuery,
+  useChangeTaskStatusMutation,
+  useBoardCacheActions,
+} from '@/queries/boards';
 
 function buildAgentMap(agents: AgentResponse[]): Map<string, string> {
   return new Map(agents.map((a) => [a.id, a.name]));
 }
 
-function buildColumnMap(data: TasksByStatus | null): Record<TaskStatus, BoardTask[]> {
-  const map = {} as Record<TaskStatus, BoardTask[]>;
-  for (const status of TASK_STATUSES) {
-    map[status] = data?.tasks?.[status] ?? [];
-  }
-  return map;
-}
-
-export default function BoardPage() {
+function BoardView({ board, teamId }: { board: Board; teamId: string }) {
   const t = useTranslations('Board');
-  const params = useParams();
-  const teamId = params.id as string;
 
-  const [board, setBoard] = useState<Board | null>(null);
-  const [columns, setColumns] = useState<Record<TaskStatus, BoardTask[]> | null>(null);
-  const [agents, setAgents] = useState<AgentResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Tasks (this board) and agents (this team) fetched in parallel — two suspense
+  // queries in one component would otherwise run serially.
+  const [{ data: columns }, { data: agentsPage }] = useSuspenseQueries({
+    queries: [boardTasksOptions(board.id), agentsListOptions(teamId)],
+  });
+  const agents = agentsPage.content;
+  const agentMap = useMemo(() => buildAgentMap(agents), [agents]);
+
+  const changeStatus = useChangeTaskStatusMutation(board.id);
+  const { invalidateTasks, invalidateComments, upsertTask, moveTask } = useBoardCacheActions();
 
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [showCreateTask, setShowCreateTask] = useState(false);
-  const [commentEvent, setCommentEvent] = useState<BoardTaskCommentCreatedPayload | null>(null);
   const [highlightedIds, setHighlightedIds] = useState<Set<string>>(() => new Set());
 
-  const agentMap = useMemo(() => buildAgentMap(agents), [agents]);
-
-  useSetBreadcrumb('board', t('title'));
-
-  const fetchData = useCallback(async () => {
-    try {
-      setError(null);
-      setLoading(true);
-      const [boards, agentsList] = await Promise.all([
-        apiService.getBoards(),
-        apiService.getAgentsList({ agenticTeamId: teamId }),
-      ]);
-
-      setAgents(agentsList.content);
-
-      const teamBoard = boards.find((b) => b.agenticTeamId === teamId) ?? null;
-      if (!teamBoard) {
-        setBoard(null);
-        setColumns(null);
-        setLoading(false);
-        return;
-      }
-
-      const tasksByStatus = await apiService.getBoardTasks(teamBoard.id);
-      setBoard(teamBoard);
-      setColumns(buildColumnMap(tasksByStatus));
-    } catch (err) {
-      setError(getErrorMessage(err, t('loadError')));
-    } finally {
-      setLoading(false);
-    }
-  }, [teamId, t]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  const handleBoardCreated = useCallback((newBoard: Board) => {
-    setBoard(newBoard);
-    setColumns(buildColumnMap(null));
-  }, []);
-
   const handleTaskMove = useCallback(
-    async (taskId: string, fromStatus: TaskStatus, toStatus: TaskStatus) => {
-      if (!columns || !board) return;
-
-      // Deep copy for safe rollback
-      const snapshot = {} as Record<TaskStatus, BoardTask[]>;
-      for (const s of TASK_STATUSES) {
-        snapshot[s] = [...columns[s]];
-      }
-
-      const task = columns[fromStatus].find((t) => t.id === taskId);
-      if (!task) return;
-
-      // Use the first available agent for the status change
+    (taskId: string, fromStatus: BoardTask['status'], toStatus: BoardTask['status']) => {
+      // The status change is attributed to the first available agent.
       const agentId = agents[0]?.id;
       if (!agentId) return;
-
-      // Optimistic update with inter-column animation
-      const updated = { ...columns };
-      updated[fromStatus] = updated[fromStatus].filter((t) => t.id !== taskId);
-      updated[toStatus] = [{ ...task, status: toStatus }, ...updated[toStatus]];
-      animateCardMove(taskId, () => setColumns(updated));
-
-      try {
-        await apiService.changeTaskStatus(board.id, taskId, { status: toStatus, agentId });
-      } catch {
-        animateCardMove(taskId, () => setColumns(snapshot));
-      }
+      changeStatus.mutate({ taskId, fromStatus, toStatus, agentId });
     },
-    [columns, agents, board]
+    [agents, changeStatus]
   );
-
-  const handleTaskCreated = useCallback(() => {
-    setShowCreateTask(false);
-    fetchData();
-  }, [fetchData]);
 
   // ===== Real-time event handlers =====
 
   const flashCard = useCallback((id: string) => {
-    setHighlightedIds((prev) => {
-      const next = new Set(prev);
-      next.add(id);
-      return next;
-    });
+    setHighlightedIds((prev) => new Set(prev).add(id));
     setTimeout(() => {
       setHighlightedIds((prev) => {
         if (!prev.has(id)) return prev;
@@ -154,155 +77,154 @@ export default function BoardPage() {
 
   const handleRealtimeTaskCreated = useCallback(
     (p: BoardTaskCreatedPayload) => {
-      setColumns((prev) => {
-        if (!prev) return prev;
-        const exists = Object.values(prev).some((tasks) =>
-          tasks.some((t) => t.id === p.taskId)
-        );
-        if (exists) return prev;
-
-        const now = new Date().toISOString();
-        const newTask: BoardTask = {
-          id: p.taskId,
-          type: p.type,
-          status: p.status,
-          title: p.title,
-          description: p.description,
-          createdByAgentId: p.createdByAgentId,
-          assigneeAgentId: p.assigneeAgentId,
-          parentTaskId: p.parentTaskId,
-          createdAt: now,
-          updatedAt: now,
-        };
-        return { ...prev, [p.status]: [newTask, ...prev[p.status]] };
-      });
+      // Payload has no timestamps; synthesize "now" for the optimistic card.
+      const now = new Date().toISOString();
+      const task: BoardTask = {
+        id: p.taskId,
+        type: p.type,
+        status: p.status,
+        title: p.title,
+        description: p.description,
+        createdByAgentId: p.createdByAgentId,
+        assigneeAgentId: p.assigneeAgentId,
+        parentTaskId: p.parentTaskId,
+        createdAt: now,
+        updatedAt: now,
+      };
+      upsertTask(board.id, task);
       flashCard(p.taskId);
     },
-    [flashCard]
+    [board.id, upsertTask, flashCard]
   );
 
   const handleRealtimeStatusChanged = useCallback(
     (p: BoardTaskStatusChangedPayload) => {
-      if (!columns) return;
       if (p.oldStatus === p.newStatus) return;
-      if (columns[p.newStatus].some((t) => t.id === p.taskId)) return;
-
-      let task: BoardTask | undefined;
-      for (const status of TASK_STATUSES) {
-        const found = columns[status].find((t) => t.id === p.taskId);
-        if (found) {
-          task = found;
-          break;
-        }
-      }
-      if (!task) return;
-
-      const next = {} as Record<TaskStatus, BoardTask[]>;
-      for (const s of TASK_STATUSES) {
-        next[s] = columns[s].filter((t) => t.id !== p.taskId);
-      }
-      next[p.newStatus] = [{ ...task, status: p.newStatus }, ...next[p.newStatus]];
-      animateCardMove(p.taskId, () => setColumns(next));
+      moveTask(board.id, p.taskId, p.newStatus);
     },
-    [columns]
+    [board.id, moveTask]
   );
 
-  useBoardSubscription(board?.id ?? null, {
+  const handleRealtimeCommentAdded = useCallback(
+    (p: BoardTaskCommentCreatedPayload) => {
+      invalidateComments(p.boardId, p.taskId);
+    },
+    [invalidateComments]
+  );
+
+  useBoardSubscription(board.id, {
     onTaskCreated: handleRealtimeTaskCreated,
     onTaskStatusChanged: handleRealtimeStatusChanged,
-    onCommentAdded: setCommentEvent,
+    onCommentAdded: handleRealtimeCommentAdded,
   });
 
-  // Find the selected task from columns
   const selectedTask = useMemo(() => {
-    if (!selectedTaskId || !columns) return null;
-    return Object.values(columns).flat().find((t) => t.id === selectedTaskId) ?? null;
+    if (!selectedTaskId) return null;
+    return Object.values(columns).flat().find((task) => task.id === selectedTaskId) ?? null;
   }, [selectedTaskId, columns]);
 
-  // All tasks flat for parent selection in create modal
-  const allTasks = useMemo(() => {
-    if (!columns) return [];
-    return Object.values(columns).flat();
-  }, [columns]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-24 text-muted">
-        {t('loading')}
-      </div>
-    );
-  }
+  const allTasks = useMemo(() => Object.values(columns).flat(), [columns]);
 
   return (
-    <div className="-mx-6 -mt-6 flex flex-col" style={{ minHeight: 'calc(100vh - 4rem)' }}>
+    <>
       {/* Board header */}
       <div className="px-6 pt-6 pb-4 shrink-0 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            {board?.name ?? t('title')}
-          </h1>
-          {board?.description && (
+          <h1 className="text-2xl font-bold text-foreground">{board.name}</h1>
+          {board.description && (
             <p className="text-muted mt-1 text-sm">{board.description}</p>
           )}
         </div>
-        {board && (
-          <div className="flex items-center gap-2">
-            <Button variant="secondary" onClick={() => setShowCreateTask(true)}>
-              {t('createTask')}
-            </Button>
-            <button
-              onClick={fetchData}
-              className="text-muted hover:text-foreground transition-colors p-2"
-              aria-label={t('refresh')}
-            >
-              <ArrowPathIcon className="h-5 w-5" />
-            </button>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          <Button variant="secondary" onClick={() => setShowCreateTask(true)}>
+            {t('createTask')}
+          </Button>
+          <button
+            onClick={() => invalidateTasks(board.id)}
+            className="text-muted hover:text-foreground transition-colors p-2"
+            aria-label={t('refresh')}
+          >
+            <ArrowPathIcon className="h-5 w-5" />
+          </button>
+        </div>
       </div>
 
-      {error && (
-        <div className="px-6 pb-4 shrink-0">
-          <Alert variant="error">{error}</Alert>
-        </div>
-      )}
+      <KanbanBoard
+        columns={columns}
+        agentMap={agentMap}
+        onTaskMove={handleTaskMove}
+        onTaskClick={setSelectedTaskId}
+        onAddTask={() => setShowCreateTask(true)}
+        highlightedIds={highlightedIds}
+      />
 
-      {!board || !columns ? (
-        <div className="px-6">
-          <BoardEmptyState teamId={teamId} onCreated={handleBoardCreated} />
-        </div>
-      ) : (
-        <KanbanBoard
-          columns={columns}
-          agentMap={agentMap}
-          onTaskMove={handleTaskMove}
-          onTaskClick={setSelectedTaskId}
-          onAddTask={() => setShowCreateTask(true)}
-          highlightedIds={highlightedIds}
-        />
-      )}
-
-      {/* Slide-over */}
-      {selectedTask && board && (
+      {selectedTask && (
         <TaskSlideOver
           boardId={board.id}
           task={selectedTask}
           agentMap={agentMap}
-          lastCommentEvent={commentEvent}
           onClose={() => setSelectedTaskId(null)}
         />
       )}
 
-      {/* Create task modal */}
-      {showCreateTask && board && (
+      {showCreateTask && (
         <CreateTaskModal
           boardId={board.id}
           allTasks={allTasks}
           agentMap={agentMap}
           onClose={() => setShowCreateTask(false)}
-          onSuccess={handleTaskCreated}
+          onSuccess={() => {
+            setShowCreateTask(false);
+            invalidateTasks(board.id);
+          }}
         />
       )}
+    </>
+  );
+}
+
+function BoardResolver({ teamId }: { teamId: string }) {
+  const t = useTranslations('Board');
+  const { data: boards } = useBoardsListQuery();
+  const { invalidateBoards } = useBoardCacheActions();
+
+  const board = boards.find((b) => b.agenticTeamId === teamId) ?? null;
+
+  if (!board) {
+    return (
+      <>
+        <div className="px-6 pt-6 pb-4 shrink-0">
+          <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
+        </div>
+        <div className="px-6">
+          {/* A fresh board appears once the boards list refetches. */}
+          <BoardEmptyState teamId={teamId} onCreated={() => invalidateBoards()} />
+        </div>
+      </>
+    );
+  }
+
+  return <BoardView board={board} teamId={teamId} />;
+}
+
+export default function BoardPage() {
+  const t = useTranslations('Board');
+  const params = useParams();
+  const teamId = params.id as string;
+
+  useSetBreadcrumb('board', t('title'));
+
+  return (
+    <div className="-mx-6 -mt-6 flex flex-col" style={{ minHeight: 'calc(100vh - 4rem)' }}>
+      <ErrorBoundary>
+        <Suspense
+          fallback={
+            <div className="flex items-center justify-center py-24 text-muted">{t('loading')}</div>
+          }
+        >
+          <BoardResolver teamId={teamId} />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 }
