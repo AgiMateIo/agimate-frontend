@@ -296,7 +296,7 @@ export default function LlmProviderDetailPage() {
   const t = useTranslations('LlmProviders');
 
   return (
-    <ErrorBoundary>
+    <ErrorBoundary resetKeys={[id]}>
       <Suspense fallback={<div className="text-center py-12 text-muted">{t('loading')}</div>}>
         <ProviderDetailContent id={id} />
       </Suspense>

@@ -49,7 +49,7 @@ export default function TeamAgentsPage() {
         <h1 className="text-2xl font-bold text-foreground">{t('teamAgents')}</h1>
       </div>
 
-      <ErrorBoundary>
+      <ErrorBoundary resetKeys={[teamId]}>
         <Suspense fallback={<div className="text-center py-12 text-muted">{t('loadingAgents')}</div>}>
           <TeamAgentsContent teamId={teamId} />
         </Suspense>

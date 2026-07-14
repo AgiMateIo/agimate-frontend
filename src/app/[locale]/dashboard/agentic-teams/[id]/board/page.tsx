@@ -216,7 +216,7 @@ export default function BoardPage() {
 
   return (
     <div className="-mx-6 -mt-6 flex flex-col" style={{ minHeight: 'calc(100vh - 4rem)' }}>
-      <ErrorBoundary>
+      <ErrorBoundary resetKeys={[teamId]}>
         <Suspense
           fallback={
             <div className="flex items-center justify-center py-24 text-muted">{t('loading')}</div>

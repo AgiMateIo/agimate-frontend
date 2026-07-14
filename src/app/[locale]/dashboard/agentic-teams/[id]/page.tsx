@@ -116,7 +116,7 @@ export default function AgenticTeamDetailPage() {
 
   return (
     <div className="space-y-6">
-      <ErrorBoundary>
+      <ErrorBoundary resetKeys={[teamId]}>
         <Suspense fallback={<div className="text-muted">{t('loading')}</div>}>
           <TeamDetail teamId={teamId} onEdit={setTeamToEdit} />
         </Suspense>

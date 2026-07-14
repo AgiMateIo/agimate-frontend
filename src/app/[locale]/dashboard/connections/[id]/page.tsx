@@ -276,7 +276,7 @@ export default function ConnectionDetailPage() {
         &larr; {t('backToConnections')}
       </Link>
 
-      <ErrorBoundary>
+      <ErrorBoundary resetKeys={[id]}>
         <Suspense fallback={<div className="text-center py-12 text-muted">{t('loading')}</div>}>
           <ConnectionDetailContent id={id} />
         </Suspense>
