@@ -47,10 +47,6 @@ export default function AgentSkillsTab({ agentId, onConnectConnector }: AgentSki
         totalPages: data.totalPages,
         size: data.size,
         number: data.number,
-        first: data.first,
-        last: data.last,
-        empty: data.empty,
-        numberOfElements: data.numberOfElements,
       });
       if (silent) setError('');
     } catch (err) {
@@ -186,14 +182,14 @@ export default function AgentSkillsTab({ agentId, onConnectConnector }: AgentSki
               <div className="flex gap-2">
                 <button
                   onClick={() => setPage(p => Math.max(0, p - 1))}
-                  disabled={pageInfo.first}
+                  disabled={page === 0}
                   className="px-3 py-1 text-xs font-medium rounded-lg bg-surface-secondary text-muted hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {t('policyPrevious')}
                 </button>
                 <button
                   onClick={() => setPage(p => p + 1)}
-                  disabled={pageInfo.last}
+                  disabled={page >= pageInfo.totalPages - 1}
                   className="px-3 py-1 text-xs font-medium rounded-lg bg-surface-secondary text-muted hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {t('policyNext')}

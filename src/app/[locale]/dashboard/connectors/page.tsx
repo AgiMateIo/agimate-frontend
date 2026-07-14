@@ -28,7 +28,7 @@ function ConnectorsContent({
   const t = useTranslations('ConnectorCatalog');
   const { data } = useConnectorSearchQuery(search, page);
 
-  if (data.empty) {
+  if (data.content.length === 0) {
     return (
       <div className="bg-surface rounded-xl border border-border p-12 text-center text-muted">
         {t('empty')}

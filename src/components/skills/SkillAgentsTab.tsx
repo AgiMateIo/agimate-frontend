@@ -87,7 +87,7 @@ export default function SkillAgentsTab({ skillId, skillName }: SkillAgentsTabPro
         <div className="text-center py-12 text-muted text-sm">{t('loading')}</div>
       )}
 
-      {data && data.empty && !loading && (
+      {data && data.content.length === 0 && !loading && (
         <div className="bg-surface-secondary rounded-lg border border-border/50 p-8 text-center text-sm text-muted">
           {debouncedSearch ? t('emptySearch') : t('empty')}
         </div>

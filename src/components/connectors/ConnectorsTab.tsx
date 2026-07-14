@@ -147,14 +147,14 @@ function ConnectorsListView({
             <div className="flex gap-2">
               <button
                 onClick={() => onPageChange(page - 1)}
-                disabled={pageInfo.first}
+                disabled={page === 0}
                 className="px-3 py-1 text-xs font-medium rounded-lg bg-surface-secondary text-muted hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {t('previous')}
               </button>
               <button
                 onClick={() => onPageChange(page + 1)}
-                disabled={pageInfo.last}
+                disabled={page >= pageInfo.totalPages - 1}
                 className="px-3 py-1 text-xs font-medium rounded-lg bg-surface-secondary text-muted hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {t('next')}
