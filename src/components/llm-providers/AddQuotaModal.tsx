@@ -6,7 +6,7 @@ import { CreateLlmQuotaRequest, LlmQuotaSubjectKind, LlmUsageWindowKind } from '
 import { getErrorMessage } from '@/utils/error';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { FormField, Input } from '@/components/ui/FormField';
+import { FormField, Input, Select } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useCreateLlmQuotaMutation } from '@/queries/llm-providers';
 
@@ -26,6 +26,7 @@ const WINDOWS: LlmUsageWindowKind[] = ['DAY', 'MONTH'];
 
 export default function AddQuotaModal({ providerId, isPlatform, taken, onClose, onSuccess }: AddQuotaModalProps) {
   const t = useTranslations('LlmUsage');
+  const tc = useTranslations('Common');
 
   const subjects = isPlatform ? PLATFORM_SUBJECTS : USER_SUBJECTS;
   const [subjectKind, setSubjectKind] = useState<LlmQuotaSubjectKind>(subjects[0]);
@@ -58,29 +59,27 @@ export default function AddQuotaModal({ providerId, isPlatform, taken, onClose, 
     <Modal isOpen={true} onClose={busy ? () => {} : onClose} title={t('addQuota')}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <FormField label={t('subjectKind')} hint={t(`subject_${subjectKind}_hint`)}>
-          <select
+          <Select
             value={subjectKind}
             onChange={(e) => setSubjectKind(e.target.value as LlmQuotaSubjectKind)}
             disabled={busy}
-            className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground"
           >
             {subjects.map((s) => (
               <option key={s} value={s}>{t(`subject_${s}`)}</option>
             ))}
-          </select>
+          </Select>
         </FormField>
 
         <FormField label={t('window')}>
-          <select
+          <Select
             value={window}
             onChange={(e) => setWindow(e.target.value as LlmUsageWindowKind)}
             disabled={busy}
-            className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground"
           >
             {WINDOWS.map((w) => (
               <option key={w} value={w}>{t(w === 'DAY' ? 'windowDay' : 'windowMonth')}</option>
             ))}
-          </select>
+          </Select>
         </FormField>
 
         <FormField
@@ -105,7 +104,7 @@ export default function AddQuotaModal({ providerId, isPlatform, taken, onClose, 
 
         <div className="flex gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose} disabled={busy}>
-            {t('cancel')}
+            {tc('cancel')}
           </Button>
           <Button type="submit" loading={busy} disabled={busy || !valid}>
             {t('addQuota')}

@@ -64,3 +64,15 @@ export function TextArea({ className = '', ...props }: TextAreaProps) {
     />
   );
 }
+
+type SelectProps = React.SelectHTMLAttributes<HTMLSelectElement>;
+
+// Native <select> sharing Input's styling — the single dropdown primitive.
+export function Select({ className = '', ...props }: SelectProps) {
+  return (
+    <select
+      className={`w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground ${className}`}
+      {...props}
+    />
+  );
+}

@@ -412,6 +412,10 @@
     "backToAgents": "Назад к агентам",
     "createAgentTitle": "Создание конфигурации агента",
     "editAgentPageTitle": "Редактирование конфигурации агента",
+    "agentKey": "Ключ агента",
+    "regenerateKey": "Перегенерировать ключ",
+    "regenerateKeyDescription": "Если ключ скомпрометирован, его можно перегенерировать. Старый ключ немедленно перестанет работать.",
+    "regenerateKeyFailed": "Не удалось перегенерировать ключ",
     "save": "Сохранить",
     "cancel": "Отмена",
     "webhookUrl": "URL вебхука",
@@ -983,7 +987,6 @@
     "quotaDeleteFailed": "Не удалось удалить квоту",
     "quotaCreateFailed": "Не удалось создать квоту",
     "quotaUpdateFailed": "Не удалось обновить квоту",
-    "save": "Сохранить",
     "quotaExists": "Квота для этого субъекта и окна уже существует.",
     "limitValue": "{limit} токенов",
     "subjectKind": "Применяется к",
@@ -995,7 +998,6 @@
     "subject_USER_hint": "Отдельный free-tier лимит каждому пользователю.",
     "window": "Окно",
     "limitTokens": "Лимит токенов",
-    "limitTokensHint": "Максимум токенов за окно (минимум 1).",
-    "cancel": "Отмена"
+    "limitTokensHint": "Максимум токенов за окно (минимум 1)."
   }
 }

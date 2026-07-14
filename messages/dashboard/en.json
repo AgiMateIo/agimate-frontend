@@ -412,6 +412,10 @@
     "backToAgents": "Back to Agents",
     "createAgentTitle": "Create Agent Configuration",
     "editAgentPageTitle": "Edit Agent Configuration",
+    "agentKey": "Agent Key",
+    "regenerateKey": "Regenerate Key",
+    "regenerateKeyDescription": "If your key has been compromised, you can regenerate it. The old key will be invalidated immediately.",
+    "regenerateKeyFailed": "Failed to regenerate key",
     "save": "Save",
     "cancel": "Cancel",
     "webhookUrl": "Webhook URL",
@@ -983,7 +987,6 @@
     "quotaDeleteFailed": "Failed to delete quota",
     "quotaCreateFailed": "Failed to create quota",
     "quotaUpdateFailed": "Failed to update quota",
-    "save": "Save",
     "quotaExists": "A quota for this subject and window already exists.",
     "limitValue": "{limit} tokens",
     "subjectKind": "Applies to",
@@ -995,7 +998,6 @@
     "subject_USER_hint": "A separate free-tier cap for each user.",
     "window": "Window",
     "limitTokens": "Token limit",
-    "limitTokensHint": "Maximum tokens per window (at least 1).",
-    "cancel": "Cancel"
+    "limitTokensHint": "Maximum tokens per window (at least 1)."
   }
 }

@@ -3,19 +3,18 @@
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { ArrowLeftIcon, ClipboardDocumentIcon, ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { AgentResponse, AgentType } from '@/types';
 import { useAgentDetailQuery, useAgentCacheActions } from '@/queries/agents';
 import { Button } from '@/components/ui/Button';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
-import { Alert } from '@/components/ui/Alert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
-import { useClipboard } from '@/hooks/useClipboard';
 import { getErrorMessage } from '@/utils/error';
 import DeleteAgentModal from '@/components/agents/DeleteAgentModal';
 import AgentForm from '@/components/agents/AgentForm';
+import SecretKeyReveal from '@/components/connectors/SecretKeyReveal';
 
 export default function EditAgentPage() {
   const t = useTranslations('Agents');
@@ -49,7 +48,6 @@ export default function EditAgentPage() {
   const [regeneratedKey, setRegeneratedKey] = useState<string | null>(null);
   const [regenerating, setRegenerating] = useState(false);
   const [regenerateError, setRegenerateError] = useState<string | null>(null);
-  const { copied, copy } = useClipboard();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -80,7 +78,7 @@ export default function EditAgentPage() {
       const result = await apiService.regenerateAgentKey(agentId);
       setRegeneratedKey(result.fullKey);
     } catch (err) {
-      setRegenerateError(getErrorMessage(err, 'Failed to regenerate key'));
+      setRegenerateError(getErrorMessage(err, t('regenerateKeyFailed')));
     } finally {
       setRegenerating(false);
     }
@@ -127,46 +125,29 @@ export default function EditAgentPage() {
 
       {/* Regenerate Key Section */}
       <div className="bg-surface rounded-xl border border-border p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-foreground">Agent Key</h2>
-        <p className="text-sm text-muted">
-          If your key has been compromised, you can regenerate it. The old key will be invalidated immediately.
-        </p>
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">{t('agentKey')}</h2>
+          <p className="text-sm text-muted mt-1">{t('regenerateKeyDescription')}</p>
+        </div>
 
-        {regeneratedKey && (
+        {regeneratedKey ? (
+          <SecretKeyReveal
+            secret={regeneratedKey}
+            label={t('agentKey')}
+            onDone={() => setRegeneratedKey(null)}
+          />
+        ) : (
           <>
-            <Alert variant="warning">
-              Save this key now! It will only be shown once.
-            </Alert>
-            <div className="flex items-center gap-2">
-              <code className="flex-1 bg-surface-secondary border border-border/50 rounded-lg px-4 py-2.5 text-sm font-mono text-foreground break-all">
-                {regeneratedKey}
-              </code>
-              <button
-                onClick={() => copy(regeneratedKey)}
-                className="shrink-0 p-2.5 rounded-lg border border-border/50 hover:bg-surface-secondary transition-colors text-muted hover:text-foreground"
-                title="Copy key"
-              >
-                {copied ? (
-                  <ClipboardDocumentCheckIcon className="w-5 h-5 text-success" />
-                ) : (
-                  <ClipboardDocumentIcon className="w-5 h-5" />
-                )}
-              </button>
-            </div>
+            {regenerateError && <ErrorAlert>{regenerateError}</ErrorAlert>}
+            <Button
+              variant="warning"
+              onClick={handleRegenerateKey}
+              loading={regenerating}
+              disabled={regenerating}
+            >
+              {t('regenerateKey')}
+            </Button>
           </>
-        )}
-
-        {regenerateError && <ErrorAlert>{regenerateError}</ErrorAlert>}
-
-        {!regeneratedKey && (
-          <Button
-            variant="warning"
-            onClick={handleRegenerateKey}
-            loading={regenerating}
-            disabled={regenerating}
-          >
-            Regenerate Key
-          </Button>
         )}
       </div>
 

@@ -17,6 +17,7 @@ interface ProviderQuotasSectionProps {
 
 export default function ProviderQuotasSection({ provider }: ProviderQuotasSectionProps) {
   const t = useTranslations('LlmUsage');
+  const tc = useTranslations('Common');
   const locale = useLocale();
   const bcp47 = localeMap[locale];
   const fmt = (n: number) => n.toLocaleString(bcp47);
@@ -106,7 +107,7 @@ export default function ProviderQuotasSection({ provider }: ProviderQuotasSectio
         <ConfirmDeleteModal
           title={t('deleteQuota')}
           confirmLabel={t('deleteQuota')}
-          cancelLabel={t('cancel')}
+          cancelLabel={tc('cancel')}
           defaultError={t('quotaDeleteFailed')}
           fullWidthButtons
           onConfirm={() => deleteMutation.mutateAsync(deleting.id)}

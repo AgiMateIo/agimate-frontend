@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
@@ -8,34 +8,31 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { SkillDetailResponse } from '@/types';
-import { useSkillDetailQuery, useSkillsCacheActions } from '@/queries/skills';
+import { useSkillDetailSuspenseQuery, useSkillsCacheActions } from '@/queries/skills';
 import { Button } from '@/components/ui/Button';
 import { FormField, TextArea } from '@/components/ui/FormField';
 import { Toggle } from '@/components/ui/Toggle';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { Tabs } from '@/components/ui/Tabs';
 import { useUser } from '@/contexts/UserContext';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { formatDate } from '@/utils/date';
 import { buildSkillMd } from '@/utils/skill';
-import { getErrorMessage } from '@/utils/error';
 import SkillAgentsTab from '@/components/skills/SkillAgentsTab';
 import DeleteSkillModal from '@/components/skills/DeleteSkillModal';
 
 type Tab = 'overview' | 'agents';
 
-export default function SkillDetailPage() {
+function SkillDetailContent({ skillId }: { skillId: string }) {
   const t = useTranslations('Skills');
   const locale = useLocale();
   const router = useRouter();
-  const params = useParams();
-  const skillId = params.id as string;
   const { user } = useUser();
 
-  const { data: skill, isPending: pageLoading, error: queryError } = useSkillDetailQuery(skillId);
+  const { data: skill } = useSkillDetailSuspenseQuery(skillId);
   const { invalidateSkill } = useSkillsCacheActions();
-  const pageError = queryError ? getErrorMessage(queryError, 'Failed to load skill') : null;
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -43,19 +40,17 @@ export default function SkillDetailPage() {
   const [editSkillMd, setEditSkillMd] = useState('');
   const [editIsPublic, setEditIsPublic] = useState(false);
   const [seededFrom, setSeededFrom] = useState<SkillDetailResponse | null>(null);
-  if (skill && skill !== seededFrom) {
+  if (skill !== seededFrom) {
     setSeededFrom(skill);
     setEditSkillMd(buildSkillMd(skill));
     setEditIsPublic(skill.isPublic);
   }
 
-  useSetBreadcrumb(skillId, skill?.name);
+  useSetBreadcrumb(skillId, skill.name);
 
-  const isEditable = !!(user?.id && user.id === skill?.userId);
+  const isEditable = !!(user?.id && user.id === skill.userId);
 
-  const isDirty = !!skill && (
-    editSkillMd !== buildSkillMd(skill) || editIsPublic !== skill.isPublic
-  );
+  const isDirty = editSkillMd !== buildSkillMd(skill) || editIsPublic !== skill.isPublic;
 
   const { loading: saving, error: saveError, handleSubmit } = useAsyncForm<void>({
     onSuccess: () => {
@@ -75,40 +70,8 @@ export default function SkillDetailPage() {
     router.push('/dashboard/skills');
   };
 
-  if (pageLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="text-center py-12 text-muted">{t('loadingSkill')}</div>
-      </div>
-    );
-  }
-
-  if (pageError || !skill) {
-    return (
-      <div className="space-y-6">
-        <button
-          onClick={() => router.push('/dashboard/skills')}
-          className="flex items-center gap-2 text-muted hover:text-foreground transition-colors"
-        >
-          <ArrowLeftIcon className="h-4 w-4" />
-          <span className="text-sm">{t('backToSkills')}</span>
-        </button>
-        <ErrorAlert>{pageError || t('skillNotFound')}</ErrorAlert>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6">
-      {/* Back Button */}
-      <button
-        onClick={() => router.push('/dashboard/skills')}
-        className="flex items-center gap-2 text-muted hover:text-foreground transition-colors"
-      >
-        <ArrowLeftIcon className="h-4 w-4" />
-        <span className="text-sm">{t('backToSkills')}</span>
-      </button>
-
+    <>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -241,6 +204,32 @@ export default function SkillDetailPage() {
           onSuccess={handleDeleteSuccess}
         />
       )}
+    </>
+  );
+}
+
+export default function SkillDetailPage() {
+  const t = useTranslations('Skills');
+  const router = useRouter();
+  const params = useParams();
+  const skillId = params.id as string;
+
+  return (
+    <div className="space-y-6">
+      {/* Back Button — kept in the shell so it stays visible while loading/on error. */}
+      <button
+        onClick={() => router.push('/dashboard/skills')}
+        className="flex items-center gap-2 text-muted hover:text-foreground transition-colors"
+      >
+        <ArrowLeftIcon className="h-4 w-4" />
+        <span className="text-sm">{t('backToSkills')}</span>
+      </button>
+
+      <ErrorBoundary>
+        <Suspense fallback={<div className="text-center py-12 text-muted">{t('loadingSkill')}</div>}>
+          <SkillDetailContent skillId={skillId} />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 }

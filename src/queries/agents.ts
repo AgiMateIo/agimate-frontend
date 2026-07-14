@@ -37,7 +37,13 @@ export function useAgentsListQuery(teamId?: string) {
   return useSuspenseQuery(agentsListOptions(teamId));
 }
 
-// Non-suspense: the detail pages render their own loading/error states.
+// Suspense variant for the detail view page (rendered inside ErrorBoundary + Suspense).
+export function useAgentDetailSuspenseQuery(id: string) {
+  return useSuspenseQuery(agentDetailOptions(id));
+}
+
+// Non-suspense variant for the edit page, which seeds form state from the data
+// and renders its own loading/error UI.
 export function useAgentDetailQuery(id: string) {
   return useQuery(agentDetailOptions(id));
 }

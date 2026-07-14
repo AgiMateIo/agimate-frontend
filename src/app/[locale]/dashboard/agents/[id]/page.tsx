@@ -1,17 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { ArrowLeftIcon, PencilIcon, LockClosedIcon, KeyIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
-import { useAgentDetailQuery } from '@/queries/agents';
-import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { useAgentDetailSuspenseQuery } from '@/queries/agents';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { Tabs } from '@/components/ui/Tabs';
 import { getAgentAvatarUrl } from '@/utils/avatar';
 import { formatDate } from '@/utils/date';
-import { getErrorMessage } from '@/utils/error';
 import { Link } from '@/i18n/navigation';
 import AgentConnectionsTab from '@/components/agents/AgentConnectionsTab';
 import AgentSkillsTab from '@/components/agents/AgentSkillsTab';
@@ -23,17 +22,13 @@ type Tab = (typeof TABS)[number];
 
 const isTab = (value: string | null): value is Tab => TABS.includes(value as Tab);
 
-export default function AgentDetailPage() {
+function AgentDetailContent({ agentId }: { agentId: string }) {
   const t = useTranslations('Agents');
   const locale = useLocale();
-  const router = useRouter();
-  const params = useParams();
-  const agentId = params.id as string;
   // Deep link into a tab, e.g. ?tab=connections from the wizard's final step.
   const tabParam = useSearchParams().get('tab');
 
-  const { data: agent, isPending: loading, error: queryError } = useAgentDetailQuery(agentId);
-  const error = queryError ? getErrorMessage(queryError, 'Failed to load agent') : null;
+  const { data: agent } = useAgentDetailSuspenseQuery(agentId);
   const [activeTab, setActiveTab] = useState<Tab>(isTab(tabParam) ? tabParam : 'general');
   // Connector the user asked to connect from the skills tab's "waiting" badge;
   // opens the bind modal on the connections tab with this connector preselected.
@@ -52,40 +47,8 @@ export default function AgentDetailPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="text-center py-12 text-muted">{t('loadingAgents')}</div>
-      </div>
-    );
-  }
-
-  if (error || !agent) {
-    return (
-      <div className="space-y-6">
-        <button
-          onClick={() => router.push('/dashboard/agents')}
-          className="flex items-center gap-2 text-muted hover:text-foreground transition-colors"
-        >
-          <ArrowLeftIcon className="h-4 w-4" />
-          <span className="text-sm">{t('backToAgents')}</span>
-        </button>
-        <ErrorAlert>{error || 'Agent not found'}</ErrorAlert>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6">
-      {/* Back Button */}
-      <button
-        onClick={() => router.push('/dashboard/agents')}
-        className="flex items-center gap-2 text-muted hover:text-foreground transition-colors"
-      >
-        <ArrowLeftIcon className="h-4 w-4" />
-        <span className="text-sm">{t('backToAgents')}</span>
-      </button>
-
+    <>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -227,6 +190,32 @@ export default function AgentDetailPage() {
         activeTab={activeTab}
         onTabChange={(id) => setActiveTab(id as Tab)}
       />
+    </>
+  );
+}
+
+export default function AgentDetailPage() {
+  const t = useTranslations('Agents');
+  const router = useRouter();
+  const params = useParams();
+  const agentId = params.id as string;
+
+  return (
+    <div className="space-y-6">
+      {/* Back Button — kept in the shell so it stays visible while loading/on error. */}
+      <button
+        onClick={() => router.push('/dashboard/agents')}
+        className="flex items-center gap-2 text-muted hover:text-foreground transition-colors"
+      >
+        <ArrowLeftIcon className="h-4 w-4" />
+        <span className="text-sm">{t('backToAgents')}</span>
+      </button>
+
+      <ErrorBoundary>
+        <Suspense fallback={<div className="text-center py-12 text-muted">{t('loadingAgents')}</div>}>
+          <AgentDetailContent agentId={agentId} />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 }

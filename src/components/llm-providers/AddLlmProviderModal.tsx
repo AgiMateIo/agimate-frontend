@@ -7,7 +7,7 @@ import { CreateLlmProviderRequest } from '@/types';
 import { getErrorMessage } from '@/utils/error';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { FormField, Input } from '@/components/ui/FormField';
+import { FormField, Input, Select } from '@/components/ui/FormField';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import {
@@ -120,18 +120,17 @@ export default function AddLlmProviderModal({ onClose, onSuccess }: AddLlmProvid
         </FormField>
 
         <FormField label={t('providerType')} required>
-          <select
+          <Select
             value={presetKey}
             onChange={(e) => handlePresetChange(e.target.value)}
             disabled={busy}
-            className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground"
           >
             {LLM_PROVIDER_PRESETS.map((p) => (
               <option key={p.key} value={p.key}>
                 {t(p.labelKey)}
               </option>
             ))}
-          </select>
+          </Select>
         </FormField>
 
         <FormField

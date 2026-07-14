@@ -6,6 +6,7 @@ import { ClockIcon, CpuChipIcon, GlobeAltIcon } from '@heroicons/react/24/outlin
 import apiService from '@/services/api';
 import { LlmProviderResponse } from '@/types';
 import { Toggle } from '@/components/ui/Toggle';
+import { Chip } from '@/components/ui/Chip';
 import { Link } from '@/i18n/navigation';
 import { localeMap } from '@/i18n/routing';
 import { formatDate } from '@/utils/date';
@@ -15,29 +16,6 @@ import { ProviderAvatar } from './ProviderAvatar';
 interface LlmProvidersListProps {
   providers: LlmProviderResponse[];
   onUpdate: (providers: LlmProviderResponse[]) => void;
-}
-
-// Compact metadata pill used along the card's second row.
-function Chip({
-  icon: Icon,
-  tone = 'default',
-  children,
-}: {
-  icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  tone?: 'default' | 'accent' | 'warning';
-  children: React.ReactNode;
-}) {
-  const tones = {
-    default: 'border border-border text-muted',
-    accent: 'bg-accent/10 text-accent',
-    warning: 'bg-warning/10 text-warning',
-  };
-  return (
-    <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${tones[tone]}`}>
-      {Icon && <Icon className="h-3 w-3 shrink-0" />}
-      <span className="truncate max-w-[14rem]">{children}</span>
-    </span>
-  );
 }
 
 export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersListProps) {

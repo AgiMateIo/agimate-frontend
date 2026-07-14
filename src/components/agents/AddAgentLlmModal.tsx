@@ -7,7 +7,7 @@ import { LlmProviderResponse } from '@/types';
 import { getErrorMessage } from '@/utils/error';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { FormField, Input } from '@/components/ui/FormField';
+import { FormField, Input, Select } from '@/components/ui/FormField';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Link } from '@/i18n/navigation';
@@ -119,14 +119,13 @@ export default function AddAgentLlmModal({
             </FormField>
 
             <FormField label={t('provider')} required>
-              <select
+              <Select
                 value={providerId}
                 onChange={(e) => {
                   setProviderId(e.target.value);
                   setModel('');
                 }}
                 disabled={busy}
-                className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground"
                 required
               >
                 {providers.map((p) => (
@@ -134,7 +133,7 @@ export default function AddAgentLlmModal({
                     {p.name} {!p.enabled ? `(${t('providerDisabled')})` : ''}
                   </option>
                 ))}
-              </select>
+              </Select>
             </FormField>
 
             <FormField label={t('model')} required>
@@ -152,11 +151,10 @@ export default function AddAgentLlmModal({
                   </Button>
                 </div>
               ) : (
-                <select
+                <Select
                   value={model}
                   onChange={(e) => setModel(e.target.value)}
                   disabled={busy}
-                  className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground"
                   required
                 >
                   <option value="" disabled>{t('selectModel')}</option>
@@ -165,7 +163,7 @@ export default function AddAgentLlmModal({
                       {m.displayName ?? m.id}
                     </option>
                   ))}
-                </select>
+                </Select>
               )}
             </FormField>
           </>

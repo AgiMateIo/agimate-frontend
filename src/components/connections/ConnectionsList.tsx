@@ -8,6 +8,7 @@ import { localeMap } from '@/i18n/routing';
 import { ConnectionResponse, ConnectorCatalogEntry } from '@/types';
 import { formatDate } from '@/utils/date';
 import { Toggle } from '@/components/ui/Toggle';
+import { Chip } from '@/components/ui/Chip';
 import { useUpdateConnectionMutation } from '@/queries/connections';
 import { ConnectionAvatar } from './ConnectionAvatar';
 
@@ -17,22 +18,6 @@ interface ConnectionsListProps {
 }
 
 type StatusFilter = 'ALL' | 'ENABLED' | 'DISABLED';
-
-// Compact metadata pill used along the card's second row.
-function Chip({
-  icon: Icon,
-  children,
-}: {
-  icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  children: React.ReactNode;
-}) {
-  return (
-    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border border-border text-muted">
-      {Icon && <Icon className="h-3 w-3 shrink-0" />}
-      <span className="truncate max-w-[16rem]">{children}</span>
-    </span>
-  );
-}
 
 function FilterPill({
   active,

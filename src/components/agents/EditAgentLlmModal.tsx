@@ -7,7 +7,7 @@ import { AgentLlmResponse, LlmProviderResponse } from '@/types';
 import { getErrorMessage } from '@/utils/error';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { FormField } from '@/components/ui/FormField';
+import { FormField, Select } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 
 interface EditAgentLlmModalProps {
@@ -81,14 +81,13 @@ export default function EditAgentLlmModal({
     <Modal isOpen={true} onClose={onClose} title={`${t('editModelBinding')}: ${binding.name}`}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <FormField label={t('provider')} required>
-          <select
+          <Select
             value={providerId}
             onChange={(e) => {
               setProviderId(e.target.value);
               setModel('');
             }}
             disabled={busy}
-            className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground"
             required
           >
             {providers.map((p) => (
@@ -96,7 +95,7 @@ export default function EditAgentLlmModal({
                 {p.name} {!p.enabled ? `(${t('providerDisabled')})` : ''}
               </option>
             ))}
-          </select>
+          </Select>
         </FormField>
 
         <FormField label={t('model')} required>
@@ -114,11 +113,10 @@ export default function EditAgentLlmModal({
               </Button>
             </div>
           ) : (
-            <select
+            <Select
               value={model}
               onChange={(e) => setModel(e.target.value)}
               disabled={busy}
-              className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground"
               required
             >
               <option value="" disabled>{t('selectModel')}</option>
@@ -127,7 +125,7 @@ export default function EditAgentLlmModal({
                   {m.displayName ?? m.id}
                 </option>
               ))}
-            </select>
+            </Select>
           )}
         </FormField>
 

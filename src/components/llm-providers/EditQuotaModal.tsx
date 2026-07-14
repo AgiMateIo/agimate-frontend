@@ -22,6 +22,7 @@ interface EditQuotaModalProps {
 // (to move a quota to another subject/window, delete it and add a new one).
 export default function EditQuotaModal({ providerId, quota, onClose, onSuccess }: EditQuotaModalProps) {
   const t = useTranslations('LlmUsage');
+  const tc = useTranslations('Common');
 
   const [limit, setLimit] = useState(String(quota.limitTokens));
   const [error, setError] = useState<string | null>(null);
@@ -72,10 +73,10 @@ export default function EditQuotaModal({ providerId, quota, onClose, onSuccess }
 
         <div className="flex gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose} disabled={busy}>
-            {t('cancel')}
+            {tc('cancel')}
           </Button>
           <Button type="submit" loading={busy} disabled={busy || !valid || unchanged}>
-            {t('save')}
+            {tc('save')}
           </Button>
         </div>
       </form>

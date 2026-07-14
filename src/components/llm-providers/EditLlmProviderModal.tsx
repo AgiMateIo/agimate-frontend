@@ -6,7 +6,7 @@ import apiService from '@/services/api';
 import { LlmProviderResponse, UpdateLlmProviderRequest } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { FormField, Input } from '@/components/ui/FormField';
+import { FormField, Input, Select } from '@/components/ui/FormField';
 import { Toggle } from '@/components/ui/Toggle';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
@@ -81,17 +81,16 @@ export default function EditLlmProviderModal({ provider, onClose, onSuccess }: E
           label={isPlatform ? tu('fallbackModel') : tu('defaultModel')}
           hint={isPlatform ? tu('fallbackModelHint') : tu('defaultModelHint')}
         >
-          <select
+          <Select
             value={defaultModel}
             onChange={(e) => setDefaultModel(e.target.value)}
             disabled={loading || models.length === 0}
-            className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground"
           >
             <option value="">{tu('noDefaultModel')}</option>
             {models.map((m) => (
               <option key={m.id} value={m.id}>{m.displayName ?? m.id}</option>
             ))}
-          </select>
+          </Select>
         </FormField>
 
         <div className="flex items-center justify-between">

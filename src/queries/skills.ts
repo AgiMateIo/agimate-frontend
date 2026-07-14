@@ -23,7 +23,13 @@ export const skillDetailOptions = (id: string) =>
     queryFn: () => apiService.getSkill(id),
   });
 
-// Non-suspense: the detail pages render their own loading/error states.
+// Suspense variant for the detail view page (rendered inside ErrorBoundary + Suspense).
+export function useSkillDetailSuspenseQuery(id: string) {
+  return useSuspenseQuery(skillDetailOptions(id));
+}
+
+// Non-suspense variant for the edit page, which seeds form state from the data
+// and renders its own loading/error UI.
 export function useSkillDetailQuery(id: string) {
   return useQuery(skillDetailOptions(id));
 }

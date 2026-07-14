@@ -12,11 +12,13 @@ interface SecretKeyRevealProps {
   secret: string;
   /** Called when the user clicks the Done button. */
   onDone: () => void;
+  /** Field label above the key. Defaults to the generic "App Key". */
+  label?: string;
   /** Extra content rendered between the key field and the Done button. */
   children?: React.ReactNode;
 }
 
-export default function SecretKeyReveal({ secret, onDone, children }: SecretKeyRevealProps) {
+export default function SecretKeyReveal({ secret, onDone, label, children }: SecretKeyRevealProps) {
   const t = useTranslations('Connectors');
   const { copied, copy } = useClipboard();
 
@@ -31,7 +33,7 @@ export default function SecretKeyReveal({ secret, onDone, children }: SecretKeyR
         </p>
       </Alert>
 
-      <FormField label={t('appKey')}>
+      <FormField label={label ?? t('appKey')}>
         <div className="flex gap-2">
           <Input
             type="text"

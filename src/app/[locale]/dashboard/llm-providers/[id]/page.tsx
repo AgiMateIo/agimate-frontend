@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/Button';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { Tabs } from '@/components/ui/Tabs';
+import { RowAction } from '@/components/ui/RowAction';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { useLlmProviderCacheActions, useLlmProvidersQuery, useLlmUsageQuery } from '@/queries/llm-providers';
 import { PROVIDER_TYPE_LABEL_KEY } from '@/components/llm-providers/providerPresets';
@@ -255,33 +256,6 @@ function ProviderDetailContent({ id }: { id: string }) {
         />
       )}
     </div>
-  );
-}
-
-// Compact bordered action that sits inline with the field it operates on.
-function RowAction({
-  icon: Icon,
-  label,
-  onClick,
-  disabled,
-  spinning,
-}: {
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  label: string;
-  onClick: () => void;
-  disabled?: boolean;
-  spinning?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-muted hover:text-foreground hover:border-accent/50 transition-colors disabled:opacity-50 shrink-0"
-    >
-      <Icon className={`h-3.5 w-3.5 ${spinning ? 'animate-spin' : ''}`} />
-      {label}
-    </button>
   );
 }
 
