@@ -1,3 +1,5 @@
+import type { TaskStatus, TaskType } from './boards';
+
 export interface CentrifugoTokenResponse {
   connectionToken: string;
   subscriptionToken: string;
@@ -8,8 +10,8 @@ export interface CentrifugoTokenResponse {
 export interface BoardTaskCreatedPayload {
   boardId: string;
   taskId: string;
-  type: 'EPIC' | 'TASK' | 'SUBTASK';
-  status: 'BACKLOG' | 'IN_PROGRESS' | 'REVIEW' | 'DONE';
+  type: TaskType;
+  status: TaskStatus;
   title: string;
   description: string | null;
   createdByAgentId: string;
@@ -20,8 +22,8 @@ export interface BoardTaskCreatedPayload {
 export interface BoardTaskStatusChangedPayload {
   boardId: string;
   taskId: string;
-  oldStatus: 'BACKLOG' | 'IN_PROGRESS' | 'REVIEW' | 'DONE';
-  newStatus: 'BACKLOG' | 'IN_PROGRESS' | 'REVIEW' | 'DONE';
+  oldStatus: TaskStatus;
+  newStatus: TaskStatus;
 }
 
 export interface BoardTaskCommentCreatedPayload {

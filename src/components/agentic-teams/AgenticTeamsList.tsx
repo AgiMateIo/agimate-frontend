@@ -1,8 +1,10 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
+import { localeMap } from '@/i18n/routing';
 import { AgenticTeam } from '@/types/agentic-teams';
+import { formatDate } from '@/utils/date';
 
 interface AgenticTeamsListProps {
   teams: AgenticTeam[];
@@ -10,6 +12,8 @@ interface AgenticTeamsListProps {
 
 export default function AgenticTeamsList({ teams }: AgenticTeamsListProps) {
   const t = useTranslations('AgenticTeams');
+  const locale = useLocale();
+  const bcp47 = localeMap[locale];
 
   if (teams.length === 0) {
     return (
@@ -36,7 +40,7 @@ export default function AgenticTeamsList({ teams }: AgenticTeamsListProps) {
             </p>
           )}
           <p className="text-xs text-muted">
-            {t('created')}: {new Date(team.createdAt).toLocaleDateString()}
+            {t('created')}: {formatDate(team.createdAt, bcp47)}
           </p>
         </Link>
       ))}

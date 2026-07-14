@@ -5,7 +5,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import apiService from '@/services/api';
 import { ChannelSessionResponse } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
-import { formatDate } from '@/utils/date';
+import { formatDate, parseBackendDate } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
 import ChannelChatView from './ChannelChatView';
 
@@ -17,7 +17,7 @@ const SESSION_ACTIVE_WINDOW_MS = 12 * 60 * 60 * 1000;
 
 function isSessionActive(s: ChannelSessionResponse): boolean {
   if (s.closedAt) return false;
-  const last = new Date(s.lastMessageAt).getTime();
+  const last = parseBackendDate(s.lastMessageAt).getTime();
   return Date.now() - last < SESSION_ACTIVE_WINDOW_MS;
 }
 

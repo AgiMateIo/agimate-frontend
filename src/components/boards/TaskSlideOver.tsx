@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import {
   XMarkIcon,
   UserCircleIcon,
@@ -15,6 +15,8 @@ import type { BoardTask, BoardTaskComment } from '@/types';
 import { useTaskCommentsQuery, useBoardCacheActions } from '@/queries/boards';
 import { TYPE_BADGE } from './taskBadges';
 import { getErrorMessage } from '@/utils/error';
+import { localeMap } from '@/i18n/routing';
+import { formatDate } from '@/utils/date';
 
 interface TaskSlideOverProps {
   boardId: string;
@@ -30,6 +32,8 @@ export default function TaskSlideOver({
   onClose,
 }: TaskSlideOverProps) {
   const t = useTranslations('Board');
+  const locale = useLocale();
+  const bcp47 = localeMap[locale];
 
   const [newComment, setNewComment] = useState('');
   const [commentAgentId, setCommentAgentId] = useState('');
@@ -149,7 +153,7 @@ export default function TaskSlideOver({
                         <UserCircleIcon className="h-4 w-4 text-muted shrink-0" />
                         <span className="text-xs font-medium text-foreground">{authorName}</span>
                         <span className="text-xs text-muted ml-auto">
-                          {new Date(comment.createdAt).toLocaleString()}
+                          {formatDate(comment.createdAt, bcp47)}
                         </span>
                       </div>
                       <p className="text-sm text-foreground whitespace-pre-wrap">{comment.content}</p>
