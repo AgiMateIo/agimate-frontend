@@ -6,7 +6,7 @@ import apiService from '@/services/api';
 import { AgenticTeam } from '@/types/agentic-teams';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { Alert } from '@/components/ui/Alert';
+import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { FormField, Input, TextArea } from '@/components/ui/FormField';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 
@@ -53,7 +53,7 @@ export default function EditTeamModal({ team, onClose, onUpdated, onDeleted }: E
     <Modal isOpen={true} onClose={onClose} title={t('editTeam')} size="sm">
       {!showDeleteConfirm ? (
         <form onSubmit={onSave} className="space-y-4">
-          {error && <Alert variant="error">{error}</Alert>}
+          {error && <ErrorAlert>{error}</ErrorAlert>}
 
           <FormField label={t('teamName')} required>
             <Input
@@ -104,7 +104,7 @@ export default function EditTeamModal({ team, onClose, onUpdated, onDeleted }: E
         </form>
       ) : (
         <form onSubmit={onDelete} className="space-y-4">
-          {deleteError && <Alert variant="error">{deleteError}</Alert>}
+          {deleteError && <ErrorAlert>{deleteError}</ErrorAlert>}
 
           <p className="text-foreground">
             {t('deleteTeamConfirm', { name: team.name })}

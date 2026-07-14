@@ -12,6 +12,7 @@ import { getConnectorKind } from '@/utils/connector';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input } from '@/components/ui/FormField';
 import { Alert } from '@/components/ui/Alert';
+import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { buildConfig, seedConfigState, tryParseJsonObject } from './channelConfig';
 import { ConfigFieldRenderer } from './ConfigFieldRenderer';
@@ -125,7 +126,7 @@ export default function ChannelConfigForm({
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
-      {error && <Alert variant="error">{error}</Alert>}
+      {error && <ErrorAlert>{error}</ErrorAlert>}
       {Object.keys(unmappedFieldErrors).length > 0 && (
         <Alert variant="error">
           <ul className="list-disc list-inside space-y-0.5">

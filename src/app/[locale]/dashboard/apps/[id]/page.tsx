@@ -5,12 +5,14 @@ import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { useAppDetailQuery } from '@/queries/apps';
 import RegenerateConnectorKeyModal from '@/components/connectors/RegenerateConnectorKeyModal';
 
 function ConnectorContent({ id }: { id: string }) {
   const t = useTranslations('Connectors');
   const { data: connector } = useAppDetailQuery(id);
+  useSetBreadcrumb(id, connector.appName);
   const [showRegenerate, setShowRegenerate] = useState(false);
 
   const handleRegenerateSuccess = () => {

@@ -8,7 +8,7 @@ import {
   ChatBubbleLeftIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';
-import { Alert } from '@/components/ui/Alert';
+import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import apiService from '@/services/api';
 import type { BoardTask, BoardTaskComment } from '@/types';
@@ -134,7 +134,7 @@ export default function TaskSlideOver({
             </h3>
 
             {commentsError ? (
-              <Alert variant="error">{commentsError}</Alert>
+              <ErrorAlert>{commentsError}</ErrorAlert>
             ) : commentsLoading ? (
               <p className="text-sm text-muted">{t('loadingComments')}</p>
             ) : comments.length === 0 ? (
@@ -164,7 +164,7 @@ export default function TaskSlideOver({
         {/* Add comment footer */}
         <div className="shrink-0 border-t border-border px-6 py-4">
           <form onSubmit={onCommentSubmit} className="space-y-3">
-            {commentError && <Alert variant="error">{commentError}</Alert>}
+            {commentError && <ErrorAlert>{commentError}</ErrorAlert>}
 
             {agentEntries.length > 0 && (
               <select

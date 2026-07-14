@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input, TextArea } from '@/components/ui/FormField';
-import { Alert } from '@/components/ui/Alert';
+import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import apiService from '@/services/api';
 import type { Board } from '@/types';
@@ -38,7 +38,7 @@ export default function CreateBoardModal({ teamId, onClose, onSuccess }: CreateB
   return (
     <Modal isOpen onClose={onClose} title={t('createBoard')}>
       <form onSubmit={onSubmit} className="space-y-4">
-        {error && <Alert variant="error">{error}</Alert>}
+        {error && <ErrorAlert>{error}</ErrorAlert>}
         <FormField label={t('boardName')} required>
           <Input
             value={name}

@@ -11,6 +11,7 @@ import { formatDate } from '@/utils/date';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { Tabs } from '@/components/ui/Tabs';
 import { Toggle } from '@/components/ui/Toggle';
+import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import {
   useConnectionDetailQuery,
   useUpdateConnectionMutation,
@@ -38,6 +39,7 @@ function ConnectionDetailContent({ id }: { id: string }) {
   const router = useRouter();
 
   const { data: { connection, connector } } = useConnectionDetailQuery(id);
+  useSetBreadcrumb(id, connection.name || connection.fullCode);
   const updateMutation = useUpdateConnectionMutation(id);
   const { setConnection, invalidateConnection, removeConnection } = useConnectionCacheActions();
 

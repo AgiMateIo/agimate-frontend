@@ -6,6 +6,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input, TextArea } from '@/components/ui/FormField';
 import { Alert } from '@/components/ui/Alert';
+import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import apiService from '@/services/api';
 
@@ -122,7 +123,7 @@ export default function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
         </div>
       ) : (
         <form onSubmit={onSubmit} className="space-y-4">
-          {error && <Alert variant="error">{error}</Alert>}
+          {error && <ErrorAlert>{error}</ErrorAlert>}
 
           <Alert variant="info">
             <p className="text-sm">{t('perks')}</p>

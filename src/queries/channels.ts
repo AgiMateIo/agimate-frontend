@@ -1,4 +1,4 @@
-import { queryOptions, useQuery } from '@tanstack/react-query';
+import { queryOptions } from '@tanstack/react-query';
 import apiService from '@/services/api';
 
 export const channelKeys = {
@@ -11,7 +11,3 @@ export const channelsListOptions = () =>
     queryKey: channelKeys.list(),
     queryFn: () => apiService.getChannels(),
   });
-
-export function useChannelsQuery() {
-  return useQuery(channelsListOptions());
-}

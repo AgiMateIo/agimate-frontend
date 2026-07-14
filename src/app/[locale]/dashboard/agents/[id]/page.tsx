@@ -9,6 +9,7 @@ import { useRouter } from '@/i18n/navigation';
 import { useAgentDetailSuspenseQuery } from '@/queries/agents';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { Tabs } from '@/components/ui/Tabs';
+import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { getAgentAvatarUrl } from '@/utils/avatar';
 import { formatDate } from '@/utils/date';
 import { Link } from '@/i18n/navigation';
@@ -29,6 +30,7 @@ function AgentDetailContent({ agentId }: { agentId: string }) {
   const tabParam = useSearchParams().get('tab');
 
   const { data: agent } = useAgentDetailSuspenseQuery(agentId);
+  useSetBreadcrumb(agentId, agent.name);
   const [activeTab, setActiveTab] = useState<Tab>(isTab(tabParam) ? tabParam : 'general');
   // Connector the user asked to connect from the skills tab's "waiting" badge;
   // opens the bind modal on the connections tab with this connector preselected.

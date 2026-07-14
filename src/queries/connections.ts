@@ -34,13 +34,6 @@ export const connectionsListOptions = (
     queryFn: () => apiService.getConnections(connectorCode, scope),
   });
 
-export function useConnectionsQuery(
-  connectorCode?: string,
-  scope: IdentityScope | 'ALL' = 'INSTANCE',
-) {
-  return useSuspenseQuery(connectionsListOptions(connectorCode, scope));
-}
-
 // The detail page needs the connection plus its connector-catalog entry
 // (name, credential fields); fetch them as one unit so they never diverge.
 export function useConnectionDetailQuery(id: string) {

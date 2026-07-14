@@ -1,7 +1,7 @@
 'use client';
 
-import { useTranslations, useLocale } from 'next-intl';
-import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import { ClipboardDocumentIcon, ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline';
 import { useClipboard } from '@/hooks/useClipboard';
 import { getApiBaseUrl } from '@/utils/api-url';
@@ -9,7 +9,6 @@ import ConnectorsTab from '@/components/connectors/ConnectorsTab';
 
 export default function ConnectorsPage() {
   const t = useTranslations('Connectors');
-  const locale = useLocale();
   const { copied, copy } = useClipboard();
   const apiBaseUrl = getApiBaseUrl();
 
@@ -28,9 +27,9 @@ export default function ConnectorsPage() {
           <li>{t('gettingStartedStep1')}</li>
           <li>
             {t('gettingStartedStep2')}{' '}
-            <Link href={`/${locale}/desktop`} target="_blank" className="text-accent hover:underline">{t('desktopApp')}</Link>
+            <Link href="/desktop" target="_blank" className="text-accent hover:underline">{t('desktopApp')}</Link>
             {' / '}
-            <Link href={`/${locale}/android`} target="_blank" className="text-accent hover:underline">{t('androidApp')}</Link>
+            <Link href="/android" target="_blank" className="text-accent hover:underline">{t('androidApp')}</Link>
           </li>
         </ol>
         <div className="flex items-center gap-2 pt-1">

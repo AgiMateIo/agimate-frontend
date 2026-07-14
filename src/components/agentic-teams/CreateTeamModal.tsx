@@ -6,7 +6,7 @@ import apiService from '@/services/api';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input, TextArea } from '@/components/ui/FormField';
-import { Alert } from '@/components/ui/Alert';
+import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 
 interface CreateTeamModalProps {
@@ -35,7 +35,7 @@ export default function CreateTeamModal({ onClose, onSuccess }: CreateTeamModalP
   return (
     <Modal isOpen={true} onClose={onClose} title={t('createTeam')}>
       <form onSubmit={onSubmit} className="space-y-4">
-        {error && <Alert variant="error">{error}</Alert>}
+        {error && <ErrorAlert>{error}</ErrorAlert>}
 
         <FormField label={t('teamName')} required>
           <Input

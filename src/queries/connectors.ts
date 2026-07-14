@@ -33,14 +33,6 @@ export const connectorSearchOptions = (search: string, page: number) =>
       apiService.getConnectors({ search: search || undefined, page, size: 20 }),
   });
 
-export function useConnectorCatalogQuery() {
-  return useSuspenseQuery(connectorCatalogOptions());
-}
-
-export function useIntegrationPlatformsQuery() {
-  return useSuspenseQuery(integrationPlatformsOptions());
-}
-
 export function useConnectorSearchQuery(search: string, page: number) {
   return useSuspenseQuery(connectorSearchOptions(search, page));
 }

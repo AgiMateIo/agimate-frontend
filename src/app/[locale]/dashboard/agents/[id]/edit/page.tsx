@@ -8,6 +8,7 @@ import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { AgentResponse, AgentType } from '@/types';
 import { useAgentDetailQuery, useAgentCacheActions } from '@/queries/agents';
+import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { Button } from '@/components/ui/Button';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
@@ -25,6 +26,7 @@ export default function EditAgentPage() {
   const { data: agent, isPending: dataLoading, error: queryError } = useAgentDetailQuery(agentId);
   const { invalidateAll } = useAgentCacheActions();
   const dataError = queryError ? getErrorMessage(queryError, 'Failed to load data') : null;
+  useSetBreadcrumb(agentId, agent?.name);
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
