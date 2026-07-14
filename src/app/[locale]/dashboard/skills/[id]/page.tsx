@@ -225,7 +225,7 @@ export default function SkillDetailPage() {
         <span className="text-sm">{t('backToSkills')}</span>
       </button>
 
-      <ErrorBoundary>
+      <ErrorBoundary resetKeys={[skillId]}>
         <Suspense fallback={<div className="text-center py-12 text-muted">{t('loadingSkill')}</div>}>
           <SkillDetailContent skillId={skillId} />
         </Suspense>
