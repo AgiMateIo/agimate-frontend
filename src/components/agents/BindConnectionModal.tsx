@@ -10,7 +10,7 @@ import {
   PagedResponse,
   BindConnectionRequest,
 } from '@/types';
-import { getConnectorKind, isIntegrationConnector } from '@/utils/connector';
+import { getConnectorKind } from '@/utils/connector';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
@@ -89,13 +89,14 @@ export default function BindConnectionModal({
 
   const supportedScopes = connector?.capabilities?.supportedScopes ?? [];
   const needsInstance = supportedScopes.includes('INSTANCE');
-  const isIntegration = connector ? isIntegrationConnector(connector) : false;
   // contextual scopes the user might choose between (excludes INSTANCE)
   const contextualScopes = supportedScopes.filter((s) => s !== 'INSTANCE');
 
-  // Load connection instances when advancing to the target step for an connection connector.
+  // Load connection instances when advancing to the target step for any INSTANCE
+  // connector — apps included (their instances live in /connections just like
+  // integrations; they simply have no credential fields to fill in).
   useEffect(() => {
-    if (step !== 'target' || !connector || !needsInstance || !isIntegration) return;
+    if (step !== 'target' || !connector || !needsInstance) return;
     let cancelled = false;
     setCredentialsLoading(true);
     apiService
@@ -110,7 +111,7 @@ export default function BindConnectionModal({
     return () => {
       cancelled = true;
     };
-  }, [step, connector, needsInstance, isIntegration]);
+  }, [step, connector, needsInstance]);
 
   const selectConnector = useCallback((c: ConnectorCatalogEntry) => {
     setConnector(c);
@@ -155,10 +156,8 @@ export default function BindConnectionModal({
   const totalPages = connectorsData?.totalPages ?? 0;
   const totalElements = connectorsData?.totalElements ?? 0;
 
-  // an connection connector with no instances → user must create one first
-  const noInstancesAvailable = needsInstance && isIntegration && !credentialsLoading && credentials.length === 0;
-  // INSTANCE connector that isn't an connection (e.g. an INBOUND app) — bound via a channel, not here
-  const instanceUnsupported = needsInstance && !isIntegration;
+  // an INSTANCE connector with no instances → user must create one first
+  const noInstancesAvailable = needsInstance && !credentialsLoading && credentials.length === 0;
 
   const canBind = step === 'target' && !!connector && (needsInstance ? !!connectionId : !!scope || contextualScopes.length === 0);
 
@@ -249,8 +248,8 @@ export default function BindConnectionModal({
               {t('selectConnector')}: <span className="text-foreground font-medium">{connector.name}</span>
             </div>
 
-            {/* Integration → pick an instance */}
-            {needsInstance && isIntegration && (
+            {/* INSTANCE connector (integration or app) → pick an instance */}
+            {needsInstance && (
               <>
                 <p className="text-sm text-muted">{t('selectInstance')}</p>
                 {credentialsLoading ? (
@@ -288,9 +287,6 @@ export default function BindConnectionModal({
                 )}
               </>
             )}
-
-            {/* INSTANCE connector that isn't an connection (e.g. INBOUND app) */}
-            {instanceUnsupported && <Alert variant="info">{t('instanceViaChannel')}</Alert>}
 
             {/* Contextual → pick a scope (e.g. memory: personal vs team) */}
             {!needsInstance && contextualScopes.length > 1 && (
@@ -351,7 +347,7 @@ export default function BindConnectionModal({
                 type="button"
                 onClick={onSubmit}
                 loading={loading}
-                disabled={!canBind || instanceUnsupported || noInstancesAvailable}
+                disabled={!canBind || noInstancesAvailable}
                 className="flex-1"
               >
                 {t('bind')}

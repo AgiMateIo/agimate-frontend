@@ -519,7 +519,6 @@
     "selectInstance": "Select an instance",
     "loadingInstances": "Loading instances…",
     "noInstances": "No instances found. Create one under Connections first.",
-    "instanceViaChannel": "This connector is bound automatically when you create a channel.",
     "selectScope": "Select scope",
     "bind": "Bind",
     "bindScopeSingle": "This connector will be bound with the {scope} scope.",
