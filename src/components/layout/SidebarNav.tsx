@@ -20,6 +20,7 @@ import {
   ChatBubbleOvalLeftEllipsisIcon,
   ClockIcon,
   RocketLaunchIcon,
+  UserCircleIcon,
 } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { AgenticTeam } from '@/types';
@@ -28,18 +29,32 @@ type NavItem = {
   label: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   href: string;
-  activePaths?: string[];
   children?: NavItem[];
+};
+
+// Length of the longest prefix of `pathname` that `href` matches (exact match or
+// a nested route under it), or -1 when it doesn't match at all. Dashboard only
+// matches exactly so it isn't lit up by every nested route. Used to pick the one
+// most-specific nav entry when hrefs overlap (e.g. the agent wizard `/agents/create`
+// sits under the agents list `/agents`).
+const matchedLength = (pathname: string, href: string): number => {
+  if (pathname === href) return href.length;
+  if (href !== '/dashboard' && pathname.startsWith(href + '/')) return href.length;
+  return -1;
 };
 
 const getNavItems = (t: ReturnType<typeof useTranslations>, teams: AgenticTeam[]): NavItem[] => [
   { label: t('dashboard'), icon: HomeIcon, href: '/dashboard' },
-  { label: t('agentWizard'), icon: RocketLaunchIcon, href: '/dashboard/agents/create' },
+  {
+    label: t('agentWizard'), icon: RocketLaunchIcon, href: '/dashboard/agents/create',
+    children: [
+      { label: t('agents'), icon: UserCircleIcon, href: '/dashboard/agents' },
+    ],
+  },
   { label: t('chat'), icon: ChatBubbleOvalLeftEllipsisIcon, href: '/dashboard/chat' },
   { label: t('llmProviders'), icon: SparklesIcon, href: '/dashboard/llm-providers' },
   {
     label: t('connectors'), icon: CpuChipIcon, href: '/dashboard/connectors',
-    activePaths: ['/dashboard/connectors', '/dashboard/apps', '/dashboard/connections', '/dashboard/channels', '/dashboard/connector-jobs'],
     children: [
       { label: t('apps'), icon: DevicePhoneMobileIcon, href: '/dashboard/apps' },
       { label: t('connections'), icon: LinkIcon, href: '/dashboard/connections' },
@@ -50,7 +65,6 @@ const getNavItems = (t: ReturnType<typeof useTranslations>, teams: AgenticTeam[]
   { label: t('skills'), icon: AcademicCapIcon, href: '/dashboard/skills' },
   {
     label: t('agenticTeams'), icon: UserGroupIcon, href: '/dashboard/agentic-teams',
-    activePaths: ['/dashboard/agentic-teams', '/dashboard/agents'],
     children: teams.map((team) => ({
       label: team.name,
       icon: UserGroupIcon,
@@ -59,7 +73,6 @@ const getNavItems = (t: ReturnType<typeof useTranslations>, teams: AgenticTeam[]
   },
   {
     label: t('monitoring'), icon: ChartBarIcon, href: '/dashboard/trigger-logs',
-    activePaths: ['/dashboard/trigger-logs', '/dashboard/tool-use-logs'],
     children: [
       { label: t('triggerLogs'), icon: BoltIcon, href: '/dashboard/trigger-logs' },
       { label: t('toolUseLogs'), icon: WrenchScrewdriverIcon, href: '/dashboard/tool-use-logs' },
@@ -91,12 +104,20 @@ export default function SidebarNav() {
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1">
         {navItems.map((item) => {
-          const hasActiveChild = item.children?.some(child =>
-            pathname === child.href || pathname.startsWith(child.href + '/'));
-          const isActive = !hasActiveChild && (
-            pathname === item.href ||
-            (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'))
-          );
+          const parentMatch = matchedLength(pathname, item.href);
+          let activeChildIndex = -1;
+          let activeChildMatch = -1;
+          item.children?.forEach((child, index) => {
+            const length = matchedLength(pathname, child.href);
+            if (length > activeChildMatch) {
+              activeChildMatch = length;
+              activeChildIndex = index;
+            }
+          });
+          // A child wins ties so shared-href sub-items (Monitoring → Trigger Logs)
+          // stay lit instead of highlighting the parent.
+          const childActive = activeChildMatch >= 0 && activeChildMatch >= parentMatch;
+          const isActive = parentMatch >= 0 && !childActive;
 
           return (
             <div key={item.href}>
@@ -113,9 +134,8 @@ export default function SidebarNav() {
               </Link>
               {item.children && (
                 <div className="mt-1 space-y-1">
-                  {item.children.map((child) => {
-                    const isChildActive = pathname === child.href ||
-                      pathname.startsWith(child.href + '/');
+                  {item.children.map((child, index) => {
+                    const isChildActive = childActive && index === activeChildIndex;
 
                     return (
                       <Link
