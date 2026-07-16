@@ -9,6 +9,8 @@ export interface SkillResponse {
   version: number;
   isPublic: boolean;
   userId: string;
+  // Platform skill: read-only for non-admin users (cannot rename/delete/edit).
+  system?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -29,6 +31,12 @@ export interface CreateSkillRequest {
 export interface UpdateSkillRequest {
   skillMd: string;
   isPublic?: boolean;
+}
+
+// Replaces the skill's required-connector list wholesale (bumps `version`).
+// Empty array = a skill with no connectors (valid). Does NOT touch the SKILL.md body.
+export interface UpdateSkillConnectorsRequest {
+  connectorCodes: string[];
 }
 
 // Connector catalog entry (from GET /control/manage/connectors/)

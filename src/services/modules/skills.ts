@@ -8,6 +8,7 @@ import type {
   SkillDetailResponse,
   CreateSkillRequest,
   UpdateSkillRequest,
+  UpdateSkillConnectorsRequest,
 } from '@/types';
 
 export const skillsApi = {
@@ -33,6 +34,12 @@ export const skillsApi = {
 
   async updateSkill(id: string, data: UpdateSkillRequest): Promise<SkillResponse> {
     return httpClient.put<SkillResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/${id}`, data);
+  },
+
+  // Replace only the required-connector list (bumps version). Does not
+  // rebuild the SKILL.md body — use updateSkill for that.
+  async updateSkillConnectors(id: string, data: UpdateSkillConnectorsRequest): Promise<SkillResponse> {
+    return httpClient.put<SkillResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/${id}/connectors`, data);
   },
 
   async deleteSkill(id: string): Promise<void> {

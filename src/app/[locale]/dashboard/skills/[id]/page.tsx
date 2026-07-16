@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useMemo, useState, Suspense } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
+import { useQuery } from '@tanstack/react-query';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { SkillDetailResponse } from '@/types';
 import { useSkillDetailSuspenseQuery, useSkillsCacheActions } from '@/queries/skills';
+import { connectorCatalogOptions } from '@/queries/connectors';
 import { Button } from '@/components/ui/Button';
 import { FormField, TextArea } from '@/components/ui/FormField';
 import { Toggle } from '@/components/ui/Toggle';
@@ -21,9 +23,10 @@ import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { formatDate } from '@/utils/date';
 import { buildSkillMd } from '@/utils/skill';
 import SkillAgentsTab from '@/components/skills/SkillAgentsTab';
+import SkillConnectorsTab from '@/components/skills/SkillConnectorsTab';
 import DeleteSkillModal from '@/components/skills/DeleteSkillModal';
 
-type Tab = 'overview' | 'agents';
+type Tab = 'overview' | 'connectors' | 'agents';
 
 function SkillDetailContent({ skillId }: { skillId: string }) {
   const t = useTranslations('Skills');
@@ -35,6 +38,13 @@ function SkillDetailContent({ skillId }: { skillId: string }) {
   const { invalidateSkill } = useSkillsCacheActions();
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // Connector catalog → friendly names for the header code chips (session-cached).
+  const { data: catalog } = useQuery(connectorCatalogOptions());
+  const connectorNameByCode = useMemo(
+    () => new Map((catalog ?? []).map((c) => [c.code, c.name])),
+    [catalog],
+  );
 
   // Inline edit state, re-seeded whenever fresh skill data arrives.
   const [editSkillMd, setEditSkillMd] = useState('');
@@ -48,7 +58,7 @@ function SkillDetailContent({ skillId }: { skillId: string }) {
 
   useSetBreadcrumb(skillId, skill.name);
 
-  const isEditable = !!(user?.id && user.id === skill.userId);
+  const isEditable = !!(user?.id && user.id === skill.userId && !skill.system);
 
   const isDirty = editSkillMd !== buildSkillMd(skill) || editIsPublic !== skill.isPublic;
 
@@ -96,8 +106,9 @@ function SkillDetailContent({ skillId }: { skillId: string }) {
                 <span
                   key={code}
                   className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent"
+                  title={code}
                 >
-                  {code}
+                  {connectorNameByCode.get(code) ?? code}
                 </span>
               ))}
             </div>
@@ -180,6 +191,15 @@ function SkillDetailContent({ skillId }: { skillId: string }) {
                     </button>
                   </div>
                 )}
+              </div>
+            ),
+          },
+          {
+            id: 'connectors',
+            label: t('tabConnectors'),
+            content: (
+              <div className="bg-surface rounded-xl border border-border p-6">
+                <SkillConnectorsTab skill={skill} isEditable={isEditable} />
               </div>
             ),
           },
