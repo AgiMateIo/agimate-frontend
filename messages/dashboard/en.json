@@ -168,10 +168,10 @@
       },
       "executionLocus": {
         "BACKEND": "Backend",
-        "EXTERNAL": "External",
+        "DELEGATED": "Delegated",
         "AGENT": "Agent"
       },
-      "toolBinding": {
+      "definitionBinding": {
         "STATIC": "Static tools",
         "DYNAMIC": "Dynamic tools"
       },

@@ -60,7 +60,7 @@ export default function AddConnectionModal({
       });
       // DYNAMIC connectors (e.g. MCP) discover tools per instance — warm the
       // tools cache right after connecting. Don't fail creation if this errors.
-      if (selectedPlatform!.capabilities?.toolBinding === 'DYNAMIC') {
+      if (selectedPlatform!.capabilities?.definitionBinding === 'DYNAMIC') {
         try {
           await apiService.testConnection(created.id);
         } catch (err) {

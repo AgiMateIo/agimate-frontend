@@ -116,10 +116,10 @@ export default function BindConnectionModal({
   const selectConnector = useCallback((c: ConnectorCatalogEntry) => {
     setConnector(c);
     setConnectionId(undefined);
+    // preselect the default scope when contextual: default = supportedScopes[0],
+    // which for a contextual connector is the first entry of ctx.
     const ctx = (c.capabilities?.supportedScopes ?? []).filter((s) => s !== 'INSTANCE');
-    // preselect default scope when contextual
-    const def = c.capabilities?.defaultScope;
-    setScope(def && def !== 'INSTANCE' && ctx.includes(def) ? def : ctx[0]);
+    setScope(ctx[0]);
   }, []);
 
   // Preselected connector (skills-tab badge): resolve it and jump to the
@@ -147,7 +147,7 @@ export default function BindConnectionModal({
       if (needsInstance) {
         body.connectionId = connectionId;
       } else {
-        body.scope = scope ?? connector.capabilities?.defaultScope ?? null;
+        body.scope = scope ?? connector.capabilities?.supportedScopes[0] ?? null;
       }
       await apiService.bindAgentConnection(agentId, body);
     });
@@ -320,7 +320,7 @@ export default function BindConnectionModal({
             {/* Contextual single scope → nothing to choose, just confirm */}
             {!needsInstance && contextualScopes.length <= 1 && (
               <Alert variant="info">
-                {t('bindScopeSingle', { scope: t(`scopeName.${scope ?? connector.capabilities?.defaultScope ?? 'AGENT'}`) })}
+                {t('bindScopeSingle', { scope: t(`scopeName.${scope ?? connector.capabilities?.supportedScopes[0] ?? 'AGENT'}`) })}
               </Alert>
             )}
 

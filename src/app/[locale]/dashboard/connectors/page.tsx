@@ -93,7 +93,7 @@ function ConnectorCard({ connector }: { connector: ConnectorCatalogEntry }) {
         <div className="flex flex-wrap gap-1.5 mt-auto pt-1">
           <CapabilityBadge label={t(`capabilities.transportDirection.${caps.transportDirection}`)} />
           <CapabilityBadge label={t(`capabilities.executionLocus.${caps.executionLocus}`)} />
-          <CapabilityBadge label={t(`capabilities.toolBinding.${caps.toolBinding}`)} />
+          <CapabilityBadge label={t(`capabilities.definitionBinding.${caps.definitionBinding}`)} />
           {caps.supportedScopes.map((scope) => (
             <CapabilityBadge key={scope} label={t(`capabilities.supportedScopes.${scope}`)} />
           ))}

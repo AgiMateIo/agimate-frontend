@@ -41,7 +41,7 @@ export function useChannelConfigData({ channel, connectorCode }: UseChannelConfi
 
   // Connections are fetched with the connector's default scope (e.g. USER for
   // acp/webchat, INSTANCE for telegram/mcp); until the catalog loads, INSTANCE.
-  const scope = connectors.find((c) => c.code === connectorCode)?.capabilities?.defaultScope;
+  const scope = connectors.find((c) => c.code === connectorCode)?.capabilities?.supportedScopes[0];
 
   useEffect(() => {
     if (isEdit || !connectorCode) return;

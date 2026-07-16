@@ -168,10 +168,10 @@
       },
       "executionLocus": {
         "BACKEND": "Бэкенд",
-        "EXTERNAL": "Внешний",
+        "DELEGATED": "Внешнее исполнение",
         "AGENT": "Агент"
       },
-      "toolBinding": {
+      "definitionBinding": {
         "STATIC": "Статичные тулы",
         "DYNAMIC": "Динамические тулы"
       },

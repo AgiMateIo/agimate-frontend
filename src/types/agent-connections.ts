@@ -26,7 +26,7 @@ export interface AgentConnectionResponse {
 
 export interface BindConnectionRequest {
   connectorCode: string;
-  // ∈ capabilities.supportedScopes; null → defaultScope. Ignored for INSTANCE connectors.
+  // ∈ capabilities.supportedScopes; null → default (supportedScopes[0]). Ignored for INSTANCE connectors.
   scope?: IdentityScope | null;
   // REQUIRED for INSTANCE connectors (which instance); omit for contextual (AGENT/TEAM/USER) ones.
   connectionId?: string | null;
