@@ -715,11 +715,13 @@
     "toolsLoading": "Загрузка тулов...",
     "toolsError": "Не удалось загрузить тулы",
     "toolsEmpty": "Для этого подключения нет доступных тулов",
-    "toolsRequired": "Обязательные",
     "triggersLoading": "Загрузка триггеров...",
     "triggersError": "Не удалось загрузить триггеры",
     "triggersEmpty": "Для этого подключения нет доступных триггеров",
-    "triggersParams": "Параметры"
+    "paramsLabel": "Параметры",
+    "noParams": "Без параметров",
+    "annReadOnly": "Только чтение",
+    "annDestructive": "Изменяет данные"
   },
   "Board": {
     "title": "Доска задач",

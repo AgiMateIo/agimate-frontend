@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
+import { BoltIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { TriggerSpecificationResponse } from '@/types';
 import { getErrorMessage } from '@/utils/error';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { ConnectionDefinitionCard } from './ConnectionDefinitionCard';
 
 interface ConnectionTriggersTabProps {
   connectionId: string;
@@ -47,21 +49,13 @@ export default function ConnectionTriggersTab({ connectionId }: ConnectionTrigge
   return (
     <div className="space-y-3">
       {triggers.map((trigger) => (
-        <div
+        <ConnectionDefinitionCard
           key={trigger.name}
-          className="rounded-lg border border-border bg-surface-secondary p-4"
-        >
-          <span className="font-mono text-sm text-foreground">{trigger.name}</span>
-          {trigger.description && (
-            <p className="text-sm text-muted mt-1">{trigger.description}</p>
-          )}
-          {trigger.params.length > 0 && (
-            <p className="text-xs text-muted mt-2">
-              {t('triggersParams')}:{' '}
-              <span className="font-mono text-foreground">{trigger.params.join(', ')}</span>
-            </p>
-          )}
-        </div>
+          icon={BoltIcon}
+          name={trigger.name}
+          description={trigger.description}
+          params={trigger.params.map((name) => ({ name }))}
+        />
       ))}
     </div>
   );

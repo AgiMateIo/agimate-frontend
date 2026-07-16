@@ -715,11 +715,13 @@
     "toolsLoading": "Loading tools...",
     "toolsError": "Failed to load tools",
     "toolsEmpty": "No tools available for this connection",
-    "toolsRequired": "Required",
     "triggersLoading": "Loading triggers...",
     "triggersError": "Failed to load triggers",
     "triggersEmpty": "No triggers available for this connection",
-    "triggersParams": "Parameters"
+    "paramsLabel": "Parameters",
+    "noParams": "No parameters",
+    "annReadOnly": "Read-only",
+    "annDestructive": "Destructive"
   },
   "Board": {
     "title": "Task Board",

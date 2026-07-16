@@ -2,13 +2,26 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
+import { WrenchScrewdriverIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { ConnectorToolSpec } from '@/types';
 import { getErrorMessage } from '@/utils/error';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { Chip } from '@/components/ui/Chip';
+import { ConnectionDefinitionCard, type DefinitionParam } from './ConnectionDefinitionCard';
 
 interface ConnectionToolsTabProps {
   connectionId: string;
+}
+
+function toolParams(tool: ConnectorToolSpec): DefinitionParam[] {
+  const properties = tool.inputSchema?.properties ?? {};
+  const required = new Set(tool.inputSchema?.required ?? []);
+  return Object.entries(properties).map(([name, schema]) => ({
+    name,
+    required: required.has(name),
+    type: schema.type,
+  }));
 }
 
 export default function ConnectionToolsTab({ connectionId }: ConnectionToolsTabProps) {
@@ -46,30 +59,29 @@ export default function ConnectionToolsTab({ connectionId }: ConnectionToolsTabP
 
   return (
     <div className="space-y-3">
-      {tools.map((tool) => (
-        <div
-          key={tool.name}
-          className="rounded-lg border border-border bg-surface-secondary p-4"
-        >
-          <div className="flex items-baseline gap-2 flex-wrap">
-            <span className="font-medium text-foreground">
-              {tool.title || tool.name}
-            </span>
-            <span className="text-xs font-mono text-muted">{tool.name}</span>
-          </div>
-          {tool.description && (
-            <p className="text-sm text-muted mt-1">{tool.description}</p>
-          )}
-          {tool.inputSchema?.required && tool.inputSchema.required.length > 0 && (
-            <p className="text-xs text-muted mt-2">
-              {t('toolsRequired')}:{' '}
-              <span className="font-mono text-foreground">
-                {tool.inputSchema.required.join(', ')}
-              </span>
-            </p>
-          )}
-        </div>
-      ))}
+      {tools.map((tool) => {
+        const badges = (
+          <>
+            {tool.annotations?.readOnlyHint && (
+              <Chip tone="success">{t('annReadOnly')}</Chip>
+            )}
+            {tool.annotations?.destructiveHint && (
+              <Chip tone="warning">{t('annDestructive')}</Chip>
+            )}
+          </>
+        );
+        return (
+          <ConnectionDefinitionCard
+            key={tool.name}
+            icon={WrenchScrewdriverIcon}
+            name={tool.name}
+            title={tool.title}
+            description={tool.description}
+            params={toolParams(tool)}
+            badges={badges}
+          />
+        );
+      })}
     </div>
   );
 }
