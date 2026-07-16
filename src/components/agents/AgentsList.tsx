@@ -1,78 +1,84 @@
 'use client';
 
-import { AgentResponse } from '@/types';
-import { LockClosedIcon } from '@heroicons/react/24/outline';
+import type { ComponentType, SVGProps } from 'react';
+import { useTranslations } from 'next-intl';
+import {
+  BoltIcon,
+  ArrowsRightLeftIcon,
+  CpuChipIcon,
+} from '@heroicons/react/24/outline';
+import { AgentResponse, AgentType } from '@/types';
 import { Link } from '@/i18n/navigation';
 import { getAgentAvatarUrl } from '@/utils/avatar';
+import { Chip } from '@/components/ui/Chip';
 
 interface AgentsListProps {
   agents: AgentResponse[];
 }
 
+// Glyph + i18n label key per delivery type — realtime, HTTP callback, in-platform.
+const TYPE_META: Record<AgentType, { icon: ComponentType<SVGProps<SVGSVGElement>>; labelKey: 'centrifugo' | 'webhook' | 'generic' }> = {
+  CENTRIFUGO: { icon: BoltIcon, labelKey: 'centrifugo' },
+  WEBHOOK: { icon: ArrowsRightLeftIcon, labelKey: 'webhook' },
+  GENERIC: { icon: CpuChipIcon, labelKey: 'generic' },
+};
+
+// Cap the skill chips so a heavily-bound agent doesn't blow up the card height.
+const MAX_SKILLS = 4;
+
 export default function AgentsList({ agents }: AgentsListProps) {
+  const t = useTranslations('Agents');
+
   if (agents.length === 0) {
-    return (
-      <div className="text-center py-8 text-muted">
-        No agent configurations created yet
-      </div>
-    );
+    return <div className="text-center py-8 text-muted">{t('noAgents')}</div>;
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-      {agents.map((agent) => (
-        <div
-          key={agent.id}
-          className="bg-surface-secondary rounded-lg p-4 border border-border"
-        >
-          <div className="flex items-start gap-3 min-w-0">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      {agents.map((agent) => {
+        const typeMeta = TYPE_META[agent.type];
+        const preview = agent.description || agent.instructions;
+        const extraSkills = agent.skills.length - MAX_SKILLS;
+
+        return (
+          <Link
+            key={agent.id}
+            href={`/dashboard/agents/${agent.id}`}
+            className={`group relative flex flex-col items-center text-center bg-surface-secondary rounded-lg border border-border hover:border-accent/50 transition-colors p-5 ${agent.enabled ? '' : 'opacity-60'}`}
+          >
+            <div className="absolute top-3 left-3">
+              <Chip icon={typeMeta.icon} tone="accent">{t(typeMeta.labelKey)}</Chip>
+            </div>
+            <span
+              className={`absolute top-3 right-3 h-2.5 w-2.5 rounded-full ${agent.enabled ? 'bg-success' : 'bg-muted'}`}
+              title={agent.enabled ? t('enabled') : t('disabled')}
+            />
+
             <img
               src={getAgentAvatarUrl(agent.name)}
               alt={agent.name}
-              className="w-10 h-10 rounded-lg flex-shrink-0"
+              className="w-20 h-20 rounded-2xl mt-4"
             />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-baseline gap-2 min-w-0">
-                <Link href={`/dashboard/agents/${agent.id}`} className="font-medium text-foreground hover:text-accent transition-colors flex-shrink-0">
-                  {agent.name}
-                </Link>
-                {agent.description ? (
-                  <span className="text-sm text-muted truncate min-w-0" title={agent.description}>
-                    {agent.description}
-                  </span>
-                ) : agent.instructions ? (
-                  <span className="text-sm text-muted truncate min-w-0 font-mono" title={agent.instructions}>
-                    {agent.instructions}
-                  </span>
-                ) : null}
-              </div>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {agent.type === 'WEBHOOK' && agent.webhookUrl && (
-                  <span className="inline-block bg-surface border border-border rounded px-2 py-0.5 text-xs text-muted font-mono truncate max-w-[200px]" title={agent.webhookUrl}>
-                    {agent.webhookUrl}
-                  </span>
-                )}
-                {agent.hasWebhookAuth && (
-                  <span className="inline-flex items-center gap-1 bg-surface border border-border rounded px-2 py-0.5 text-xs text-muted">
-                    <LockClosedIcon className="h-3 w-3" />
-                    Auth
-                  </span>
-                )}
-                {agent.skills.map((skill) => (
-                  <Link
-                    key={skill.id}
-                    href={`/dashboard/skills/${skill.id}`}
-                    className="inline-block rounded px-2 py-0.5 text-xs font-medium bg-surface border border-border text-foreground hover:border-accent hover:text-accent transition-colors"
-                    title={skill.name}
-                  >
-                    {skill.name}
-                  </Link>
+            <h3 className="w-full truncate font-semibold text-foreground mt-3 group-hover:text-accent transition-colors">
+              {agent.name}
+            </h3>
+            {preview && (
+              <p className={`w-full text-sm text-muted mt-1 line-clamp-2 ${agent.description ? '' : 'font-mono'}`}>
+                {preview}
+              </p>
+            )}
+
+            {agent.skills.length > 0 && (
+              <div className="w-full mt-4 pt-3 border-t border-border flex flex-wrap justify-center gap-1.5">
+                {agent.skills.slice(0, MAX_SKILLS).map((skill) => (
+                  <Chip key={skill.id}>{skill.name}</Chip>
                 ))}
+                {extraSkills > 0 && <Chip>+{extraSkills}</Chip>}
               </div>
-            </div>
-          </div>
-        </div>
-      ))}
+            )}
+          </Link>
+        );
+      })}
     </div>
   );
 }
