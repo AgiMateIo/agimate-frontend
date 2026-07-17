@@ -145,9 +145,9 @@ export default function TriggerLogsTab() {
       <table className="w-full">
         <thead>
           <tr className="border-b border-border">
-            <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('occurredAt')}</th>
+            <th className="text-left py-3 px-4 text-sm font-medium text-muted w-32 whitespace-nowrap">{t('occurredAt')}</th>
             <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('triggerName')}</th>
-            <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('triggerInput')}</th>
+            <th className="text-left py-3 px-4 text-sm font-medium text-muted w-full">{t('triggerInput')}</th>
             <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('agentCount')}</th>
           </tr>
         </thead>

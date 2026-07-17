@@ -1,17 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useQuery } from '@tanstack/react-query';
 import apiService from '@/services/api';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { RefreshControls } from '@/components/ui/RefreshControls';
 import { Pagination } from '@/components/ui/Pagination';
 import { usePagedLogsQuery } from '@/queries/logs';
+import { connectionsListOptions } from '@/queries/connections';
 import { formatDateTimeFull, formatDateTimeShort } from '@/utils/date';
 
 export default function ToolUseLogsTab() {
   const t = useTranslations('Connectors');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+  // Resolve connectionId → human-readable name (all scopes).
+  const { data: connections } = useQuery(connectionsListOptions(undefined, 'ALL'));
+  const connectionsById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const c of connections ?? []) {
+      map.set(c.id, c.name || c.fullCode || c.id);
+    }
+    return map;
+  }, [connections]);
+
   const {
     content: logs,
     totalElements,
@@ -29,7 +42,7 @@ export default function ToolUseLogsTab() {
     'tool-use-logs',
     [],
     (params) => apiService.getToolUseLogs(params),
-    { defaultError: 'Failed to load tool use logs' },
+    { defaultError: t('loadToolUseLogsError') },
   );
 
   const toggleExpand = (id: string) => {
@@ -85,20 +98,16 @@ export default function ToolUseLogsTab() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="text-sm text-muted">
-          {totalElements} {totalElements === 1 ? 'log' : 'logs'} total
-        </div>
+        <div className="text-sm text-muted">{t('toolUseLogsTotal', { count: totalElements })}</div>
         {refreshControls}
       </div>
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-border">
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('createdAt')}</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('connectorCode')}</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('connection')}</th>
+              <th className="text-left py-3 px-4 text-sm font-medium text-muted w-32 whitespace-nowrap">{t('createdAt')}</th>
               <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('toolName')}</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('toolInput')}</th>
+              <th className="text-left py-3 px-4 text-sm font-medium text-muted w-full">{t('toolInput')}</th>
               <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('accessEffect')}</th>
               <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('outputAt')}</th>
               <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('outputOrError')}</th>
@@ -112,6 +121,7 @@ export default function ToolUseLogsTab() {
                 : log.output !== null
                   ? 'bg-success/5 hover:bg-success/10'
                   : 'hover:bg-surface-secondary';
+              const connectionName = connectionsById.get(log.connectionId);
 
               return (
                 <tr key={log.id} className={`border-b border-border last:border-b-0 transition-colors ${rowColor}`}>
@@ -121,13 +131,16 @@ export default function ToolUseLogsTab() {
                     </span>
                   </td>
                   <td className="py-3 px-4">
-                    <span className="text-sm font-mono text-muted">{log.connectorCode}</span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className="text-sm font-mono text-muted truncate block max-w-[150px] dir-rtl text-left" dir="rtl" title={log.connectionId}>{log.connectionId}</span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className="text-sm font-medium text-foreground font-mono">{log.name}</span>
+                    <div className="text-sm font-medium text-foreground font-mono">{log.name}</div>
+                    <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted" title={log.connectionId}>
+                      <span className="font-mono text-muted/70">{log.connectorCode}</span>
+                      {connectionName && (
+                        <>
+                          <span className="text-muted/50">&ndash;</span>
+                          <span className="truncate max-w-[160px]">{connectionName}</span>
+                        </>
+                      )}
+                    </div>
                   </td>
                   <td className="py-3 px-4">
                     {log.input && Object.keys(log.input).length > 0 ? (
@@ -136,13 +149,13 @@ export default function ToolUseLogsTab() {
                           onClick={() => toggleExpand(`input-${log.id}`)}
                           className="flex items-center gap-1 text-xs text-accent hover:text-accent/80 font-medium transition-colors"
                         >
-                          <span className="max-w-[200px] truncate font-mono">
+                          <span className="max-w-[340px] truncate font-mono">
                             {JSON.stringify(log.input)}
                           </span>
                           <span className="shrink-0">{expandedIds.has(`input-${log.id}`) ? '\u25B2' : '\u25BC'}</span>
                         </button>
                         {expandedIds.has(`input-${log.id}`) && (
-                          <pre className="mt-2 p-3 bg-background rounded-lg text-xs font-mono text-foreground/80 overflow-x-auto max-w-md">
+                          <pre className="mt-2 p-3 bg-background rounded-lg text-xs font-mono text-foreground/80 overflow-x-auto max-w-xl">
                             {JSON.stringify(log.input, null, 2)}
                           </pre>
                         )}
