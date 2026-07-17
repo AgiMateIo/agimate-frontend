@@ -16,7 +16,12 @@
     "channels": "Каналы",
     "connectorJobs": "Задания коннекторов",
     "monitoring": "Мониторинг",
-    "settings": "Настройки"
+    "settings": "Настройки",
+    "workspace": "Рабочее пространство",
+    "infrastructure": "Инфраструктура",
+    "createAgent": "Создать агента",
+    "collapse": "Свернуть меню",
+    "expand": "Развернуть меню"
   },
   "TopBar": {
     "breadcrumbs": {

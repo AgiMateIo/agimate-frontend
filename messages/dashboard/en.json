@@ -16,7 +16,12 @@
     "channels": "Channels",
     "connectorJobs": "Connector Jobs",
     "monitoring": "Monitoring",
-    "settings": "Settings"
+    "settings": "Settings",
+    "workspace": "Workspace",
+    "infrastructure": "Infrastructure",
+    "createAgent": "Create agent",
+    "collapse": "Collapse menu",
+    "expand": "Expand menu"
   },
   "TopBar": {
     "breadcrumbs": {
