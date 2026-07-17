@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   ChatBubbleLeftRightIcon,
   ChatBubbleOvalLeftEllipsisIcon,
@@ -12,7 +12,7 @@ import {
   ClipboardDocumentCheckIcon,
   WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline';
-import { Link, useRouter } from '@/i18n/navigation';
+import { Link, getPathname, useRouter } from '@/i18n/navigation';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { useClipboard } from '@/hooks/useClipboard';
@@ -25,6 +25,7 @@ interface StepDoneProps extends WizardStepProps {
 
 export default function StepDone({ data, onReset }: StepDoneProps) {
   const t = useTranslations('AgentWizard');
+  const locale = useLocale();
   const router = useRouter();
   const { copied, copy } = useClipboard();
   const [showKey, setShowKey] = useState(false);
@@ -66,7 +67,13 @@ export default function StepDone({ data, onReset }: StepDoneProps) {
       <div className="flex justify-center">
         <Button
           type="button"
-          onClick={() => router.push(`/dashboard/chat?agentId=${agent.id}`)}
+          onClick={() =>
+            window.open(
+              getPathname({ href: `/dashboard/chat?agentId=${agent.id}`, locale }),
+              '_blank',
+              'noopener,noreferrer',
+            )
+          }
           className="flex items-center gap-2 px-6 py-3 text-base"
         >
           <ChatBubbleOvalLeftEllipsisIcon className="h-5 w-5" />
