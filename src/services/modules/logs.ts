@@ -1,8 +1,9 @@
 // modules/logs.ts
-import { httpClient, buildPagedQuery } from '../httpClient';
+import { httpClient, buildPagedQuery, ApiError } from '../httpClient';
 import { API } from '@/config/constants';
 import type {
   TriggerLog,
+  TriggerLogProbeResponse,
   ToolUseLogResponse,
   PagedResponse,
   ConnectorJobResponse,
@@ -50,6 +51,32 @@ export const logsApi = {
     if (params?.size !== undefined) searchParams.set('size', String(params.size));
     const query = searchParams.toString();
     return httpClient.get<PagedResponse<TriggerLog>>(`${API.ENDPOINTS.CONTROL_API}/manage/trigger-logs/${query ? `?${query}` : ''}`);
+  },
+
+  // Trigger discovery probe — issue a one-off code the user drops into a test event.
+  // Default `blockDelivery: true` logs the trigger but does NOT deliver it to agents,
+  // so the probe never wakes an agent. Pass `false` to also deliver (diagnose delivery).
+  async issueTriggerLogProbe(blockDelivery: boolean = true): Promise<TriggerLogProbeResponse> {
+    return httpClient.post<TriggerLogProbeResponse>(
+      `${API.ENDPOINTS.CONTROL_API}/manage/trigger-logs/probe`,
+      { blockDelivery },
+    );
+  },
+
+  // Poll for the trigger log carrying the probe code. `since` is the probe's `issuedAt`.
+  // Returns null while nothing has matched yet (backend answers 404 "No matching trigger log yet").
+  async matchTriggerLogProbe(code: string, since: string): Promise<TriggerLog | null> {
+    const params = new URLSearchParams({ code, since });
+    try {
+      return await httpClient.get<TriggerLog>(
+        `${API.ENDPOINTS.CONTROL_API}/manage/trigger-logs/probe/match?${params.toString()}`,
+      );
+    } catch (err) {
+      if (err instanceof ApiError && err.message === 'No matching trigger log yet') {
+        return null;
+      }
+      throw err;
+    }
   },
 
   // Webhook Delivery Logs

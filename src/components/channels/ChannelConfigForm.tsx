@@ -17,6 +17,9 @@ import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { buildConfig, seedConfigState, tryParseJsonObject } from './channelConfig';
 import { ConfigFieldRenderer } from './ConfigFieldRenderer';
 import { useChannelConfigData } from './useChannelConfigData';
+import { TriggerProbeModal } from './TriggerProbeModal';
+import { CapturedSamplePanel } from './CapturedSamplePanel';
+import type { TriggerLog } from '@/types';
 
 interface ChannelConfigFormProps {
   agentId: string;
@@ -55,6 +58,26 @@ export default function ChannelConfigForm({
   const [inputFilterText, setInputFilterText] = useState(
     channel?.inputFilter ? JSON.stringify(channel.inputFilter, null, 2) : '',
   );
+
+  const [probeOpen, setProbeOpen] = useState(false);
+  // Payload of the trigger captured via the probe, offered as a picker for filter conditions.
+  const [capturedSample, setCapturedSample] = useState<Record<string, unknown> | null>(null);
+
+  // A captured trigger already tells us its connector + connection instance; pre-fill the
+  // binding and keep the payload so the user can turn its fields into an input filter.
+  const handleProbeCaptured = (log: TriggerLog) => {
+    setProbeOpen(false);
+    setConnectorCode(log.connectorCode);
+    setConnectionId(log.connectionId ?? '');
+    setCapturedSample(log.input);
+  };
+
+  // Merge a picked payload leaf into the input filter (dot-path key = value).
+  const addFilterCondition = (path: string, value: string | number | boolean | null) => {
+    const parsed = tryParseJsonObject(inputFilterText);
+    const base = parsed.ok ? parsed.value : {};
+    setInputFilterText(JSON.stringify({ ...base, [path]: value }, null, 2));
+  };
 
   const { loading, error, fieldErrors, handleSubmit } = useAsyncForm<ChannelResponse>({
     onSuccess: (result) => onSuccess(result),
@@ -209,9 +232,28 @@ export default function ChannelConfigForm({
                 ))}
               </select>
             </FormField>
+
+            <div className="flex items-center justify-between gap-3 pt-1">
+              <p className="text-xs text-muted">{t('probeHint')}</p>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setProbeOpen(true)}
+              >
+                {t('probeButton')}
+              </Button>
+            </div>
           </>
         )}
       </div>
+
+      {!isEdit && (
+        <TriggerProbeModal
+          isOpen={probeOpen}
+          onClose={() => setProbeOpen(false)}
+          onCaptured={handleProbeCaptured}
+        />
+      )}
 
       {(channelHandler || isEdit) && (
         <div className="border border-border rounded-lg p-4 space-y-4">
@@ -263,6 +305,14 @@ export default function ChannelConfigForm({
           className="w-full px-3 py-2 bg-surface-secondary border border-border rounded-lg text-foreground font-mono text-xs resize-y"
         />
       </FormField>
+
+      {!isEdit && capturedSample && (
+        <CapturedSamplePanel
+          sample={capturedSample}
+          activePaths={filterValidation.ok ? Object.keys(filterValidation.value) : []}
+          onPick={addFilterCondition}
+        />
+      )}
 
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="secondary" onClick={onCancel} disabled={loading}>

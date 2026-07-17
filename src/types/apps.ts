@@ -97,3 +97,12 @@ export interface TriggerLog {
   agentsCount: number;
   createdAt: string;
 }
+
+// Trigger discovery probe: a one-off code the user drops into a test event so the
+// frontend can confirm the "external event → connector → trigger_log" chain works.
+// Returned by POST /control/manage/trigger-logs/probe. Not persisted server-side —
+// the frontend keeps `code` + `issuedAt` and polls /probe/match until it surfaces.
+export interface TriggerLogProbeResponse {
+  code: string;     // agm-probe-(block|pass)-[a-z0-9]{10}
+  issuedAt: string; // LocalDateTime ISO (yyyy-MM-dd'T'HH:mm:ss), no timezone
+}
