@@ -7,6 +7,7 @@ import type {
   WebchatDirection,
   WebchatMessagePayload,
   WebchatMessageResponse,
+  WebchatPart,
   WebchatStream,
 } from '@/types';
 
@@ -18,6 +19,7 @@ export interface ThreadMessage {
   direction: WebchatDirection;
   stream: WebchatStream | null;
   text: string;
+  parts: WebchatPart[]; // attachments (normalized to [] when the wire field is null)
   createdAt: string;
   pending: boolean; // optimistic send not yet acknowledged by the backend
 }
@@ -28,6 +30,7 @@ const fromHistory = (m: WebchatMessageResponse): ThreadMessage => ({
   direction: m.direction,
   stream: m.stream,
   text: m.text,
+  parts: m.parts ?? [],
   createdAt: m.createdAt,
   pending: false,
 });
@@ -38,6 +41,7 @@ const fromEvent = (p: WebchatMessagePayload): ThreadMessage => ({
   direction: p.direction,
   stream: p.stream,
   text: p.text,
+  parts: p.parts ?? [],
   createdAt: p.createdAt,
   pending: false,
 });
@@ -126,6 +130,27 @@ export function useWebchatThread(sessionId: string | null) {
     }
   }, [sessionId, loadingOlder, hasOlder]);
 
+  // Re-fetches the newest history page and refreshes attachment links on any
+  // already-rendered message (matched by messageId). Signed `part.url`s expire
+  // after ~15 min; an <img> that 403s on an expired link calls this to swap in
+  // freshly-signed URLs. Best-effort — failures leave the stale link in place.
+  const refreshParts = useCallback(async () => {
+    if (!sessionId) return;
+    try {
+      const page = await apiService.getWebchatMessages(sessionId, { page: 0, size: PAGE_SIZE });
+      const freshById = new Map(page.content.map((m) => [m.messageId, m.parts ?? []]));
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.messageId && freshById.has(m.messageId)
+            ? { ...m, parts: freshById.get(m.messageId)! }
+            : m
+        )
+      );
+    } catch {
+      // Swallow — the attachment falls back to a placeholder on repeated failure.
+    }
+  }, [sessionId]);
+
   const handleEvent = useCallback(
     (p: WebchatMessagePayload) => {
       if (!sessionId || p.sessionId !== sessionId) return;
@@ -168,6 +193,7 @@ export function useWebchatThread(sessionId: string | null) {
           direction: 'USER',
           stream: null,
           text: trimmed,
+          parts: [],
           createdAt: new Date().toISOString(),
           pending: true,
         },
@@ -207,5 +233,6 @@ export function useWebchatThread(sessionId: string | null) {
     awaitingReply,
     send,
     handleEvent,
+    refreshParts,
   };
 }

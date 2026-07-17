@@ -11,6 +11,7 @@ import { getErrorMessage } from '@/utils/error';
 import { useWebchatSubscription } from '@/realtime/useWebchatSubscription';
 import { useWebchatThread, ThreadMessage } from './useWebchatThread';
 import { ChatMessageText } from './ChatMessageText';
+import { ChatMessageAttachments } from './ChatMessageAttachments';
 import type { WebchatMessagePayload, WebchatSessionResponse } from '@/types';
 
 interface WebchatConversationProps {
@@ -22,7 +23,13 @@ interface WebchatConversationProps {
   onActivity: () => void;
 }
 
-function MessageRow({ message }: { message: ThreadMessage }) {
+function MessageRow({
+  message,
+  onExpired,
+}: {
+  message: ThreadMessage;
+  onExpired: () => Promise<void>;
+}) {
   if (message.direction === 'AGENT' && message.stream === 'progress') {
     return (
       <div className="flex justify-start">
@@ -47,9 +54,16 @@ function MessageRow({ message }: { message: ThreadMessage }) {
               : 'bg-surface-secondary text-foreground'
         }`}
       >
-        <div className="text-sm">
-          <ChatMessageText text={message.text} />
-        </div>
+        {message.text.trim() && (
+          <div className="text-sm">
+            <ChatMessageText text={message.text} />
+          </div>
+        )}
+        {message.parts.length > 0 && (
+          <div className={message.text.trim() ? 'mt-2' : ''}>
+            <ChatMessageAttachments parts={message.parts} onExpired={onExpired} />
+          </div>
+        )}
         <div
           className={`mt-1 text-[10px] ${
             isUser ? 'text-accent-foreground/70' : isError ? 'text-error/70' : 'text-muted'
@@ -188,7 +202,9 @@ export default function WebchatConversation({
         ) : thread.messages.length === 0 && !thread.awaitingReply ? (
           <div className="text-center py-8 text-muted text-sm">{t('noMessages')}</div>
         ) : (
-          thread.messages.map((m) => <MessageRow key={m.key} message={m} />)
+          thread.messages.map((m) => (
+            <MessageRow key={m.key} message={m} onExpired={thread.refreshParts} />
+          ))
         )}
 
         {thread.awaitingReply && !thread.loading && (

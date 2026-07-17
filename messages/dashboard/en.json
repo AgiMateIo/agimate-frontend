@@ -121,7 +121,10 @@
     "closeSession": "Close session",
     "closedAt": "closed {date}",
     "composerPlaceholder": "Write a message... (Enter — send, Shift+Enter — new line)",
-    "send": "Send"
+    "send": "Send",
+    "imageAttachmentAlt": "Attachment",
+    "imageUnavailable": "Image unavailable",
+    "download": "Download"
   },
   "DashboardHome": {
     "title": "Dashboard",

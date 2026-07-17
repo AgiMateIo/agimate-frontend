@@ -5,6 +5,20 @@ export type WebchatDirection = 'USER' | 'AGENT';
 // null on USER messages; AGENT messages carry the stream kind.
 export type WebchatStream = 'progress' | 'answer' | 'error';
 
+// How to render an attachment part.
+export type WebchatPartType = 'image' | 'video' | 'audio' | 'file';
+
+// An attachment on an AGENT answer (screenshots, files, …). `url` is a signed,
+// short-lived (~15 min) link relative to the control context path — do not
+// persist it; re-read history for a fresh one (dedupe/cache by `fileId`).
+export interface WebchatPart {
+  type: WebchatPartType;
+  fileId: string;
+  mime: string;
+  size: number;
+  url: string;
+}
+
 export interface WebchatSessionResponse {
   sessionId: string;
   channelId: string;
@@ -22,6 +36,8 @@ export interface WebchatMessageResponse {
   direction: WebchatDirection;
   stream: WebchatStream | null;
   text: string;
+  // Attachments on AGENT answers; absent/null on messages without files.
+  parts: WebchatPart[] | null;
   createdAt: string;
 }
 
@@ -41,5 +57,7 @@ export interface WebchatMessagePayload {
   direction: WebchatDirection;
   stream: WebchatStream | null;
   text: string;
+  // Attachments arrive only with stream=answer; null/absent otherwise.
+  parts: WebchatPart[] | null;
   createdAt: string;
 }

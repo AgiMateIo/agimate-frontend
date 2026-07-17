@@ -121,7 +121,10 @@
     "closeSession": "Закрыть сессию",
     "closedAt": "закрыта {date}",
     "composerPlaceholder": "Напишите сообщение... (Enter — отправить, Shift+Enter — новая строка)",
-    "send": "Отправить"
+    "send": "Отправить",
+    "imageAttachmentAlt": "Вложение",
+    "imageUnavailable": "Изображение недоступно",
+    "download": "Скачать"
   },
   "DashboardHome": {
     "title": "Dashboard",
