@@ -6,11 +6,12 @@ import apiService from '@/services/api';
 import { LlmProviderModelResponse, LlmProviderResponse, UpdateLlmProviderRequest } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { FormField, Input, Select } from '@/components/ui/FormField';
+import { FormField, Input } from '@/components/ui/FormField';
 import { Toggle } from '@/components/ui/Toggle';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { ExtraBodyField } from './ExtraBodyField';
+import { ModelPickerList } from './ModelPickerList';
 import { formatExtraBody, parseExtraBodyInput } from './extraBody';
 
 interface EditLlmProviderModalProps {
@@ -95,23 +96,16 @@ export default function EditLlmProviderModal({ provider, models, onClose, onSucc
           label={isPlatform ? tu('fallbackModel') : tu('defaultModel')}
           hint={isPlatform ? tu('fallbackModelHint') : tu('defaultModelHint')}
         >
-          <Select
-            value={defaultModel}
-            onChange={(e) => setDefaultModel(e.target.value)}
-            disabled={loading || models.length === 0}
-          >
-            <option value="">{tu('noDefaultModel')}</option>
-            {/* Keep a stored default selectable even if it left the registry. */}
-            {defaultModel && !models.some((m) => m.model === defaultModel) && (
-              <option value={defaultModel}>{defaultModel}</option>
-            )}
-            {models.map((m) => (
-              <option key={m.id} value={m.model}>
-                {m.displayName ?? m.model}
-                {m.status === 'UNAVAILABLE' ? ` — ${t('modelUnavailable')}` : ''}
-              </option>
-            ))}
-          </Select>
+          {models.length === 0 && !defaultModel ? (
+            <p className="text-sm text-muted py-1">{t('noModelsYet')}</p>
+          ) : (
+            <ModelPickerList
+              models={models}
+              value={defaultModel}
+              onChange={setDefaultModel}
+              disabled={loading}
+            />
+          )}
         </FormField>
 
         <ExtraBodyField value={extraBodyText} onChange={setExtraBodyText} disabled={loading} />

@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { FormField, Select } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useLlmProviderCacheActions, useLlmProviderModelsQuery } from '@/queries/llm-providers';
-import { ModelSelectWithFilters } from './modelRegistryUi';
+import { ModelPickerList } from '@/components/llm-providers/ModelPickerList';
 
 interface EditAgentLlmModalProps {
   agentId: string;
@@ -41,8 +41,6 @@ export default function EditAgentLlmModal({
   const { setProviderModels } = useLlmProviderCacheActions();
   const models = modelsQuery.data ?? [];
   const noModelsYet = modelsQuery.isSuccess && models.length === 0;
-  // The bound model may have vanished from the registry — keep it selectable.
-  const modelMissing = !!model && modelsQuery.isSuccess && !models.some((m) => m.model === model);
 
   const handleRefreshNow = async () => {
     if (!selected) return;
@@ -116,21 +114,15 @@ export default function EditAgentLlmModal({
               </Button>
             </div>
           ) : (
-            <div className="space-y-2">
-              <ModelSelectWithFilters
-                models={models}
-                model={model}
-                onChange={setModel}
-                disabled={busy}
-              >
-                {modelMissing && (
-                  <option value={model}>{model} — {t('modelNotInRegistry')}</option>
-                )}
-              </ModelSelectWithFilters>
-              {modelMissing && (
-                <p className="text-xs text-warning">{t('modelNotInRegistryHint')}</p>
-              )}
-            </div>
+            // Keyed by provider so search/filter state resets on provider change.
+            // A model missing from the registry is flagged on the picker's card.
+            <ModelPickerList
+              key={providerId}
+              models={models}
+              value={model}
+              onChange={setModel}
+              disabled={busy}
+            />
           )}
         </FormField>
 

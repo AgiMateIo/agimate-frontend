@@ -9,6 +9,7 @@ import { ConnectionResponse, ConnectorCatalogEntry } from '@/types';
 import { formatDate } from '@/utils/date';
 import { Toggle } from '@/components/ui/Toggle';
 import { Chip } from '@/components/ui/Chip';
+import { FilterPill } from '@/components/ui/FilterPill';
 import { useUpdateConnectionMutation } from '@/queries/connections';
 import { ConnectionAvatar } from './ConnectionAvatar';
 
@@ -18,30 +19,6 @@ interface ConnectionsListProps {
 }
 
 type StatusFilter = 'ALL' | 'ENABLED' | 'DISABLED';
-
-function FilterPill({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
-        active
-          ? 'bg-accent text-white border-accent'
-          : 'border-border text-muted hover:text-foreground hover:border-accent/50'
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
 
 function ConnectionCard({
   connection,

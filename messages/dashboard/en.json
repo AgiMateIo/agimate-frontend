@@ -502,7 +502,6 @@
     "provider": "Provider",
     "selectProvider": "Select provider",
     "model": "Model",
-    "selectModel": "Select model",
     "providerDisabled": "Provider disabled",
     "providerDisabledHint": "The agent runtime silently skips bindings to disabled providers",
     "platformModel": "Platform model",
@@ -578,8 +577,6 @@
     "paramsFilterHint": "Flat map of param path → expected value. Optional.",
     "paramsFilterInvalid": "Must be a valid JSON object",
     "loadingModels": "Loading models…",
-    "modelNotInRegistry": "not in the provider's registry",
-    "modelNotInRegistryHint": "The provider no longer lists this model — calls may fail. Keep it or pick another model.",
     "modelUnlisted": "Not listed",
     "modelUnlistedHint": "The provider no longer lists this model — calls may fail"
   },
@@ -663,13 +660,18 @@
     "filterInputModalities": "Input modalities",
     "filterOutputModalities": "Output modalities",
     "filterParameters": "Supported parameters",
-    "filtersClear": "Clear",
     "showUnknownCapabilities": "Include models with unknown capabilities",
     "modelCapabilityUnknown": "Capabilities unknown",
     "modelImageOut": "Image output",
     "modelContextShort": "{size} ctx",
     "modelMaxOutputShort": "≤{size} out",
-    "modelMaxOutputTokens": "{tokens} max output tokens"
+    "modelMaxOutputTokens": "{tokens} max output tokens",
+    "modelAudioIn": "Audio input",
+    "modelAudioOut": "Audio output",
+    "modelNotInRegistry": "Not in the provider's registry — calls may fail",
+    "pickerClear": "Clear selection",
+    "pickerFilters": "Capability filters",
+    "modelFiltersToggle": "Filters"
   },
   "AgenticTeams": {
     "title": "Agentic Teams",

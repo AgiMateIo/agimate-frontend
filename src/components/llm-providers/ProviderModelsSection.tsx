@@ -6,25 +6,28 @@ import {
   AdjustmentsHorizontalIcon,
   ArrowPathIcon,
   EyeIcon,
+  FunnelIcon,
   MagnifyingGlassIcon,
   SparklesIcon,
 } from '@heroicons/react/24/outline';
 import { LlmProviderModelResponse, LlmProviderResponse } from '@/types';
 import { Chip } from '@/components/ui/Chip';
 import { Button } from '@/components/ui/Button';
-import { Input, Select } from '@/components/ui/FormField';
+import { Input } from '@/components/ui/FormField';
 import { Toggle } from '@/components/ui/Toggle';
 import { RowAction } from '@/components/ui/RowAction';
+import { FilterPill } from '@/components/ui/FilterPill';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { formatDate } from '@/utils/date';
 import { localeMap } from '@/i18n/routing';
 import { useLlmProviderCacheActions } from '@/queries/llm-providers';
 import ModelExtraBodyModal from './ModelExtraBodyModal';
 import { hasExtraBody } from './extraBody';
-import { ModelCapabilityFilters } from './ModelCapabilityFilters';
 import {
+  CapabilityAxis,
   CapabilityFilter,
   EMPTY_CAPABILITY_FILTER,
+  capabilityOptions,
   formatContextWindow,
   formatModalityPair,
   hasActiveCapabilityFilter,
@@ -62,6 +65,7 @@ export default function ProviderModelsSection({
   const { setProviderModel } = useLlmProviderCacheActions();
 
   const [search, setSearch] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
   const [status, setStatus] = useState<StatusFilter>('all');
   const [capFilter, setCapFilter] = useState<CapabilityFilter>(EMPTY_CAPABILITY_FILTER);
   // null capabilities mean "unknown", not "can't" — such models are kept under
@@ -70,6 +74,17 @@ export default function ProviderModelsSection({
   const [editing, setEditing] = useState<LlmProviderModelResponse | null>(null);
 
   const capFilterActive = hasActiveCapabilityFilter(capFilter);
+  const anyFilterActive = capFilterActive || status !== 'all';
+  // Chip options per axis — the union of values seen in the registry, never hardcoded.
+  const capOptions = useMemo(() => capabilityOptions(models), [models]);
+
+  const toggleCapValue = (axis: CapabilityAxis, value: string) =>
+    setCapFilter((prev) => ({
+      ...prev,
+      [axis]: prev[axis].includes(value)
+        ? prev[axis].filter((v) => v !== value)
+        : [...prev[axis], value],
+    }));
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -128,37 +143,74 @@ export default function ProviderModelsSection({
         </div>
       ) : (
         <>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1 min-w-0">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
-              <Input
-                type="search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder={t('modelSearchPlaceholder')}
-                className="pl-9"
-              />
-            </div>
-            <Select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as StatusFilter)}
-              className="sm:w-52"
-              aria-label={t('modelStatusFilterLabel')}
+          <div className="relative">
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
+            <Input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t('modelSearchPlaceholder')}
+              className="pl-9 pr-11"
+            />
+            <button
+              type="button"
+              onClick={() => setShowFilters((v) => !v)}
+              aria-label={t('modelFiltersToggle')}
+              aria-pressed={showFilters}
+              className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md transition-colors ${
+                showFilters || anyFilterActive
+                  ? 'text-accent bg-accent/10'
+                  : 'text-muted hover:text-foreground'
+              }`}
             >
-              <option value="all">{t('modelStatusAll')}</option>
-              <option value="AVAILABLE">{t('modelStatusAvailable')}</option>
-              <option value="UNAVAILABLE">{t('modelStatusUnavailable')}</option>
-            </Select>
+              <FunnelIcon className="h-4 w-4" />
+            </button>
           </div>
 
-          <ModelCapabilityFilters models={models} value={capFilter} onChange={setCapFilter} />
+          {showFilters && (
+            <div className="space-y-2">
+              <FilterRow label={t('modelStatusFilterLabel')}>
+                <FilterPill active={status === 'all'} onClick={() => setStatus('all')}>
+                  {t('modelStatusAll')}
+                </FilterPill>
+                <FilterPill active={status === 'AVAILABLE'} onClick={() => setStatus('AVAILABLE')}>
+                  {t('modelStatusAvailable')}
+                </FilterPill>
+                <FilterPill active={status === 'UNAVAILABLE'} onClick={() => setStatus('UNAVAILABLE')}>
+                  {t('modelStatusUnavailable')}
+                </FilterPill>
+              </FilterRow>
 
-          {capFilterActive && (
-            <Toggle
-              checked={includeUnknown}
-              onChange={setIncludeUnknown}
-              label={t('showUnknownCapabilities')}
-            />
+              {(
+                [
+                  ['input', t('filterInputModalities')],
+                  ['output', t('filterOutputModalities')],
+                  ['params', t('filterParameters')],
+                ] as [CapabilityAxis, string][]
+              ).map(([axis, label]) =>
+                capOptions[axis].length > 0 ? (
+                  <FilterRow key={axis} label={label}>
+                    {capOptions[axis].map((value) => (
+                      <FilterPill
+                        key={value}
+                        active={capFilter[axis].includes(value)}
+                        onClick={() => toggleCapValue(axis, value)}
+                      >
+                        {value}
+                      </FilterPill>
+                    ))}
+                  </FilterRow>
+                ) : null
+              )}
+
+              {capFilterActive && (
+                <Toggle
+                  checked={includeUnknown}
+                  onChange={setIncludeUnknown}
+                  label={t('showUnknownCapabilities')}
+                />
+              )}
+            </div>
           )}
 
           {filtered.length === 0 ? (
@@ -248,6 +300,16 @@ export default function ProviderModelsSection({
           }}
         />
       )}
+    </div>
+  );
+}
+
+// One labeled row of filter pills ("Availability: (all) (available) …").
+function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-1.5 flex-wrap">
+      <span className="text-xs text-muted mr-1">{label}</span>
+      {children}
     </div>
   );
 }

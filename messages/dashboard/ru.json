@@ -502,7 +502,6 @@
     "provider": "Провайдер",
     "selectProvider": "Выберите провайдера",
     "model": "Модель",
-    "selectModel": "Выберите модель",
     "providerDisabled": "Провайдер выключен",
     "providerDisabledHint": "Среда выполнения агента молча пропускает привязки к выключенным провайдерам",
     "platformModel": "Платформенная модель",
@@ -578,8 +577,6 @@
     "paramsFilterHint": "Плоская мапа: путь параметра → ожидаемое значение. Необязательно.",
     "paramsFilterInvalid": "Должен быть корректный JSON-объект",
     "loadingModels": "Загрузка моделей…",
-    "modelNotInRegistry": "нет в реестре провайдера",
-    "modelNotInRegistryHint": "Провайдер больше не листит эту модель — вызовы могут падать. Оставьте её или выберите другую.",
     "modelUnlisted": "Нет в листинге",
     "modelUnlistedHint": "Провайдер больше не листит эту модель — вызовы могут падать"
   },
@@ -663,13 +660,18 @@
     "filterInputModalities": "Модальности входа",
     "filterOutputModalities": "Модальности выхода",
     "filterParameters": "Параметры запроса",
-    "filtersClear": "Сбросить",
     "showUnknownCapabilities": "Показывать модели с неизвестными капабилити",
     "modelCapabilityUnknown": "Капабилити неизвестны",
     "modelImageOut": "Генерит изображения",
     "modelContextShort": "контекст {size}",
     "modelMaxOutputShort": "ответ ≤{size}",
-    "modelMaxOutputTokens": "ответ до {tokens} токенов"
+    "modelMaxOutputTokens": "ответ до {tokens} токенов",
+    "modelAudioIn": "Принимает аудио",
+    "modelAudioOut": "Озвучивает",
+    "modelNotInRegistry": "Нет в реестре провайдера — вызовы могут падать",
+    "pickerClear": "Сбросить выбор",
+    "pickerFilters": "Фильтры по капабилити",
+    "modelFiltersToggle": "Фильтры"
   },
   "AgenticTeams": {
     "title": "Команды агентов",

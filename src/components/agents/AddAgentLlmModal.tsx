@@ -12,7 +12,7 @@ import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Link } from '@/i18n/navigation';
 import { useLlmProviderCacheActions, useLlmProviderModelsQuery } from '@/queries/llm-providers';
-import { ModelSelectWithFilters } from './modelRegistryUi';
+import { ModelPickerList } from '@/components/llm-providers/ModelPickerList';
 
 interface AddAgentLlmModalProps {
   agentId: string;
@@ -153,9 +153,11 @@ export default function AddAgentLlmModal({
                   </Button>
                 </div>
               ) : (
-                <ModelSelectWithFilters
+                // Keyed by provider so search/filter state resets on provider change.
+                <ModelPickerList
+                  key={providerId}
                   models={models}
-                  model={model}
+                  value={model}
                   onChange={setModel}
                   disabled={busy}
                 />
