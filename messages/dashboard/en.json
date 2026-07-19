@@ -129,7 +129,18 @@
     "send": "Send",
     "imageAttachmentAlt": "Attachment",
     "imageUnavailable": "Image unavailable",
-    "download": "Download"
+    "download": "Download",
+    "attachFiles": "Attach files",
+    "maxAttachments": "Up to {max} files per message",
+    "uploading": "Uploading...",
+    "uploadRateLimited": "Too many uploads - retrying...",
+    "tooManyUploads": "Too many uploads - try again later",
+    "fileTooLarge": "File exceeds the size limit",
+    "uploadFailed": "Upload failed",
+    "retryUpload": "Retry",
+    "removeAttachment": "Remove",
+    "dropToAttach": "Drop files to attach",
+    "dropHint": "Up to {max} files, agents can see images"
   },
   "DashboardHome": {
     "title": "Dashboard",

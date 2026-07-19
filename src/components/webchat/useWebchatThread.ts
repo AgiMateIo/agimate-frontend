@@ -18,7 +18,7 @@ export interface ThreadMessage {
   messageId: string | null; // null until the send POST resolves
   direction: WebchatDirection;
   stream: WebchatStream | null;
-  text: string;
+  text: string; // normalized to '' for attachment-only messages (wire sends null)
   parts: WebchatPart[]; // attachments (normalized to [] when the wire field is null)
   createdAt: string;
   pending: boolean; // optimistic send not yet acknowledged by the backend
@@ -29,7 +29,7 @@ const fromHistory = (m: WebchatMessageResponse): ThreadMessage => ({
   messageId: m.messageId,
   direction: m.direction,
   stream: m.stream,
-  text: m.text,
+  text: m.text ?? '',
   parts: m.parts ?? [],
   createdAt: m.createdAt,
   pending: false,
@@ -40,7 +40,7 @@ const fromEvent = (p: WebchatMessagePayload): ThreadMessage => ({
   messageId: p.messageId,
   direction: p.direction,
   stream: p.stream,
-  text: p.text,
+  text: p.text ?? '',
   parts: p.parts ?? [],
   createdAt: p.createdAt,
   pending: false,
@@ -68,6 +68,10 @@ export function useWebchatThread(sessionId: string | null) {
   const processedEventIdsRef = useRef<Set<string>>(new Set());
   const pagesLoadedRef = useRef(0);
   const localSeqRef = useRef(0);
+  // blob: preview URLs handed to optimistic sends. Kept alive for the whole
+  // session selection (the echo swap to signed URLs happens inside a state
+  // updater, which must stay pure) and revoked when the thread resets.
+  const localPreviewUrlsRef = useRef<string[]>([]);
 
   useEffect(() => {
     seenHistoryIdsRef.current = new Set();
@@ -107,6 +111,10 @@ export function useWebchatThread(sessionId: string | null) {
       });
     return () => {
       cancelled = true;
+      // The thread is resetting (session switch) or unmounting — the messages
+      // referencing these previews are gone either way.
+      localPreviewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      localPreviewUrlsRef.current = [];
     };
   }, [sessionId]);
 
@@ -161,15 +169,29 @@ export function useWebchatThread(sessionId: string | null) {
         setAwaitingReply(p.stream === 'progress');
       }
       setMessages((prev) => {
-        if (prev.some((m) => m.messageId === p.messageId)) return prev;
+        const known = prev.findIndex((m) => m.messageId === p.messageId);
+        if (known >= 0) {
+          // Already rendered (the POST ack stamped the optimistic copy). USER
+          // echoes still carry the signed attachment URLs — swap out the local
+          // blob: previews.
+          const m = prev[known];
+          if (p.direction !== 'USER' || m.parts.every((part) => !part.url.startsWith('blob:'))) {
+            return prev;
+          }
+          const next = prev.slice();
+          next[known] = { ...m, parts: p.parts ?? m.parts, pending: false };
+          return next;
+        }
         if (p.direction === 'USER') {
-          // Echo may beat the send POST response: reconcile into the latest
-          // optimistic message with the same text instead of duplicating it.
-          for (let i = prev.length - 1; i >= 0; i--) {
+          // Echo may beat the send POST response: reconcile into the OLDEST
+          // optimistic message with the same text instead of duplicating it —
+          // sends POST (and echo) in order, so FIFO matching keeps two
+          // consecutive identical/attachment-only sends straight.
+          for (let i = 0; i < prev.length; i++) {
             const m = prev[i];
-            if (m.direction === 'USER' && m.messageId === null && m.text === p.text) {
+            if (m.direction === 'USER' && m.messageId === null && m.text === (p.text ?? '')) {
               const next = prev.slice();
-              next[i] = { ...m, messageId: p.messageId, pending: false };
+              next[i] = { ...m, messageId: p.messageId, parts: p.parts ?? m.parts, pending: false };
               return next;
             }
           }
@@ -180,11 +202,17 @@ export function useWebchatThread(sessionId: string | null) {
     [sessionId]
   );
 
+  // `parts` are optimistic attachment parts: already-uploaded files (real
+  // fileId) with a local blob: preview in `url`. The USER echo swaps the
+  // previews for signed server URLs.
   const send = useCallback(
-    async (text: string): Promise<boolean> => {
+    async (text: string, parts: WebchatPart[] = []): Promise<boolean> => {
       const trimmed = text.trim();
-      if (!sessionId || !trimmed) return false;
+      if (!sessionId || (!trimmed && parts.length === 0)) return false;
       const key = `local-${++localSeqRef.current}`;
+      localPreviewUrlsRef.current.push(
+        ...parts.map((p) => p.url).filter((url) => url.startsWith('blob:'))
+      );
       setMessages((prev) => [
         ...prev,
         {
@@ -193,7 +221,7 @@ export function useWebchatThread(sessionId: string | null) {
           direction: 'USER',
           stream: null,
           text: trimmed,
-          parts: [],
+          parts,
           createdAt: new Date().toISOString(),
           pending: true,
         },
@@ -201,7 +229,10 @@ export function useWebchatThread(sessionId: string | null) {
       setSendError('');
       setAwaitingReply(true);
       try {
-        const res = await apiService.sendWebchatMessage(sessionId, trimmed);
+        const res = await apiService.sendWebchatMessage(sessionId, {
+          text: trimmed || undefined,
+          parts: parts.length > 0 ? parts.map((p) => ({ fileId: p.fileId })) : undefined,
+        });
         setMessages((prev) => {
           // Echo already arrived and got rendered on its own — drop the optimistic copy.
           if (prev.some((m) => m.key !== key && m.messageId === res.messageId)) {

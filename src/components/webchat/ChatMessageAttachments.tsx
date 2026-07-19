@@ -6,13 +6,19 @@ import { ArrowDownTrayIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import { resolveControlFileUrl } from '@/utils/api-url';
 import type { WebchatPart } from '@/types';
 
-// Human-readable byte size for the download card (e.g. "384 KB", "1.2 MB").
-function formatBytes(bytes: number): string {
+// Human-readable byte size for attachment cards (e.g. "384 KB", "1.2 MB").
+export function formatBytes(bytes: number): string {
   if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
   const units = ['B', 'KB', 'MB', 'GB'];
   const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
   const value = bytes / 1024 ** i;
   return `${i === 0 ? value : value.toFixed(1)} ${units[i]}`;
+}
+
+// Server parts carry control-relative signed URLs; optimistic USER parts carry
+// local blob: previews that must be used verbatim.
+function resolvePartUrl(url: string): string {
+  return url.startsWith('blob:') ? url : resolveControlFileUrl(url);
 }
 
 // Signed image link that expires (~15 min). On the first load error we ask the
@@ -38,7 +44,7 @@ function AttachmentImage({
     );
   }
 
-  const src = resolveControlFileUrl(part.url);
+  const src = resolvePartUrl(part.url);
   return (
     <a href={src} target="_blank" rel="noopener noreferrer" className="block w-fit">
       {/* eslint-disable-next-line @next/next/no-img-element -- signed cross-origin URL, not a local asset */}
@@ -64,7 +70,7 @@ function AttachmentImage({
 // Content-Disposition: attachment, so a plain anchor downloads on click.
 function AttachmentFile({ part }: { part: WebchatPart }) {
   const t = useTranslations('Chat');
-  const href = resolveControlFileUrl(part.url);
+  const href = resolvePartUrl(part.url);
   const kind = part.mime.split('/')[1]?.toUpperCase() || part.type.toUpperCase();
   return (
     <a

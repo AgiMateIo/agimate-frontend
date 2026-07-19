@@ -1,8 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState, KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, ClipboardEvent, DragEvent, KeyboardEvent } from 'react';
 import { useTranslations } from 'next-intl';
-import { Cog6ToothIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
+import {
+  ArrowUpTrayIcon,
+  Cog6ToothIcon,
+  PaperAirplaneIcon,
+  PaperClipIcon,
+} from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { Button } from '@/components/ui/Button';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
@@ -12,6 +17,8 @@ import { useWebchatSubscription } from '@/realtime/useWebchatSubscription';
 import { useWebchatThread, ThreadMessage } from './useWebchatThread';
 import { ChatMessageText } from './ChatMessageText';
 import { ChatMessageAttachments } from './ChatMessageAttachments';
+import { ComposerAttachments } from './ComposerAttachments';
+import { useComposerAttachments, MAX_ATTACHMENTS } from './useComposerAttachments';
 import type { WebchatMessagePayload, WebchatSessionResponse } from '@/types';
 
 interface WebchatConversationProps {
@@ -85,8 +92,13 @@ export default function WebchatConversation({
   const t = useTranslations('Chat');
   const thread = useWebchatThread(session.sessionId);
   const [draft, setDraft] = useState('');
+  const [sending, setSending] = useState(false);
   const [closing, setClosing] = useState(false);
   const [closeError, setCloseError] = useState('');
+  const composer = useComposerAttachments();
+  // Depth counter for dragenter/dragleave pairs while a file hovers the pane.
+  const [dragDepth, setDragDepth] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const listRef = useRef<HTMLDivElement>(null);
   const stickToBottomRef = useRef(true);
@@ -129,10 +141,24 @@ export default function WebchatConversation({
 
   const handleSend = async () => {
     const text = draft;
-    if (!text.trim() || session.closedAt) return;
-    setDraft('');
-    const ok = await thread.send(text);
-    if (!ok) setDraft(text);
+    const hasAttachments = composer.attachments.length > 0;
+    if ((!text.trim() && !hasAttachments) || session.closedAt || sending) return;
+    setSending(true);
+    try {
+      // Uploads start on file pick; here we only wait out the stragglers.
+      const settled = await composer.waitForUploads();
+      // A failed upload keeps its error chip in the tray — fix or remove it first.
+      if (settled.some((a) => a.status === 'error')) return;
+      setDraft('');
+      const ok = await thread.send(text, composer.toOptimisticParts(settled));
+      if (!ok) {
+        setDraft(text);
+        return; // keep the tray so the user can retry the send as-is
+      }
+      composer.clearAfterSend();
+    } finally {
+      setSending(false);
+    }
   };
 
   const handleComposerKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -140,6 +166,40 @@ export default function WebchatConversation({
       e.preventDefault();
       handleSend();
     }
+  };
+
+  // Ctrl/Cmd+V with a screenshot in the clipboard attaches it; text pastes normally.
+  const handleComposerPaste = (e: ClipboardEvent<HTMLTextAreaElement>) => {
+    const files = Array.from(e.clipboardData.files);
+    if (files.length === 0 || session.closedAt) return;
+    e.preventDefault();
+    composer.addFiles(files);
+  };
+
+  const dragHasFiles = (e: DragEvent) => Array.from(e.dataTransfer.types).includes('Files');
+
+  const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
+    if (!dragHasFiles(e) || session.closedAt) return;
+    e.preventDefault();
+    setDragDepth((d) => d + 1);
+  };
+
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+    if (!dragHasFiles(e) || session.closedAt) return;
+    e.preventDefault();
+  };
+
+  const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
+    if (!dragHasFiles(e) || session.closedAt) return;
+    e.preventDefault();
+    setDragDepth((d) => Math.max(0, d - 1));
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    if (!dragHasFiles(e) || session.closedAt) return;
+    e.preventDefault();
+    setDragDepth(0);
+    composer.addFiles(Array.from(e.dataTransfer.files));
   };
 
   const handleClose = async () => {
@@ -156,7 +216,23 @@ export default function WebchatConversation({
   };
 
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div
+      className="relative flex flex-col h-full min-h-0"
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {/* Drop-to-attach overlay */}
+      {dragDepth > 0 && !session.closedAt && (
+        <div className="pointer-events-none absolute inset-2 z-10 grid place-items-center rounded-xl border-2 border-dashed border-accent bg-accent/10">
+          <div className="text-center">
+            <ArrowUpTrayIcon className="mx-auto h-8 w-8 text-accent" />
+            <div className="mt-1 text-sm font-medium text-foreground">{t('dropToAttach')}</div>
+            <div className="text-xs text-muted">{t('dropHint', { max: MAX_ATTACHMENTS })}</div>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border shrink-0">
         <div className="min-w-0">
@@ -231,20 +307,53 @@ export default function WebchatConversation({
         {session.closedAt ? (
           <div className="text-center text-sm text-muted py-2">{t('sessionClosedNotice')}</div>
         ) : (
-          <div className="flex items-end gap-2">
-            <textarea
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={handleComposerKeyDown}
-              placeholder={t('composerPlaceholder')}
-              rows={2}
-              className="flex-1 px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-accent placeholder:text-muted"
+          <>
+            <ComposerAttachments
+              attachments={composer.attachments}
+              onRemove={composer.remove}
+              onRetry={composer.retry}
             />
-            <Button onClick={handleSend} disabled={!draft.trim()} title={t('send')}>
-              <PaperAirplaneIcon className="h-4 w-4" />
-              {t('send')}
-            </Button>
-          </div>
+            <div className="flex items-end gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                hidden
+                onChange={(e) => {
+                  composer.addFiles(Array.from(e.target.files ?? []));
+                  e.target.value = ''; // allow re-picking the same file
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={!composer.canAddMore}
+                title={composer.canAddMore ? t('attachFiles') : t('maxAttachments', { max: MAX_ATTACHMENTS })}
+                className="shrink-0 rounded-lg border border-border p-2.5 text-muted transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:text-muted"
+              >
+                <PaperClipIcon className="h-4 w-4" />
+                <span className="sr-only">{t('attachFiles')}</span>
+              </button>
+              <textarea
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={handleComposerKeyDown}
+                onPaste={handleComposerPaste}
+                placeholder={t('composerPlaceholder')}
+                rows={2}
+                className="flex-1 px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-accent placeholder:text-muted"
+              />
+              <Button
+                onClick={handleSend}
+                loading={sending}
+                disabled={!draft.trim() && composer.attachments.length === 0}
+                title={t('send')}
+              >
+                <PaperAirplaneIcon className="h-4 w-4" />
+                {t('send')}
+              </Button>
+            </div>
+          </>
         )}
       </div>
     </div>

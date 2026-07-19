@@ -9,11 +9,15 @@ const ACCESS_DENIED_MESSAGE = 'ACCESS_DENIED';
 
 export class ApiError extends Error {
   details: Record<string, string> | null;
+  // HTTP status of the backend error response (413 = payload too large,
+  // 429 = rate limited, …); undefined for errors thrown outside the transport.
+  status?: number;
 
-  constructor(message: string, details: Record<string, string> | null = null) {
+  constructor(message: string, details: Record<string, string> | null = null, status?: number) {
     super(message);
     this.name = 'ApiError';
     this.details = details;
+    this.status = status;
   }
 }
 
@@ -76,7 +80,7 @@ export const handleErrorResponse = async (response: Response): Promise<never> =>
   ) {
     const errorObj = (errorData as { error: { message: string; details?: Record<string, string> } }).error;
     console.warn(`Backend error: ${errorObj.message}`);
-    throw new ApiError(errorObj.message, errorObj.details ?? null);
+    throw new ApiError(errorObj.message, errorObj.details ?? null, response.status);
   }
 
   throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -161,11 +165,13 @@ class HttpClient {
     }
   }
 
-  // Builds request headers with the current access token attached.
+  // Builds request headers with the current access token attached. FormData
+  // bodies get no Content-Type — the browser sets multipart/… with a boundary.
   private buildHeaders(options: RequestInit): HeadersInit {
     const token = getAccessToken();
+    const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
     return {
-      'Content-Type': 'application/json',
+      ...(!isFormData && { 'Content-Type': 'application/json' }),
       ...(token && { 'Authorization': `Bearer ${token}` }),
       ...options.headers,
     };
@@ -248,6 +254,16 @@ class HttpClient {
     return this.makeRequest<T>(url, {
       method: 'POST',
       body: JSON.stringify(data),
+    });
+  }
+
+  // Multipart POST (file uploads). The FormData body goes through the same
+  // token-refresh/retry/unwrap pipeline as JSON requests.
+  async postForm<T>(endpoint: string, form: FormData): Promise<T> {
+    const url = `${getApiBaseUrl()}${endpoint}`;
+    return this.makeRequest<T>(url, {
+      method: 'POST',
+      body: form,
     });
   }
 

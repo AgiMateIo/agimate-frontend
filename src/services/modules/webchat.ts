@@ -4,6 +4,7 @@ import { API } from '@/config/constants';
 import type {
   CentrifugoTokenResponse,
   PagedResponse,
+  WebchatFileUploadResponse,
   WebchatMessageResponse,
   WebchatSendMessageResponse,
   WebchatSessionResponse,
@@ -37,10 +38,26 @@ export const webchatApi = {
     );
   },
 
-  async sendWebchatMessage(sessionId: string, text: string): Promise<WebchatSendMessageResponse> {
+  // Upload one composer attachment; reference it via parts:[{fileId}] when
+  // sending. 413/400 = over the size limit, 429 = rate limited (back off).
+  async uploadWebchatFile(file: File): Promise<WebchatFileUploadResponse> {
+    const form = new FormData();
+    form.append('file', file);
+    return httpClient.postForm<WebchatFileUploadResponse>(
+      `${API.ENDPOINTS.CONTROL_API}/manage/webchat/files`,
+      form,
+    );
+  },
+
+  // `text` is optional when `parts` are present (max 5); a message with
+  // neither is a 400.
+  async sendWebchatMessage(
+    sessionId: string,
+    body: { text?: string; parts?: { fileId: string }[] },
+  ): Promise<WebchatSendMessageResponse> {
     return httpClient.post<WebchatSendMessageResponse>(
       `${API.ENDPOINTS.CONTROL_API}/manage/webchat/sessions/${sessionId}/messages`,
-      { text },
+      body,
     );
   },
 

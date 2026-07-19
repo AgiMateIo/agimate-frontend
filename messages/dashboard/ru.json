@@ -129,7 +129,18 @@
     "send": "Отправить",
     "imageAttachmentAlt": "Вложение",
     "imageUnavailable": "Изображение недоступно",
-    "download": "Скачать"
+    "download": "Скачать",
+    "attachFiles": "Прикрепить файлы",
+    "maxAttachments": "До {max} файлов в сообщении",
+    "uploading": "Загрузка...",
+    "uploadRateLimited": "Слишком часто — повторяем...",
+    "tooManyUploads": "Слишком много загрузок — попробуйте позже",
+    "fileTooLarge": "Файл больше лимита",
+    "uploadFailed": "Не удалось загрузить",
+    "retryUpload": "Повторить",
+    "removeAttachment": "Убрать",
+    "dropToAttach": "Отпустите файлы, чтобы прикрепить",
+    "dropHint": "До {max} файлов, изображения агент видит"
   },
   "DashboardHome": {
     "title": "Dashboard",

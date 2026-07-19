@@ -8,15 +8,25 @@ export type WebchatStream = 'progress' | 'answer' | 'error';
 // How to render an attachment part.
 export type WebchatPartType = 'image' | 'video' | 'audio' | 'file';
 
-// An attachment on an AGENT answer (screenshots, files, …). `url` is a signed,
-// short-lived (~15 min) link relative to the control context path — do not
-// persist it; re-read history for a fresh one (dedupe/cache by `fileId`).
+// An attachment on a message — AGENT answers and USER uploads alike. `url` is
+// a signed, short-lived (~15 min) link relative to the control context path —
+// do not persist it; re-read history for a fresh one (dedupe/cache by `fileId`).
+// Optimistic USER messages temporarily carry a local `blob:` URL here instead.
 export interface WebchatPart {
   type: WebchatPartType;
   fileId: string;
   mime: string;
   size: number;
   url: string;
+}
+
+// Response of POST /manage/webchat/files. Reference the upload via its fileId
+// in a message's `parts` before `expiresAt`; unsent uploads expire server-side.
+export interface WebchatFileUploadResponse {
+  fileId: string;
+  mime: string;
+  size: number;
+  expiresAt: string;
 }
 
 export interface WebchatSessionResponse {
@@ -35,8 +45,9 @@ export interface WebchatMessageResponse {
   messageId: string;
   direction: WebchatDirection;
   stream: WebchatStream | null;
-  text: string;
-  // Attachments on AGENT answers; absent/null on messages without files.
+  // Null on attachment-only messages.
+  text: string | null;
+  // Attachments (AGENT answers and USER uploads); absent/null without files.
   parts: WebchatPart[] | null;
   createdAt: string;
 }
@@ -56,8 +67,10 @@ export interface WebchatMessagePayload {
   messageId: string;
   direction: WebchatDirection;
   stream: WebchatStream | null;
-  text: string;
-  // Attachments arrive only with stream=answer; null/absent otherwise.
+  // Null on attachment-only messages.
+  text: string | null;
+  // AGENT: attachments arrive only with stream=answer. USER echoes carry the
+  // uploaded parts with signed urls. Null/absent otherwise.
   parts: WebchatPart[] | null;
   createdAt: string;
 }
