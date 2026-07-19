@@ -12,7 +12,7 @@ import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Link } from '@/i18n/navigation';
 import { useLlmProviderCacheActions, useLlmProviderModelsQuery } from '@/queries/llm-providers';
-import { ModelOptionList, SelectedModelInfo } from './modelRegistryUi';
+import { ModelSelectWithFilters } from './modelRegistryUi';
 
 interface AddAgentLlmModalProps {
   agentId: string;
@@ -153,18 +153,12 @@ export default function AddAgentLlmModal({
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  <Select
-                    value={model}
-                    onChange={(e) => setModel(e.target.value)}
-                    disabled={busy}
-                    required
-                  >
-                    <option value="" disabled>{t('selectModel')}</option>
-                    <ModelOptionList models={models} />
-                  </Select>
-                  <SelectedModelInfo models={models} model={model} />
-                </div>
+                <ModelSelectWithFilters
+                  models={models}
+                  model={model}
+                  onChange={setModel}
+                  disabled={busy}
+                />
               )}
             </FormField>
           </>

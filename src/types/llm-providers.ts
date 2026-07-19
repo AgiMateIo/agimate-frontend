@@ -21,9 +21,15 @@ export interface LlmProviderModelResponse {
   displayName?: string | null;
   // Context window in tokens, when the provider reports it (OpenRouter/Polza do).
   contextWindow?: number | null;
+  // Response token ceiling, when the provider reports it.
+  maxOutputTokens?: number | null;
+  // Capability fields come from the provider verbatim (mixed case, open set) —
+  // compare case-insensitively and render as-is. null = unknown, NOT "can't".
   // e.g. ["text", "image"] — "image" means the model accepts images (vision).
   inputModalities?: string[] | null;
-  // e.g. ["tools", "reasoning"]
+  // e.g. ["text", "image"] — what the model produces (image = gen_image-capable).
+  outputModalities?: string[] | null;
+  // e.g. ["tools", "reasoning", "response_format", "temperature", ...]
   supportedParameters?: string[] | null;
   extraBody?: LlmExtraBody | null;
   status: LlmProviderModelStatus;

@@ -7,11 +7,13 @@ import {
   ArrowPathIcon,
   EyeIcon,
   MagnifyingGlassIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
 import { LlmProviderModelResponse, LlmProviderResponse } from '@/types';
 import { Chip } from '@/components/ui/Chip';
 import { Button } from '@/components/ui/Button';
 import { Input, Select } from '@/components/ui/FormField';
+import { Toggle } from '@/components/ui/Toggle';
 import { RowAction } from '@/components/ui/RowAction';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { formatDate } from '@/utils/date';
@@ -19,22 +21,23 @@ import { localeMap } from '@/i18n/routing';
 import { useLlmProviderCacheActions } from '@/queries/llm-providers';
 import ModelExtraBodyModal from './ModelExtraBodyModal';
 import { hasExtraBody } from './extraBody';
-import { formatContextWindow, isVisionModel } from './modelRegistry';
+import { ModelCapabilityFilters } from './ModelCapabilityFilters';
+import {
+  CapabilityFilter,
+  EMPTY_CAPABILITY_FILTER,
+  formatContextWindow,
+  formatModalityPair,
+  hasActiveCapabilityFilter,
+  hasCapability,
+  isVisionModel,
+  matchCapabilityFilter,
+} from './modelRegistry';
 
 type StatusFilter = 'all' | 'AVAILABLE' | 'UNAVAILABLE';
-type CapabilityFilter = 'all' | 'vision' | 'tools' | 'reasoning';
 
-const matchesCapability = (m: LlmProviderModelResponse, cap: CapabilityFilter) => {
-  switch (cap) {
-    case 'vision':
-      return isVisionModel(m);
-    case 'tools':
-    case 'reasoning':
-      return m.supportedParameters?.includes(cap) ?? false;
-    default:
-      return true;
-  }
-};
+// Chips get their own row for tools/reasoning; everything else supported goes
+// into a "+N" tooltip chip.
+const HIGHLIGHTED_PARAMS = ['tools', 'reasoning'];
 
 interface ProviderModelsSectionProps {
   provider: LlmProviderResponse;
@@ -60,24 +63,32 @@ export default function ProviderModelsSection({
 
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<StatusFilter>('all');
-  const [capability, setCapability] = useState<CapabilityFilter>('all');
+  const [capFilter, setCapFilter] = useState<CapabilityFilter>(EMPTY_CAPABILITY_FILTER);
+  // null capabilities mean "unknown", not "can't" — such models are kept under
+  // an active filter (with an "unknown" badge) unless the user opts them out.
+  const [includeUnknown, setIncludeUnknown] = useState(true);
   const [editing, setEditing] = useState<LlmProviderModelResponse | null>(null);
+
+  const capFilterActive = hasActiveCapabilityFilter(capFilter);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return models
-      .filter((m) => {
+      .map((m) => ({ m, capMatch: matchCapabilityFilter(m, capFilter) }))
+      .filter(({ m, capMatch }) => {
         if (status !== 'all' && m.status !== status) return false;
-        if (!matchesCapability(m, capability)) return false;
+        if (capMatch === 'excluded') return false;
+        if (capMatch === 'unknown' && !includeUnknown) return false;
         if (q && !m.model.toLowerCase().includes(q) && !(m.displayName ?? '').toLowerCase().includes(q)) return false;
         return true;
       })
       .sort((a, b) => {
-        // Available models first, then alphabetically.
-        if (a.status !== b.status) return a.status === 'AVAILABLE' ? -1 : 1;
-        return (a.displayName ?? a.model).localeCompare(b.displayName ?? b.model);
+        // Available first, then confirmed capability matches before unknowns, then alphabetically.
+        if (a.m.status !== b.m.status) return a.m.status === 'AVAILABLE' ? -1 : 1;
+        if (a.capMatch !== b.capMatch) return a.capMatch === 'match' ? -1 : 1;
+        return (a.m.displayName ?? a.m.model).localeCompare(b.m.displayName ?? b.m.model);
       });
-  }, [models, search, status, capability]);
+  }, [models, search, status, capFilter, includeUnknown]);
 
   const unavailableCount = models.filter((m) => m.status === 'UNAVAILABLE').length;
 
@@ -138,59 +149,89 @@ export default function ProviderModelsSection({
               <option value="AVAILABLE">{t('modelStatusAvailable')}</option>
               <option value="UNAVAILABLE">{t('modelStatusUnavailable')}</option>
             </Select>
-            <Select
-              value={capability}
-              onChange={(e) => setCapability(e.target.value as CapabilityFilter)}
-              className="sm:w-52"
-              aria-label={t('modelCapabilityFilterLabel')}
-            >
-              <option value="all">{t('modelCapabilityAll')}</option>
-              <option value="vision">{t('modelCapabilityVision')}</option>
-              <option value="tools">{t('modelCapabilityTools')}</option>
-              <option value="reasoning">{t('modelCapabilityReasoning')}</option>
-            </Select>
           </div>
+
+          <ModelCapabilityFilters models={models} value={capFilter} onChange={setCapFilter} />
+
+          {capFilterActive && (
+            <Toggle
+              checked={includeUnknown}
+              onChange={setIncludeUnknown}
+              label={t('showUnknownCapabilities')}
+            />
+          )}
 
           {filtered.length === 0 ? (
             <div className="text-center py-8 text-sm text-muted">{t('noModelsMatch')}</div>
           ) : (
             <div className="bg-surface rounded-xl border border-border divide-y divide-border">
-              {filtered.map((m) => (
-                <div key={m.id} className="flex items-center justify-between gap-4 px-4 py-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-medium text-foreground truncate">
-                        {m.displayName ?? m.model}
-                      </span>
-                      {m.status === 'UNAVAILABLE' && (
-                        <Chip tone="warning">{t('modelUnavailable')}</Chip>
-                      )}
-                      {isVisionModel(m) && (
-                        <Chip icon={EyeIcon} tone="accent">{t('modelVision')}</Chip>
-                      )}
-                      {m.contextWindow != null && (
-                        <Chip>{t('modelContext', { size: formatContextWindow(m.contextWindow) })}</Chip>
-                      )}
-                      {hasExtraBody(m.extraBody) && (
-                        <Chip icon={AdjustmentsHorizontalIcon}>{t('modelHasExtraBody')}</Chip>
-                      )}
+              {filtered.map(({ m, capMatch }) => {
+                const modalityPair = formatModalityPair(m);
+                const highlighted = (m.supportedParameters ?? []).filter((p) =>
+                  HIGHLIGHTED_PARAMS.includes(p.toLowerCase())
+                );
+                const otherParams = (m.supportedParameters ?? []).filter(
+                  (p) => !HIGHLIGHTED_PARAMS.includes(p.toLowerCase())
+                );
+                return (
+                  <div key={m.id} className="flex items-center justify-between gap-4 px-4 py-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-medium text-foreground truncate">
+                          {m.displayName ?? m.model}
+                        </span>
+                        {m.status === 'UNAVAILABLE' && (
+                          <Chip tone="warning">{t('modelUnavailable')}</Chip>
+                        )}
+                        {modalityPair && <Chip>{modalityPair}</Chip>}
+                        {isVisionModel(m) && (
+                          <Chip icon={EyeIcon} tone="accent">{t('modelVision')}</Chip>
+                        )}
+                        {hasCapability(m.outputModalities, 'image') && (
+                          <Chip icon={SparklesIcon} tone="accent">{t('modelImageOut')}</Chip>
+                        )}
+                        {highlighted.map((p) => (
+                          <Chip key={p}>{p}</Chip>
+                        ))}
+                        {otherParams.length > 0 && (
+                          <span title={otherParams.join(', ')}>
+                            <Chip>+{otherParams.length}</Chip>
+                          </span>
+                        )}
+                        {capFilterActive && capMatch === 'unknown' && (
+                          <Chip>{t('modelCapabilityUnknown')}</Chip>
+                        )}
+                        {hasExtraBody(m.extraBody) && (
+                          <Chip icon={AdjustmentsHorizontalIcon}>{t('modelHasExtraBody')}</Chip>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted mt-0.5 min-w-0">
+                        {m.displayName && <span className="font-mono truncate">{m.model}</span>}
+                        {m.contextWindow != null && (
+                          <span className="shrink-0">
+                            {t('modelContextShort', { size: formatContextWindow(m.contextWindow) })}
+                          </span>
+                        )}
+                        {m.maxOutputTokens != null && (
+                          <span className="shrink-0">
+                            {t('modelMaxOutputShort', { size: formatContextWindow(m.maxOutputTokens) })}
+                          </span>
+                        )}
+                        <span className="shrink-0">
+                          {m.lastSeenAt
+                            ? t('modelLastSeen', { when: formatDate(m.lastSeenAt, bcp47) })
+                            : t('modelNeverListed')}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-muted mt-0.5 min-w-0">
-                      {m.displayName && <span className="font-mono truncate">{m.model}</span>}
-                      <span className="shrink-0">
-                        {m.lastSeenAt
-                          ? t('modelLastSeen', { when: formatDate(m.lastSeenAt, bcp47) })
-                          : t('modelNeverListed')}
-                      </span>
-                    </div>
+                    <RowAction
+                      icon={AdjustmentsHorizontalIcon}
+                      label={t('modelParams')}
+                      onClick={() => setEditing(m)}
+                    />
                   </div>
-                  <RowAction
-                    icon={AdjustmentsHorizontalIcon}
-                    label={t('modelParams')}
-                    onClick={() => setEditing(m)}
-                  />
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </>

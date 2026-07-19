@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { FormField, Select } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useLlmProviderCacheActions, useLlmProviderModelsQuery } from '@/queries/llm-providers';
-import { ModelOptionList, SelectedModelInfo } from './modelRegistryUi';
+import { ModelSelectWithFilters } from './modelRegistryUi';
 
 interface EditAgentLlmModalProps {
   agentId: string;
@@ -117,22 +117,18 @@ export default function EditAgentLlmModal({
             </div>
           ) : (
             <div className="space-y-2">
-              <Select
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
+              <ModelSelectWithFilters
+                models={models}
+                model={model}
+                onChange={setModel}
                 disabled={busy}
-                required
               >
-                <option value="" disabled>{t('selectModel')}</option>
                 {modelMissing && (
                   <option value={model}>{model} — {t('modelNotInRegistry')}</option>
                 )}
-                <ModelOptionList models={models} />
-              </Select>
-              {modelMissing ? (
+              </ModelSelectWithFilters>
+              {modelMissing && (
                 <p className="text-xs text-warning">{t('modelNotInRegistryHint')}</p>
-              ) : (
-                <SelectedModelInfo models={models} model={model} />
               )}
             </div>
           )}
