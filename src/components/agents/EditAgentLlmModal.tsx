@@ -9,12 +9,13 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Select } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { useLlmProviderCacheActions, useLlmProviderModelsQuery } from '@/queries/llm-providers';
+import { ModelOptionList, SelectedModelInfo } from './modelRegistryUi';
 
 interface EditAgentLlmModalProps {
   agentId: string;
   binding: AgentLlmResponse;
   providers: LlmProviderResponse[];
-  onProvidersUpdate: (providers: LlmProviderResponse[]) => void;
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -23,7 +24,6 @@ export default function EditAgentLlmModal({
   agentId,
   binding,
   providers,
-  onProvidersUpdate,
   onClose,
   onSuccess,
 }: EditAgentLlmModalProps) {
@@ -37,8 +37,12 @@ export default function EditAgentLlmModal({
   const [error, setError] = useState<string | null>(null);
 
   const selected = providers.find(p => p.id === providerId);
-  const selectedModels = selected?.availableModels ?? null;
-  const noModelsYet = selectedModels === null || selectedModels.length === 0;
+  const modelsQuery = useLlmProviderModelsQuery(providerId);
+  const { setProviderModels } = useLlmProviderCacheActions();
+  const models = modelsQuery.data ?? [];
+  const noModelsYet = modelsQuery.isSuccess && models.length === 0;
+  // The bound model may have vanished from the registry — keep it selectable.
+  const modelMissing = !!model && modelsQuery.isSuccess && !models.some((m) => m.model === model);
 
   const handleRefreshNow = async () => {
     if (!selected) return;
@@ -46,10 +50,7 @@ export default function EditAgentLlmModal({
     setError(null);
     try {
       const result = await apiService.refreshLlmProviderModels(selected.id);
-      const updated = providers.map(p => p.id === selected.id
-        ? { ...p, availableModels: result.availableModels, modelsRefreshedAt: result.refreshedAt }
-        : p);
-      onProvidersUpdate(updated);
+      setProviderModels(selected.id, result.models);
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to refresh models'));
     } finally {
@@ -99,7 +100,9 @@ export default function EditAgentLlmModal({
         </FormField>
 
         <FormField label={t('model')} required>
-          {noModelsYet ? (
+          {modelsQuery.isPending ? (
+            <p className="text-sm text-muted">{t('loadingModels')}</p>
+          ) : noModelsYet ? (
             <div className="space-y-2">
               <p className="text-sm text-warning">{t('refreshProviderFirst')}</p>
               <Button
@@ -113,19 +116,25 @@ export default function EditAgentLlmModal({
               </Button>
             </div>
           ) : (
-            <Select
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-              disabled={busy}
-              required
-            >
-              <option value="" disabled>{t('selectModel')}</option>
-              {selectedModels!.map((m) => (
-                <option key={m.id} value={m.id} title={m.displayName ? m.id : undefined}>
-                  {m.displayName ?? m.id}
-                </option>
-              ))}
-            </Select>
+            <div className="space-y-2">
+              <Select
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
+                disabled={busy}
+                required
+              >
+                <option value="" disabled>{t('selectModel')}</option>
+                {modelMissing && (
+                  <option value={model}>{model} — {t('modelNotInRegistry')}</option>
+                )}
+                <ModelOptionList models={models} />
+              </Select>
+              {modelMissing ? (
+                <p className="text-xs text-warning">{t('modelNotInRegistryHint')}</p>
+              ) : (
+                <SelectedModelInfo models={models} model={model} />
+              )}
+            </div>
           )}
         </FormField>
 
@@ -137,7 +146,7 @@ export default function EditAgentLlmModal({
           </Button>
           <Button
             type="submit"
-            disabled={busy || noModelsYet || !model}
+            disabled={busy || !model}
             loading={submitting}
           >
             {t('save')}

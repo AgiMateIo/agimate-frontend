@@ -2,12 +2,34 @@
 
 export type LlmProviderType = 'OPENAI' | 'ANTHROPIC' | 'GEMINI' | 'OPENAI_COMPATIBLE';
 
-export interface LlmModel {
-  // The model identifier sent back as `model` when creating an AgentLlm.
+// Extra request parameters merged into every chat/completions call (aggregator
+// extensions like OpenRouter `provider` routing). Backend deep-merges provider-level
+// ⊕ model-level (model wins, arrays replaced whole). Max 16 KB serialized; never
+// a place for secrets — the value reaches workers in plain text.
+export type LlmExtraBody = Record<string, unknown>;
+
+// AVAILABLE — present in the provider's latest model listing.
+// UNAVAILABLE — advisory only: dropped from the listing (or never listed), but
+// still bindable and still served credentials at runtime. UI warns, never blocks.
+export type LlmProviderModelStatus = 'AVAILABLE' | 'UNAVAILABLE';
+
+// A row of the provider's model registry (null fields are omitted in JSON).
+export interface LlmProviderModelResponse {
   id: string;
-  // Human-readable name. Optional and may be absent (@JsonInclude(NON_NULL)) or null
-  // — fall back to `id`. Always set for Anthropic, usually for Gemini, null for OpenAI.
+  // The model identifier at the provider — the key used when binding an agent.
+  model: string;
   displayName?: string | null;
+  // Context window in tokens, when the provider reports it (OpenRouter/Polza do).
+  contextWindow?: number | null;
+  // e.g. ["text", "image"] — "image" means the model accepts images (vision).
+  inputModalities?: string[] | null;
+  // e.g. ["tools", "reasoning"]
+  supportedParameters?: string[] | null;
+  extraBody?: LlmExtraBody | null;
+  status: LlmProviderModelStatus;
+  // null = the provider never listed this model (row created by hand via extra-body upsert).
+  firstSeenAt?: string | null;
+  lastSeenAt?: string | null;
 }
 
 export interface LlmProviderResponse {
@@ -18,8 +40,8 @@ export interface LlmProviderResponse {
   // Fallback model on the platform row; a UI preselect on user providers.
   defaultModel: string | null;
   apiKeyMask: string;
-  availableModels: LlmModel[] | null;
   modelsRefreshedAt: string | null;
+  extraBody: LlmExtraBody | null;
   enabled: boolean;
   // true only for the system-owned platform provider (visible to ADMIN only).
   // Its name is locked ("platform") and it cannot be deleted — only disabled.
@@ -34,6 +56,7 @@ export interface CreateLlmProviderRequest {
   defaultModel?: string | null;
   apiKey: string;
   enabled?: boolean;
+  extraBody?: LlmExtraBody;
 }
 
 export interface UpdateLlmProviderRequest {
@@ -42,6 +65,8 @@ export interface UpdateLlmProviderRequest {
   defaultModel?: string | null;
   apiKey?: string;
   enabled?: boolean;
+  // Partial semantics: absent/null = keep, {} = clear.
+  extraBody?: LlmExtraBody | null;
 }
 
 // Create the system-owned platform provider (ADMIN only). `name` is not accepted —
@@ -54,9 +79,19 @@ export interface CreatePlatformLlmProviderRequest {
   apiKey: string;
 }
 
+// Refresh is an upsert: listed models become AVAILABLE, missing ones flip to
+// UNAVAILABLE (never deleted). Returns the full registry.
 export interface RefreshModelsResponse {
-  availableModels: LlmModel[];
+  models: LlmProviderModelResponse[];
   refreshedAt: string;
+}
+
+// PUT /llm-providers/{id}/models/extra-body — `model` travels in the body
+// (model ids contain "/"). Upserts a registry row if the model was never listed.
+export interface UpdateModelExtraBodyRequest {
+  model: string;
+  // null clears the per-model override (the row remains).
+  extraBody: LlmExtraBody | null;
 }
 
 // USER — a real `agent_llms` row, editable/deletable as usual.

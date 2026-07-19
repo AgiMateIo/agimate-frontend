@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
+import { useQueries } from '@tanstack/react-query';
 import apiService from '@/services/api';
 import { AgentLlmResponse, LlmProviderResponse, LlmProviderType } from '@/types';
 import { getErrorMessage } from '@/utils/error';
 import { localeMap } from '@/i18n/routing';
-import { useLlmUsageQuery } from '@/queries/llm-providers';
+import { llmProviderModelsOptions, useLlmUsageQuery } from '@/queries/llm-providers';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Button } from '@/components/ui/Button';
 import { Link } from '@/i18n/navigation';
@@ -68,6 +69,25 @@ export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Advisory availability check: for each bound provider, look the binding's
+  // model up in that provider's registry. UNAVAILABLE (or missing from a
+  // non-empty registry) → the provider no longer lists it, calls may fail.
+  const boundProviderIds = useMemo(
+    () => [...new Set(bindings.map((b) => b.llmProviderId).filter((id): id is string => !!id))],
+    [bindings]
+  );
+  const modelsQueries = useQueries({
+    queries: boundProviderIds.map((id) => ({ ...llmProviderModelsOptions(id), staleTime: 30_000 })),
+  });
+  const isModelUnlisted = (binding: AgentLlmResponse): boolean => {
+    if (!binding.llmProviderId) return false;
+    const registry = modelsQueries[boundProviderIds.indexOf(binding.llmProviderId)]?.data;
+    // An empty registry means models were never refreshed — nothing to judge by.
+    if (!registry || registry.length === 0) return false;
+    const row = registry.find((m) => m.model === binding.model);
+    return !row || row.status === 'UNAVAILABLE';
+  };
 
   const handleMutationSuccess = () => {
     setShowAdd(false);
@@ -163,7 +183,18 @@ export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
                       </div>
                     </td>
                     <td className="py-3 px-4 text-sm text-foreground font-mono">
-                      {binding.model}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {binding.model}
+                        {!isPlatform && isModelUnlisted(binding) && (
+                          <span
+                            title={t('modelUnlistedHint')}
+                            className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning font-sans"
+                          >
+                            <ExclamationTriangleIcon className="h-3 w-3" />
+                            {t('modelUnlisted')}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-3 px-4 text-right">
                       {/* PLATFORM is a virtual fallback — not editable/deletable.
@@ -205,7 +236,6 @@ export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
           agentId={agentId}
           providers={providers}
           existingNames={new Set(bindings.map(b => b.name))}
-          onProvidersUpdate={setProviders}
           onClose={() => setShowAdd(false)}
           onSuccess={handleMutationSuccess}
         />
@@ -216,7 +246,6 @@ export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
           agentId={agentId}
           binding={editing}
           providers={providers}
-          onProvidersUpdate={setProviders}
           onClose={() => setEditing(null)}
           onSuccess={handleMutationSuccess}
         />

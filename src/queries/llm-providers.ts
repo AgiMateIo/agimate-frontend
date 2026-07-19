@@ -1,18 +1,43 @@
-import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
+import { queryOptions, useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import apiService from '@/services/api';
-import type { CreateLlmQuotaRequest, LlmProviderResponse, UpdateLlmQuotaRequest } from '@/types';
+import type {
+  CreateLlmQuotaRequest,
+  LlmProviderModelResponse,
+  LlmProviderResponse,
+  UpdateLlmQuotaRequest,
+} from '@/types';
 
 export const llmProviderKeys = {
   all: ['llm-providers'] as const,
   list: () => [...llmProviderKeys.all, 'list'] as const,
   usage: () => [...llmProviderKeys.all, 'usage'] as const,
   quotas: (providerId: string) => [...llmProviderKeys.all, 'quotas', providerId] as const,
+  models: (providerId: string) => [...llmProviderKeys.all, 'models', providerId] as const,
 };
 
-export function useLlmProvidersQuery() {
-  return useSuspenseQuery({
+export function llmProvidersListOptions() {
+  return queryOptions({
     queryKey: llmProviderKeys.list(),
     queryFn: () => apiService.getLlmProviders(),
+  });
+}
+
+export function llmProviderModelsOptions(providerId: string) {
+  return queryOptions({
+    queryKey: llmProviderKeys.models(providerId),
+    queryFn: () => apiService.getLlmProviderModels(providerId),
+  });
+}
+
+export function useLlmProvidersQuery() {
+  return useSuspenseQuery(llmProvidersListOptions());
+}
+
+// Non-suspense: used in modals where the provider is picked interactively.
+export function useLlmProviderModelsQuery(providerId: string | null | undefined) {
+  return useQuery({
+    ...llmProviderModelsOptions(providerId ?? ''),
+    enabled: !!providerId,
   });
 }
 
@@ -74,6 +99,16 @@ export function useLlmProviderCacheActions() {
     // the full next array — write it straight into the cache.
     setProviders: (providers: LlmProviderResponse[]) =>
       queryClient.setQueryData(llmProviderKeys.list(), providers),
+    // Refresh/extra-body responses return full registry rows — write them straight in.
+    setProviderModels: (providerId: string, models: LlmProviderModelResponse[]) =>
+      queryClient.setQueryData(llmProviderKeys.models(providerId), models),
+    setProviderModel: (providerId: string, model: LlmProviderModelResponse) =>
+      queryClient.setQueryData<LlmProviderModelResponse[]>(llmProviderKeys.models(providerId), (prev) => {
+        if (!prev) return prev;
+        return prev.some((m) => m.id === model.id)
+          ? prev.map((m) => (m.id === model.id ? model : m))
+          : [...prev, model];
+      }),
     invalidate: () =>
       queryClient.invalidateQueries({ queryKey: llmProviderKeys.all }),
   };

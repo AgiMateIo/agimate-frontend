@@ -7,6 +7,8 @@ import type {
   CreatePlatformLlmProviderRequest,
   UpdateLlmProviderRequest,
   RefreshModelsResponse,
+  LlmProviderModelResponse,
+  UpdateModelExtraBodyRequest,
   LlmUsageResponse,
   LlmQuota,
   CreateLlmQuotaRequest,
@@ -38,6 +40,15 @@ export const llmProvidersApi = {
 
   async refreshLlmProviderModels(id: string): Promise<RefreshModelsResponse> {
     return httpClient.post<RefreshModelsResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/llm-providers/${id}/refresh-models`, {});
+  },
+
+  // Model registry — models persist across refreshes with an availability status.
+  async getLlmProviderModels(id: string): Promise<LlmProviderModelResponse[]> {
+    return httpClient.get<LlmProviderModelResponse[]>(`${API.ENDPOINTS.CONTROL_API}/manage/llm-providers/${id}/models/`);
+  },
+
+  async updateLlmProviderModelExtraBody(id: string, data: UpdateModelExtraBodyRequest): Promise<LlmProviderModelResponse> {
+    return httpClient.put<LlmProviderModelResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/llm-providers/${id}/models/extra-body`, data);
   },
 
   // Token usage — one entry per provider the current user can see (own providers

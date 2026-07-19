@@ -15,6 +15,8 @@ import {
   DEFAULT_PROVIDER_PRESET,
   deriveProviderNameFromUrl,
 } from './providerPresets';
+import { ExtraBodyField } from './ExtraBodyField';
+import { parseExtraBodyInput } from './extraBody';
 
 interface AddLlmProviderModalProps {
   onClose: () => void;
@@ -30,6 +32,7 @@ export default function AddLlmProviderModal({ onClose, onSuccess }: AddLlmProvid
   const [nameEdited, setNameEdited] = useState(false);
   const [baseUrl, setBaseUrl] = useState(DEFAULT_PROVIDER_PRESET.defaultBaseUrl);
   const [apiKey, setApiKey] = useState('');
+  const [extraBodyText, setExtraBodyText] = useState('');
 
   const [creating, setCreating] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -68,6 +71,12 @@ export default function AddLlmProviderModal({ onClose, onSuccess }: AddLlmProvid
       return;
     }
 
+    const parsedExtraBody = parseExtraBodyInput(extraBodyText);
+    if (!parsedExtraBody.ok) {
+      setError(t(parsedExtraBody.errorKey));
+      return;
+    }
+
     setCreating(true);
     let createdId: string | null = null;
     try {
@@ -76,6 +85,7 @@ export default function AddLlmProviderModal({ onClose, onSuccess }: AddLlmProvid
         providerType,
         apiKey: apiKey.trim(),
         baseUrl: baseUrl.trim() || undefined,
+        extraBody: parsedExtraBody.value ?? undefined,
       };
       const created = await apiService.createLlmProvider(body);
       createdId = created.id;
@@ -158,6 +168,8 @@ export default function AddLlmProviderModal({ onClose, onSuccess }: AddLlmProvid
             disabled={busy}
           />
         </FormField>
+
+        <ExtraBodyField value={extraBodyText} onChange={setExtraBodyText} disabled={busy} />
 
         {error && <ErrorAlert>{error}</ErrorAlert>}
 

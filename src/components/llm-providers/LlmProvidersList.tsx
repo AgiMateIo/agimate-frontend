@@ -64,8 +64,8 @@ export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersLi
 
   const renderCard = (provider: LlmProviderResponse) => {
     const busy = busyIds.has(provider.id);
-    const modelsCount = provider.availableModels?.length ?? 0;
-    const hasModels = provider.availableModels !== null && modelsCount > 0;
+    // The list DTO no longer carries models — the registry lives on the detail page.
+    const neverRefreshed = provider.modelsRefreshedAt === null;
     const isPlatform = provider.platform;
     const displayName = isPlatform ? tu('platformProviderName') : provider.name;
 
@@ -99,11 +99,7 @@ export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersLi
               <p className="text-xs text-muted mt-0.5">{typeLabel}</p>
 
               <div className="flex items-center gap-1.5 flex-wrap mt-2">
-                {hasModels ? (
-                  <Chip tone="accent">{t('availableModels', { count: modelsCount })}</Chip>
-                ) : (
-                  <Chip tone="warning">{t('noModelsYet')}</Chip>
-                )}
+                {neverRefreshed && <Chip tone="warning">{t('noModelsYet')}</Chip>}
                 {host && <Chip icon={GlobeAltIcon}>{host}</Chip>}
                 {provider.defaultModel && <Chip icon={CpuChipIcon}>{provider.defaultModel}</Chip>}
                 {provider.modelsRefreshedAt && (

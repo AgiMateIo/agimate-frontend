@@ -11,12 +11,13 @@ import { FormField, Input, Select } from '@/components/ui/FormField';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Link } from '@/i18n/navigation';
+import { useLlmProviderCacheActions, useLlmProviderModelsQuery } from '@/queries/llm-providers';
+import { ModelOptionList, SelectedModelInfo } from './modelRegistryUi';
 
 interface AddAgentLlmModalProps {
   agentId: string;
   providers: LlmProviderResponse[];
   existingNames: Set<string>;
-  onProvidersUpdate: (providers: LlmProviderResponse[]) => void;
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -25,7 +26,6 @@ export default function AddAgentLlmModal({
   agentId,
   providers,
   existingNames,
-  onProvidersUpdate,
   onClose,
   onSuccess,
 }: AddAgentLlmModalProps) {
@@ -39,8 +39,11 @@ export default function AddAgentLlmModal({
   const [error, setError] = useState<string | null>(null);
 
   const selected = providers.find(p => p.id === providerId);
-  const selectedModels = selected?.availableModels ?? null;
-  const noModelsYet = selectedModels === null || selectedModels.length === 0;
+  // The model registry is per-provider server data — always via the query cache.
+  const modelsQuery = useLlmProviderModelsQuery(providerId);
+  const { setProviderModels } = useLlmProviderCacheActions();
+  const models = modelsQuery.data ?? [];
+  const noModelsYet = modelsQuery.isSuccess && models.length === 0;
 
   const handleRefreshNow = async () => {
     if (!selected) return;
@@ -48,12 +51,9 @@ export default function AddAgentLlmModal({
     setError(null);
     try {
       const result = await apiService.refreshLlmProviderModels(selected.id);
-      const updatedProviders = providers.map(p => p.id === selected.id
-        ? { ...p, availableModels: result.availableModels, modelsRefreshedAt: result.refreshedAt }
-        : p);
-      onProvidersUpdate(updatedProviders);
-      if (result.availableModels.length > 0) {
-        setModel(result.availableModels[0].id);
+      setProviderModels(selected.id, result.models);
+      if (result.models.length > 0) {
+        setModel(result.models[0].model);
       }
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to refresh models'));
@@ -137,7 +137,9 @@ export default function AddAgentLlmModal({
             </FormField>
 
             <FormField label={t('model')} required>
-              {noModelsYet ? (
+              {modelsQuery.isPending ? (
+                <p className="text-sm text-muted">{t('loadingModels')}</p>
+              ) : noModelsYet ? (
                 <div className="space-y-2">
                   <p className="text-sm text-warning">{t('refreshProviderFirst')}</p>
                   <Button
@@ -151,19 +153,18 @@ export default function AddAgentLlmModal({
                   </Button>
                 </div>
               ) : (
-                <Select
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
-                  disabled={busy}
-                  required
-                >
-                  <option value="" disabled>{t('selectModel')}</option>
-                  {selectedModels!.map((m) => (
-                    <option key={m.id} value={m.id} title={m.displayName ? m.id : undefined}>
-                      {m.displayName ?? m.id}
-                    </option>
-                  ))}
-                </Select>
+                <div className="space-y-2">
+                  <Select
+                    value={model}
+                    onChange={(e) => setModel(e.target.value)}
+                    disabled={busy}
+                    required
+                  >
+                    <option value="" disabled>{t('selectModel')}</option>
+                    <ModelOptionList models={models} />
+                  </Select>
+                  <SelectedModelInfo models={models} model={model} />
+                </div>
               )}
             </FormField>
           </>
@@ -177,7 +178,7 @@ export default function AddAgentLlmModal({
           </Button>
           <Button
             type="submit"
-            disabled={busy || providers.length === 0 || noModelsYet || !name.trim() || !model}
+            disabled={busy || providers.length === 0 || !name.trim() || !model}
             loading={submitting}
           >
             {t('addModelBinding')}

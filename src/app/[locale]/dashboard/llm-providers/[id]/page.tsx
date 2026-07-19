@@ -3,9 +3,10 @@
 import { Suspense, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
+import { useSuspenseQueries } from '@tanstack/react-query';
 import {
   ArrowLeftIcon,
-  ArrowPathIcon,
+  CpuChipIcon,
   ExclamationTriangleIcon,
   KeyIcon,
   PencilIcon,
@@ -18,16 +19,21 @@ import { formatDate } from '@/utils/date';
 import { localeMap } from '@/i18n/routing';
 import { Link, useRouter } from '@/i18n/navigation';
 import { Button } from '@/components/ui/Button';
-import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { Tabs } from '@/components/ui/Tabs';
 import { RowAction } from '@/components/ui/RowAction';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
-import { useLlmProviderCacheActions, useLlmProvidersQuery, useLlmUsageQuery } from '@/queries/llm-providers';
+import {
+  llmProviderModelsOptions,
+  llmProvidersListOptions,
+  useLlmProviderCacheActions,
+  useLlmUsageQuery,
+} from '@/queries/llm-providers';
 import { PROVIDER_TYPE_LABEL_KEY } from '@/components/llm-providers/providerPresets';
 import { ProviderAvatar } from '@/components/llm-providers/ProviderAvatar';
 import { UsageBars } from '@/components/llm-providers/UsageBars';
 import ProviderQuotasSection from '@/components/llm-providers/ProviderQuotasSection';
+import ProviderModelsSection from '@/components/llm-providers/ProviderModelsSection';
 import EditLlmProviderModal from '@/components/llm-providers/EditLlmProviderModal';
 import RotateLlmProviderKeyModal from '@/components/llm-providers/RotateLlmProviderKeyModal';
 import DeleteLlmProviderModal from '@/components/llm-providers/DeleteLlmProviderModal';
@@ -39,13 +45,15 @@ function ProviderDetailContent({ id }: { id: string }) {
   const bcp47 = localeMap[locale];
 
   const router = useRouter();
-  const { data: providers } = useLlmProvidersQuery();
-  const { setProviders } = useLlmProviderCacheActions();
+  const [{ data: providers }, { data: models }] = useSuspenseQueries({
+    queries: [llmProvidersListOptions(), llmProviderModelsOptions(id)],
+  });
+  const { setProviders, setProviderModels } = useLlmProviderCacheActions();
   const usageQuery = useLlmUsageQuery();
 
   const provider = providers.find((p) => p.id === id);
 
-  const [activeTab, setActiveTab] = useState<'info' | 'usage' | 'quotas'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'models' | 'usage' | 'quotas'>('info');
   const [editing, setEditing] = useState(false);
   const [rotating, setRotating] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -76,11 +84,8 @@ function ProviderDetailContent({ id }: { id: string }) {
     setRefreshError(null);
     try {
       const result = await apiService.refreshLlmProviderModels(provider.id);
-      applyUpdated({
-        ...provider,
-        availableModels: result.availableModels,
-        modelsRefreshedAt: result.refreshedAt,
-      });
+      setProviderModels(provider.id, result.models);
+      applyUpdated({ ...provider, modelsRefreshedAt: result.refreshedAt });
     } catch (err) {
       setRefreshError(getErrorMessage(err, t('refreshFailed')));
     } finally {
@@ -90,8 +95,7 @@ function ProviderDetailContent({ id }: { id: string }) {
 
   const usage = usageQuery.data?.find((u) => u.llmProviderId === provider.id);
   const displayName = provider.platform ? tu('platformProviderName') : provider.name;
-  const modelsCount = provider.availableModels?.length ?? 0;
-  const hasModels = provider.availableModels !== null && modelsCount > 0;
+  const hasModels = models.length > 0;
 
   return (
     <div className="space-y-6">
@@ -156,25 +160,21 @@ function ProviderDetailContent({ id }: { id: string }) {
                   />
                   <FieldRow
                     label={t('modelsLabel')}
-                    value={hasModels ? t('availableModels', { count: modelsCount }) : t('noModelsYet')}
+                    value={hasModels ? t('availableModels', { count: models.length }) : t('noModelsYet')}
                     warn={!hasModels}
                     sub={provider.modelsRefreshedAt
                       ? t('modelsRefreshedAt', { when: formatDate(provider.modelsRefreshedAt, bcp47) })
                       : t('modelsNeverRefreshed')}
                     action={(
                       <RowAction
-                        icon={ArrowPathIcon}
-                        label={t('refreshModels')}
-                        onClick={handleRefreshModels}
-                        disabled={refreshing}
-                        spinning={refreshing}
+                        icon={CpuChipIcon}
+                        label={t('modelsManage')}
+                        onClick={() => setActiveTab('models')}
                       />
                     )}
                   />
                   <FieldRow label={t('createdAt')} value={formatDate(provider.createdAt, bcp47)} />
                 </section>
-
-                {refreshError && <ErrorAlert>{refreshError}</ErrorAlert>}
 
                 {/* The platform provider cannot be deleted — only disabled. */}
                 {!provider.platform && (
@@ -190,6 +190,19 @@ function ProviderDetailContent({ id }: { id: string }) {
                   </section>
                 )}
               </div>
+            ),
+          },
+          {
+            id: 'models',
+            label: t('tabModels'),
+            content: (
+              <ProviderModelsSection
+                provider={provider}
+                models={models}
+                onRefresh={handleRefreshModels}
+                refreshing={refreshing}
+                refreshError={refreshError}
+              />
             ),
           },
           {
@@ -226,6 +239,7 @@ function ProviderDetailContent({ id }: { id: string }) {
       {editing && (
         <EditLlmProviderModal
           provider={provider}
+          models={models}
           onClose={() => setEditing(false)}
           onSuccess={(updated) => {
             applyUpdated(updated);
