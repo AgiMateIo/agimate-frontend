@@ -71,13 +71,22 @@
           "label": "Событие",
           "title": "Событие запускает процесс",
           "description": "Вы пишете в Telegram. Или приходит письмо. Или заканчивается товар на складе. AgiMate принимает событие и начинает работу.",
-          "sources": ["Telegram", "Email", "Ozon"]
+          "sources": [
+            "Telegram",
+            "Email",
+            "Ozon"
+          ]
         },
         {
           "label": "Команда работает",
           "title": "Агенты работают параллельно",
           "description": "AgiMate доставляет событие нужным агентам. Supervisor координирует. Агенты обмениваются контекстом и работают одновременно.",
-          "agents": ["Календарь", "Почта", "CRM", "Аналитика"]
+          "agents": [
+            "Календарь",
+            "Почта",
+            "CRM",
+            "Аналитика"
+          ]
         },
         {
           "label": "Результат",
@@ -93,27 +102,52 @@
         {
           "title": "«Свободен ли я сегодня?»",
           "description": "Вы спрашиваете в Telegram: «Свободен с 17 до 18?» Агент календаря начинает проверять. Но в этот момент агент почты видит письмо от начальника: «Совещание в 17:00». Supervisor отвечает: «Нет — только что пришло письмо о совещании».",
-          "flow": ["Telegram", "Supervisor", "Календарь + Почта", "Ответ"]
+          "flow": [
+            "Telegram",
+            "Supervisor",
+            "Календарь + Почта",
+            "Ответ"
+          ]
         },
         {
           "title": "Закупка с умом",
           "description": "Товар заканчивается на Ozon. Агент маркетплейса сообщает. Supervisor просит проверить цены. Но агент аналитики замечает: 3 возврата за неделю. Supervisor спрашивает вас: «Стоит ли закупать? Вот цифры.»",
-          "flow": ["Триггер Ozon", "Supervisor", "Закупки + Аналитика", "Рекомендация"]
+          "flow": [
+            "Триггер Ozon",
+            "Supervisor",
+            "Закупки + Аналитика",
+            "Рекомендация"
+          ]
         },
         {
           "title": "Подготовка к встрече",
           "description": "За час до созвона агент календаря предупреждает. Supervisor параллельно запрашивает переписку и статус сделки. Через минуту вы получаете брифинг: «Иванов хочет обсудить скидку. Сделка на 500К».",
-          "flow": ["Календарь", "Supervisor", "Почта + CRM", "Брифинг"]
+          "flow": [
+            "Календарь",
+            "Supervisor",
+            "Почта + CRM",
+            "Брифинг"
+          ]
         },
         {
           "title": "AI-секретарь",
           "description": "Пока вы заняты, агенты почты и мессенджеров следят за входящими. Типовые вопросы — отвечают сами. Важное — передают supervisor'у, он присылает сводку с приоритетами.",
-          "flow": ["Email + Telegram", "Агенты", "Supervisor", "Сводка"]
+          "flow": [
+            "Email + Telegram",
+            "Агенты",
+            "Supervisor",
+            "Сводка"
+          ]
         },
         {
           "title": "Контроль e-commerce",
           "description": "Новый заказ на Wildberries. Агент маркетплейса обновляет статус. Параллельно агент склада проверяет остатки, агент логистики — сроки. Вы получаете алерт, только если что-то не так.",
-          "flow": ["Триггер WB", "3 агента", "Supervisor", "Алерт"]
+          "flow": [
+            "Триггер WB",
+            "3 агента",
+            "Supervisor",
+            "Алерт"
+          ]
         }
       ]
     },
@@ -138,19 +172,46 @@
       "channels": {
         "title": "Где живёт ваш ассистент",
         "subtitle": "Общайтесь с ассистентом там, где удобно",
-        "items": ["Telegram", "WhatsApp", "Web UI"]
+        "items": [
+          "Telegram",
+          "WhatsApp",
+          "Web UI"
+        ]
       },
       "integrations": {
         "title": "К чему подключаются агенты",
         "subtitle": "100+ сервисов. Open-source плагины от сообщества.",
-        "items": ["Email", "Google Calendar", "Ozon", "Wildberries", "1С", "Telegram", "WhatsApp", "Notion", "Google Sheets", "CRM"]
+        "items": [
+          "Email",
+          "Google Calendar",
+          "Ozon",
+          "Wildberries",
+          "1С",
+          "Telegram",
+          "WhatsApp",
+          "Notion",
+          "Google Sheets",
+          "CRM"
+        ]
       },
       "install": {
         "title": "Установка",
         "items": [
-          { "title": "Android", "description": "Агент на телефоне: перехватывает уведомления, звонки, события — и передаёт их вашим AI-агентам для обработки", "button": "Подробнее" },
-          { "title": "Desktop", "description": "Агент на компьютере: отслеживает файлы, события и уведомления на рабочем столе, выполняет команды от AI", "button": "Подробнее" },
-          { "title": "n8n", "description": "Создайте AI-агента с помощью n8n ноды AgiMate — он будет работать на вас автономно", "button": "Подробнее" }
+          {
+            "title": "Android",
+            "description": "Агент на телефоне: перехватывает уведомления, звонки, события — и передаёт их вашим AI-агентам для обработки",
+            "button": "Подробнее"
+          },
+          {
+            "title": "Desktop",
+            "description": "Агент на компьютере: отслеживает файлы, события и уведомления на рабочем столе, выполняет команды от AI",
+            "button": "Подробнее"
+          },
+          {
+            "title": "n8n",
+            "description": "Создайте AI-агента с помощью n8n ноды AgiMate — он будет работать на вас автономно",
+            "button": "Подробнее"
+          }
         ]
       }
     },
@@ -237,7 +298,8 @@
     "errors": {
       "SERVICE_UNAVAILABLE": "Сервис временно недоступен",
       "ACCESS_DENIED": "Доступ запрещён"
-    }
+    },
+    "filters": "Фильтры"
   },
   "LocaleSwitcher": {
     "ru": "RU",
@@ -278,7 +340,11 @@
           "Автоматический retry при ошибках"
         ],
         "useCaseLabel": "Пример",
-        "useCase": ["Новый заказ на Ozon", "AgiMate Trigger", "Обработка в n8n"]
+        "useCase": [
+          "Новый заказ на Ozon",
+          "AgiMate Trigger",
+          "Обработка в n8n"
+        ]
       },
       "connectors": {
         "title": "AgiMate Connectors",
@@ -290,7 +356,11 @@
           "Автоматическая авторизация"
         ],
         "useCaseLabel": "Пример",
-        "useCase": ["Получить заказы", "AgiMate Connectors", "Данные в Google Sheets"]
+        "useCase": [
+          "Получить заказы",
+          "AgiMate Connectors",
+          "Данные в Google Sheets"
+        ]
       },
       "mobile": {
         "title": "AgiMate Mobile",
@@ -302,7 +372,11 @@
           "Мониторинг состояния"
         ],
         "useCaseLabel": "Пример",
-        "useCase": ["Команда от AI", "AgiMate Mobile", "Действие на телефоне"]
+        "useCase": [
+          "Команда от AI",
+          "AgiMate Mobile",
+          "Действие на телефоне"
+        ]
       }
     },
     "setup": {
@@ -333,32 +407,56 @@
         {
           "title": "Мониторинг заказов",
           "description": "Новые заказы с маркетплейса автоматически попадают в Google Sheets и Telegram.",
-          "flow": ["AgiMate Trigger", "Filter", "Google Sheets + Telegram"]
+          "flow": [
+            "AgiMate Trigger",
+            "Filter",
+            "Google Sheets + Telegram"
+          ]
         },
         {
           "title": "AI-обработка обращений",
           "description": "Входящие сообщения от покупателей анализирует AI и отвечает или эскалирует.",
-          "flow": ["AgiMate Trigger", "OpenAI", "AgiMate Connectors"]
+          "flow": [
+            "AgiMate Trigger",
+            "OpenAI",
+            "AgiMate Connectors"
+          ]
         },
         {
           "title": "Скриншот по расписанию",
           "description": "Каждый час снимает скриншот устройства и сохраняет в облако для аудита.",
-          "flow": ["Schedule", "AgiMate Mobile", "Google Drive"]
+          "flow": [
+            "Schedule",
+            "AgiMate Mobile",
+            "Google Drive"
+          ]
         },
         {
           "title": "Алерт при изменении цены",
           "description": "Отслеживает цены конкурентов и отправляет уведомление при отклонении.",
-          "flow": ["AgiMate Trigger", "Compare", "Slack / Telegram"]
+          "flow": [
+            "AgiMate Trigger",
+            "Compare",
+            "Slack / Telegram"
+          ]
         },
         {
           "title": "Синхронизация остатков",
           "description": "Автоматическая синхронизация остатков между складом и маркетплейсами.",
-          "flow": ["Schedule", "AgiMate Connectors", "Ozon + WB API"]
+          "flow": [
+            "Schedule",
+            "AgiMate Connectors",
+            "Ozon + WB API"
+          ]
         },
         {
           "title": "Голосовые уведомления",
           "description": "Критические события озвучиваются на устройстве через TTS.",
-          "flow": ["AgiMate Trigger", "Filter", "AgiMate Mobile TTS"]
+          "flow": [
+            "AgiMate Trigger",
+            "Filter",
+            "AgiMate Mobile TTS"
+          ]
         }
       ]
     },
@@ -368,7 +466,12 @@
       "description": "n8n AI Agent может использовать ноды AgiMate как инструменты (tools). Агент сам решает, когда вызвать коннектор, снять скриншот или отправить уведомление.",
       "agentLabel": "AI Agent",
       "toolsLabel": "Инструменты AgiMate",
-      "tools": ["Получить заказы", "Снять скриншот", "Отправить уведомление", "Обновить статус"]
+      "tools": [
+        "Получить заказы",
+        "Снять скриншот",
+        "Отправить уведомление",
+        "Обновить статус"
+      ]
     },
     "eventTypes": {
       "title": "Типы событий",
@@ -379,14 +482,46 @@
         "source": "Источник"
       },
       "items": [
-        { "event": "order.created", "description": "Новый заказ", "source": "Маркетплейсы" },
-        { "event": "order.status_changed", "description": "Изменение статуса заказа", "source": "Маркетплейсы" },
-        { "event": "message.received", "description": "Входящее сообщение", "source": "Мессенджеры" },
-        { "event": "price.changed", "description": "Изменение цены конкурента", "source": "Мониторинг" },
-        { "event": "device.screenshot", "description": "Скриншот устройства", "source": "Мобильное" },
-        { "event": "device.notification", "description": "Уведомление на устройстве", "source": "Мобильное" },
-        { "event": "inventory.low", "description": "Низкий остаток товара", "source": "Склад" },
-        { "event": "review.new", "description": "Новый отзыв", "source": "Маркетплейсы" }
+        {
+          "event": "order.created",
+          "description": "Новый заказ",
+          "source": "Маркетплейсы"
+        },
+        {
+          "event": "order.status_changed",
+          "description": "Изменение статуса заказа",
+          "source": "Маркетплейсы"
+        },
+        {
+          "event": "message.received",
+          "description": "Входящее сообщение",
+          "source": "Мессенджеры"
+        },
+        {
+          "event": "price.changed",
+          "description": "Изменение цены конкурента",
+          "source": "Мониторинг"
+        },
+        {
+          "event": "device.screenshot",
+          "description": "Скриншот устройства",
+          "source": "Мобильное"
+        },
+        {
+          "event": "device.notification",
+          "description": "Уведомление на устройстве",
+          "source": "Мобильное"
+        },
+        {
+          "event": "inventory.low",
+          "description": "Низкий остаток товара",
+          "source": "Склад"
+        },
+        {
+          "event": "review.new",
+          "description": "Новый отзыв",
+          "source": "Маркетплейсы"
+        }
       ]
     },
     "install": {
@@ -540,10 +675,26 @@
           "action": "Экшн-плагин"
         },
         "rows": [
-          { "param": "Направление", "trigger": "Устройство → AI", "action": "AI → Устройство" },
-          { "param": "Что делает", "trigger": "Отслеживает события", "action": "Выполняет команды" },
-          { "param": "Примеры", "trigger": "Файлы, кнопки, таймеры", "action": "Уведомления, TTS" },
-          { "param": "Базовый класс", "trigger": "TriggerPlugin", "action": "ActionPlugin" }
+          {
+            "param": "Направление",
+            "trigger": "Устройство → AI",
+            "action": "AI → Устройство"
+          },
+          {
+            "param": "Что делает",
+            "trigger": "Отслеживает события",
+            "action": "Выполняет команды"
+          },
+          {
+            "param": "Примеры",
+            "trigger": "Файлы, кнопки, таймеры",
+            "action": "Уведомления, TTS"
+          },
+          {
+            "param": "Базовый класс",
+            "trigger": "TriggerPlugin",
+            "action": "ActionPlugin"
+          }
         ]
       },
       "triggerCode": {
@@ -562,32 +713,56 @@
         {
           "title": "Обработка документов",
           "description": "Новый файл в папке «Загрузки» → AI распознаёт тип документа → извлекает данные → загружает в 1С или CRM.",
-          "flow": ["Новый файл", "AI-распознавание", "Выгрузка в 1С/CRM"]
+          "flow": [
+            "Новый файл",
+            "AI-распознавание",
+            "Выгрузка в 1С/CRM"
+          ]
         },
         {
           "title": "AI-секретарь на ПК",
           "description": "AI следит за файлами и событиями на компьютере, анализирует и категоризирует, уведомляет или действует автоматически.",
-          "flow": ["Событие на ПК", "AI-анализ", "Уведомление / действие"]
+          "flow": [
+            "Событие на ПК",
+            "AI-анализ",
+            "Уведомление / действие"
+          ]
         },
         {
           "title": "Голосовой ассистент",
           "description": "Критичное событие → AI оценивает приоритет → озвучивает через динамики + показывает уведомление на рабочем столе.",
-          "flow": ["Критичное событие", "AI-приоритизация", "TTS + уведомление"]
+          "flow": [
+            "Критичное событие",
+            "AI-приоритизация",
+            "TTS + уведомление"
+          ]
         },
         {
           "title": "Legacy Software Bridge",
           "description": "AI взаимодействует с desktop-приложениями без API — 1С, Excel, специализированное ПО. Мост между старым и новым.",
-          "flow": ["Команда от AI", "Действие в ПО", "Результат в облако"]
+          "flow": [
+            "Команда от AI",
+            "Действие в ПО",
+            "Результат в облако"
+          ]
         },
         {
           "title": "Сбор данных по расписанию",
           "description": "Кнопка «Собрать отчёт» → AI собирает данные из разных источников → формирует отчёт → уведомляет о готовности.",
-          "flow": ["Кнопка", "AI-сбор данных", "Отчёт + уведомление"]
+          "flow": [
+            "Кнопка",
+            "AI-сбор данных",
+            "Отчёт + уведомление"
+          ]
         },
         {
           "title": "Быстрые команды",
           "description": "Панель кнопок для типовых операций: «Создать задачу», «Отправить отчёт», «Запросить статус» — одно нажатие запускает AI-сценарий.",
-          "flow": ["Нажатие кнопки", "AI-сценарий", "Результат"]
+          "flow": [
+            "Нажатие кнопки",
+            "AI-сценарий",
+            "Результат"
+          ]
         }
       ]
     },
@@ -595,13 +770,34 @@
       "title": "Под капотом",
       "subtitle": "Технические характеристики AgiMate Desktop",
       "rows": [
-        { "param": "Платформы", "value": "Windows, macOS, Linux" },
-        { "param": "Размер", "value": "~80–100 МБ" },
-        { "param": "Связь с сервером", "value": "HTTP + WebSocket (Centrifugo)" },
-        { "param": "Протокол", "value": "MCP-совместимый, n8n-нода" },
-        { "param": "Автопереподключение", "value": "Экспоненциальный backoff, до 10 попыток" },
-        { "param": "Плагины", "value": "Горячая загрузка, валидация конфигов" },
-        { "param": "Тесты", "value": "313 тестов, покрытие 97% (core)" }
+        {
+          "param": "Платформы",
+          "value": "Windows, macOS, Linux"
+        },
+        {
+          "param": "Размер",
+          "value": "~80–100 МБ"
+        },
+        {
+          "param": "Связь с сервером",
+          "value": "HTTP + WebSocket (Centrifugo)"
+        },
+        {
+          "param": "Протокол",
+          "value": "MCP-совместимый, n8n-нода"
+        },
+        {
+          "param": "Автопереподключение",
+          "value": "Экспоненциальный backoff, до 10 попыток"
+        },
+        {
+          "param": "Плагины",
+          "value": "Горячая загрузка, валидация конфигов"
+        },
+        {
+          "param": "Тесты",
+          "value": "313 тестов, покрытие 97% (core)"
+        }
       ]
     },
     "interface": {
@@ -826,11 +1022,26 @@
       },
       "requirementsTitle": "Требования и разрешения",
       "requirements": [
-        { "param": "Android", "value": "8.0+ (API 26)" },
-        { "param": "Размер APK", "value": "~5 MB" },
-        { "param": "Соединение", "value": "Wi-Fi или мобильные данные" },
-        { "param": "Фоновая работа", "value": "Foreground Service" },
-        { "param": "Протокол", "value": "HTTPS + WSS" }
+        {
+          "param": "Android",
+          "value": "8.0+ (API 26)"
+        },
+        {
+          "param": "Размер APK",
+          "value": "~5 MB"
+        },
+        {
+          "param": "Соединение",
+          "value": "Wi-Fi или мобильные данные"
+        },
+        {
+          "param": "Фоновая работа",
+          "value": "Foreground Service"
+        },
+        {
+          "param": "Протокол",
+          "value": "HTTPS + WSS"
+        }
       ],
       "permissionsTitle": "Разрешения Android",
       "permissions": [

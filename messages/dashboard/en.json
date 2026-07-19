@@ -669,9 +669,7 @@
     "modelAudioIn": "Audio input",
     "modelAudioOut": "Audio output",
     "modelNotInRegistry": "Not in the provider's registry — calls may fail",
-    "pickerClear": "Clear selection",
-    "pickerFilters": "Capability filters",
-    "modelFiltersToggle": "Filters"
+    "pickerClear": "Clear selection"
   },
   "AgenticTeams": {
     "title": "Agentic Teams",
@@ -716,7 +714,6 @@
     "loading": "Loading connections...",
     "noConnections": "No connections configured yet",
     "searchPlaceholder": "Search connections...",
-    "advancedFilters": "Advanced filters",
     "noSearchResults": "No connections match your search",
     "filterAll": "All",
     "filterAllPlatforms": "All platforms",

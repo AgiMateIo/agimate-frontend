@@ -6,9 +6,7 @@ import type { ComponentType, SVGProps } from 'react';
 import {
   ExclamationTriangleIcon,
   EyeIcon,
-  FunnelIcon,
   LightBulbIcon,
-  MagnifyingGlassIcon,
   MicrophoneIcon,
   SparklesIcon,
   SpeakerWaveIcon,
@@ -16,7 +14,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { LlmProviderModelResponse } from '@/types';
-import { Input } from '@/components/ui/FormField';
+import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import {
   CapabilityAxis,
   CapabilityFilter,
@@ -82,7 +80,6 @@ export function ModelPickerList({ models, value, onChange, disabled }: ModelPick
   const t = useTranslations('LlmProviders');
 
   const [search, setSearch] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
   const [quick, setQuick] = useState<Set<string>>(new Set());
 
   const visibleQuickFilters = useMemo(
@@ -214,58 +211,38 @@ export function ModelPickerList({ models, value, onChange, disabled }: ModelPick
         </div>
       )}
 
-      <div className="relative">
-        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
-        <Input
-          type="search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t('modelSearchPlaceholder')}
-          disabled={disabled}
-          className="pl-9 pr-11"
-        />
-        {visibleQuickFilters.length > 0 && (
-          <button
-            type="button"
-            onClick={() => setShowFilters((v) => !v)}
-            disabled={disabled}
-            aria-label={t('pickerFilters')}
-            aria-pressed={showFilters}
-            className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md transition-colors ${
-              showFilters || filterActive
-                ? 'text-accent bg-accent/10'
-                : 'text-muted hover:text-foreground'
-            }`}
-          >
-            <FunnelIcon className="h-4 w-4" />
-          </button>
-        )}
-      </div>
-
-      {showFilters && visibleQuickFilters.length > 0 && (
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {visibleQuickFilters.map((f) => {
-            const active = quick.has(f.key);
-            return (
-              <button
-                key={f.key}
-                type="button"
-                onClick={() => toggleQuick(f.key)}
-                disabled={disabled}
-                aria-pressed={active}
-                className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full border transition-colors ${
-                  active
-                    ? 'bg-accent/10 text-accent border-accent'
-                    : 'border-border text-muted hover:text-foreground'
-                }`}
-              >
-                <f.icon className="h-3.5 w-3.5" />
-                {f.labelKey ? t(f.labelKey) : f.value}
-              </button>
-            );
-          })}
-        </div>
-      )}
+      <SearchToolbar
+        value={search}
+        onChange={setSearch}
+        placeholder={t('modelSearchPlaceholder')}
+        disabled={disabled}
+        size="sm"
+        filtersActive={filterActive}
+        filters={visibleQuickFilters.length > 0 ? (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {visibleQuickFilters.map((f) => {
+              const active = quick.has(f.key);
+              return (
+                <button
+                  key={f.key}
+                  type="button"
+                  onClick={() => toggleQuick(f.key)}
+                  disabled={disabled}
+                  aria-pressed={active}
+                  className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full border transition-colors ${
+                    active
+                      ? 'bg-accent/10 text-accent border-accent'
+                      : 'border-border text-muted hover:text-foreground'
+                  }`}
+                >
+                  <f.icon className="h-3.5 w-3.5" />
+                  {f.labelKey ? t(f.labelKey) : f.value}
+                </button>
+              );
+            })}
+          </div>
+        ) : undefined}
+      />
 
       <div className="bg-surface-secondary border border-border rounded-lg max-h-56 overflow-y-auto divide-y divide-border/50">
         {matched.map(renderRow)}

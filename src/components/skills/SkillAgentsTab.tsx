@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { MagnifyingGlassIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import apiService from '@/services/api';
 import { AgentSummaryResponse, PagedResponse } from '@/types';
 import { getErrorMessage } from '@/utils/error';
@@ -67,19 +68,14 @@ export default function SkillAgentsTab({ skillId, skillName }: SkillAgentsTabPro
       </div>
 
       {/* Search */}
-      <div className="relative">
-        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted" />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(0);
-          }}
-          placeholder={t('searchPlaceholder')}
-          className="w-full pl-10 pr-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground placeholder:text-muted text-sm"
-        />
-      </div>
+      <SearchToolbar
+        value={search}
+        onChange={(value) => {
+          setSearch(value);
+          setPage(0);
+        }}
+        placeholder={t('searchPlaceholder')}
+      />
 
       {error && <ErrorAlert>{error}</ErrorAlert>}
 

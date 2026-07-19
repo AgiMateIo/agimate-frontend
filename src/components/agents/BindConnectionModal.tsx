@@ -17,7 +17,8 @@ import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
-import { MagnifyingGlassIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { SearchToolbar } from '@/components/ui/SearchToolbar';
 
 const CONNECTOR_PAGE_SIZE = 10;
 
@@ -167,16 +168,12 @@ export default function BindConnectionModal({
         {step === 'connector' && (
           <div className="space-y-3">
             <p className="text-sm text-muted">{t('selectConnector')}</p>
-            <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder={t('searchConnectors')}
-                className="w-full pl-9 pr-4 py-2 bg-surface-secondary border border-border rounded-lg text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/50"
-              />
-            </div>
+            <SearchToolbar
+              value={search}
+              onChange={setSearch}
+              placeholder={t('searchConnectors')}
+              size="sm"
+            />
             <div className="min-h-[200px]">
               {connectorsLoading ? (
                 <div className="text-center py-8 text-muted text-sm">{t('loadingConnectors')}</div>
@@ -274,7 +271,7 @@ export default function BindConnectionModal({
                         />
                         <div>
                           <span className="text-sm font-medium text-foreground">{cred.name || cred.fullCode}</span>
-                          {cred.name && <span className="text-xs text-muted ml-2 font-mono">{cred.subCode}</span>}
+                          {cred.name && cred.subCode && <span className="text-xs text-muted ml-2 font-mono">{cred.subCode}</span>}
                           {!cred.enabled && (
                             <span className="ml-2 inline-block rounded px-1.5 py-0.5 text-[10px] font-medium bg-muted/10 text-muted">
                               {t('disabled')}

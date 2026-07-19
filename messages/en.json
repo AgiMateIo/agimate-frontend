@@ -71,13 +71,22 @@
           "label": "Event",
           "title": "An event starts the process",
           "description": "You write in Telegram. Or an email arrives. Or stock runs low. AgiMate receives the event and gets to work.",
-          "sources": ["Telegram", "Email", "Ozon"]
+          "sources": [
+            "Telegram",
+            "Email",
+            "Ozon"
+          ]
         },
         {
           "label": "Team works",
           "title": "Agents work in parallel",
           "description": "AgiMate routes the event to the right agents. The Supervisor coordinates. Agents share context and work simultaneously.",
-          "agents": ["Calendar", "Email", "CRM", "Analytics"]
+          "agents": [
+            "Calendar",
+            "Email",
+            "CRM",
+            "Analytics"
+          ]
         },
         {
           "label": "Result",
@@ -93,27 +102,52 @@
         {
           "title": "\"Am I free today?\"",
           "description": "You ask in Telegram: \"Am I free from 5 to 6?\" The calendar agent starts checking. But the email agent spots a message from your boss: \"Meeting at 5 PM.\" The Supervisor responds: \"No — a meeting email just came in.\"",
-          "flow": ["Telegram", "Supervisor", "Calendar + Email", "Response"]
+          "flow": [
+            "Telegram",
+            "Supervisor",
+            "Calendar + Email",
+            "Response"
+          ]
         },
         {
           "title": "Smart procurement",
           "description": "A product is running low on Ozon. The marketplace agent reports it. The Supervisor asks to check supplier prices. But the analytics agent notices: 3 returns this week. The Supervisor asks you: \"Should we reorder? Here are the numbers.\"",
-          "flow": ["Ozon trigger", "Supervisor", "Procurement + Analytics", "Recommendation"]
+          "flow": [
+            "Ozon trigger",
+            "Supervisor",
+            "Procurement + Analytics",
+            "Recommendation"
+          ]
         },
         {
           "title": "Meeting prep",
           "description": "An hour before a call, the calendar agent alerts you. The Supervisor simultaneously requests recent correspondence and deal status. In a minute you get a brief: \"Ivanov wants to discuss a discount. Deal at $50K, negotiation stage.\"",
-          "flow": ["Calendar", "Supervisor", "Email + CRM", "Brief"]
+          "flow": [
+            "Calendar",
+            "Supervisor",
+            "Email + CRM",
+            "Brief"
+          ]
         },
         {
           "title": "AI secretary",
           "description": "While you're busy, email and messenger agents monitor incoming messages. Routine questions — they answer themselves. Important ones go to the Supervisor, who sends you a prioritized summary.",
-          "flow": ["Email + Telegram", "Agents", "Supervisor", "Summary"]
+          "flow": [
+            "Email + Telegram",
+            "Agents",
+            "Supervisor",
+            "Summary"
+          ]
         },
         {
           "title": "E-commerce control",
           "description": "New order on Wildberries. The marketplace agent updates the status. Meanwhile, the warehouse agent checks stock and the logistics agent checks delivery times. You only get an alert if something's wrong.",
-          "flow": ["WB trigger", "3 agents", "Supervisor", "Alert"]
+          "flow": [
+            "WB trigger",
+            "3 agents",
+            "Supervisor",
+            "Alert"
+          ]
         }
       ]
     },
@@ -138,19 +172,46 @@
       "channels": {
         "title": "Where your assistant lives",
         "subtitle": "Chat with your assistant wherever is convenient",
-        "items": ["Telegram", "WhatsApp", "Web UI"]
+        "items": [
+          "Telegram",
+          "WhatsApp",
+          "Web UI"
+        ]
       },
       "integrations": {
         "title": "What agents connect to",
         "subtitle": "100+ services. Open-source community plugins.",
-        "items": ["Email", "Google Calendar", "Ozon", "Wildberries", "1C", "Telegram", "WhatsApp", "Notion", "Google Sheets", "CRM"]
+        "items": [
+          "Email",
+          "Google Calendar",
+          "Ozon",
+          "Wildberries",
+          "1C",
+          "Telegram",
+          "WhatsApp",
+          "Notion",
+          "Google Sheets",
+          "CRM"
+        ]
       },
       "install": {
         "title": "Installation",
         "items": [
-          { "title": "Android", "description": "An agent on your phone: intercepts notifications, calls, and events — and passes them to your AI agents for processing", "button": "Learn more" },
-          { "title": "Desktop", "description": "An agent on your computer: monitors files, events, and desktop notifications, executes commands from AI", "button": "Learn more" },
-          { "title": "n8n", "description": "Build an AI agent with the AgiMate n8n node — it will work for you autonomously", "button": "Learn more" }
+          {
+            "title": "Android",
+            "description": "An agent on your phone: intercepts notifications, calls, and events — and passes them to your AI agents for processing",
+            "button": "Learn more"
+          },
+          {
+            "title": "Desktop",
+            "description": "An agent on your computer: monitors files, events, and desktop notifications, executes commands from AI",
+            "button": "Learn more"
+          },
+          {
+            "title": "n8n",
+            "description": "Build an AI agent with the AgiMate n8n node — it will work for you autonomously",
+            "button": "Learn more"
+          }
         ]
       }
     },
@@ -237,7 +298,8 @@
     "errors": {
       "SERVICE_UNAVAILABLE": "Service temporarily unavailable",
       "ACCESS_DENIED": "Access denied"
-    }
+    },
+    "filters": "Filters"
   },
   "LocaleSwitcher": {
     "ru": "RU",
@@ -278,7 +340,11 @@
           "Automatic retry on errors"
         ],
         "useCaseLabel": "Example",
-        "useCase": ["New Ozon order", "AgiMate Trigger", "Process in n8n"]
+        "useCase": [
+          "New Ozon order",
+          "AgiMate Trigger",
+          "Process in n8n"
+        ]
       },
       "connectors": {
         "title": "AgiMate Connectors",
@@ -290,7 +356,11 @@
           "Automatic authorization"
         ],
         "useCaseLabel": "Example",
-        "useCase": ["Fetch orders", "AgiMate Connectors", "Data to Google Sheets"]
+        "useCase": [
+          "Fetch orders",
+          "AgiMate Connectors",
+          "Data to Google Sheets"
+        ]
       },
       "mobile": {
         "title": "AgiMate Mobile",
@@ -302,7 +372,11 @@
           "Status monitoring"
         ],
         "useCaseLabel": "Example",
-        "useCase": ["AI command", "AgiMate Mobile", "Action on phone"]
+        "useCase": [
+          "AI command",
+          "AgiMate Mobile",
+          "Action on phone"
+        ]
       }
     },
     "setup": {
@@ -333,32 +407,56 @@
         {
           "title": "Order monitoring",
           "description": "New marketplace orders automatically go to Google Sheets and Telegram.",
-          "flow": ["AgiMate Trigger", "Filter", "Google Sheets + Telegram"]
+          "flow": [
+            "AgiMate Trigger",
+            "Filter",
+            "Google Sheets + Telegram"
+          ]
         },
         {
           "title": "AI-powered support",
           "description": "Incoming customer messages are analyzed by AI, which replies or escalates.",
-          "flow": ["AgiMate Trigger", "OpenAI", "AgiMate Connectors"]
+          "flow": [
+            "AgiMate Trigger",
+            "OpenAI",
+            "AgiMate Connectors"
+          ]
         },
         {
           "title": "Scheduled screenshots",
           "description": "Takes a device screenshot every hour and saves it to cloud for auditing.",
-          "flow": ["Schedule", "AgiMate Mobile", "Google Drive"]
+          "flow": [
+            "Schedule",
+            "AgiMate Mobile",
+            "Google Drive"
+          ]
         },
         {
           "title": "Price change alerts",
           "description": "Monitors competitor prices and sends a notification on deviation.",
-          "flow": ["AgiMate Trigger", "Compare", "Slack / Telegram"]
+          "flow": [
+            "AgiMate Trigger",
+            "Compare",
+            "Slack / Telegram"
+          ]
         },
         {
           "title": "Inventory sync",
           "description": "Automatic stock synchronization between warehouse and marketplaces.",
-          "flow": ["Schedule", "AgiMate Connectors", "Ozon + WB API"]
+          "flow": [
+            "Schedule",
+            "AgiMate Connectors",
+            "Ozon + WB API"
+          ]
         },
         {
           "title": "Voice notifications",
           "description": "Critical events are announced on device via TTS.",
-          "flow": ["AgiMate Trigger", "Filter", "AgiMate Mobile TTS"]
+          "flow": [
+            "AgiMate Trigger",
+            "Filter",
+            "AgiMate Mobile TTS"
+          ]
         }
       ]
     },
@@ -368,7 +466,12 @@
       "description": "The n8n AI Agent can use AgiMate nodes as tools. The agent decides when to call a connector, take a screenshot, or send a notification.",
       "agentLabel": "AI Agent",
       "toolsLabel": "AgiMate Tools",
-      "tools": ["Fetch orders", "Take screenshot", "Send notification", "Update status"]
+      "tools": [
+        "Fetch orders",
+        "Take screenshot",
+        "Send notification",
+        "Update status"
+      ]
     },
     "eventTypes": {
       "title": "Event types",
@@ -379,14 +482,46 @@
         "source": "Source"
       },
       "items": [
-        { "event": "order.created", "description": "New order", "source": "Marketplaces" },
-        { "event": "order.status_changed", "description": "Order status change", "source": "Marketplaces" },
-        { "event": "message.received", "description": "Incoming message", "source": "Messengers" },
-        { "event": "price.changed", "description": "Competitor price change", "source": "Monitoring" },
-        { "event": "device.screenshot", "description": "Device screenshot", "source": "Mobile" },
-        { "event": "device.notification", "description": "Device notification", "source": "Mobile" },
-        { "event": "inventory.low", "description": "Low stock", "source": "Warehouse" },
-        { "event": "review.new", "description": "New review", "source": "Marketplaces" }
+        {
+          "event": "order.created",
+          "description": "New order",
+          "source": "Marketplaces"
+        },
+        {
+          "event": "order.status_changed",
+          "description": "Order status change",
+          "source": "Marketplaces"
+        },
+        {
+          "event": "message.received",
+          "description": "Incoming message",
+          "source": "Messengers"
+        },
+        {
+          "event": "price.changed",
+          "description": "Competitor price change",
+          "source": "Monitoring"
+        },
+        {
+          "event": "device.screenshot",
+          "description": "Device screenshot",
+          "source": "Mobile"
+        },
+        {
+          "event": "device.notification",
+          "description": "Device notification",
+          "source": "Mobile"
+        },
+        {
+          "event": "inventory.low",
+          "description": "Low stock",
+          "source": "Warehouse"
+        },
+        {
+          "event": "review.new",
+          "description": "New review",
+          "source": "Marketplaces"
+        }
       ]
     },
     "install": {
@@ -540,10 +675,26 @@
           "action": "Action plugin"
         },
         "rows": [
-          { "param": "Direction", "trigger": "Device → AI", "action": "AI → Device" },
-          { "param": "Purpose", "trigger": "Monitors events", "action": "Executes commands" },
-          { "param": "Examples", "trigger": "Files, buttons, timers", "action": "Notifications, TTS" },
-          { "param": "Base class", "trigger": "TriggerPlugin", "action": "ActionPlugin" }
+          {
+            "param": "Direction",
+            "trigger": "Device → AI",
+            "action": "AI → Device"
+          },
+          {
+            "param": "Purpose",
+            "trigger": "Monitors events",
+            "action": "Executes commands"
+          },
+          {
+            "param": "Examples",
+            "trigger": "Files, buttons, timers",
+            "action": "Notifications, TTS"
+          },
+          {
+            "param": "Base class",
+            "trigger": "TriggerPlugin",
+            "action": "ActionPlugin"
+          }
         ]
       },
       "triggerCode": {
@@ -562,32 +713,56 @@
         {
           "title": "Document processing",
           "description": "New file in Downloads → AI recognizes document type → extracts data → uploads to 1C or CRM.",
-          "flow": ["New file", "AI recognition", "Upload to 1C/CRM"]
+          "flow": [
+            "New file",
+            "AI recognition",
+            "Upload to 1C/CRM"
+          ]
         },
         {
           "title": "AI secretary on PC",
           "description": "AI monitors files and events on the computer, analyzes and categorizes, notifies or acts automatically.",
-          "flow": ["PC event", "AI analysis", "Notification / action"]
+          "flow": [
+            "PC event",
+            "AI analysis",
+            "Notification / action"
+          ]
         },
         {
           "title": "Voice assistant",
           "description": "Critical event → AI evaluates priority → speaks through speakers + shows desktop notification.",
-          "flow": ["Critical event", "AI prioritization", "TTS + notification"]
+          "flow": [
+            "Critical event",
+            "AI prioritization",
+            "TTS + notification"
+          ]
         },
         {
           "title": "Legacy Software Bridge",
           "description": "AI interacts with desktop apps without APIs — 1C, Excel, specialized software. Bridge between old and new.",
-          "flow": ["AI command", "App action", "Result to cloud"]
+          "flow": [
+            "AI command",
+            "App action",
+            "Result to cloud"
+          ]
         },
         {
           "title": "Scheduled data collection",
           "description": "Button 'Collect report' → AI gathers data from sources → generates report → notifies when ready.",
-          "flow": ["Button", "AI data collection", "Report + notification"]
+          "flow": [
+            "Button",
+            "AI data collection",
+            "Report + notification"
+          ]
         },
         {
           "title": "Quick commands",
           "description": "Button panel for common operations: 'Create task', 'Send report', 'Check status' — one press launches an AI scenario.",
-          "flow": ["Button press", "AI scenario", "Result"]
+          "flow": [
+            "Button press",
+            "AI scenario",
+            "Result"
+          ]
         }
       ]
     },
@@ -595,13 +770,34 @@
       "title": "Under the hood",
       "subtitle": "AgiMate Desktop technical specifications",
       "rows": [
-        { "param": "Platforms", "value": "Windows, macOS, Linux" },
-        { "param": "Size", "value": "~80–100 MB" },
-        { "param": "Server connection", "value": "HTTP + WebSocket (Centrifugo)" },
-        { "param": "Protocol", "value": "MCP-compatible, n8n node" },
-        { "param": "Auto-reconnect", "value": "Exponential backoff, up to 10 retries" },
-        { "param": "Plugins", "value": "Hot-loading, config validation" },
-        { "param": "Tests", "value": "313 tests, 97% coverage (core)" }
+        {
+          "param": "Platforms",
+          "value": "Windows, macOS, Linux"
+        },
+        {
+          "param": "Size",
+          "value": "~80–100 MB"
+        },
+        {
+          "param": "Server connection",
+          "value": "HTTP + WebSocket (Centrifugo)"
+        },
+        {
+          "param": "Protocol",
+          "value": "MCP-compatible, n8n node"
+        },
+        {
+          "param": "Auto-reconnect",
+          "value": "Exponential backoff, up to 10 retries"
+        },
+        {
+          "param": "Plugins",
+          "value": "Hot-loading, config validation"
+        },
+        {
+          "param": "Tests",
+          "value": "313 tests, 97% coverage (core)"
+        }
       ]
     },
     "interface": {
@@ -826,11 +1022,26 @@
       },
       "requirementsTitle": "Requirements and permissions",
       "requirements": [
-        { "param": "Android", "value": "8.0+ (API 26)" },
-        { "param": "APK size", "value": "~5 MB" },
-        { "param": "Connection", "value": "Wi-Fi or mobile data" },
-        { "param": "Background work", "value": "Foreground Service" },
-        { "param": "Protocol", "value": "HTTPS + WSS" }
+        {
+          "param": "Android",
+          "value": "8.0+ (API 26)"
+        },
+        {
+          "param": "APK size",
+          "value": "~5 MB"
+        },
+        {
+          "param": "Connection",
+          "value": "Wi-Fi or mobile data"
+        },
+        {
+          "param": "Background work",
+          "value": "Foreground Service"
+        },
+        {
+          "param": "Protocol",
+          "value": "HTTPS + WSS"
+        }
       ],
       "permissionsTitle": "Android permissions",
       "permissions": [

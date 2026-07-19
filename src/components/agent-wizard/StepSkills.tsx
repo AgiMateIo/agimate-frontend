@@ -5,13 +5,13 @@ import { useTranslations } from 'next-intl';
 import {
   CheckIcon,
   CheckCircleIcon,
-  MagnifyingGlassIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   XMarkIcon,
   ExclamationTriangleIcon,
   Squares2X2Icon,
 } from '@heroicons/react/24/outline';
+import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import apiService from '@/services/api';
 import {
   ConnectionResponse,
@@ -273,16 +273,12 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
                 ))}
               </div>
             </div>
-            <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder={t('searchSkills')}
-                className="w-full pl-9 pr-4 py-1.5 bg-surface-secondary border border-border rounded-lg text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/50"
-              />
-            </div>
+            <SearchToolbar
+              value={search}
+              onChange={setSearch}
+              placeholder={t('searchSkills')}
+              size="sm"
+            />
           </div>
 
           <div className="min-h-[13rem] max-h-72 overflow-y-auto p-1.5">

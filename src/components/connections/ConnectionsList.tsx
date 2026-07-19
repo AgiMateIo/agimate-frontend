@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { MagnifyingGlassIcon, FunnelIcon, CalendarIcon, ClockIcon, HashtagIcon } from '@heroicons/react/24/outline';
+import { CalendarIcon, ClockIcon, HashtagIcon } from '@heroicons/react/24/outline';
 import { Link } from '@/i18n/navigation';
 import { localeMap } from '@/i18n/routing';
 import { ConnectionResponse, ConnectorCatalogEntry } from '@/types';
@@ -10,6 +10,7 @@ import { formatDate } from '@/utils/date';
 import { Toggle } from '@/components/ui/Toggle';
 import { Chip } from '@/components/ui/Chip';
 import { FilterPill } from '@/components/ui/FilterPill';
+import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import { useUpdateConnectionMutation } from '@/queries/connections';
 import { ConnectionAvatar } from './ConnectionAvatar';
 
@@ -60,7 +61,7 @@ function ConnectionCard({
         </div>
 
         <div className="flex items-center gap-1.5 flex-wrap mt-3">
-          <Chip icon={HashtagIcon}>{connection.subCode}</Chip>
+          {connection.subCode && <Chip icon={HashtagIcon}>{connection.subCode}</Chip>}
           <Chip icon={CalendarIcon}>{formatDate(connection.createdAt, bcp47Locale)}</Chip>
           {connection.lastUsedAt && (
             <Chip icon={ClockIcon}>{formatDate(connection.lastUsedAt, bcp47Locale)}</Chip>
@@ -79,7 +80,6 @@ export default function ConnectionsList({
   const [search, setSearch] = useState('');
   const [platformFilter, setPlatformFilter] = useState<string>('ALL');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
-  const [showFilters, setShowFilters] = useState(false);
 
   const platformByCode = useMemo(() => {
     const map = new Map<string, ConnectorCatalogEntry>();
@@ -107,7 +107,7 @@ export default function ConnectionsList({
       return (
         connection.name.toLowerCase().includes(query) ||
         connection.fullCode.toLowerCase().includes(query) ||
-        connection.subCode.toLowerCase().includes(query) ||
+        (connection.subCode ?? '').toLowerCase().includes(query) ||
         connectorName.toLowerCase().includes(query)
       );
     });
@@ -123,32 +123,12 @@ export default function ConnectionsList({
 
   return (
     <div className="space-y-6">
-      <div className="space-y-3">
-        <div className="relative">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t('searchPlaceholder')}
-            className="w-full pl-10 pr-11 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground placeholder:text-muted text-sm"
-          />
-          <button
-            type="button"
-            onClick={() => setShowFilters(v => !v)}
-            aria-label={t('advancedFilters')}
-            aria-pressed={showFilters}
-            className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md transition-colors ${
-              showFilters || platformFilter !== 'ALL' || statusFilter !== 'ALL'
-                ? 'text-accent bg-accent/10'
-                : 'text-muted hover:text-foreground'
-            }`}
-          >
-            <FunnelIcon className="h-5 w-5" />
-          </button>
-        </div>
-
-        {showFilters && (
+      <SearchToolbar
+        value={search}
+        onChange={setSearch}
+        placeholder={t('searchPlaceholder')}
+        filtersActive={platformFilter !== 'ALL' || statusFilter !== 'ALL'}
+        filters={
           <div className="flex items-center gap-2 flex-wrap">
             <FilterPill active={statusFilter === 'ALL'} onClick={() => setStatusFilter('ALL')}>
               {t('filterAll')}
@@ -174,8 +154,8 @@ export default function ConnectionsList({
               </>
             )}
           </div>
-        )}
-      </div>
+        }
+      />
 
       {filtered.length === 0 ? (
         <div className="text-center py-8 text-muted">

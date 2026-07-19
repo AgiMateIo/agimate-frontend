@@ -3,14 +3,14 @@
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
-import { CheckIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { CheckIcon } from '@heroicons/react/24/outline';
+import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import apiService from '@/services/api';
 import { SkillResponse } from '@/types';
 import { connectorCatalogOptions } from '@/queries/connectors';
 import { useSkillsCacheActions } from '@/queries/skills';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/FormField';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
@@ -77,15 +77,12 @@ export default function EditSkillConnectorsModal({
         <p className="text-sm text-muted">{t('editConnectorsHint')}</p>
 
         {/* Search */}
-        <div className="relative">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t('connectorsSearchPlaceholder')}
-            className="pl-9"
-          />
-        </div>
+        <SearchToolbar
+          value={search}
+          onChange={setSearch}
+          placeholder={t('connectorsSearchPlaceholder')}
+          size="sm"
+        />
 
         {/* Connector list */}
         <div className="max-h-72 overflow-y-auto rounded-lg border border-border divide-y divide-border">

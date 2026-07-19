@@ -2,9 +2,9 @@
 
 import { useState, Suspense } from 'react';
 import { useTranslations } from 'next-intl';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import { Tabs } from '@/components/ui/Tabs';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useSkillsListQuery, useSkillsCacheActions, type SkillListTab } from '@/queries/skills';
@@ -78,17 +78,14 @@ export default function SkillsPage() {
   const tabContent = (
     <>
       {/* Search — outside Suspense so it never unmounts */}
-      <div className="relative mb-4">
-        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted" />
-        <input
-          type="text"
+      <div className="mb-4">
+        <SearchToolbar
           value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
+          onChange={(value) => {
+            setSearch(value);
             setPage(0);
           }}
           placeholder={t('searchPlaceholder')}
-          className="w-full pl-10 pr-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground placeholder:text-muted text-sm"
         />
       </div>
 

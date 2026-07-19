@@ -54,7 +54,7 @@ export function useChannelConfigData({ channel, connectorCode }: UseChannelConfi
           creds.map((c: ConnectionResponse) => ({
             value: c.id,
             label: c.name || c.fullCode,
-            hint: c.name ? c.subCode : undefined,
+            hint: c.name ? c.subCode ?? undefined : undefined,
           })),
         );
       })

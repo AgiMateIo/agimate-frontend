@@ -2,9 +2,9 @@
 
 import { useState, Suspense } from 'react';
 import { useTranslations } from 'next-intl';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { ConnectorCatalogEntry } from '@/types';
 import { Button } from '@/components/ui/Button';
+import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { useConnectorSearchQuery } from '@/queries/connectors';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
@@ -126,19 +126,14 @@ export default function ConnectorsPage() {
       </div>
 
       {/* Search */}
-      <div className="relative">
-        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted" />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(0);
-          }}
-          placeholder={t('searchPlaceholder')}
-          className="w-full pl-10 pr-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground placeholder:text-muted text-sm"
-        />
-      </div>
+      <SearchToolbar
+        value={search}
+        onChange={(value) => {
+          setSearch(value);
+          setPage(0);
+        }}
+        placeholder={t('searchPlaceholder')}
+      />
 
       {/* List */}
       <ErrorBoundary>

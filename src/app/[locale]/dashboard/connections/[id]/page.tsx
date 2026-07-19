@@ -91,7 +91,7 @@ function ConnectionDetailContent({ id }: { id: string }) {
             </span>
           </div>
           <p className="text-sm text-muted mt-1 font-mono">{connection.fullCode}</p>
-          {connection.name && (
+          {connection.name && connection.subCode && (
             <p className="text-sm text-muted mt-1">
               {tInt('identifier')}: {connection.subCode}
             </p>
@@ -156,7 +156,7 @@ function ConnectionDetailContent({ id }: { id: string }) {
                   </div>
                   <div>
                     <dt className="text-sm text-muted">{t('platformIdentifier')}</dt>
-                    <dd className="text-foreground mt-0.5 font-mono text-sm">{connection.subCode}</dd>
+                    <dd className="text-foreground mt-0.5 font-mono text-sm">{connection.subCode ?? '—'}</dd>
                   </div>
                   {connection.name && (
                     <div>

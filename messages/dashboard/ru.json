@@ -669,9 +669,7 @@
     "modelAudioIn": "Принимает аудио",
     "modelAudioOut": "Озвучивает",
     "modelNotInRegistry": "Нет в реестре провайдера — вызовы могут падать",
-    "pickerClear": "Сбросить выбор",
-    "pickerFilters": "Фильтры по капабилити",
-    "modelFiltersToggle": "Фильтры"
+    "pickerClear": "Сбросить выбор"
   },
   "AgenticTeams": {
     "title": "Команды агентов",
@@ -716,7 +714,6 @@
     "loading": "Загрузка подключений...",
     "noConnections": "Подключения не настроены",
     "searchPlaceholder": "Поиск подключений...",
-    "advancedFilters": "Расширенные фильтры",
     "noSearchResults": "Нет подключений, соответствующих поиску",
     "filterAll": "Все",
     "filterAllPlatforms": "Все платформы",

@@ -28,3 +28,13 @@ export function FilterPill({
     </button>
   );
 }
+
+// One labeled row of filter pills ("Availability: (all) (available) …").
+export function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-1.5 flex-wrap">
+      <span className="text-xs text-muted mr-1">{label}</span>
+      {children}
+    </div>
+  );
+}

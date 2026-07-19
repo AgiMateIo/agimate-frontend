@@ -6,8 +6,8 @@ export interface ConnectionResponse {
   id: string;
   connectorCode: string;
   // canonical instance discriminator on the platform (telegram username, MCP URL).
-  // Formerly `platformIdentifier`.
-  subCode: string;
+  // Formerly `platformIdentifier`. null until the platform identity is known.
+  subCode: string | null;
   // stable per-user instance handle, e.g. `mcp_context7` — used as the instance label in UI.
   fullCode: string;
   scope: IdentityScope;

@@ -9,7 +9,8 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
-import { ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 
 const PAGE_SIZE = 10;
@@ -76,16 +77,12 @@ export default function AddSkillAgentModal({ skillId, onClose, onSuccess }: AddS
     <Modal isOpen={true} onClose={onClose} title={t('addAgent')} size="lg">
       <form onSubmit={onSubmit} className="space-y-4">
         {/* Search */}
-        <div className="relative">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t('searchAgents')}
-            className="w-full pl-9 pr-4 py-2 bg-surface-secondary border border-border rounded-lg text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/50"
-          />
-        </div>
+        <SearchToolbar
+          value={search}
+          onChange={setSearch}
+          placeholder={t('searchAgents')}
+          size="sm"
+        />
 
         {/* Agents list */}
         <div className="min-h-[280px]">
