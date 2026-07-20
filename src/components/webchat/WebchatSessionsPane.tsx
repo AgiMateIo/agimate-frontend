@@ -17,6 +17,9 @@ interface WebchatSessionsPaneProps {
   onSelectSession: (sessionId: string) => void;
   onNewSession: () => void;
   creating: boolean;
+  // Agent-scoped chat (an agent's Chat section): the agent is fixed by the route,
+  // so hide the agent picker and always allow starting a session.
+  hideAgentFilter?: boolean;
 }
 
 export default function WebchatSessionsPane({
@@ -30,29 +33,32 @@ export default function WebchatSessionsPane({
   onSelectSession,
   onNewSession,
   creating,
+  hideAgentFilter = false,
 }: WebchatSessionsPaneProps) {
   const t = useTranslations('Chat');
 
   return (
     <div className="w-72 shrink-0 border-r border-border flex flex-col min-h-0">
       <div className="p-4 border-b border-border space-y-3">
-        <div>
-          <label className="block text-xs font-medium text-muted mb-1">
-            {t('agentFilterLabel')}
-          </label>
-          <select
-            value={selectedAgentId}
-            onChange={(e) => onAgentChange(e.target.value)}
-            className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
-          >
-            <option value="">{t('allAgents')}</option>
-            {agents.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        {!hideAgentFilter && (
+          <div>
+            <label className="block text-xs font-medium text-muted mb-1">
+              {t('agentFilterLabel')}
+            </label>
+            <select
+              value={selectedAgentId}
+              onChange={(e) => onAgentChange(e.target.value)}
+              className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+            >
+              <option value="">{t('allAgents')}</option>
+              {agents.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <Button
           onClick={onNewSession}
           loading={creating}
@@ -63,7 +69,7 @@ export default function WebchatSessionsPane({
           <PlusIcon className="h-4 w-4" />
           {t('newSession')}
         </Button>
-        {!selectedAgentId && (
+        {!hideAgentFilter && !selectedAgentId && (
           <p className="text-xs text-muted">{t('selectAgentHint')}</p>
         )}
       </div>

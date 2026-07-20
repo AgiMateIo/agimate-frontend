@@ -69,7 +69,7 @@ export default function StepDone({ data, onReset }: StepDoneProps) {
           type="button"
           onClick={() =>
             window.open(
-              getPathname({ href: `/dashboard/chat?agentId=${agent.id}`, locale }),
+              getPathname({ href: `/dashboard/agents/${agent.id}/chat`, locale }),
               '_blank',
               'noopener,noreferrer',
             )
@@ -85,7 +85,7 @@ export default function StepDone({ data, onReset }: StepDoneProps) {
         <h3 className="text-sm font-semibold text-foreground">{t('nextStepsTitle')}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Link
-            href={`/dashboard/agents/${agent.id}?tab=connections`}
+            href={`/dashboard/agents/${agent.id}/connections`}
             className="group flex items-start gap-3 rounded-lg border border-border p-4 hover:border-accent/50 hover:bg-surface-secondary transition-colors"
           >
             <WrenchScrewdriverIcon className="h-5 w-5 text-accent shrink-0 mt-0.5" />
@@ -111,7 +111,7 @@ export default function StepDone({ data, onReset }: StepDoneProps) {
           </Link>
 
           <Link
-            href={`/dashboard/agents/${agent.id}?tab=channels`}
+            href={`/dashboard/agents/${agent.id}/channels`}
             className="group flex items-start gap-3 rounded-lg border border-border p-4 hover:border-accent/50 hover:bg-surface-secondary transition-colors"
           >
             <ChatBubbleLeftRightIcon className="h-5 w-5 text-accent shrink-0 mt-0.5" />

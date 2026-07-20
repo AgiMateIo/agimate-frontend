@@ -121,6 +121,22 @@ body {
   animation: task-arrive 900ms cubic-bezier(0.2, 0, 0, 1) both;
 }
 
+/* Sidebar drill-in — the contextual agent nav slides in when entering an agent
+   (and re-runs per agent via a keyed remount) so the swap reads as "going in"
+   rather than the sidebar flickering to a different set of items. */
+@keyframes sidebar-slide-in {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.animate-sidebar-in {
+  animation: sidebar-slide-in 180ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-sidebar-in { animation: none; }
+}
+
 /* View Transition tuning for kanban card flight.
    Every task card carries a unique view-transition-name (task-<id>), so VT
    groups match up per-card between old and new snapshots. The `::...group`

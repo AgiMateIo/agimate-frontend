@@ -44,7 +44,11 @@
       "settings": "Настройки",
       "create": "Создать",
       "edit": "Редактировать",
-      "board": "Доска"
+      "board": "Доска",
+      "general": "Основное",
+      "models": "Модели",
+      "channels": "Каналы",
+      "toolCalls": "Вызовы инструментов"
     },
     "logOut": "Выйти"
   },
@@ -492,6 +496,7 @@
     "autoRefreshOff": "Выкл",
     "refresh": "Обновить",
     "tabGeneral": "Общая информация",
+    "tabChat": "Чат",
     "enabled": "Включен",
     "disabled": "Отключен",
     "createdAt": "Создан",
@@ -563,6 +568,7 @@
     "tabConnections": "Подключения",
     "tabToolCalls": "Вызовы инструментов",
     "tabTriggers": "Триггеры",
+    "switchAgent": "Сменить агента",
     "loadingConnections": "Загрузка подключений…",
     "connectionsTotal": "Подключений: {count}",
     "addConnection": "Добавить подключение",

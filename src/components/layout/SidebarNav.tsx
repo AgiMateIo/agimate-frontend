@@ -16,7 +16,6 @@ import {
   AcademicCapIcon,
   SparklesIcon,
   ChatBubbleLeftRightIcon,
-  ChatBubbleOvalLeftEllipsisIcon,
   ClockIcon,
   UserCircleIcon,
   PlusIcon,
@@ -24,6 +23,19 @@ import {
 } from '@heroicons/react/24/outline';
 import { agenticTeamsListOptions } from '@/queries/agentic-teams';
 import { AgenticTeam } from '@/types';
+import AgentContextNav from './AgentContextNav';
+
+// Route segments under /dashboard/agents that are not an agent instance.
+const NON_AGENT_SEGMENTS = new Set(['create', 'deliveries']);
+
+// When on an agent detail route the sidebar swaps its global nav for that agent's
+// contextual nav. Returns { agentId, section } or null. section is 'general' for the
+// base route, the sub-route name otherwise (e.g. 'models', 'edit').
+const matchAgentRoute = (pathname: string): { agentId: string; section: string } | null => {
+  const m = pathname.match(/^\/dashboard\/agents\/([^/]+)(?:\/([^/]+))?$/);
+  if (!m || NON_AGENT_SEGMENTS.has(m[1])) return null;
+  return { agentId: m[1], section: m[2] ?? 'general' };
+};
 
 type NavItem = {
   label: string;
@@ -87,7 +99,6 @@ const getNavGroups = (
         createHref: '/dashboard/agents/create',
         createLabel: t('createAgent'),
       },
-      { label: t('chat'), icon: ChatBubbleOvalLeftEllipsisIcon, href: '/dashboard/chat' },
       { label: t('skills'), icon: AcademicCapIcon, href: '/dashboard/skills' },
       {
         label: t('agenticTeams'),
@@ -137,6 +148,8 @@ export default function SidebarNav() {
     collapseStore.getServerSnapshot,
   );
   const toggleCollapsed = () => collapseStore.toggle(collapsed);
+
+  const agentRoute = matchAgentRoute(pathname);
 
   const groups = getNavGroups(t, teams);
 
@@ -198,7 +211,14 @@ export default function SidebarNav() {
           </button>
         )}
 
-        {groups.map((group, groupIndex) => (
+        {agentRoute ? (
+          <AgentContextNav
+            agentId={agentRoute.agentId}
+            currentSection={agentRoute.section}
+            collapsed={collapsed}
+          />
+        ) : (
+          groups.map((group, groupIndex) => (
           <div key={group.label ?? `group-${groupIndex}`} className="mb-3.5 last:mb-0">
             {group.label &&
               (collapsed ? (
@@ -286,7 +306,8 @@ export default function SidebarNav() {
               })}
             </div>
           </div>
-        ))}
+          ))
+        )}
       </nav>
 
       {/* Footer */}

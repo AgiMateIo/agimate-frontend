@@ -44,7 +44,11 @@
       "settings": "Settings",
       "create": "Create",
       "edit": "Edit",
-      "board": "Board"
+      "board": "Board",
+      "general": "General",
+      "models": "Models",
+      "channels": "Channels",
+      "toolCalls": "Tool Calls"
     },
     "logOut": "Log out"
   },
@@ -492,6 +496,7 @@
     "autoRefreshOff": "Off",
     "refresh": "Refresh",
     "tabGeneral": "General",
+    "tabChat": "Chat",
     "enabled": "Enabled",
     "disabled": "Disabled",
     "createdAt": "Created",
@@ -563,6 +568,7 @@
     "tabConnections": "Connections",
     "tabToolCalls": "Tool Calls",
     "tabTriggers": "Triggers",
+    "switchAgent": "Switch agent",
     "loadingConnections": "Loading connections…",
     "connectionsTotal": "{count} connections",
     "addConnection": "Add connection",
