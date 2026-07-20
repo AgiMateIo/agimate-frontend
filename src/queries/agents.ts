@@ -11,6 +11,7 @@ export const agentKeys = {
   lists: () => [...agentKeys.all, 'list'] as const,
   list: (teamId?: string) => [...agentKeys.lists(), teamId ?? 'all'] as const,
   detail: (id: string) => [...agentKeys.all, 'detail', id] as const,
+  connections: (id: string) => [...agentKeys.detail(id), 'connections'] as const,
 };
 
 export const agentsListOptions = (teamId?: string) =>
@@ -24,6 +25,13 @@ export const agentDetailOptions = (id: string) =>
   queryOptions({
     queryKey: agentKeys.detail(id),
     queryFn: () => apiService.getAgent(id),
+  });
+
+// Connector bindings of one agent — filter option sources (tool-call logs tab).
+export const agentConnectionsOptions = (agentId: string) =>
+  queryOptions({
+    queryKey: agentKeys.connections(agentId),
+    queryFn: () => apiService.getAgentConnections(agentId),
   });
 
 // A large single page used to build id→agent lookup maps.

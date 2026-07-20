@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import apiService from '@/services/api';
-import type { ToolCallStatus, ToolUseLogResponse } from '@/types';
+import type { TriggerRunStatus } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { RefreshControls } from '@/components/ui/RefreshControls';
 import { Pagination } from '@/components/ui/Pagination';
@@ -17,39 +17,30 @@ import { agentConnectionsOptions } from '@/queries/agents';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { formatDateTimeFull, formatDateTimeShort } from '@/utils/date';
 
-// DENY rows never executed, so they carry no SUCCESS/ERROR/PENDING status —
-// the badge is derived client-side from accessEffect + finishAt/error (spec §3).
-type RowStatus = ToolCallStatus | 'DENIED';
-type StatusFilter = 'ALL' | ToolCallStatus;
-type AccessFilter = 'ALL' | 'ALLOW' | 'DENY';
+type StatusFilter = 'ALL' | TriggerRunStatus;
 
-const STATUS_FILTERS: StatusFilter[] = ['ALL', 'SUCCESS', 'ERROR', 'PENDING'];
+// CANCELLED is legacy (old rows only) — not offered as a filter, but still
+// rendered with a muted badge when it shows up.
+const STATUS_FILTERS: StatusFilter[] = ['ALL', 'ENQUEUED', 'RUNNING', 'DONE', 'FAILED'];
 
 const STATUS_BADGE = {
-  SUCCESS: { className: 'bg-success/10 text-success', labelKey: 'statusSuccess' },
-  ERROR: { className: 'bg-error/10 text-error', labelKey: 'statusError' },
-  PENDING: { className: 'bg-muted/10 text-muted', labelKey: 'statusPending' },
-  DENIED: { className: 'bg-warning/10 text-warning', labelKey: 'statusDenied' },
-} as const satisfies Record<RowStatus, { className: string; labelKey: string }>;
+  ENQUEUED: { className: 'bg-muted/10 text-muted', labelKey: 'runStatusEnqueued' },
+  RUNNING: { className: 'bg-accent/10 text-accent animate-pulse', labelKey: 'runStatusRunning' },
+  DONE: { className: 'bg-success/10 text-success', labelKey: 'runStatusDone' },
+  FAILED: { className: 'bg-error/10 text-error', labelKey: 'runStatusFailed' },
+  CANCELLED: { className: 'bg-muted/10 text-muted', labelKey: 'runStatusCancelled' },
+} as const satisfies Record<TriggerRunStatus, { className: string; labelKey: string }>;
 
-const getRowStatus = (log: ToolUseLogResponse): RowStatus => {
-  if (log.accessEffect === 'DENY') return 'DENIED';
-  if (log.error) return 'ERROR';
-  if (log.finishAt) return 'SUCCESS';
-  return 'PENDING';
-};
-
-// Standalone on the tool-use-logs page; scoped to one agent when `agentId` is
-// set (the agent page's Tool Calls tab — filter selectors then offer only the
-// agent's bound connectors/connections).
-export default function ToolUseLogsTab({ agentId }: { agentId?: string }) {
+// The agent page's Triggers tab: which triggers this agent received and how
+// each run went. One row = one agent's run of one trigger (the shared event
+// may have fanned out to other agents too).
+export default function AgentTriggerRunsTab({ agentId }: { agentId: string }) {
   const t = useTranslations('Connectors');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search.trim(), 300);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
-  const [accessFilter, setAccessFilter] = useState<AccessFilter>('ALL');
   const [connectorFilter, setConnectorFilter] = useState('ALL');
   const [connectionFilter, setConnectionFilter] = useState('ALL');
 
@@ -63,40 +54,25 @@ export default function ToolUseLogsTab({ agentId }: { agentId?: string }) {
     return map;
   }, [connections]);
 
-  // Filter selectors need exact values: the agent's bound connections when
-  // scoped, otherwise every connection of the user.
-  const { data: agentConnections } = useQuery({
-    ...agentConnectionsOptions(agentId ?? ''),
-    enabled: !!agentId,
-  });
-  const filterSource = useMemo(
-    () =>
-      agentId
-        ? (agentConnections ?? []).map((c) => ({
-            connectionId: c.connectionId,
-            connectorCode: c.connectorCode,
-            label: c.name || c.fullCode || c.connectionId,
-          }))
-        : (connections ?? []).map((c) => ({
-            connectionId: c.id,
-            connectorCode: c.connectorCode,
-            label: c.name || c.fullCode || c.id,
-          })),
-    [agentId, agentConnections, connections],
-  );
+  // Filter selectors need exact values — the agent's bound connections.
+  const { data: agentConnections } = useQuery(agentConnectionsOptions(agentId));
   const connectorOptions = useMemo(
-    () => [...new Set(filterSource.map((c) => c.connectorCode))].sort(),
-    [filterSource],
+    () => [...new Set((agentConnections ?? []).map((c) => c.connectorCode))].sort(),
+    [agentConnections],
   );
   const connectionOptions = useMemo(() => {
-    const scoped = connectorFilter === 'ALL'
-      ? filterSource
-      : filterSource.filter((c) => c.connectorCode === connectorFilter);
-    return [...new Map(scoped.map((c) => [c.connectionId, c])).values()];
-  }, [filterSource, connectorFilter]);
+    const scoped = (agentConnections ?? []).filter(
+      (c) => connectorFilter === 'ALL' || c.connectorCode === connectorFilter,
+    );
+    return [
+      ...new Map(
+        scoped.map((c) => [c.connectionId, { connectionId: c.connectionId, label: c.name || c.fullCode || c.connectionId }]),
+      ).values(),
+    ];
+  }, [agentConnections, connectorFilter]);
 
   const {
-    content: logs,
+    content: runs,
     totalElements,
     totalPages,
     loading,
@@ -109,23 +85,22 @@ export default function ToolUseLogsTab({ agentId }: { agentId?: string }) {
     setRefreshInterval,
     refresh,
   } = usePagedLogsQuery(
-    'tool-use-logs',
-    [agentId ?? 'all', debouncedSearch, statusFilter, accessFilter, connectorFilter, connectionFilter],
+    'trigger-runs',
+    [agentId, debouncedSearch, statusFilter, connectorFilter, connectionFilter],
     (params) =>
-      apiService.getToolUseLogs({
+      apiService.getTriggerLogAgentRuns({
         ...params,
         agentId,
         name: debouncedSearch || undefined,
         status: statusFilter === 'ALL' ? undefined : statusFilter,
-        accessEffect: accessFilter === 'ALL' ? undefined : accessFilter,
         connectorCode: connectorFilter === 'ALL' ? undefined : connectorFilter,
         connectionId: connectionFilter === 'ALL' ? undefined : connectionFilter,
       }),
-    { defaultError: t('loadToolUseLogsError') },
+    { defaultError: t('loadTriggerLogsError') },
   );
 
   const filtersActive =
-    statusFilter !== 'ALL' || accessFilter !== 'ALL' || connectorFilter !== 'ALL' || connectionFilter !== 'ALL';
+    statusFilter !== 'ALL' || connectorFilter !== 'ALL' || connectionFilter !== 'ALL';
   const anyFilterSet = filtersActive || debouncedSearch !== '';
 
   const changeSearch = (value: string) => {
@@ -134,10 +109,6 @@ export default function ToolUseLogsTab({ agentId }: { agentId?: string }) {
   };
   const changeStatus = (value: StatusFilter) => {
     setStatusFilter(value);
-    setPage(0);
-  };
-  const changeAccess = (value: AccessFilter) => {
-    setAccessFilter(value);
     setPage(0);
   };
   const changeConnector = (value: string) => {
@@ -170,7 +141,7 @@ export default function ToolUseLogsTab({ agentId }: { agentId?: string }) {
         <SearchToolbar
           value={search}
           onChange={changeSearch}
-          placeholder={t('searchToolsPlaceholder')}
+          placeholder={t('searchTriggersPlaceholder')}
           size="sm"
           filtersActive={filtersActive}
           filters={
@@ -181,17 +152,6 @@ export default function ToolUseLogsTab({ agentId }: { agentId?: string }) {
                     {value === 'ALL' ? t('filterAll') : t(STATUS_BADGE[value].labelKey)}
                   </FilterPill>
                 ))}
-              </FilterRow>
-              <FilterRow label={t('accessEffect')}>
-                <FilterPill active={accessFilter === 'ALL'} onClick={() => changeAccess('ALL')}>
-                  {t('filterAll')}
-                </FilterPill>
-                <FilterPill active={accessFilter === 'ALLOW'} onClick={() => changeAccess('ALLOW')}>
-                  {t('accessAllowed')}
-                </FilterPill>
-                <FilterPill active={accessFilter === 'DENY'} onClick={() => changeAccess('DENY')}>
-                  {t('accessDenied')}
-                </FilterPill>
               </FilterRow>
               <div className="flex items-center gap-2 flex-wrap">
                 <div className="w-52">
@@ -248,58 +208,57 @@ export default function ToolUseLogsTab({ agentId }: { agentId?: string }) {
     <div className="space-y-4">
       {toolbar}
       {loading ? (
-        <div className="text-center py-12 text-muted">{t('loadingToolUseLogs')}</div>
-      ) : logs.length === 0 ? (
+        <div className="text-center py-12 text-muted">{t('loadingTriggerLogs')}</div>
+      ) : runs.length === 0 ? (
         <div className="text-center py-12 text-muted">
-          {anyFilterSet ? t('noToolUseLogsFiltered') : t('noToolUseLogs')}
+          {anyFilterSet ? t('noTriggerRunsFiltered') : t('noTriggerRuns')}
         </div>
       ) : (
         <>
-          <div className="text-sm text-muted">{t('toolUseLogsTotal', { count: totalElements })}</div>
+          <div className="text-sm text-muted">{t('triggerRunsTotal', { count: totalElements })}</div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border">
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted w-32 whitespace-nowrap">{t('createdAt')}</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('toolName')}</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted w-full">{t('toolInput')}</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('triggerName')}</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-muted w-full">{t('triggerInput')}</th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('status')}</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted whitespace-nowrap">{t('outputAt')}</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('outputOrError')}</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-muted whitespace-nowrap">{t('lastActivityAt')}</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('resultOrError')}</th>
                 </tr>
               </thead>
               <tbody>
-                {logs.map((log) => {
-                  const status = getRowStatus(log);
+                {runs.map((run) => {
+                  const badge = STATUS_BADGE[run.status] ?? STATUS_BADGE.CANCELLED;
                   const rowColor =
-                    status === 'ERROR'
+                    run.status === 'FAILED'
                       ? 'bg-error/5 hover:bg-error/10'
-                      : status === 'DENIED'
-                        ? 'bg-warning/5 hover:bg-warning/10'
-                        : status === 'SUCCESS'
-                          ? 'bg-success/5 hover:bg-success/10'
-                          : 'hover:bg-surface-secondary';
-                  const connectionName = log.connectionId ? connectionsById.get(log.connectionId) : undefined;
+                      : run.status === 'DONE'
+                        ? 'bg-success/5 hover:bg-success/10'
+                        : 'hover:bg-surface-secondary';
+                  const connectionName = connectionsById.get(run.connectionId);
 
                   return (
-                    <tr key={log.id} className={`border-b border-border last:border-b-0 transition-colors ${rowColor}`}>
+                    <tr key={run.id} className={`border-b border-border last:border-b-0 transition-colors ${rowColor}`}>
                       <td className="py-3 px-4">
-                        <span className="text-sm text-muted" title={formatDateTimeFull(log.createdAt)}>
-                          {formatDateTimeShort(log.createdAt)}
+                        <span className="text-sm text-muted" title={formatDateTimeFull(run.createdAt)}>
+                          {formatDateTimeShort(run.createdAt)}
                         </span>
                       </td>
                       <td className="py-3 px-4">
                         <div
                           className="text-sm font-medium text-foreground font-mono"
                           title={[
-                            log.agentSessionId && `session: ${log.agentSessionId}`,
-                            log.externalId && `call: ${log.externalId}`,
+                            run.occurredAt && `${t('occurredAt')}: ${formatDateTimeFull(run.occurredAt)}`,
+                            `trigger: ${run.externalId}`,
+                            run.sessionId && `session: ${run.sessionId}`,
                           ].filter(Boolean).join('\n')}
                         >
-                          {log.name}
+                          {run.name}
                         </div>
-                        <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted" title={log.connectionId ?? undefined}>
-                          <span className="font-mono text-muted/70">{log.connectorCode}</span>
+                        <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted" title={run.connectionId}>
+                          <span className="font-mono text-muted/70">{run.connectorCode}</span>
                           {connectionName && (
                             <>
                               <span className="text-muted/50">&ndash;</span>
@@ -309,20 +268,20 @@ export default function ToolUseLogsTab({ agentId }: { agentId?: string }) {
                         </div>
                       </td>
                       <td className="py-3 px-4">
-                        {log.input && Object.keys(log.input).length > 0 ? (
+                        {run.input && Object.keys(run.input).length > 0 ? (
                           <div>
                             <button
-                              onClick={() => toggleExpand(`input-${log.id}`)}
+                              onClick={() => toggleExpand(`input-${run.id}`)}
                               className="flex items-center gap-1 text-xs text-accent hover:text-accent/80 font-medium transition-colors"
                             >
                               <span className="max-w-[340px] truncate font-mono">
-                                {JSON.stringify(log.input)}
+                                {JSON.stringify(run.input)}
                               </span>
-                              <span className="shrink-0">{expandedIds.has(`input-${log.id}`) ? '▲' : '▼'}</span>
+                              <span className="shrink-0">{expandedIds.has(`input-${run.id}`) ? '▲' : '▼'}</span>
                             </button>
-                            {expandedIds.has(`input-${log.id}`) && (
+                            {expandedIds.has(`input-${run.id}`) && (
                               <pre className="mt-2 p-3 bg-background rounded-lg text-xs font-mono text-foreground/80 overflow-x-auto max-w-xl">
-                                {JSON.stringify(log.input, null, 2)}
+                                {JSON.stringify(run.input, null, 2)}
                               </pre>
                             )}
                           </div>
@@ -331,37 +290,40 @@ export default function ToolUseLogsTab({ agentId }: { agentId?: string }) {
                         )}
                       </td>
                       <td className="py-3 px-4">
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${STATUS_BADGE[status].className}`}>
-                          {t(STATUS_BADGE[status].labelKey)}
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${badge.className}`}>
+                          {t(badge.labelKey)}
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="text-sm text-muted">
-                          {log.finishAt ? formatDateTimeShort(log.finishAt) : '—'}
+                        <span
+                          className="text-sm text-muted"
+                          title={run.lastActivityAt ? formatDateTimeFull(run.lastActivityAt) : undefined}
+                        >
+                          {run.lastActivityAt ? formatDateTimeShort(run.lastActivityAt) : '—'}
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        {log.error ? (
-                          <span className="text-sm text-error">{log.error}</span>
-                        ) : log.output !== null ? (
+                        {run.error ? (
+                          <span className="text-sm text-error">{run.error}</span>
+                        ) : run.result !== null ? (
                           <div>
                             <button
-                              onClick={() => toggleExpand(`output-${log.id}`)}
+                              onClick={() => toggleExpand(`result-${run.id}`)}
                               className="flex items-center gap-1 text-xs text-success hover:text-success/80 font-medium transition-colors"
                             >
-                              <span className="max-w-[200px] truncate font-mono">
-                                {log.output}
+                              <span className="max-w-[200px] truncate">
+                                {run.result}
                               </span>
-                              <span className="shrink-0">{expandedIds.has(`output-${log.id}`) ? '▲' : '▼'}</span>
+                              <span className="shrink-0">{expandedIds.has(`result-${run.id}`) ? '▲' : '▼'}</span>
                             </button>
-                            {expandedIds.has(`output-${log.id}`) && (
+                            {expandedIds.has(`result-${run.id}`) && (
                               <pre className="mt-2 p-3 bg-background rounded-lg text-xs font-mono text-foreground/80 overflow-x-auto max-w-md whitespace-pre-wrap">
-                                {log.output}
+                                {run.result}
                               </pre>
                             )}
                           </div>
                         ) : (
-                          <span className="text-muted text-xs">{t('pending')}</span>
+                          <span className="text-muted text-xs">&mdash;</span>
                         )}
                       </td>
                     </tr>

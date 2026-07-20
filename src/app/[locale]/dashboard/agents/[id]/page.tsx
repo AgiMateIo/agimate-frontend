@@ -17,8 +17,10 @@ import AgentConnectionsTab from '@/components/agents/AgentConnectionsTab';
 import AgentSkillsTab from '@/components/agents/AgentSkillsTab';
 import AgentModelsTab from '@/components/agents/AgentModelsTab';
 import AgentChannelsTab from '@/components/agents/AgentChannelsTab';
+import ToolUseLogsTab from '@/components/connectors/ToolUseLogsTab';
+import AgentTriggerRunsTab from '@/components/agents/AgentTriggerRunsTab';
 
-const TABS = ['general', 'models', 'channels', 'skills', 'connections'] as const;
+const TABS = ['general', 'models', 'channels', 'skills', 'connections', 'tool-calls', 'triggers'] as const;
 type Tab = (typeof TABS)[number];
 
 const isTab = (value: string | null): value is Tab => TABS.includes(value as Tab);
@@ -185,6 +187,24 @@ function AgentDetailContent({ agentId }: { agentId: string }) {
                   bindConnectorCode={pendingConnectorCode}
                   onBindConnectorHandled={() => setPendingConnectorCode(null)}
                 />
+              </div>
+            ),
+          },
+          {
+            id: 'tool-calls',
+            label: t('tabToolCalls'),
+            content: (
+              <div className="bg-surface rounded-xl border border-border p-6">
+                <ToolUseLogsTab agentId={agentId} />
+              </div>
+            ),
+          },
+          {
+            id: 'triggers',
+            label: t('tabTriggers'),
+            content: (
+              <div className="bg-surface rounded-xl border border-border p-6">
+                <AgentTriggerRunsTab agentId={agentId} />
               </div>
             ),
           },

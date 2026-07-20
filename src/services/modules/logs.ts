@@ -3,8 +3,11 @@ import { httpClient, buildPagedQuery, ApiError } from '../httpClient';
 import { API } from '@/config/constants';
 import type {
   TriggerLog,
+  TriggerLogAgentRunResponse,
+  TriggerRunFilters,
   TriggerLogProbeResponse,
   ToolUseLogResponse,
+  ToolUseLogFilters,
   PagedResponse,
   ConnectorJobResponse,
   ConnectorJobKind,
@@ -12,9 +15,19 @@ import type {
 } from '@/types';
 
 export const logsApi = {
-  // Tool Use Logs (paginated)
-  async getToolUseLogs(params?: { agentId?: string; page?: number; size?: number }): Promise<PagedResponse<ToolUseLogResponse>> {
-    const query = buildPagedQuery({ agentId: params?.agentId }, params);
+  // Tool Use Logs (paginated; filters combine with AND, sorted createdAt DESC)
+  async getToolUseLogs(params?: ToolUseLogFilters & { page?: number; size?: number }): Promise<PagedResponse<ToolUseLogResponse>> {
+    const query = buildPagedQuery(
+      {
+        agentId: params?.agentId,
+        connectorCode: params?.connectorCode,
+        connectionId: params?.connectionId,
+        name: params?.name,
+        accessEffect: params?.accessEffect,
+        status: params?.status,
+      },
+      params,
+    );
     return httpClient.get<PagedResponse<ToolUseLogResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/tool-call-logs/?${query}`);
   },
 
@@ -51,6 +64,21 @@ export const logsApi = {
     if (params?.size !== undefined) searchParams.set('size', String(params.size));
     const query = searchParams.toString();
     return httpClient.get<PagedResponse<TriggerLog>>(`${API.ENDPOINTS.CONTROL_API}/manage/trigger-logs/${query ? `?${query}` : ''}`);
+  },
+
+  // Per-agent trigger runs (paginated; filters combine with AND, sorted createdAt DESC)
+  async getTriggerLogAgentRuns(params: TriggerRunFilters & { page?: number; size?: number }): Promise<PagedResponse<TriggerLogAgentRunResponse>> {
+    const query = buildPagedQuery(
+      {
+        agentId: params.agentId,
+        connectorCode: params.connectorCode,
+        connectionId: params.connectionId,
+        name: params.name,
+        status: params.status,
+      },
+      params,
+    );
+    return httpClient.get<PagedResponse<TriggerLogAgentRunResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/trigger-logs/agent-runs/?${query}`);
   },
 
   // Trigger discovery probe — issue a one-off code the user drops into a test event.
