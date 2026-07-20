@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { LlmProviderResponse } from '@/types';
+import { AgentLlmPurpose, LlmProviderResponse } from '@/types';
 import { getErrorMessage } from '@/utils/error';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
@@ -13,6 +13,7 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Link } from '@/i18n/navigation';
 import { useLlmProviderCacheActions, useLlmProviderModelsQuery } from '@/queries/llm-providers';
 import { ModelPickerList } from '@/components/llm-providers/ModelPickerList';
+import { purposeQuickFilters, PurposeSelect } from './agentLlmPurpose';
 
 interface AddAgentLlmModalProps {
   agentId: string;
@@ -34,6 +35,7 @@ export default function AddAgentLlmModal({
   const [name, setName] = useState('');
   const [providerId, setProviderId] = useState<string>(providers[0]?.id ?? '');
   const [model, setModel] = useState('');
+  const [purpose, setPurpose] = useState<AgentLlmPurpose>('CHAT');
   const [submitting, setSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -76,6 +78,7 @@ export default function AddAgentLlmModal({
         name: name.trim(),
         llmProviderId: providerId,
         model,
+        purpose,
       });
       onSuccess();
     } catch (err) {
@@ -118,6 +121,10 @@ export default function AddAgentLlmModal({
               />
             </FormField>
 
+            <FormField label={t('purpose')} hint={t('purposeHint')}>
+              <PurposeSelect value={purpose} onChange={setPurpose} disabled={busy} />
+            </FormField>
+
             <FormField label={t('provider')} required>
               <Select
                 value={providerId}
@@ -153,13 +160,15 @@ export default function AddAgentLlmModal({
                   </Button>
                 </div>
               ) : (
-                // Keyed by provider so search/filter state resets on provider change.
+                // Keyed by provider + purpose so search/filter state resets on
+                // provider change and the capability hint re-seeds on role change.
                 <ModelPickerList
-                  key={providerId}
+                  key={`${providerId}:${purpose}`}
                   models={models}
                   value={model}
                   onChange={setModel}
                   disabled={busy}
+                  initialQuickFilters={purposeQuickFilters[purpose]}
                 />
               )}
             </FormField>

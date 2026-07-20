@@ -64,11 +64,16 @@ function CapabilityIcons({ model }: { model: LlmProviderModelResponse }) {
   );
 }
 
+export type ModelQuickFilterKey = 'vision' | 'imageOut' | 'audioIn' | 'audioOut' | 'tools' | 'reasoning';
+
 interface ModelPickerListProps {
   models: LlmProviderModelResponse[];
   value: string;
   onChange: (model: string) => void;
   disabled?: boolean;
+  // Pre-toggled capability filters (a hint, freely clearable). Read once on
+  // mount — re-key the component to re-seed.
+  initialQuickFilters?: readonly ModelQuickFilterKey[];
 }
 
 // Inline model picker for modal forms. The current selection lives in a card
@@ -76,11 +81,11 @@ interface ModelPickerListProps {
 // with capability filters folded behind a funnel toggle, and a scrollable list
 // of the remaining models. Models whose capabilities are unknown (null fields)
 // are never hidden by an active filter — they drop below a divider instead.
-export function ModelPickerList({ models, value, onChange, disabled }: ModelPickerListProps) {
+export function ModelPickerList({ models, value, onChange, disabled, initialQuickFilters }: ModelPickerListProps) {
   const t = useTranslations('LlmProviders');
 
   const [search, setSearch] = useState('');
-  const [quick, setQuick] = useState<Set<string>>(new Set());
+  const [quick, setQuick] = useState<Set<string>>(() => new Set(initialQuickFilters));
 
   const visibleQuickFilters = useMemo(
     () => QUICK_FILTERS.filter((f) => models.some((m) => {

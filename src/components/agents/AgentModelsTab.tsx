@@ -12,9 +12,11 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Button } from '@/components/ui/Button';
 import { Link } from '@/i18n/navigation';
 import { PlusIcon, TrashIcon, PencilIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { Chip } from '@/components/ui/Chip';
 import AddAgentLlmModal from './AddAgentLlmModal';
 import EditAgentLlmModal from './EditAgentLlmModal';
 import DeleteAgentLlmModal from './DeleteAgentLlmModal';
+import { purposeLabelKey } from './agentLlmPurpose';
 
 interface AgentModelsTabProps {
   agentId: string;
@@ -129,6 +131,7 @@ export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
             <thead>
               <tr className="border-b border-border">
                 <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('bindingLabel')}</th>
+                <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('purpose')}</th>
                 <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('provider')}</th>
                 <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('model')}</th>
                 <th className="text-right py-3 px-4 text-sm font-medium text-muted"></th>
@@ -137,12 +140,20 @@ export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
             <tbody>
               {bindings.map((binding) => {
                 const isPlatform = binding.source === 'PLATFORM';
+                // Fallback for a backend that predates the purpose field.
+                const purpose = binding.purpose ?? 'CHAT';
                 const provider = binding.llmProviderId ? providerById(binding.llmProviderId) : undefined;
                 const providerDisabled = provider ? !provider.enabled : false;
                 return (
                   <tr key={binding.name} className="border-b border-border last:border-b-0 hover:bg-surface-secondary transition-colors">
                     <td className="py-3 px-4 text-sm font-medium text-foreground font-mono">
                       {binding.name}
+                    </td>
+                    <td className="py-3 px-4 text-sm">
+                      {/* Tool roles stand out; CHAT (the norm) stays neutral. */}
+                      <Chip tone={purpose === 'CHAT' ? 'default' : 'accent'}>
+                        {t(purposeLabelKey[purpose])}
+                      </Chip>
                     </td>
                     <td className="py-3 px-4 text-sm">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -246,6 +257,10 @@ export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
           agentId={agentId}
           binding={editing}
           providers={providers}
+          isLastChatBinding={
+            editing.purpose === 'CHAT' &&
+            !bindings.some((b) => b !== editing && b.source === 'USER' && b.purpose === 'CHAT')
+          }
           onClose={() => setEditing(null)}
           onSuccess={handleMutationSuccess}
         />
