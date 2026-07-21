@@ -36,7 +36,9 @@ const matchContextRoute = (pathname: string): ContextRoute | null => {
   if (agent && !NON_AGENT_SEGMENTS.has(agent[1])) {
     return { type: 'agent', id: agent[1], section: agent[2] ?? 'general' };
   }
-  const team = pathname.match(/^\/dashboard\/agentic-teams\/([^/]+)(?:\/([^/]+))?$/);
+  // Deeper team routes (e.g. agents/create) keep the team context, with the first
+  // sub-segment as the active section.
+  const team = pathname.match(/^\/dashboard\/agentic-teams\/([^/]+)(?:\/([^/]+))?(?:\/.+)?$/);
   if (team) {
     return { type: 'team', id: team[1], section: team[2] ?? 'general' };
   }

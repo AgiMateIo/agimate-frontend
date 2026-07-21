@@ -20,7 +20,7 @@ export default function TeamAgentsPage() {
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-foreground">{t('agents')}</h2>
         <Link
-          href={`/dashboard/agents/create?teamId=${teamId}`}
+          href={`/dashboard/agentic-teams/${teamId}/agents/create`}
           className="bg-accent text-accent-foreground px-4 py-2 rounded-lg font-medium hover:bg-accent/90 transition-colors"
         >
           {tAgents('createAgent')}

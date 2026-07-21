@@ -746,7 +746,8 @@
     "tabGeneral": "Общая информация",
     "switchTeam": "Сменить команду",
     "comingSoon": "Этот раздел скоро появится.",
-    "updated": "Обновлено"
+    "updated": "Обновлено",
+    "tasksTotal": "Задачи"
   },
   "Connections": {
     "title": "Подключения",

@@ -3,9 +3,11 @@
 import { Suspense, createContext, useContext, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import { usePathname } from '@/i18n/navigation';
 import { UserGroupIcon } from '@heroicons/react/24/outline';
-import { useAgenticTeamQuery } from '@/queries/agentic-teams';
+import { useAgenticTeamQuery, agenticTeamOptions } from '@/queries/agentic-teams';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
@@ -46,10 +48,28 @@ function TeamShellHeader({
   );
 }
 
+// The agent-creation wizard owns the whole canvas (its own stepper and headers) —
+// no team header on top of it, but still resolve the team name for the breadcrumb.
+function TeamBreadcrumb({ teamId }: { teamId: string }) {
+  const { data: team } = useQuery(agenticTeamOptions(teamId));
+  useSetBreadcrumb(teamId, team?.name);
+  return null;
+}
+
 export default function AgenticTeamDetailLayout({ children }: { children: React.ReactNode }) {
   const t = useTranslations('AgenticTeams');
   const teamId = useParams().id as string;
+  const pathname = usePathname();
   const [actionsTarget, setActionsTarget] = useState<HTMLElement | null>(null);
+
+  if (pathname.endsWith('/agents/create')) {
+    return (
+      <>
+        <TeamBreadcrumb teamId={teamId} />
+        {children}
+      </>
+    );
+  }
 
   return (
     <div className="space-y-6">

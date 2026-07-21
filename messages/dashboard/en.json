@@ -746,7 +746,8 @@
     "tabGeneral": "General",
     "switchTeam": "Switch team",
     "comingSoon": "This section is coming soon.",
-    "updated": "Updated"
+    "updated": "Updated",
+    "tasksTotal": "Tasks"
   },
   "Connections": {
     "title": "Connections",
