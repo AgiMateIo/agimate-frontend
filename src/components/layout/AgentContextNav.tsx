@@ -16,6 +16,7 @@ import {
   CommandLineIcon,
   BoltIcon,
   CheckIcon,
+  PlusIcon,
 } from '@heroicons/react/24/outline';
 import { useAgentDetailQuery, allAgentsOptions } from '@/queries/agents';
 import { getAgentAvatarUrl } from '@/utils/avatar';
@@ -78,21 +79,33 @@ export default function AgentContextNav({
   };
 
   const backLink = (
-    <Link
-      href="/dashboard/agents"
-      title={collapsed ? tSidebar('agents') : undefined}
-      className={`group/item relative flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-muted transition-colors hover:bg-surface-secondary hover:text-foreground ${
-        collapsed ? 'justify-center' : ''
-      }`}
-    >
-      <ArrowLeftIcon className="h-4 w-4 shrink-0" />
-      {!collapsed && <span className="truncate">{tSidebar('agents')}</span>}
-      {collapsed && (
-        <span className="pointer-events-none absolute left-full z-20 ml-2 hidden whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background shadow-lg group-hover/item:block">
-          {tSidebar('agents')}
-        </span>
+    <div className="group/item relative flex items-center">
+      <Link
+        href="/dashboard/agents"
+        title={collapsed ? tSidebar('agents') : undefined}
+        className={`relative flex flex-1 items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-muted transition-colors hover:bg-surface-secondary hover:text-foreground ${
+          collapsed ? 'justify-center' : ''
+        }`}
+      >
+        <ArrowLeftIcon className="h-4 w-4 shrink-0" />
+        {!collapsed && <span className="truncate">{tSidebar('agents')}</span>}
+        {collapsed && (
+          <span className="pointer-events-none absolute left-full z-20 ml-2 hidden whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background shadow-lg group-hover/item:block">
+            {tSidebar('agents')}
+          </span>
+        )}
+      </Link>
+      {!collapsed && (
+        <Link
+          href="/dashboard/agents/create"
+          title={tSidebar('createAgent')}
+          aria-label={tSidebar('createAgent')}
+          className="absolute right-1.5 grid h-6 w-6 place-items-center rounded-md text-muted transition-colors hover:bg-accent hover:text-accent-foreground"
+        >
+          <PlusIcon className="h-4 w-4" />
+        </Link>
       )}
-    </Link>
+    </div>
   );
 
   const sectionLinks = (
@@ -123,7 +136,7 @@ export default function AgentContextNav({
 
   if (collapsed) {
     return (
-      <div key={agentId} className="animate-sidebar-in space-y-2">
+      <div className="space-y-2">
         {backLink}
         {agent && (
           <div className="group/item relative flex justify-center py-1">
@@ -140,7 +153,7 @@ export default function AgentContextNav({
   }
 
   return (
-    <div key={agentId} className="animate-sidebar-in">
+    <div>
       {backLink}
 
       {/* Agent switcher */}

@@ -121,20 +121,34 @@ body {
   animation: task-arrive 900ms cubic-bezier(0.2, 0, 0, 1) both;
 }
 
-/* Sidebar drill-in — the contextual agent nav slides in when entering an agent
-   (and re-runs per agent via a keyed remount) so the swap reads as "going in"
-   rather than the sidebar flickering to a different set of items. */
-@keyframes sidebar-slide-in {
-  from { opacity: 0; transform: translateX(12px); }
+/* Sidebar drill navigation — the nav body slides in directionally so the swap
+   reads as moving through a stack: forward (from the right) when drilling into an
+   agent or switching agents, back (from the left) when returning to the global
+   nav. Triggered by a keyed remount in SidebarNav on mode/agent transitions only,
+   so plain section navigation doesn't replay it. */
+@keyframes sidebar-slide-forward {
+  from { opacity: 0; transform: translateX(18px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 
-.animate-sidebar-in {
-  animation: sidebar-slide-in 180ms ease-out both;
+@keyframes sidebar-slide-back {
+  from { opacity: 0; transform: translateX(-18px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.animate-sidebar-forward {
+  animation: sidebar-slide-forward 200ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.animate-sidebar-back {
+  animation: sidebar-slide-back 200ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-sidebar-in { animation: none; }
+  .animate-sidebar-forward,
+  .animate-sidebar-back {
+    animation: none;
+  }
 }
 
 /* View Transition tuning for kanban card flight.

@@ -2,7 +2,8 @@
 
 import { useParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { LockClosedIcon, KeyIcon } from '@heroicons/react/24/outline';
+import { LockClosedIcon, KeyIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { Link } from '@/i18n/navigation';
 import { useAgentDetailSuspenseQuery } from '@/queries/agents';
 import { formatDate } from '@/utils/date';
 
@@ -27,20 +28,29 @@ export default function AgentGeneralPage() {
 
   return (
     <div className="bg-surface rounded-xl border border-border p-6 space-y-6">
-      {/* Status & Key ID */}
-      <div className="flex items-center gap-3">
-        <span
-          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
-            agent.enabled ? 'bg-success/10 text-success' : 'bg-muted/10 text-muted'
-          }`}
+      {/* Status & Key ID + Edit */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
+              agent.enabled ? 'bg-success/10 text-success' : 'bg-muted/10 text-muted'
+            }`}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${agent.enabled ? 'bg-success' : 'bg-muted'}`} />
+            {agent.enabled ? t('enabled') : t('disabled')}
+          </span>
+          <span className="inline-flex items-center gap-1.5 bg-surface-secondary border border-border/50 rounded-full px-3 py-1 text-xs text-muted font-mono">
+            <KeyIcon className="h-3 w-3" />
+            {agent.maskedKeyId}
+          </span>
+        </div>
+        <Link
+          href={`/dashboard/agents/${agent.id}/edit`}
+          className="flex items-center gap-2 bg-accent text-accent-foreground px-4 py-2 rounded-lg font-medium hover:bg-accent/90 transition-colors shrink-0"
         >
-          <span className={`w-1.5 h-1.5 rounded-full ${agent.enabled ? 'bg-success' : 'bg-muted'}`} />
-          {agent.enabled ? t('enabled') : t('disabled')}
-        </span>
-        <span className="inline-flex items-center gap-1.5 bg-surface-secondary border border-border/50 rounded-full px-3 py-1 text-xs text-muted font-mono">
-          <KeyIcon className="h-3 w-3" />
-          {agent.maskedKeyId}
-        </span>
+          <PencilIcon className="h-4 w-4" />
+          {t('editAgentTitle')}
+        </Link>
       </div>
 
       {/* Description */}

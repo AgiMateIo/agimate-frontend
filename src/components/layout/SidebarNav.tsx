@@ -1,6 +1,6 @@
 'use client';
 
-import { useSyncExternalStore } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, usePathname } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
@@ -151,6 +151,27 @@ export default function SidebarNav() {
 
   const agentRoute = matchAgentRoute(pathname);
 
+  // Direction of the nav swap, for the slide animation. Forward (from the right)
+  // when entering an agent or switching between agents; back (from the left) when
+  // returning to the global nav. navKey only changes on mode/agent transitions, so
+  // the keyed wrapper remounts (and replays the slide) then — not on plain section
+  // navigation. Previous target is tracked via the store-info-from-previous-render
+  // pattern (setState during render) to avoid reading a ref during render.
+  const navMode = agentRoute ? 'agent' : 'global';
+  const navId = agentRoute?.agentId ?? null;
+  const navKey = `${navMode}:${navId ?? ''}`;
+  const [navSlide, setNavSlide] = useState({ mode: navMode, id: navId, slide: '' });
+  let slideClass = navSlide.slide;
+  if (navSlide.mode !== navMode || navSlide.id !== navId) {
+    slideClass =
+      navSlide.mode !== navMode
+        ? navMode === 'agent'
+          ? 'animate-sidebar-forward'
+          : 'animate-sidebar-back'
+        : 'animate-sidebar-forward'; // switching between agents
+    setNavSlide({ mode: navMode, id: navId, slide: slideClass });
+  }
+
   const groups = getNavGroups(t, teams);
 
   // Resolve the single most-specific active leaf across every group so shared-href
@@ -211,6 +232,7 @@ export default function SidebarNav() {
           </button>
         )}
 
+        <div key={navKey} className={slideClass}>
         {agentRoute ? (
           <AgentContextNav
             agentId={agentRoute.agentId}
@@ -308,6 +330,7 @@ export default function SidebarNav() {
           </div>
           ))
         )}
+        </div>
       </nav>
 
       {/* Footer */}

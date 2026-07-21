@@ -3,8 +3,7 @@
 import { Suspense } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { PencilIcon } from '@heroicons/react/24/outline';
-import { Link, usePathname } from '@/i18n/navigation';
+import { usePathname } from '@/i18n/navigation';
 import { useAgentDetailSuspenseQuery } from '@/queries/agents';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
@@ -15,26 +14,16 @@ import { getAgentAvatarUrl } from '@/utils/avatar';
 // section pages render inside. The agent's contextual sidebar lives in SidebarNav,
 // which detects the same route from the pathname.
 function AgentShellHeader({ agentId }: { agentId: string }) {
-  const t = useTranslations('Agents');
   const { data: agent } = useAgentDetailSuspenseQuery(agentId);
   useSetBreadcrumb(agentId, agent.name);
 
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <img src={getAgentAvatarUrl(agent.name)} alt={agent.name} className="w-12 h-12 rounded-lg" />
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{agent.name}</h1>
-          {agent.agenticTeamName && <p className="text-sm text-muted">{agent.agenticTeamName}</p>}
-        </div>
+    <div className="flex items-center gap-3">
+      <img src={getAgentAvatarUrl(agent.name)} alt={agent.name} className="w-12 h-12 rounded-lg" />
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">{agent.name}</h1>
+        {agent.agenticTeamName && <p className="text-sm text-muted">{agent.agenticTeamName}</p>}
       </div>
-      <Link
-        href={`/dashboard/agents/${agent.id}/edit`}
-        className="flex items-center gap-2 bg-accent text-accent-foreground px-4 py-2 rounded-lg font-medium hover:bg-accent/90 transition-colors"
-      >
-        <PencilIcon className="h-4 w-4" />
-        {t('editAgentTitle')}
-      </Link>
     </div>
   );
 }
