@@ -1,20 +1,37 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, createContext, useContext, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { usePathname } from '@/i18n/navigation';
 import { UserGroupIcon } from '@heroicons/react/24/outline';
-import { useAgenticTeamQuery, agenticTeamOptions } from '@/queries/agentic-teams';
+import { useAgenticTeamQuery } from '@/queries/agentic-teams';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
+// The header row exposes an actions slot (right-aligned next to the team name).
+// Section pages fill it by wrapping their buttons in <TeamHeaderActions> — the
+// content is portalled into the slot, so it sits on the header line instead of
+// opening a gap below it (see the board page).
+const HeaderActionsTargetContext = createContext<HTMLElement | null>(null);
+
+export function TeamHeaderActions({ children }: { children: React.ReactNode }) {
+  const target = useContext(HeaderActionsTargetContext);
+  return target ? createPortal(children, target) : null;
+}
+
 // Shell shared by every team section (general/agents/board/…). It owns the team
-// header, breadcrumb override and the ErrorBoundary + Suspense boundary the section
-// pages render inside. The team's contextual sidebar lives in SidebarNav, which
-// detects the same route from the pathname.
-function TeamShellHeader({ teamId }: { teamId: string }) {
+// header (name only — the description lives on the General page), breadcrumb
+// override and the ErrorBoundary + Suspense boundary the section pages render
+// inside. The team's contextual sidebar lives in SidebarNav, which detects the
+// same route from the pathname.
+function TeamShellHeader({
+  teamId,
+  onActionsRef,
+}: {
+  teamId: string;
+  onActionsRef: (el: HTMLElement | null) => void;
+}) {
   const { data: team } = useAgenticTeamQuery(teamId);
   useSetBreadcrumb(teamId, team.name);
 
@@ -23,42 +40,25 @@ function TeamShellHeader({ teamId }: { teamId: string }) {
       <span className="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-accent/10 text-accent">
         <UserGroupIcon className="h-7 w-7" />
       </span>
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">{team.name}</h1>
-        {team.description && <p className="text-sm text-muted">{team.description}</p>}
-      </div>
+      <h1 className="text-2xl font-bold text-foreground">{team.name}</h1>
+      <div ref={onActionsRef} className="ml-auto flex items-center gap-2" />
     </div>
   );
-}
-
-// The board owns the full canvas (its own header and kanban layout) — no team header
-// on top of it, but still resolve the team name for the breadcrumb.
-function TeamBreadcrumb({ teamId }: { teamId: string }) {
-  const { data: team } = useQuery(agenticTeamOptions(teamId));
-  useSetBreadcrumb(teamId, team?.name);
-  return null;
 }
 
 export default function AgenticTeamDetailLayout({ children }: { children: React.ReactNode }) {
   const t = useTranslations('AgenticTeams');
   const teamId = useParams().id as string;
-  const pathname = usePathname();
-
-  if (pathname.endsWith('/board')) {
-    return (
-      <>
-        <TeamBreadcrumb teamId={teamId} />
-        {children}
-      </>
-    );
-  }
+  const [actionsTarget, setActionsTarget] = useState<HTMLElement | null>(null);
 
   return (
     <div className="space-y-6">
       <ErrorBoundary resetKeys={[teamId]}>
         <Suspense fallback={<div className="text-center py-12 text-muted">{t('loading')}</div>}>
-          <TeamShellHeader teamId={teamId} />
-          {children}
+          <HeaderActionsTargetContext.Provider value={actionsTarget}>
+            <TeamShellHeader teamId={teamId} onActionsRef={setActionsTarget} />
+            {children}
+          </HeaderActionsTargetContext.Provider>
         </Suspense>
       </ErrorBoundary>
     </div>

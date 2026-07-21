@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useCallback, useMemo, Suspense } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { useSuspenseQueries } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
+import { TeamHeaderActions } from '../layout';
 import { Button } from '@/components/ui/Button';
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import type {
   Board,
   BoardTask,
@@ -127,27 +127,19 @@ function BoardView({ board, teamId }: { board: Board; teamId: string }) {
 
   return (
     <>
-      {/* Board header */}
-      <div className="px-6 pt-6 pb-4 shrink-0 flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{board.name}</h1>
-          {board.description && (
-            <p className="text-muted mt-1 text-sm">{board.description}</p>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="secondary" onClick={() => setShowCreateTask(true)}>
-            {t('createTask')}
-          </Button>
-          <button
-            onClick={() => invalidateTasks(board.id)}
-            className="text-muted hover:text-foreground transition-colors p-2"
-            aria-label={t('refresh')}
-          >
-            <ArrowPathIcon className="h-5 w-5" />
-          </button>
-        </div>
-      </div>
+      {/* Board actions render in the shared team header row (see the [id] layout) */}
+      <TeamHeaderActions>
+        <Button variant="secondary" onClick={() => setShowCreateTask(true)}>
+          {t('createTask')}
+        </Button>
+        <button
+          onClick={() => invalidateTasks(board.id)}
+          className="text-muted hover:text-foreground transition-colors p-2"
+          aria-label={t('refresh')}
+        >
+          <ArrowPathIcon className="h-5 w-5" />
+        </button>
+      </TeamHeaderActions>
 
       <KanbanBoard
         columns={columns}
@@ -184,7 +176,6 @@ function BoardView({ board, teamId }: { board: Board; teamId: string }) {
 }
 
 function BoardResolver({ teamId }: { teamId: string }) {
-  const t = useTranslations('Board');
   const { data: boards } = useBoardsListQuery();
   const { invalidateBoards } = useBoardCacheActions();
 
@@ -192,21 +183,17 @@ function BoardResolver({ teamId }: { teamId: string }) {
 
   if (!board) {
     return (
-      <>
-        <div className="px-6 pt-6 pb-4 shrink-0">
-          <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
-        </div>
-        <div className="px-6">
-          {/* A fresh board appears once the boards list refetches. */}
-          <BoardEmptyState teamId={teamId} onCreated={() => invalidateBoards()} />
-        </div>
-      </>
+      <div className="px-6">
+        {/* A fresh board appears once the boards list refetches. */}
+        <BoardEmptyState teamId={teamId} onCreated={() => invalidateBoards()} />
+      </div>
     );
   }
 
   return <BoardView board={board} teamId={teamId} />;
 }
 
+// The team header and the ErrorBoundary + Suspense shell live in the [id] layout.
 export default function BoardPage() {
   const t = useTranslations('Board');
   const params = useParams();
@@ -214,17 +201,12 @@ export default function BoardPage() {
 
   useSetBreadcrumb('board', t('title'));
 
+  // Full-bleed kanban canvas: cancel the main area's horizontal padding and fill
+  // the viewport below the top bar, layout header and paddings (4 + 1.5 + 3 + 1.5
+  // + 1.5 rem).
   return (
-    <div className="-mx-6 -mt-6 flex flex-col" style={{ minHeight: 'calc(100vh - 4rem)' }}>
-      <ErrorBoundary resetKeys={[teamId]}>
-        <Suspense
-          fallback={
-            <div className="flex items-center justify-center py-24 text-muted">{t('loading')}</div>
-          }
-        >
-          <BoardResolver teamId={teamId} />
-        </Suspense>
-      </ErrorBoundary>
+    <div className="-mx-6 flex flex-col" style={{ minHeight: 'calc(100vh - 11.5rem)' }}>
+      <BoardResolver teamId={teamId} />
     </div>
   );
 }
