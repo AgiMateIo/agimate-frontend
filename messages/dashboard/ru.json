@@ -21,7 +21,8 @@
     "infrastructure": "Инфраструктура",
     "createAgent": "Создать агента",
     "collapse": "Свернуть меню",
-    "expand": "Развернуть меню"
+    "expand": "Развернуть меню",
+    "createTeam": "Создать команду"
   },
   "TopBar": {
     "breadcrumbs": {
@@ -361,7 +362,6 @@
     "connectorId": "ID коннектора",
     "triggerParams": "Параметры",
     "pending": "Ожидание",
-    "resultOrError": "Результат / Ошибка",
     "page": "Страница",
     "previous": "Назад",
     "next": "Вперёд"
@@ -742,7 +742,11 @@
     "editTeam": "Редактировать",
     "save": "Сохранить",
     "editError": "Не удалось обновить команду",
-    "deleteError": "Не удалось удалить команду"
+    "deleteError": "Не удалось удалить команду",
+    "tabGeneral": "Общая информация",
+    "switchTeam": "Сменить команду",
+    "comingSoon": "Этот раздел скоро появится.",
+    "updated": "Обновлено"
   },
   "Connections": {
     "title": "Подключения",

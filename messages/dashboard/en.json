@@ -21,7 +21,8 @@
     "infrastructure": "Infrastructure",
     "createAgent": "Create agent",
     "collapse": "Collapse menu",
-    "expand": "Expand menu"
+    "expand": "Expand menu",
+    "createTeam": "Create team"
   },
   "TopBar": {
     "breadcrumbs": {
@@ -361,7 +362,6 @@
     "connectorId": "Connector ID",
     "triggerParams": "Parameters",
     "pending": "Pending",
-    "resultOrError": "Result / Error",
     "page": "Page",
     "previous": "Previous",
     "next": "Next"
@@ -742,7 +742,11 @@
     "editTeam": "Edit Team",
     "save": "Save",
     "editError": "Failed to update team",
-    "deleteError": "Failed to delete team"
+    "deleteError": "Failed to delete team",
+    "tabGeneral": "General",
+    "switchTeam": "Switch team",
+    "comingSoon": "This section is coming soon.",
+    "updated": "Updated"
   },
   "Connections": {
     "title": "Connections",

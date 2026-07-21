@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/navigation';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -17,8 +19,24 @@ function TeamsGrid() {
 
 export default function AgenticTeamsPage() {
   const t = useTranslations('AgenticTeams');
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { invalidateAll } = useAgenticTeamCacheActions();
+
+  // The sidebar's "+" links here with ?create=1 (team creation is a modal, not a
+  // route). Open the modal on arrival with the param — via setState-during-render
+  // (the effect only strips the param from the URL, so close + reopen works).
+  const shouldCreate = searchParams.get('create') === '1';
+  const [showCreateModal, setShowCreateModal] = useState(shouldCreate);
+  const [seenCreateParam, setSeenCreateParam] = useState(shouldCreate);
+  if (shouldCreate && !seenCreateParam) {
+    setSeenCreateParam(true);
+    setShowCreateModal(true);
+  }
+  if (!shouldCreate && seenCreateParam) setSeenCreateParam(false);
+  useEffect(() => {
+    if (shouldCreate) router.replace('/dashboard/agentic-teams');
+  }, [shouldCreate, router]);
 
   const handleCreated = () => {
     invalidateAll();

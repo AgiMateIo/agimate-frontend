@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useSyncExternalStore } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Link, usePathname } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import {
@@ -21,20 +20,27 @@ import {
   PlusIcon,
   ChevronDoubleLeftIcon,
 } from '@heroicons/react/24/outline';
-import { agenticTeamsListOptions } from '@/queries/agentic-teams';
-import { AgenticTeam } from '@/types';
 import AgentContextNav from './AgentContextNav';
+import TeamContextNav from './TeamContextNav';
 
 // Route segments under /dashboard/agents that are not an agent instance.
 const NON_AGENT_SEGMENTS = new Set(['create', 'deliveries']);
 
-// When on an agent detail route the sidebar swaps its global nav for that agent's
-// contextual nav. Returns { agentId, section } or null. section is 'general' for the
-// base route, the sub-route name otherwise (e.g. 'models', 'edit').
-const matchAgentRoute = (pathname: string): { agentId: string; section: string } | null => {
-  const m = pathname.match(/^\/dashboard\/agents\/([^/]+)(?:\/([^/]+))?$/);
-  if (!m || NON_AGENT_SEGMENTS.has(m[1])) return null;
-  return { agentId: m[1], section: m[2] ?? 'general' };
+// When on an agent or agentic-team detail route the sidebar swaps its global nav for
+// that entity's contextual nav. Returns { type, id, section } or null. section is
+// 'general' for the base route, the sub-route name otherwise (e.g. 'models', 'board').
+type ContextRoute = { type: 'agent' | 'team'; id: string; section: string };
+
+const matchContextRoute = (pathname: string): ContextRoute | null => {
+  const agent = pathname.match(/^\/dashboard\/agents\/([^/]+)(?:\/([^/]+))?$/);
+  if (agent && !NON_AGENT_SEGMENTS.has(agent[1])) {
+    return { type: 'agent', id: agent[1], section: agent[2] ?? 'general' };
+  }
+  const team = pathname.match(/^\/dashboard\/agentic-teams\/([^/]+)(?:\/([^/]+))?$/);
+  if (team) {
+    return { type: 'team', id: team[1], section: team[2] ?? 'general' };
+  }
+  return null;
 };
 
 type NavItem = {
@@ -43,7 +49,6 @@ type NavItem = {
   href: string;
   createHref?: string; // renders an inline "+" action (e.g. Agents → wizard)
   createLabel?: string;
-  children?: NavItem[];
 };
 
 type NavGroup = {
@@ -76,18 +81,14 @@ const collapseStore = {
 // Length of the longest prefix of `pathname` that `href` matches (exact match or
 // a nested route under it), or -1 when it doesn't match at all. Dashboard only
 // matches exactly so it isn't lit up by every nested route. Used to pick the one
-// most-specific nav entry when hrefs overlap (e.g. an agent detail `/agents/{id}`
-// sits under the agents list `/agents`).
+// most-specific nav entry when hrefs overlap.
 const matchedLength = (pathname: string, href: string): number => {
   if (pathname === href) return href.length;
   if (href !== '/dashboard' && pathname.startsWith(href + '/')) return href.length;
   return -1;
 };
 
-const getNavGroups = (
-  t: ReturnType<typeof useTranslations>,
-  teams: AgenticTeam[],
-): NavGroup[] => [
+const getNavGroups = (t: ReturnType<typeof useTranslations>): NavGroup[] => [
   {
     label: t('workspace'),
     items: [
@@ -104,11 +105,8 @@ const getNavGroups = (
         label: t('agenticTeams'),
         icon: UserGroupIcon,
         href: '/dashboard/agentic-teams',
-        children: teams.map((team) => ({
-          label: team.name,
-          icon: UserGroupIcon,
-          href: `/dashboard/agentic-teams/${team.id}`,
-        })),
+        createHref: '/dashboard/agentic-teams?create=1',
+        createLabel: t('createTeam'),
       },
     ],
   },
@@ -138,9 +136,6 @@ const getNavGroups = (
 export default function SidebarNav() {
   const pathname = usePathname();
   const t = useTranslations('Sidebar');
-  // Non-suspense query: the sidebar must never blank out or throw to the layout
-  // error boundary while teams load — an empty list is a fine intermediate state.
-  const { data: teams = [] } = useQuery(agenticTeamsListOptions());
 
   const collapsed = useSyncExternalStore(
     collapseStore.subscribe,
@@ -149,43 +144,36 @@ export default function SidebarNav() {
   );
   const toggleCollapsed = () => collapseStore.toggle(collapsed);
 
-  const agentRoute = matchAgentRoute(pathname);
+  const contextRoute = matchContextRoute(pathname);
 
   // Direction of the nav swap, for the slide animation. Forward (from the right)
-  // when entering an agent or switching between agents; back (from the left) when
-  // returning to the global nav. navKey only changes on mode/agent transitions, so
-  // the keyed wrapper remounts (and replays the slide) then — not on plain section
-  // navigation. Previous target is tracked via the store-info-from-previous-render
-  // pattern (setState during render) to avoid reading a ref during render.
-  const navMode = agentRoute ? 'agent' : 'global';
-  const navId = agentRoute?.agentId ?? null;
+  // when entering a contextual nav or switching between entities; back (from the
+  // left) when returning to the global nav. navKey only changes on mode/entity
+  // transitions, so the keyed wrapper remounts (and replays the slide) then — not
+  // on plain section navigation. Previous target is tracked via the
+  // store-info-from-previous-render pattern (setState during render) to avoid
+  // reading a ref during render.
+  const navMode = contextRoute?.type ?? 'global';
+  const navId = contextRoute?.id ?? null;
   const navKey = `${navMode}:${navId ?? ''}`;
   const [navSlide, setNavSlide] = useState({ mode: navMode, id: navId, slide: '' });
   let slideClass = navSlide.slide;
   if (navSlide.mode !== navMode || navSlide.id !== navId) {
-    slideClass =
-      navSlide.mode !== navMode
-        ? navMode === 'agent'
-          ? 'animate-sidebar-forward'
-          : 'animate-sidebar-back'
-        : 'animate-sidebar-forward'; // switching between agents
+    slideClass = navMode === 'global' ? 'animate-sidebar-back' : 'animate-sidebar-forward';
     setNavSlide({ mode: navMode, id: navId, slide: slideClass });
   }
 
-  const groups = getNavGroups(t, teams);
+  const groups = getNavGroups(t);
 
-  // Resolve the single most-specific active leaf across every group so shared-href
-  // sub-items (a team detail under Teams) stay lit instead of highlighting a parent.
+  // Resolve the single most-specific active leaf across every group.
   let activeHref: string | null = null;
   let activeMatch = -1;
   for (const group of groups) {
     for (const item of group.items) {
-      for (const href of [item.href, ...(item.children?.map((c) => c.href) ?? [])]) {
-        const length = matchedLength(pathname, href);
-        if (length > activeMatch) {
-          activeMatch = length;
-          activeHref = href;
-        }
+      const length = matchedLength(pathname, item.href);
+      if (length > activeMatch) {
+        activeMatch = length;
+        activeHref = item.href;
       }
     }
   }
@@ -233,12 +221,20 @@ export default function SidebarNav() {
         )}
 
         <div key={navKey} className={slideClass}>
-        {agentRoute ? (
-          <AgentContextNav
-            agentId={agentRoute.agentId}
-            currentSection={agentRoute.section}
-            collapsed={collapsed}
-          />
+        {contextRoute ? (
+          contextRoute.type === 'agent' ? (
+            <AgentContextNav
+              agentId={contextRoute.id}
+              currentSection={contextRoute.section}
+              collapsed={collapsed}
+            />
+          ) : (
+            <TeamContextNav
+              teamId={contextRoute.id}
+              currentSection={contextRoute.section}
+              collapsed={collapsed}
+            />
+          )
         ) : (
           groups.map((group, groupIndex) => (
           <div key={group.label ?? `group-${groupIndex}`} className="mb-3.5 last:mb-0">
@@ -254,74 +250,45 @@ export default function SidebarNav() {
             <div className="space-y-0.5">
               {group.items.map((item) => {
                 const isActive = activeHref === item.href;
-                const childActiveHref =
-                  item.children?.find((c) => c.href === activeHref)?.href ?? null;
 
                 return (
-                  <div key={item.href}>
-                    <div className="group/item relative flex items-center">
+                  <div key={item.href} className="group/item relative flex items-center">
+                    <Link
+                      href={item.href}
+                      title={collapsed ? item.label : undefined}
+                      className={`flex flex-1 items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors
+                        ${collapsed ? 'justify-center' : ''}
+                        ${
+                          isActive
+                            ? 'bg-accent text-accent-foreground'
+                            : 'text-muted hover:bg-surface-secondary hover:text-foreground'
+                        }`}
+                    >
+                      <item.icon className="h-5 w-5 shrink-0" />
+                      {!collapsed && <span className="truncate">{item.label}</span>}
+                    </Link>
+
+                    {!collapsed && item.createHref && (
                       <Link
-                        href={item.href}
-                        title={collapsed ? item.label : undefined}
-                        className={`flex flex-1 items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors
-                          ${collapsed ? 'justify-center' : ''}
+                        href={item.createHref}
+                        title={item.createLabel}
+                        aria-label={item.createLabel}
+                        className={`absolute right-1.5 grid h-6 w-6 place-items-center rounded-md transition-colors
                           ${
                             isActive
-                              ? 'bg-accent text-accent-foreground'
-                              : 'text-muted hover:bg-surface-secondary hover:text-foreground'
+                              ? 'text-accent-foreground/80 hover:bg-white/20 hover:text-accent-foreground'
+                              : 'text-muted opacity-0 hover:bg-accent hover:text-accent-foreground group-hover/item:opacity-100'
                           }`}
                       >
-                        <item.icon className="h-5 w-5 shrink-0" />
-                        {!collapsed && <span className="truncate">{item.label}</span>}
+                        <PlusIcon className="h-4 w-4" />
                       </Link>
+                    )}
 
-                      {!collapsed && item.createHref && (
-                        <Link
-                          href={item.createHref}
-                          title={item.createLabel}
-                          aria-label={item.createLabel}
-                          className={`absolute right-1.5 grid h-6 w-6 place-items-center rounded-md transition-colors
-                            ${
-                              isActive
-                                ? 'text-accent-foreground/80 hover:bg-white/20 hover:text-accent-foreground'
-                                : 'text-muted opacity-0 hover:bg-accent hover:text-accent-foreground group-hover/item:opacity-100'
-                            }`}
-                        >
-                          <PlusIcon className="h-4 w-4" />
-                        </Link>
-                      )}
-
-                      {/* Tooltip for collapsed mode */}
-                      {collapsed && (
-                        <span className="pointer-events-none absolute left-full z-20 ml-2 hidden whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background shadow-lg group-hover/item:block">
-                          {item.label}
-                        </span>
-                      )}
-                    </div>
-
-                    {!collapsed && item.children && item.children.length > 0 && (
-                      <div className="mt-0.5 space-y-0.5 pl-5">
-                        {item.children.map((child) => {
-                          const isChildActive = childActiveHref === child.href;
-                          return (
-                            <Link
-                              key={child.href}
-                              href={child.href}
-                              className={`flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[12.5px] transition-colors
-                                ${
-                                  isChildActive
-                                    ? 'bg-accent font-medium text-accent-foreground'
-                                    : 'text-muted hover:bg-surface-secondary hover:text-foreground'
-                                }`}
-                            >
-                              <span
-                                className={`h-1.5 w-1.5 shrink-0 rounded-full ${isChildActive ? 'bg-accent-foreground' : 'bg-muted'}`}
-                              />
-                              <span className="truncate">{child.label}</span>
-                            </Link>
-                          );
-                        })}
-                      </div>
+                    {/* Tooltip for collapsed mode */}
+                    {collapsed && (
+                      <span className="pointer-events-none absolute left-full z-20 ml-2 hidden whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background shadow-lg group-hover/item:block">
+                        {item.label}
+                      </span>
                     )}
                   </div>
                 );
