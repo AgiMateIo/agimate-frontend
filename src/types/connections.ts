@@ -1,7 +1,7 @@
-import type { IdentityScope } from './skills';
-
 // A connector *instance* (Connection on the backend) — e.g. a specific Telegram
-// bot or MCP server. Listed in the UI under "Connections" when INSTANCE-scoped.
+// bot or MCP server. External connectors (telegram/mcp/app) have user-created
+// instances; internal connectors have exactly one system row per user
+// (subCode = null, fullCode = "<code>_<userId>") managed by the backend.
 export interface ConnectionResponse {
   id: string;
   connectorCode: string;
@@ -10,7 +10,6 @@ export interface ConnectionResponse {
   subCode: string | null;
   // stable per-user instance handle, e.g. `mcp_context7` — used as the instance label in UI.
   fullCode: string;
-  scope: IdentityScope;
   name: string;
   enabled: boolean;
   lastUsedAt: string | null;

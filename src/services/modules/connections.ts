@@ -1,9 +1,8 @@
 // modules/connections.ts
 //
 // Connections are connector *instances* — `Connection` resources on the backend.
-// The UI surfaces INSTANCE-scoped connections as "integrations" (the ones a user
-// creates and manages directly); other scopes (AGENT/TEAM/USER/GLOBAL) are
-// bindings and not listed here.
+// External connectors (telegram/mcp/app) have user-created instances; internal
+// connectors have one system row per user, created and managed by the backend.
 import { httpClient } from '../httpClient';
 import { API } from '@/config/constants';
 import type {
@@ -11,7 +10,6 @@ import type {
   ConnectorJobResponse,
   ConnectionResponse,
   CreateConnectionRequest,
-  IdentityScope,
   TriggerSpecificationResponse,
   UpdateConnectionRequest,
   UpdateConnectionSecretRequest,
@@ -21,11 +19,8 @@ import type {
 export const connectionsApi = {
   // ========== CONNECTIONS (connector instances) ==========
 
-  // scope: an IdentityScope filters to that scope; 'ALL' omits the filter and
-  // returns connections of every scope (used by the Connections list page).
-  async getConnections(connectorCode?: string, scope: IdentityScope | 'ALL' = 'INSTANCE'): Promise<ConnectionResponse[]> {
+  async getConnections(connectorCode?: string): Promise<ConnectionResponse[]> {
     const params = new URLSearchParams();
-    if (scope !== 'ALL') params.set('scope', scope);
     if (connectorCode) params.set('connectorCode', connectorCode);
     return httpClient.get<ConnectionResponse[]>(`${API.ENDPOINTS.CONTROL_API}/manage/connections/?${params}`);
   },

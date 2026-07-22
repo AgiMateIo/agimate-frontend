@@ -44,8 +44,8 @@ export default function AgentTriggerRunsTab({ agentId }: { agentId: string }) {
   const [connectorFilter, setConnectorFilter] = useState('ALL');
   const [connectionFilter, setConnectionFilter] = useState('ALL');
 
-  // Resolve connectionId → human-readable name (all scopes).
-  const { data: connections } = useQuery(connectionsListOptions(undefined, 'ALL'));
+  // Resolve connectionId → human-readable name.
+  const { data: connections } = useQuery(connectionsListOptions());
   const connectionsById = useMemo(() => {
     const map = new Map<string, string>();
     for (const c of connections ?? []) {

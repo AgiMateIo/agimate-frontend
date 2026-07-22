@@ -186,25 +186,14 @@
     "previous": "Назад",
     "next": "Вперёд",
     "capabilities": {
-      "transportDirection": {
-        "OUTBOUND": "Исходящий",
-        "INBOUND": "Входящий"
-      },
-      "executionLocus": {
+      "executionKind": {
         "BACKEND": "Бэкенд",
-        "DELEGATED": "Внешнее исполнение",
-        "AGENT": "Агент"
+        "DEVICE": "Устройство",
+        "LOOPBACK": "Сам агент"
       },
       "definitionBinding": {
         "STATIC": "Статичные тулы",
         "DYNAMIC": "Динамические тулы"
-      },
-      "supportedScopes": {
-        "INSTANCE": "Экземпляр",
-        "AGENT": "На агента",
-        "TEAM": "Команда",
-        "USER": "На пользователя",
-        "GLOBAL": "Глобально"
       }
     }
   },
@@ -504,13 +493,7 @@
     "effect": "Эффект",
     "effectAllow": "ALLOW",
     "effectDeny": "DENY",
-    "selectConnector": "Выберите тип коннектора",
     "loadingApps": "Загрузка приложений...",
-    "searchConnectors": "Поиск коннекторов...",
-    "noConnectorsFound": "Коннекторы не найдены",
-    "loadingConnectors": "Загрузка коннекторов...",
-    "backStep": "Назад",
-    "nextStep": "Далее",
     "policyPage": "Страница",
     "policyPrevious": "Назад",
     "policyNext": "Далее",
@@ -577,26 +560,15 @@
     "unbindConnectionConfirm": "Удалить привязку этого коннектора у агента?",
     "unbindConnectionWarning": "Агент потеряет доступ к этому коннектору. Связанные политики также будут удалены.",
     "bindConnectionTitle": "Добавить подключение",
-    "selectInstance": "Выберите экземпляр",
-    "loadingInstances": "Загрузка экземпляров…",
-    "noInstances": "Экземпляры не найдены. Сначала создайте экземпляр в разделе «Подключения».",
-    "selectScope": "Выберите область",
+    "selectConnection": "Выберите подключение, к которому дать доступ агенту",
+    "searchConnections": "Поиск подключений...",
+    "noConnectionsFound": "Подключения не найдены",
+    "loadingInstances": "Загрузка подключений…",
+    "noInstances": "Внешних подключений пока нет. Сначала создайте его в разделе «Подключения».",
     "bind": "Привязать",
-    "bindScopeSingle": "Коннектор будет привязан с областью «{scope}».",
-    "scopeName": {
-      "INSTANCE": "Экземпляр",
-      "AGENT": "Личная (этот агент)",
-      "TEAM": "Общая (команда)",
-      "USER": "Все ваши агенты",
-      "GLOBAL": "Глобальная"
-    },
-    "scopeDesc": {
-      "INSTANCE": "",
-      "AGENT": "Доступна только этому агенту",
-      "TEAM": "Общая для всей команды",
-      "USER": "Общая для всех ваших агентов",
-      "GLOBAL": "Общая глобально"
-    },
+    "internalConnectorsHint": "Встроенные коннекторы (память, доска, время…) подключаются автоматически через навыки агента.",
+    "managedBySkills": "Управляется навыками",
+    "managedBySkillsHint": "Это подключение выдано навыками агента и снимается автоматически вместе с навыком.",
     "connectionPolicies": "Политики",
     "loadingPolicies": "Загрузка политик…",
     "noPoliciesDefaultAllow": "Политик нет — все тулы и триггеры разрешены (по умолчанию). Добавьте политику, чтобы ограничить.",

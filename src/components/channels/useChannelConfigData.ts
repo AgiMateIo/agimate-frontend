@@ -39,15 +39,11 @@ export function useChannelConfigData({ channel, connectorCode }: UseChannelConfi
       .catch(() => {});
   }, []);
 
-  // Connections are fetched with the connector's default scope (e.g. USER for
-  // acp/webchat, INSTANCE for telegram/mcp); until the catalog loads, INSTANCE.
-  const scope = connectors.find((c) => c.code === connectorCode)?.capabilities?.supportedScopes[0];
-
   useEffect(() => {
     if (isEdit || !connectorCode) return;
     let cancelled = false;
     apiService
-      .getConnections(connectorCode, scope ?? 'INSTANCE')
+      .getConnections(connectorCode)
       .then((creds) => {
         if (cancelled) return;
         setConnections(
@@ -60,7 +56,7 @@ export function useChannelConfigData({ channel, connectorCode }: UseChannelConfi
       })
       .catch(() => {});
     return () => { cancelled = true; };
-  }, [isEdit, connectorCode, scope]);
+  }, [isEdit, connectorCode]);
 
   return { handlers, connectors, connections };
 }

@@ -12,6 +12,7 @@ import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { Tabs } from '@/components/ui/Tabs';
 import { Toggle } from '@/components/ui/Toggle';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
+import { isInternalConnector } from '@/utils/connector';
 import {
   useConnectionDetailQuery,
   useUpdateConnectionMutation,
@@ -40,6 +41,9 @@ function ConnectionDetailContent({ id }: { id: string }) {
 
   const { data: { connection, connector } } = useConnectionDetailQuery(id);
   useSetBreadcrumb(id, connection.name || connection.fullCode);
+  // Internal-connector rows are system-managed (one per user, recreated by the
+  // skills sync) — deleting them from the UI makes no sense.
+  const internal = isInternalConnector(connector);
   const updateMutation = useUpdateConnectionMutation(id);
   const { setConnection, invalidateConnection, removeConnection } = useConnectionCacheActions();
 
@@ -127,12 +131,14 @@ function ConnectionDetailContent({ id }: { id: string }) {
           >
             <PencilIcon className="h-5 w-5" />
           </button>
-          <button
-            onClick={() => setDeletingConnection(true)}
-            className="p-2 text-muted hover:text-error transition-colors rounded-lg"
-          >
-            <TrashIcon className="h-5 w-5" />
-          </button>
+          {!internal && (
+            <button
+              onClick={() => setDeletingConnection(true)}
+              className="p-2 text-muted hover:text-error transition-colors rounded-lg"
+            >
+              <TrashIcon className="h-5 w-5" />
+            </button>
+          )}
         </div>
       </div>
 

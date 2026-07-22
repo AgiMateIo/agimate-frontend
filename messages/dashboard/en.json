@@ -186,25 +186,14 @@
     "previous": "Previous",
     "next": "Next",
     "capabilities": {
-      "transportDirection": {
-        "OUTBOUND": "Outbound",
-        "INBOUND": "Inbound"
-      },
-      "executionLocus": {
+      "executionKind": {
         "BACKEND": "Backend",
-        "DELEGATED": "Delegated",
-        "AGENT": "Agent"
+        "DEVICE": "Device",
+        "LOOPBACK": "Loopback"
       },
       "definitionBinding": {
         "STATIC": "Static tools",
         "DYNAMIC": "Dynamic tools"
-      },
-      "supportedScopes": {
-        "INSTANCE": "Instance",
-        "AGENT": "Per-agent",
-        "TEAM": "Team",
-        "USER": "Per-user",
-        "GLOBAL": "Global"
       }
     }
   },
@@ -504,13 +493,7 @@
     "effect": "Effect",
     "effectAllow": "ALLOW",
     "effectDeny": "DENY",
-    "selectConnector": "Select connector type",
     "loadingApps": "Loading apps...",
-    "searchConnectors": "Search connectors...",
-    "noConnectorsFound": "No connectors found",
-    "loadingConnectors": "Loading connectors...",
-    "backStep": "Back",
-    "nextStep": "Next",
     "policyPage": "Page",
     "policyPrevious": "Previous",
     "policyNext": "Next",
@@ -577,26 +560,15 @@
     "unbindConnectionConfirm": "Remove this connector binding from the agent?",
     "unbindConnectionWarning": "The agent will lose access to this connector. Any policies on it are removed too.",
     "bindConnectionTitle": "Add connection",
-    "selectInstance": "Select an instance",
-    "loadingInstances": "Loading instances…",
-    "noInstances": "No instances found. Create one under Connections first.",
-    "selectScope": "Select scope",
+    "selectConnection": "Select a connection to give this agent access to",
+    "searchConnections": "Search connections...",
+    "noConnectionsFound": "No connections found",
+    "loadingInstances": "Loading connections…",
+    "noInstances": "No external connections yet. Create one under Connections first.",
     "bind": "Bind",
-    "bindScopeSingle": "This connector will be bound with the {scope} scope.",
-    "scopeName": {
-      "INSTANCE": "Instance",
-      "AGENT": "Personal (this agent)",
-      "TEAM": "Shared (team)",
-      "USER": "All your agents",
-      "GLOBAL": "Global"
-    },
-    "scopeDesc": {
-      "INSTANCE": "",
-      "AGENT": "Private to this agent",
-      "TEAM": "Shared across the team",
-      "USER": "Shared across all your agents",
-      "GLOBAL": "Shared globally"
-    },
+    "internalConnectorsHint": "Built-in connectors (memory, board, time…) are connected automatically by the agent's skills.",
+    "managedBySkills": "Managed by skills",
+    "managedBySkillsHint": "This connection is granted by the agent's skills and is removed automatically together with the skill.",
     "connectionPolicies": "Policies",
     "loadingPolicies": "Loading policies…",
     "noPoliciesDefaultAllow": "No policies — every tool and trigger is allowed (default-allow). Add one to restrict.",

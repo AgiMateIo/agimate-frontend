@@ -16,7 +16,7 @@ function ConnectionsContent() {
     queries: [
       connectorCatalogOptions(),
       integrationPlatformsOptions(),
-      connectionsListOptions(undefined, 'ALL'),
+      connectionsListOptions(),
     ],
   });
   const { invalidateLists } = useConnectionCacheActions();

@@ -47,25 +47,16 @@ export interface IntegrationMeta {
   supportsWebhooks: boolean;
 }
 
-// who initiates the connection: we connect to the platform (OUTBOUND) vs device connects to us (INBOUND)
-export type TransportDirection = 'OUTBOUND' | 'INBOUND';
-// who actually executes the tool's work (trust boundary — does data leave our infra):
-// BACKEND = effect lives in our infra; DELEGATED = an external system does the work
-// (control-api only proxies); AGENT = the calling agent runs it (loopback).
-export type ExecutionLocus = 'BACKEND' | 'DELEGATED' | 'AGENT';
+// who executes a tool call: BACKEND = our backend (or an external platform through it);
+// DEVICE = the user's device, the call is delivered by push; LOOPBACK = the calling
+// agent itself (e.g. claude-code).
+export type ExecutionKind = 'BACKEND' | 'DEVICE' | 'LOOPBACK';
 // fixed set (STATIC) vs per-instance discovered (DYNAMIC) tool/trigger definitions
 export type DefinitionBinding = 'STATIC' | 'DYNAMIC';
-// under which key a connector instance lives. INSTANCE = explicit user-created instance
-// (telegram/mcp/app); AGENT/TEAM/USER/GLOBAL = contextual instances materialised on binding.
-export type IdentityScope = 'INSTANCE' | 'AGENT' | 'TEAM' | 'USER' | 'GLOBAL';
 
 export interface ConnectorCapabilities {
-  transportDirection: TransportDirection;
-  executionLocus: ExecutionLocus;
+  executionKind: ExecutionKind;
   definitionBinding: DefinitionBinding;
-  // scopes this connector supports; if length > 1 the UI must let the user pick one when
-  // binding. Ordered — the default scope is the first element (supportedScopes[0]).
-  supportedScopes: IdentityScope[];
 }
 
 export interface ConnectorCatalogEntry {

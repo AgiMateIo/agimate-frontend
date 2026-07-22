@@ -1,9 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
+import { useQuery } from '@tanstack/react-query';
 import apiService from '@/services/api';
 import { AgentConnectionResponse } from '@/types';
+import { isInternalConnector } from '@/utils/connector';
+import { connectorCatalogOptions } from '@/queries/connectors';
 import { getErrorMessage } from '@/utils/error';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Button } from '@/components/ui/Button';
@@ -33,6 +36,13 @@ export default function AgentConnectionsTab({
   const [showBind, setShowBind] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [unbinding, setUnbinding] = useState<AgentConnectionResponse | null>(null);
+
+  // Internal-connector bindings are synced from skills — no manual unbind.
+  const { data: catalog } = useQuery(connectorCatalogOptions());
+  const internalCodes = useMemo(
+    () => new Set((catalog ?? []).filter(isInternalConnector).map((c) => c.code)),
+    [catalog],
+  );
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -80,6 +90,7 @@ export default function AgentConnectionsTab({
         <div className="space-y-2">
           {connections.map((conn) => {
             const expanded = expandedId === conn.id;
+            const internal = internalCodes.has(conn.connectorCode);
             return (
               <div key={conn.id} className="rounded-lg border border-border overflow-hidden">
                 <div className="flex items-center gap-3 px-4 py-3 hover:bg-surface-secondary transition-colors">
@@ -97,21 +108,28 @@ export default function AgentConnectionsTab({
                       </div>
                     </div>
                   </button>
-                  <span className="shrink-0 inline-block rounded px-2 py-0.5 text-[10px] font-medium bg-surface-secondary border border-border text-muted">
-                    {t(`scopeName.${conn.identityScope}`)}
-                  </span>
+                  {internal && (
+                    <span
+                      className="shrink-0 inline-block rounded px-2 py-0.5 text-[10px] font-medium bg-surface-secondary border border-border text-muted"
+                      title={t('managedBySkillsHint')}
+                    >
+                      {t('managedBySkills')}
+                    </span>
+                  )}
                   {!conn.enabled && (
                     <span className="shrink-0 inline-block rounded px-2 py-0.5 text-[10px] font-medium bg-muted/10 text-muted">
                       {t('disabled')}
                     </span>
                   )}
-                  <button
-                    onClick={() => setUnbinding(conn)}
-                    className="shrink-0 p-1.5 rounded-lg text-muted hover:text-error hover:bg-error/10 transition-colors"
-                    title={t('unbindConnection')}
-                  >
-                    <TrashIcon className="h-4 w-4" />
-                  </button>
+                  {!internal && (
+                    <button
+                      onClick={() => setUnbinding(conn)}
+                      className="shrink-0 p-1.5 rounded-lg text-muted hover:text-error hover:bg-error/10 transition-colors"
+                      title={t('unbindConnection')}
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
                 {expanded && (
                   <div className="border-t border-border bg-surface-secondary/40 px-4 py-3">

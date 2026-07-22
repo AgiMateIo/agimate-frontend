@@ -2,10 +2,10 @@
 //
 // Binding (agent_connections): the gate — an agent can only see/call a connector instance it is
 // bound to. Bindings are default-allow. Endpoints: /manage/agents/{agentId}/connections/.
+// Bind/unbind is only allowed for *external* connectors (telegram/mcp/app); internal-connector
+// bindings are synced automatically from the agent's skills (the backend answers 400).
 // Policy (agent_connection_policies): optional refinement over a binding (deny-list / allow-list /
 // param filter). Endpoints: /manage/agent-connections/{agentConnectionId}/policies/.
-
-import type { IdentityScope } from './skills';
 
 export type PolicyKind = 'TOOL' | 'TRIGGER';
 export type AccessEffect = 'ALLOW' | 'DENY';
@@ -17,19 +17,13 @@ export interface AgentConnectionResponse {
   connectorCode: string;
   fullCode: string;
   name: string;
-  identityScope: IdentityScope;
-  // scope carrier (agentId / teamId / userId); null for INSTANCE and GLOBAL
-  scopeId: string | null;
   enabled: boolean;
   createdAt: string;
 }
 
 export interface BindConnectionRequest {
-  connectorCode: string;
-  // ∈ capabilities.supportedScopes; null → default (supportedScopes[0]). Ignored for INSTANCE connectors.
-  scope?: IdentityScope | null;
-  // REQUIRED for INSTANCE connectors (which instance); omit for contextual (AGENT/TEAM/USER) ones.
-  connectionId?: string | null;
+  // an existing connection instance of an *external* connector
+  connectionId: string;
 }
 
 export interface AgentConnectionPolicyResponse {

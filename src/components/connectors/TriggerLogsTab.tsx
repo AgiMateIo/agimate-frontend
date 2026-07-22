@@ -19,7 +19,7 @@ export default function TriggerLogsTab() {
 
   // Resolve connectionId → human-readable name, and provide the connector
   // options for the filter. All scopes, since triggers can fire on any of them.
-  const { data: connections } = useQuery(connectionsListOptions(undefined, 'ALL'));
+  const { data: connections } = useQuery(connectionsListOptions());
 
   const connectionsById = useMemo(() => {
     const map = new Map<string, string>();
