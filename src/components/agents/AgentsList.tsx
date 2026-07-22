@@ -6,7 +6,6 @@ import {
   BoltIcon,
   ArrowsRightLeftIcon,
   CpuChipIcon,
-  ChatBubbleOvalLeftEllipsisIcon,
 } from '@heroicons/react/24/outline';
 import { AgentResponse, AgentType } from '@/types';
 import { Link } from '@/i18n/navigation';
@@ -42,34 +41,18 @@ export default function AgentsList({ agents }: AgentsListProps) {
         const extraSkills = agent.skills.length - MAX_SKILLS;
 
         return (
-          <div
+          <Link
             key={agent.id}
+            href={`/dashboard/agents/${agent.id}/chat`}
             className={`group relative flex flex-col items-center text-center bg-surface-secondary rounded-lg border border-border hover:border-accent/50 transition-colors p-5 ${agent.enabled ? '' : 'opacity-60'}`}
           >
-            {/* Stretched link: the whole card navigates to the agent, while the
-                chat icon sits above it (z-10) as a separate link. */}
-            <Link
-              href={`/dashboard/agents/${agent.id}`}
-              className="absolute inset-0 rounded-lg"
-              aria-label={agent.name}
-            />
             <div className="absolute top-3 left-3">
               <Chip icon={typeMeta.icon} tone="accent">{t(typeMeta.labelKey)}</Chip>
             </div>
-            <div className="absolute top-3 right-3 flex items-center gap-2">
-              <Link
-                href={`/dashboard/agents/${agent.id}/chat`}
-                className="relative z-10 -m-1 p-1 text-muted hover:text-accent transition-colors"
-                title={t('tabChat')}
-                aria-label={t('tabChat')}
-              >
-                <ChatBubbleOvalLeftEllipsisIcon className="w-4.5 h-4.5" />
-              </Link>
-              <span
-                className={`h-2.5 w-2.5 rounded-full ${agent.enabled ? 'bg-success' : 'bg-muted'}`}
-                title={agent.enabled ? t('enabled') : t('disabled')}
-              />
-            </div>
+            <span
+              className={`absolute top-3 right-3 h-2.5 w-2.5 rounded-full ${agent.enabled ? 'bg-success' : 'bg-muted'}`}
+              title={agent.enabled ? t('enabled') : t('disabled')}
+            />
 
             <img
               src={getAgentAvatarUrl(agent.name)}
@@ -93,7 +76,7 @@ export default function AgentsList({ agents }: AgentsListProps) {
                 {extraSkills > 0 && <Chip>+{extraSkills}</Chip>}
               </div>
             )}
-          </div>
+          </Link>
         );
       })}
     </div>
