@@ -485,6 +485,7 @@
     "autoRefreshOff": "Off",
     "refresh": "Refresh",
     "tabGeneral": "General",
+    "backTeamAgents": "{team} agents",
     "tabChat": "Chat",
     "enabled": "Enabled",
     "disabled": "Disabled",

@@ -485,6 +485,7 @@
     "autoRefreshOff": "Выкл",
     "refresh": "Обновить",
     "tabGeneral": "Общая информация",
+    "backTeamAgents": "Агенты {team}",
     "tabChat": "Чат",
     "enabled": "Включен",
     "disabled": "Отключен",

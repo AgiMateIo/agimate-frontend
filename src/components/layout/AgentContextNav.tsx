@@ -15,7 +15,7 @@ import {
   BoltIcon,
   UserCircleIcon,
 } from '@heroicons/react/24/outline';
-import { useAgentDetailQuery, allAgentsOptions } from '@/queries/agents';
+import { useAgentDetailQuery, allAgentsOptions, agentsListOptions } from '@/queries/agents';
 import { getAgentAvatarUrl } from '@/utils/avatar';
 import ContextNav from './ContextNav';
 
@@ -66,7 +66,24 @@ export default function AgentContextNav({
 
   // Non-suspense: the sidebar must never blank out or throw while the agent loads.
   const { data: agent } = useAgentDetailQuery(agentId);
-  const { data: agentsPage } = useQuery({ ...allAgentsOptions(), enabled: switcherOpen });
+
+  // Team-owned agents "live" in their team, so back/create target the team's agents
+  // section instead of the global list, and the switcher offers only teammates.
+  // Until the agent loads we keep the global target — the swap is as brief as the
+  // entity name appearing.
+  const teamId = agent?.agenticTeamId ?? null;
+
+  // Two mutually-exclusive lazy queries instead of one conditional options object —
+  // their queryOptions key types don't unify under a single useQuery call.
+  const { data: teamAgentsPage } = useQuery({
+    ...agentsListOptions(teamId ?? undefined),
+    enabled: switcherOpen && teamId !== null,
+  });
+  const { data: allAgentsPage } = useQuery({
+    ...allAgentsOptions(),
+    enabled: switcherOpen && teamId === null,
+  });
+  const agentsPage = teamId ? teamAgentsPage : allAgentsPage;
 
   // Preserve the open section when switching agents; edit/unknown fall back to general.
   const keepSeg = SECTIONS.find((s) => s.key === currentSection)?.seg ?? '';
@@ -74,9 +91,15 @@ export default function AgentContextNav({
   return (
     <ContextNav
       collapsed={collapsed}
-      backHref="/dashboard/agents"
-      backLabel={tSidebar('agents')}
-      createHref="/dashboard/agents/create"
+      backHref={teamId ? `/dashboard/agentic-teams/${teamId}/agents` : '/dashboard/agents'}
+      backLabel={
+        teamId && agent?.agenticTeamName
+          ? t('backTeamAgents', { team: agent.agenticTeamName })
+          : tSidebar('agents')
+      }
+      createHref={
+        teamId ? `/dashboard/agentic-teams/${teamId}/agents/create` : '/dashboard/agents/create'
+      }
       createLabel={tSidebar('createAgent')}
       name={agent?.name}
       avatarUrl={agent ? getAgentAvatarUrl(agent.name) : undefined}
