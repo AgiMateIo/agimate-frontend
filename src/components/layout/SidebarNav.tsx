@@ -182,9 +182,20 @@ export default function SidebarNav() {
 
   return (
     <aside
-      className={`${collapsed ? 'w-[68px]' : 'w-64'} border-r border-border bg-surface flex flex-col shrink-0 transition-[width] duration-200`}
+      className={`${collapsed ? 'w-[68px]' : 'w-64'} relative border-r border-border bg-surface flex flex-col shrink-0 transition-[width] duration-200`}
     >
-      {/* Logo + collapse toggle */}
+      {/* Collapse/expand handle straddling the right border, aligned with the footer. */}
+      <button
+        type="button"
+        onClick={toggleCollapsed}
+        title={collapsed ? t('expand') : t('collapse')}
+        aria-label={collapsed ? t('expand') : t('collapse')}
+        className="absolute -right-2.5 bottom-3 z-30 grid h-8 w-5 place-items-center rounded-full border border-border bg-surface text-muted shadow-sm transition-colors hover:border-accent hover:text-accent"
+      >
+        <ChevronDoubleLeftIcon className={`h-3.5 w-3.5 ${collapsed ? 'rotate-180' : ''}`} />
+      </button>
+
+      {/* Logo */}
       <div className="h-16 flex items-center gap-2 px-4 border-b border-border">
         <Link
           href="/dashboard"
@@ -195,33 +206,10 @@ export default function SidebarNav() {
           </span>
           {!collapsed && <span className="truncate">AgiMate</span>}
         </Link>
-        {!collapsed && (
-          <button
-            type="button"
-            onClick={toggleCollapsed}
-            title={t('collapse')}
-            aria-label={t('collapse')}
-            className="ml-auto grid h-7 w-7 shrink-0 place-items-center rounded-md text-muted hover:bg-surface-secondary hover:text-foreground transition-colors"
-          >
-            <ChevronDoubleLeftIcon className="h-4 w-4" />
-          </button>
-        )}
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3">
-        {collapsed && (
-          <button
-            type="button"
-            onClick={toggleCollapsed}
-            title={t('expand')}
-            aria-label={t('expand')}
-            className="mb-2 grid h-9 w-full place-items-center rounded-lg text-muted hover:bg-surface-secondary hover:text-foreground transition-colors"
-          >
-            <ChevronDoubleLeftIcon className="h-4 w-4 rotate-180" />
-          </button>
-        )}
-
         <div key={navKey} className={slideClass}>
         {contextRoute ? (
           contextRoute.type === 'agent' ? (
