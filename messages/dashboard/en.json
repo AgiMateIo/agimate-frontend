@@ -51,6 +51,7 @@
       "channels": "Channels",
       "toolCalls": "Tool Calls"
     },
+    "settings": "Settings",
     "logOut": "Log out"
   },
   "AgentWizard": {

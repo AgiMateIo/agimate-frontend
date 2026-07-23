@@ -7,7 +7,6 @@ import {
   HomeIcon,
   DevicePhoneMobileIcon,
   UserGroupIcon,
-  Cog6ToothIcon,
   BoltIcon,
   WrenchScrewdriverIcon,
   LinkIcon,
@@ -129,9 +128,6 @@ const getNavGroups = (t: ReturnType<typeof useTranslations>): NavGroup[] => [
       { label: t('triggerLogs'), icon: BoltIcon, href: '/dashboard/trigger-logs' },
       { label: t('toolUseLogs'), icon: WrenchScrewdriverIcon, href: '/dashboard/tool-use-logs' },
     ],
-  },
-  {
-    items: [{ label: t('settings'), icon: Cog6ToothIcon, href: '/dashboard/settings' }],
   },
 ];
 

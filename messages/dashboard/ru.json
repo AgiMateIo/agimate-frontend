@@ -51,6 +51,7 @@
       "channels": "Каналы",
       "toolCalls": "Вызовы инструментов"
     },
+    "settings": "Настройки",
     "logOut": "Выйти"
   },
   "AgentWizard": {
