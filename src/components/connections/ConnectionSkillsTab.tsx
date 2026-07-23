@@ -31,10 +31,12 @@ export default function ConnectionSkillsTab({ connectorCode }: ConnectionSkillsT
     setLoading(true);
     setError(null);
     try {
-      const params = { connectorCode, page, size: PAGE_SIZE };
-      const data = filter === 'my'
-        ? await apiService.getSkills(params)
-        : await apiService.getPublicSkills(params);
+      const data = await apiService.getSkills({
+        connectorCode,
+        scope: filter === 'my' ? 'MINE' : 'PUBLIC',
+        page,
+        size: PAGE_SIZE,
+      });
       setPagedData(data);
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to load skills'));

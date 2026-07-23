@@ -38,10 +38,12 @@ export function useSkillsListQuery(tab: SkillListTab, search: string, page: numb
   return useSuspenseQuery({
     queryKey: skillKeys.list(tab, search, page),
     queryFn: () => {
-      const params = { search: search || undefined, page, size: 20 };
-      return tab === 'my'
-        ? apiService.getSkills(params)
-        : apiService.getPublicSkills(params);
+      return apiService.getSkills({
+        search: search || undefined,
+        scope: tab === 'my' ? 'MINE' : 'PUBLIC',
+        page,
+        size: 20,
+      });
     },
   });
 }

@@ -86,10 +86,12 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
     setSkillsLoading(true);
     setSkillsError('');
     try {
-      const params = { search: debouncedSearch || undefined, page, size: PAGE_SIZE };
-      const result = source === 'my'
-        ? await apiService.getSkills(params)
-        : await apiService.getPublicSkills(params);
+      const result = await apiService.getSkills({
+        search: debouncedSearch || undefined,
+        scope: source === 'my' ? 'MINE' : 'PUBLIC',
+        page,
+        size: PAGE_SIZE,
+      });
       setPagedData(result);
       // Seed connector codes for the detail panel from the loaded rows.
       setConnectorCodesById((prev) => {

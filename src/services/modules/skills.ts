@@ -5,6 +5,7 @@ import type {
   PagedResponse,
   AgentSummaryResponse,
   SkillResponse,
+  SkillScope,
   SkillDetailResponse,
   CreateSkillRequest,
   UpdateSkillRequest,
@@ -14,14 +15,13 @@ import type {
 export const skillsApi = {
   // ========== SKILLS ==========
 
-  async getSkills(params?: { search?: string; connectorCode?: string; page?: number; size?: number }): Promise<PagedResponse<SkillResponse>> {
-    const query = buildPagedQuery({ search: params?.search, connectorCode: params?.connectorCode }, params);
+  // scope: MINE (default) = own skills of any visibility; PUBLIC = all public skills.
+  async getSkills(params?: { search?: string; connectorCode?: string; scope?: SkillScope; page?: number; size?: number }): Promise<PagedResponse<SkillResponse>> {
+    const query = buildPagedQuery(
+      { search: params?.search, connectorCode: params?.connectorCode, scope: params?.scope },
+      params,
+    );
     return httpClient.get<PagedResponse<SkillResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/?${query}`);
-  },
-
-  async getPublicSkills(params?: { search?: string; connectorCode?: string; page?: number; size?: number }): Promise<PagedResponse<SkillResponse>> {
-    const query = buildPagedQuery({ search: params?.search, connectorCode: params?.connectorCode }, params);
-    return httpClient.get<PagedResponse<SkillResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/public/?${query}`);
   },
 
   async getSkill(id: string): Promise<SkillDetailResponse> {

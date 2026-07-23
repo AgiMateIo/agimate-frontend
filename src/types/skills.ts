@@ -1,5 +1,9 @@
 // Skill types
 
+// Which skills the list endpoint returns: MINE = own skills of any visibility
+// (default), PUBLIC = all public skills.
+export type SkillScope = 'MINE' | 'PUBLIC';
+
 export interface SkillResponse {
   id: string;
   name: string;

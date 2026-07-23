@@ -48,10 +48,12 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
     setSkillsLoading(true);
     setSkillsError('');
     try {
-      const params = { search: debouncedSearch || undefined, page, size: PAGE_SIZE };
-      const data = source === 'my'
-        ? await apiService.getSkills(params)
-        : await apiService.getPublicSkills(params);
+      const data = await apiService.getSkills({
+        search: debouncedSearch || undefined,
+        scope: source === 'my' ? 'MINE' : 'PUBLIC',
+        page,
+        size: PAGE_SIZE,
+      });
       setPagedData(data);
     } catch (err) {
       setSkillsError(getErrorMessage(err, 'Failed to load skills'));
