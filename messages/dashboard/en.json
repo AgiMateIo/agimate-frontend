@@ -758,7 +758,14 @@
     "createError": "Failed to create connection",
     "updateError": "Failed to update connection",
     "updateCredentialsError": "Failed to update credentials",
-    "deleteError": "Failed to delete connection"
+    "deleteError": "Failed to delete connection",
+    "newConnection": "New connection",
+    "newConnectionSubtitle": "Enter the credentials to connect the platform",
+    "unknownConnector": "Connector “{code}” was not found or needs no credentials",
+    "missingConnectorParam": "The link does not specify a platform",
+    "backToConnections": "Back to connections",
+    "openExistingConnection": "Open the existing connection “{name}”",
+    "validatingHint": "Validating the credentials with the platform — this can take a few seconds"
   },
   "ConnectionDetail": {
     "backToConnections": "Back to Connections",

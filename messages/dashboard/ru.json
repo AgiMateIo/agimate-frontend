@@ -758,7 +758,14 @@
     "createError": "Не удалось создать подключение",
     "updateError": "Не удалось обновить подключение",
     "updateCredentialsError": "Не удалось обновить учётные данные",
-    "deleteError": "Не удалось удалить подключение"
+    "deleteError": "Не удалось удалить подключение",
+    "newConnection": "Новое подключение",
+    "newConnectionSubtitle": "Введите учётные данные, чтобы подключить платформу",
+    "unknownConnector": "Коннектор «{code}» не найден или не требует учётных данных",
+    "missingConnectorParam": "В ссылке не указана платформа",
+    "backToConnections": "К списку подключений",
+    "openExistingConnection": "Открыть существующее подключение «{name}»",
+    "validatingHint": "Проверяем учётные данные у платформы — это может занять несколько секунд"
   },
   "ConnectionDetail": {
     "backToConnections": "Назад к подключениям",
