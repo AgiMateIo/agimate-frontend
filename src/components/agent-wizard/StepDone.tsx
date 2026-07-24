@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import {
   ChatBubbleLeftRightIcon,
   ChatBubbleOvalLeftEllipsisIcon,
@@ -12,7 +12,7 @@ import {
   ClipboardDocumentCheckIcon,
   WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline';
-import { Link, getPathname, useRouter } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { useClipboard } from '@/hooks/useClipboard';
@@ -25,7 +25,6 @@ interface StepDoneProps extends WizardStepProps {
 
 export default function StepDone({ data, onReset }: StepDoneProps) {
   const t = useTranslations('AgentWizard');
-  const locale = useLocale();
   const router = useRouter();
   const { copied, copy } = useClipboard();
   const [showKey, setShowKey] = useState(false);
@@ -63,22 +62,19 @@ export default function StepDone({ data, onReset }: StepDoneProps) {
         <p className="text-muted mt-1">{t('doneSubtitle', { name: agent.name })}</p>
       </div>
 
-      {/* The aha moment: talk to the agent seconds after picking a role. */}
+      {/* The aha moment: talk to the agent seconds after picking a role.
+          A real link (not window.open) so middle-/Ctrl-click and the browser's
+          popup handling all behave; opens in a new tab to keep the wizard open. */}
       <div className="flex justify-center">
-        <Button
-          type="button"
-          onClick={() =>
-            window.open(
-              getPathname({ href: `/dashboard/agents/${agent.id}/chat`, locale }),
-              '_blank',
-              'noopener,noreferrer',
-            )
-          }
-          className="flex items-center gap-2 px-6 py-3 text-base"
+        <Link
+          href={`/dashboard/agents/${agent.id}/chat`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors bg-accent text-accent-foreground hover:bg-accent/90 px-6 py-3 text-base"
         >
           <ChatBubbleOvalLeftEllipsisIcon className="h-5 w-5" />
           {t('chatNow')}
-        </Button>
+        </Link>
       </div>
 
       <div className="space-y-3">
