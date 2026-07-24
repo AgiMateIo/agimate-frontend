@@ -137,7 +137,7 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-foreground">{skill.name}</span>
+                      <span className="text-sm font-medium text-foreground">{skill.title}</span>
                       <span className="text-xs text-muted">v{skill.version}</span>
                       {skill.isPublic && (
                         <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-success/10 text-success">

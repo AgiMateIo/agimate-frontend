@@ -32,7 +32,7 @@ export default function DeleteSkillModal({
       onSuccess={() => onSuccess(skill.id)}
     >
       <p className="text-foreground">
-        {t('deleteSkillConfirm', { name: skill.name })}
+        {t('deleteSkillConfirm', { name: skill.title })}
       </p>
 
       <Alert variant="warning">

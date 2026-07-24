@@ -6,7 +6,10 @@ export type SkillScope = 'MINE' | 'PUBLIC';
 
 export interface SkillResponse {
   id: string;
+  // Machine code (validated kebab-case slug) — not for display.
   name: string;
+  // Human-readable display name.
+  title: string;
   description: string | null;
   // Connector codes declared in the SKILL.md frontmatter (`connectors: [...]`).
   connectorCodes: string[];

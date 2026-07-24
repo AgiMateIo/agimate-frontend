@@ -7,15 +7,18 @@
 // Resolved system skill of a preset — real ids, bindable via `skillIds`.
 export interface AgentPresetSkill {
   id: string;
+  // Machine code (slug) — not for display.
   name: string;
+  title: string;
   description: string | null;
 }
 
 export interface AgentPresetResponse {
   id: string;
-  // Sent back as `presetCode` on agent creation (funnel analytics only).
-  code: string;
+  // Machine code (slug). Sent back as `presetName` on agent creation.
   name: string;
+  // Display name.
+  title: string;
   description: string;
   // Full instructions draft; must stay user-editable before creation.
   instructions: string;

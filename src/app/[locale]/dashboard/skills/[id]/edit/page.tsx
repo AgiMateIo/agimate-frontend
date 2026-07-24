@@ -27,7 +27,7 @@ export default function EditSkillPage() {
   const { invalidateSkill, invalidateLists } = useSkillsCacheActions();
   const pageError = queryError ? getErrorMessage(queryError, 'Failed to load skill') : null;
 
-  useSetBreadcrumb(skillId, skill?.name);
+  useSetBreadcrumb(skillId, skill?.title);
 
   // Only the owner can edit; bounce others to the read-only detail page.
   const redirecting = !!(skill && user && user.id !== skill.userId);

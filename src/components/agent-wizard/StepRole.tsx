@@ -13,7 +13,7 @@ import { getErrorMessage } from '@/utils/error';
 import { getAgentAvatarUrl } from '@/utils/avatar';
 import { WizardStepProps } from './AgentWizard';
 
-// Card id of the "start from scratch" option (presets use their `code`).
+// Card id of the "start from scratch" option (presets use their `name`).
 const SCRATCH = 'scratch';
 
 // Lively header bands for preset cards; assigned by gallery position since the
@@ -32,21 +32,21 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
 
   // Which card is highlighted. Restored from wizard state when navigating back.
   const [selectedCard, setSelectedCard] = useState<string | null>(
-    data.presetCode ?? (data.name || data.instructions ? SCRATCH : null),
+    data.presetName ?? (data.name || data.instructions ? SCRATCH : null),
   );
 
   const applyPreset = (preset: AgentPresetResponse) => {
-    setSelectedCard(preset.code);
+    setSelectedCard(preset.name);
     // Pure prefill — every field below stays editable before creation.
     setData({
-      presetCode: preset.code,
+      presetName: preset.name,
       presetConnectorCodes: preset.connectorCodes,
-      name: preset.name,
+      name: preset.title,
       description: preset.description,
       instructions: preset.instructions,
       skills: preset.skills.map((s) => ({
         id: s.id,
-        name: s.name,
+        title: s.title,
         description: s.description,
       })),
     });
@@ -55,7 +55,7 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
   const applyScratch = () => {
     setSelectedCard(SCRATCH);
     setData({
-      presetCode: null,
+      presetName: null,
       presetConnectorCodes: [],
       name: '',
       description: '',
@@ -87,7 +87,7 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
       {!isPending && (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {(presets ?? []).map((preset, i) => {
-            const selected = selectedCard === preset.code;
+            const selected = selectedCard === preset.name;
             return (
               <button
                 key={preset.id}
@@ -108,13 +108,13 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
                 {/* Avatar overlapping the band — relative+z-10 so it paints above
                     the positioned gradient header instead of being covered by it */}
                 <img
-                  src={getAgentAvatarUrl(preset.name)}
-                  alt={preset.name}
+                  src={getAgentAvatarUrl(preset.title)}
+                  alt={preset.title}
                   className="relative z-10 -mt-6 ml-4 h-12 w-12 rounded-xl bg-surface shadow-sm ring-4 ring-surface"
                 />
 
                 <div className="flex flex-1 flex-col px-4 pb-4 pt-2">
-                  <div className="text-sm font-semibold text-foreground">{preset.name}</div>
+                  <div className="text-sm font-semibold text-foreground">{preset.title}</div>
                   <p className="mt-0.5 line-clamp-3 text-xs text-muted">{preset.description}</p>
                   {preset.connectorCodes.length > 0 && (
                     <div className="mt-auto flex flex-wrap gap-1 pt-2">

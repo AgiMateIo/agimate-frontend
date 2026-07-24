@@ -66,12 +66,20 @@ function AttachmentImage({
   );
 }
 
+// Short extension labels for MIME types whose subtype isn't already a clean
+// label (e.g. the xlsx subtype is a long `vnd.openxmlformats-...` string).
+const MIME_LABELS: Record<string, string> = {
+  'text/csv': 'CSV',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'XLSX',
+  'application/pdf': 'PDF',
+};
+
 // Non-image attachment: a download card. The server serves these as
 // Content-Disposition: attachment, so a plain anchor downloads on click.
 function AttachmentFile({ part }: { part: WebchatPart }) {
   const t = useTranslations('Chat');
   const href = resolvePartUrl(part.url);
-  const kind = part.mime.split('/')[1]?.toUpperCase() || part.type.toUpperCase();
+  const kind = MIME_LABELS[part.mime] ?? part.mime.split('/')[1]?.toUpperCase() ?? part.type.toUpperCase();
   return (
     <a
       href={href}

@@ -41,7 +41,7 @@ export default function SkillCard({
           </span>
         </div>
 
-        <h3 className="font-medium text-foreground mt-1">{skill.name}</h3>
+        <h3 className="font-medium text-foreground mt-1">{skill.title}</h3>
 
         {skill.description && (
           <p className="text-sm text-muted mt-0.5 line-clamp-2">

@@ -56,7 +56,7 @@ function SkillDetailContent({ skillId }: { skillId: string }) {
     setEditIsPublic(skill.isPublic);
   }
 
-  useSetBreadcrumb(skillId, skill.name);
+  useSetBreadcrumb(skillId, skill.title);
 
   const isEditable = !!(user?.id && user.id === skill.userId && !skill.system);
 
@@ -95,7 +95,7 @@ function SkillDetailContent({ skillId }: { skillId: string }) {
               {t('version', { version: skill.version })}
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-foreground">{skill.name}</h1>
+          <h1 className="text-2xl font-bold text-foreground">{skill.title}</h1>
           {skill.description && (
             <p className="text-muted mt-1">{skill.description}</p>
           )}
@@ -208,7 +208,7 @@ function SkillDetailContent({ skillId }: { skillId: string }) {
             label: t('tabAgents'),
             content: (
               <div className="bg-surface rounded-xl border border-border p-6">
-                <SkillAgentsTab skillId={skill.id} skillName={skill.name} />
+                <SkillAgentsTab skillId={skill.id} skillName={skill.title} />
               </div>
             ),
           },

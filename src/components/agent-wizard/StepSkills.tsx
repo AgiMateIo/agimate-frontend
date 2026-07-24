@@ -33,7 +33,7 @@ const PAGE_SIZE = 10;
 // for library skills up front; preset skills are enriched lazily on focus.
 interface FocusedSkill {
   id: string;
-  name: string;
+  title: string;
   description: string | null;
   connectorCodes?: string[];
 }
@@ -54,7 +54,7 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
   // resolved per skill id (seeded from library rows, fetched for preset skills).
   const [focused, setFocused] = useState<FocusedSkill | null>(
     data.skills[0]
-      ? { id: data.skills[0].id, name: data.skills[0].name, description: data.skills[0].description, connectorCodes: data.skills[0].connectorCodes }
+      ? { id: data.skills[0].id, title: data.skills[0].title, description: data.skills[0].description, connectorCodes: data.skills[0].connectorCodes }
       : null,
   );
   const [connectorCodesById, setConnectorCodesById] = useState<Record<string, string[]>>({});
@@ -140,7 +140,7 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
         ...data.skills,
         {
           id: skill.id,
-          name: skill.name,
+          title: skill.title,
           description: skill.description,
           connectorCodes: skill.connectorCodes,
         },
@@ -154,7 +154,7 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
   const toggleFromLibrary = (skill: SkillResponse) => {
     setFocused({
       id: skill.id,
-      name: skill.name,
+      title: skill.title,
       description: skill.description,
       connectorCodes: skill.connectorCodes,
     });
@@ -165,7 +165,7 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
   const focusSkill = (skill: WizardSkill) =>
     setFocused({
       id: skill.id,
-      name: skill.name,
+      title: skill.title,
       description: skill.description,
       connectorCodes: skill.connectorCodes,
     });
@@ -185,7 +185,7 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
         type: 'GENERIC',
         agenticTeamId: teamId || null,
         skillIds: data.skills.map((s) => s.id),
-        presetCode: data.presetCode ?? undefined,
+        presetName: data.presetName ?? undefined,
       });
       setData({ created });
       goNext();
@@ -231,7 +231,7 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
                   }`}
                 >
                   <div className="min-w-0">
-                    <div className="text-sm font-medium text-foreground truncate">{skill.name}</div>
+                    <div className="text-sm font-medium text-foreground truncate">{skill.title}</div>
                     {skill.description && (
                       <p className="text-xs text-muted mt-0.5 line-clamp-1">{skill.description}</p>
                     )}
@@ -317,7 +317,7 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
                         >
                           {isSelected && <CheckIcon className="h-3 w-3" />}
                         </span>
-                        <span className="text-sm font-medium text-foreground truncate">{skill.name}</span>
+                        <span className="text-sm font-medium text-foreground truncate">{skill.title}</span>
                         <span className="text-xs text-muted shrink-0">v{skill.version}</span>
                       </div>
                     </button>
@@ -365,7 +365,7 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
         ) : (
           <div className="space-y-3">
             <div>
-              <h4 className="text-sm font-semibold text-foreground">{focused.name}</h4>
+              <h4 className="text-sm font-semibold text-foreground">{focused.title}</h4>
               <p className="text-sm text-muted mt-0.5">
                 {focused.description || t('noDescription')}
               </p>

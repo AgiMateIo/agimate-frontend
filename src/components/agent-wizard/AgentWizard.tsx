@@ -12,7 +12,7 @@ import StepDone from './StepDone';
 // connector codes (the preset carries the union), library skills carry theirs.
 export interface WizardSkill {
   id: string;
-  name: string;
+  title: string;
   description: string | null;
   connectorCodes?: string[];
 }
@@ -21,8 +21,8 @@ export interface WizardSkill {
 // pure prefill: everything stays editable and nothing is persisted until the
 // single create request on the skills step.
 export interface WizardData {
-  // Code of the preset the wizard started from (funnel analytics); null = scratch.
-  presetCode: string | null;
+  // Name (slug) of the preset the wizard started from (funnel analytics); null = scratch.
+  presetName: string | null;
   // Union of connector codes of the selected preset, display only.
   presetConnectorCodes: string[];
   name: string;
@@ -42,7 +42,7 @@ export interface WizardStepProps {
 }
 
 const EMPTY: WizardData = {
-  presetCode: null,
+  presetName: null,
   presetConnectorCodes: [],
   name: '',
   description: '',
