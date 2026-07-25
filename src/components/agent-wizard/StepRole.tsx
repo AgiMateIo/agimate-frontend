@@ -97,12 +97,15 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
                   selected ? 'border-accent ring-2 ring-accent' : 'border-border hover:border-accent/50'
                 }`}
               >
-                <div className={`relative h-14 bg-gradient-to-br ${GRADIENTS[i % GRADIENTS.length]}`}>
+                <div className={`relative flex h-14 items-center justify-end gap-2 px-3 bg-gradient-to-br ${GRADIENTS[i % GRADIENTS.length]}`}>
                   {selected && (
-                    <span className="absolute left-3 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-white text-accent shadow">
+                    <span className="absolute left-3 top-2 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-white text-accent shadow">
                       <CheckIcon className="h-3.5 w-3.5" />
                     </span>
                   )}
+                  <span className="min-w-0 truncate text-sm font-semibold text-white drop-shadow-sm">
+                    {preset.title}
+                  </span>
                 </div>
 
                 {/* Avatar overlapping the band — relative+z-10 so it paints above
@@ -110,12 +113,11 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
                 <img
                   src={getAgentAvatarUrl(preset.title)}
                   alt={preset.title}
-                  className="relative z-10 -mt-6 ml-4 h-12 w-12 rounded-xl bg-surface shadow-sm ring-4 ring-surface"
+                  className="relative z-10 -mt-10 ml-4 h-24 w-24 rounded-2xl bg-surface shadow-sm inset-shadow-sm ring-4 ring-surface"
                 />
 
                 <div className="flex flex-1 flex-col px-4 pb-4 pt-2">
-                  <div className="text-sm font-semibold text-foreground">{preset.title}</div>
-                  <p className="mt-0.5 line-clamp-3 text-xs text-muted">{preset.description}</p>
+                  <p className="line-clamp-3 text-xs text-muted">{preset.description}</p>
                   {preset.connectorCodes.length > 0 && (
                     <div className="mt-auto flex flex-wrap gap-1 pt-2">
                       {preset.connectorCodes.map((code) => (

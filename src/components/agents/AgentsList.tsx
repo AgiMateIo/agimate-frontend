@@ -57,7 +57,7 @@ export default function AgentsList({ agents }: AgentsListProps) {
             <img
               src={getAgentAvatarUrl(agent.name)}
               alt={agent.name}
-              className="w-20 h-20 rounded-2xl mt-4"
+              className="w-40 h-40 rounded-2xl mt-4"
             />
             <h3 className="w-full truncate font-semibold text-foreground mt-3 group-hover:text-accent transition-colors">
               {agent.name}
