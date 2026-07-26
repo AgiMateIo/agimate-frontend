@@ -1,22 +1,30 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useQueries } from '@tanstack/react-query';
-import apiService from '@/services/api';
-import { AgentLlmResponse, LlmProviderResponse, LlmProviderType } from '@/types';
+import { AgentLlmPurpose, AgentLlmResponse, LlmProviderType } from '@/types';
 import { getErrorMessage } from '@/utils/error';
 import { localeMap } from '@/i18n/routing';
-import { llmProviderModelsOptions, useLlmUsageQuery } from '@/queries/llm-providers';
+import { agentLlmsOptions, useAgentCacheActions } from '@/queries/agents';
+import {
+  llmProviderModelsOptions,
+  llmProvidersListOptions,
+  useLlmUsageQuery,
+} from '@/queries/llm-providers';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
-import { Button } from '@/components/ui/Button';
 import { Link } from '@/i18n/navigation';
-import { PlusIcon, TrashIcon, PencilIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { TrashIcon, PencilIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { Chip } from '@/components/ui/Chip';
-import AddAgentLlmModal from './AddAgentLlmModal';
-import EditAgentLlmModal from './EditAgentLlmModal';
+import AgentLlmRowEditor from './AgentLlmRowEditor';
 import DeleteAgentLlmModal from './DeleteAgentLlmModal';
-import { purposeLabelKey } from './agentLlmPurpose';
+import { matchCapabilityFilter } from '@/components/llm-providers/modelRegistry';
+import {
+  AGENT_LLM_PURPOSES,
+  purposeLabelKey,
+  purposeRequirement,
+  purposeRequirementLabelKey,
+} from './agentLlmPurpose';
 
 interface AgentModelsTabProps {
   agentId: string;
@@ -29,247 +37,273 @@ const providerTypeBadge: Record<LlmProviderType, string> = {
   OPENAI_COMPATIBLE: 'OpenAI-compatible',
 };
 
+// One row per purpose — the purpose IS the binding's identity, so the table is a
+// fixed list of the five purposes rather than of arbitrary rows. Filling a row
+// creates the binding, editing replaces it, clearing it hands the purpose back to
+// the backend's auto-pick (or, for the last one, to the platform fallback).
 export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
   const t = useTranslations('Agents');
   const tu = useTranslations('LlmUsage');
   const locale = useLocale();
   const bcp47 = localeMap[locale];
 
-  // Free-tier balance for the synthetic platform binding — supplementary, so a
+  // Free-tier balance for the synthetic platform row — supplementary, so a
   // failed/absent usage response simply hides the remaining-tokens hint.
   const { data: usage } = useLlmUsageQuery();
   const platformDay = usage
     ?.find((u) => u.source === 'PLATFORM')
     ?.windows.find((w) => w.window === 'DAY');
 
-  const [bindings, setBindings] = useState<AgentLlmResponse[]>([]);
-  const [providers, setProviders] = useState<LlmProviderResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [{ data: bindings, isPending: bindingsPending, error: bindingsError },
+         { data: allProviders, isPending: providersPending, error: providersError }] = useQueries({
+    queries: [agentLlmsOptions(agentId), llmProvidersListOptions()],
+  });
+  const { invalidateAgentLlms } = useAgentCacheActions();
 
-  const [showAdd, setShowAdd] = useState(false);
-  const [editing, setEditing] = useState<AgentLlmResponse | null>(null);
+  const [editing, setEditing] = useState<AgentLlmPurpose | null>(null);
   const [deleting, setDeleting] = useState<AgentLlmResponse | null>(null);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const [bindingsData, providersData] = await Promise.all([
-        apiService.getAgentLlms(agentId),
-        apiService.getLlmProviders(),
-      ]);
-      setBindings(bindingsData);
-      setProviders(providersData);
-    } catch (err) {
-      setError(getErrorMessage(err, 'Failed to load model bindings'));
-    } finally {
-      setLoading(false);
-    }
-  }, [agentId]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  // The platform row only shows up for ADMINs and cannot be bound to an agent
+  // (POST/PUT with its id give a bare 404) — keep it out of the editor.
+  const bindableProviders = useMemo(
+    () => (allProviders ?? []).filter((p) => !p.platform),
+    [allProviders]
+  );
 
   // Advisory availability check: for each bound provider, look the binding's
   // model up in that provider's registry. UNAVAILABLE (or missing from a
   // non-empty registry) → the provider no longer lists it, calls may fail.
   const boundProviderIds = useMemo(
-    () => [...new Set(bindings.map((b) => b.llmProviderId).filter((id): id is string => !!id))],
+    () => [...new Set((bindings ?? []).map((b) => b.llmProviderId).filter((id): id is string => !!id))],
     [bindings]
   );
   const modelsQueries = useQueries({
     queries: boundProviderIds.map((id) => ({ ...llmProviderModelsOptions(id), staleTime: 30_000 })),
   });
-  const isModelUnlisted = (binding: AgentLlmResponse): boolean => {
-    if (!binding.llmProviderId) return false;
+  const registryRow = (binding: AgentLlmResponse) => {
+    if (!binding.llmProviderId) return undefined;
     const registry = modelsQueries[boundProviderIds.indexOf(binding.llmProviderId)]?.data;
     // An empty registry means models were never refreshed — nothing to judge by.
-    if (!registry || registry.length === 0) return false;
-    const row = registry.find((m) => m.model === binding.model);
-    return !row || row.status === 'UNAVAILABLE';
+    if (!registry || registry.length === 0) return undefined;
+    return { registry, row: registry.find((m) => m.model === binding.model) };
+  };
+  const isModelUnlisted = (binding: AgentLlmResponse): boolean => {
+    const found = registryRow(binding);
+    return !!found && (!found.row || found.row.status === 'UNAVAILABLE');
+  };
+  // A model bound before the purpose gained a requirement — or one whose metadata
+  // changed since — can sit in a purpose it cannot serve. Only flag the media
+  // purposes,
+  // whose demand is hard; CHAT's tool support is advisory.
+  const isModelUnfit = (binding: AgentLlmResponse): boolean => {
+    const requirement = purposeRequirement[binding.purpose];
+    if (!requirement.hard) return false;
+    const found = registryRow(binding);
+    return !!found?.row && matchCapabilityFilter(found.row, requirement.filter) === 'excluded';
   };
 
   const handleMutationSuccess = () => {
-    setShowAdd(false);
     setEditing(null);
     setDeleting(null);
-    fetchData();
+    invalidateAgentLlms(agentId);
   };
 
+  const error = bindingsError ?? providersError;
   if (error) {
-    return <ErrorAlert>{error}</ErrorAlert>;
+    return <ErrorAlert>{getErrorMessage(error, 'Failed to load model bindings')}</ErrorAlert>;
   }
 
-  if (loading) {
+  if (bindingsPending || providersPending || !bindings || !allProviders) {
     return <div className="text-center py-12 text-muted">{t('loadingBindings')}</div>;
   }
 
-  const providerById = (id: string) => providers.find(p => p.id === id);
+  const providerById = (id: string) => allProviders.find((p) => p.id === id);
+  // `source` is the only reliable marker — a synthetic platform row is
+  // indistinguishable from a real one by its provider name or model.
+  const byPurpose = new Map(
+    bindings.filter((b) => b.source === 'USER').map((b) => [b.purpose, b] as const)
+  );
+  const platformRow = bindings.find((b) => b.source === 'PLATFORM');
+  const noProviders = bindableProviders.length === 0;
+
+  // Without a provider of their own there is nothing to pick a model from, so
+  // the call to action is the key, not the model.
+  const setModelAction = (purpose: AgentLlmPurpose, label: string) =>
+    noProviders ? (
+      <Link
+        href="/dashboard/llm-providers"
+        className="text-sm text-accent hover:text-accent/80 transition-colors whitespace-nowrap"
+      >
+        {tu('connectOwnKey')} →
+      </Link>
+    ) : (
+      <button
+        onClick={() => setEditing(purpose)}
+        className="text-sm text-accent hover:text-accent/80 transition-colors whitespace-nowrap"
+      >
+        {label}
+      </button>
+    );
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <p className="text-sm text-muted">{t('purposeHint')}</p>
         <Link
           href="/dashboard/llm-providers"
-          className="text-sm text-accent hover:text-accent/80 transition-colors"
+          className="text-sm text-accent hover:text-accent/80 transition-colors whitespace-nowrap"
         >
           {t('manageProviders')} →
         </Link>
-        <Button onClick={() => setShowAdd(true)} className="flex items-center gap-2">
-          <PlusIcon className="h-4 w-4" />
-          {t('addModelBinding')}
-        </Button>
       </div>
 
-      {bindings.length === 0 ? (
-        <div className="text-center py-12 text-muted">{t('noBindings')}</div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('bindingLabel')}</th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('purpose')}</th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('provider')}</th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('model')}</th>
-                <th className="text-right py-3 px-4 text-sm font-medium text-muted"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {bindings.map((binding) => {
-                const isPlatform = binding.source === 'PLATFORM';
-                // Fallback for a backend that predates the purpose field.
-                const purpose = binding.purpose ?? 'CHAT';
-                const provider = binding.llmProviderId ? providerById(binding.llmProviderId) : undefined;
-                const providerDisabled = provider ? !provider.enabled : false;
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-border">
+              <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('purpose')}</th>
+              <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('provider')}</th>
+              <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('model')}</th>
+              <th className="text-right py-3 px-4 text-sm font-medium text-muted"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {AGENT_LLM_PURPOSES.map((purpose) => {
+              if (editing === purpose) {
                 return (
-                  <tr key={binding.name} className="border-b border-border last:border-b-0 hover:bg-surface-secondary transition-colors">
-                    <td className="py-3 px-4 text-sm font-medium text-foreground font-mono">
-                      {binding.name}
-                    </td>
-                    <td className="py-3 px-4 text-sm">
-                      {/* Tool roles stand out; CHAT (the norm) stays neutral. */}
-                      <Chip tone={purpose === 'CHAT' ? 'default' : 'accent'}>
-                        {t(purposeLabelKey[purpose])}
-                      </Chip>
-                    </td>
-                    <td className="py-3 px-4 text-sm">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {isPlatform ? (
-                          <span className="inline-flex items-center gap-2 flex-wrap">
-                            <span
-                              title={t('platformModelHint')}
-                              className="text-xs font-medium px-2 py-0.5 rounded-full bg-success/10 text-success"
-                            >
-                              {t('platformModel')}
-                            </span>
-                            {platformDay && platformDay.limitTokens !== null && (
-                              <span className="text-xs text-muted">
-                                {tu('remainingToday', {
-                                  remaining: (platformDay.remainingTokens ?? 0).toLocaleString(bcp47),
-                                  limit: platformDay.limitTokens.toLocaleString(bcp47),
-                                })}
-                              </span>
-                            )}
-                          </span>
-                        ) : (
-                          <>
-                            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent">
-                              {providerTypeBadge[binding.providerType]}
-                            </span>
-                            <span className="text-foreground">{binding.llmProviderName}</span>
-                            {providerDisabled && (
-                              <span
-                                title={t('providerDisabledHint')}
-                                className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning"
-                              >
-                                <ExclamationTriangleIcon className="h-3 w-3" />
-                                {t('providerDisabled')}
-                              </span>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-sm text-foreground font-mono">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {binding.model}
-                        {!isPlatform && isModelUnlisted(binding) && (
-                          <span
-                            title={t('modelUnlistedHint')}
-                            className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning font-sans"
-                          >
-                            <ExclamationTriangleIcon className="h-3 w-3" />
-                            {t('modelUnlisted')}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      {/* PLATFORM is a virtual fallback — not editable/deletable.
-                          Offer a shortcut to replace it with the user's own key. */}
-                      {isPlatform ? (
-                        <button
-                          onClick={() => setShowAdd(true)}
-                          className="text-sm text-accent hover:text-accent/80 transition-colors whitespace-nowrap"
-                        >
-                          {tu('connectOwnKey')} →
-                        </button>
-                      ) : (
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => setEditing(binding)}
-                            className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-secondary transition-colors"
-                          >
-                            <PencilIcon className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => setDeleting(binding)}
-                            className="p-1.5 rounded-lg text-muted hover:text-error hover:bg-error/10 transition-colors"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </button>
-                        </div>
-                      )}
+                  <tr key={purpose} className="border-b border-border last:border-b-0">
+                    <td colSpan={4} className="p-0">
+                      <AgentLlmRowEditor
+                        agentId={agentId}
+                        purpose={purpose}
+                        binding={byPurpose.get(purpose)}
+                        providers={bindableProviders}
+                        onCancel={() => setEditing(null)}
+                        onSuccess={handleMutationSuccess}
+                      />
                     </td>
                   </tr>
                 );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+              }
 
-      {showAdd && (
-        <AddAgentLlmModal
-          agentId={agentId}
-          providers={providers}
-          existingNames={new Set(bindings.map(b => b.name))}
-          onClose={() => setShowAdd(false)}
-          onSuccess={handleMutationSuccess}
-        />
-      )}
+              const binding = byPurpose.get(purpose);
+              // The platform fallback is reported on its own purpose (CHAT in
+              // practice) and only while the agent has no bindings at all.
+              const platform = !binding && platformRow?.purpose === purpose ? platformRow : undefined;
+              const provider = binding?.llmProviderId ? providerById(binding.llmProviderId) : undefined;
 
-      {editing && (
-        <EditAgentLlmModal
-          agentId={agentId}
-          binding={editing}
-          providers={providers}
-          isLastChatBinding={
-            editing.purpose === 'CHAT' &&
-            !bindings.some((b) => b !== editing && b.source === 'USER' && b.purpose === 'CHAT')
-          }
-          onClose={() => setEditing(null)}
-          onSuccess={handleMutationSuccess}
-        />
-      )}
+              return (
+                <tr
+                  key={purpose}
+                  className="border-b border-border last:border-b-0 hover:bg-surface-secondary transition-colors"
+                >
+                  <td className="py-3 px-4 text-sm">
+                    {/* Tool purposes stand out; CHAT (the norm) stays neutral. */}
+                    <Chip tone={purpose === 'CHAT' ? 'default' : 'accent'}>
+                      {t(purposeLabelKey[purpose])}
+                    </Chip>
+                  </td>
+                  <td className="py-3 px-4 text-sm">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {platform ? (
+                        <>
+                          <span
+                            title={t('platformModelHint')}
+                            className="text-xs font-medium px-2 py-0.5 rounded-full bg-success/10 text-success"
+                          >
+                            {t('platformModel')}
+                          </span>
+                          {platformDay && platformDay.limitTokens !== null && (
+                            <span className="text-xs text-muted">
+                              {tu('remainingToday', {
+                                remaining: (platformDay.remainingTokens ?? 0).toLocaleString(bcp47),
+                                limit: platformDay.limitTokens.toLocaleString(bcp47),
+                              })}
+                            </span>
+                          )}
+                        </>
+                      ) : binding ? (
+                        <>
+                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent">
+                            {providerTypeBadge[binding.providerType]}
+                          </span>
+                          <span className="text-foreground">{binding.llmProviderName}</span>
+                          {provider && !provider.enabled && (
+                            <span
+                              title={t('providerDisabledHint')}
+                              className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning"
+                            >
+                              <ExclamationTriangleIcon className="h-3 w-3" />
+                              {t('providerDisabled')}
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-muted" title={t('autoModelHint')}>
+                          {t('autoModel')}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="py-3 px-4 text-sm text-foreground font-mono">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {binding?.model ?? platform?.model ?? <span className="text-muted font-sans">—</span>}
+                      {binding && isModelUnfit(binding) && (
+                        <span
+                          title={t(purposeRequirementLabelKey[binding.purpose])}
+                          className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning font-sans"
+                        >
+                          <ExclamationTriangleIcon className="h-3 w-3" />
+                          {t('modelUnfit')}
+                        </span>
+                      )}
+                      {binding && isModelUnlisted(binding) && (
+                        <span
+                          title={t('modelUnlistedHint')}
+                          className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning font-sans"
+                        >
+                          <ExclamationTriangleIcon className="h-3 w-3" />
+                          {t('modelUnlisted')}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="py-3 px-4 text-right">
+                    {binding ? (
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => setEditing(purpose)}
+                          aria-label={t('changeModel')}
+                          className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-secondary transition-colors"
+                        >
+                          <PencilIcon className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => setDeleting(binding)}
+                          aria-label={t('deleteModelBinding')}
+                          className="p-1.5 rounded-lg text-muted hover:text-error hover:bg-error/10 transition-colors"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      // The platform row is virtual — PUT/DELETE on its purpose 404,
+                      // so the only move it offers is creating a real binding.
+                      setModelAction(purpose, platform ? t('chooseOwnModel') : t('setModel'))
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
 
       {deleting && (
         <DeleteAgentLlmModal
           agentId={agentId}
           binding={deleting}
+          isLastBinding={byPurpose.size === 1}
           onClose={() => setDeleting(null)}
           onSuccess={handleMutationSuccess}
         />

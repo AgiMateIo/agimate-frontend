@@ -108,37 +108,35 @@ export type AgentLlmSource = 'USER' | 'PLATFORM';
 
 // CHAT — the agent's main conversation model; the rest are tool models for the
 // media connector (image generation / vision / speech-to-text / text-to-speech).
-// Purpose and name are independent: name is a free label, purpose is the role;
-// several bindings may share a role — the first by name wins. An explicit role
-// binding beats capability-based auto-pick and is advisory (not checked against
-// the registry).
+// The purpose IS the binding's identity: one model per purpose per agent, and
+// the value travels in the PUT/DELETE path (uppercase — lowercase gives 400).
+// An explicit binding beats the backend's capability-based auto-pick and is
+// advisory (not checked against the registry).
 export type AgentLlmPurpose = 'CHAT' | 'IMAGE' | 'VISION' | 'AUDIO_IN' | 'AUDIO_OUT';
 
 export interface AgentLlmResponse {
-  name: string;
   model: string;
+  // Identifies the binding — the {purpose} path segment of PUT/DELETE.
+  purpose: AgentLlmPurpose;
   // null for the synthetic PLATFORM record — the provider is system-owned.
   llmProviderId: string | null;
   llmProviderName: string;
   providerType: LlmProviderType;
   source: AgentLlmSource;
-  // Always CHAT for the synthetic PLATFORM record.
-  purpose: AgentLlmPurpose;
 }
 
 export interface CreateAgentLlmRequest {
-  name: string;
   llmProviderId: string;
   model: string;
-  // Omitted → CHAT.
+  // Omitted → CHAT. 409 when the purpose is already bound — PUT instead.
   purpose?: AgentLlmPurpose;
 }
 
+// The purpose is not part of the body — it comes from the path and cannot change
+// (moving a model to another purpose = delete + create).
 export interface UpdateAgentLlmRequest {
   llmProviderId: string;
   model: string;
-  // Omitted/null → current value is kept.
-  purpose?: AgentLlmPurpose;
 }
 
 // --- Token usage & quotas ---

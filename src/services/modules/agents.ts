@@ -15,6 +15,7 @@ import type {
   AgentSkillResponse,
   CreateAgentSkillRequest,
   AgentLlmResponse,
+  AgentLlmPurpose,
   CreateAgentLlmRequest,
   UpdateAgentLlmRequest,
 } from '@/types';
@@ -89,7 +90,7 @@ export const agentsApi = {
     return httpClient.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/skills/${skillId}`);
   },
 
-  // Agent ↔ LLM bindings
+  // Agent ↔ LLM bindings — keyed by purpose (one model per purpose per agent).
   async getAgentLlms(agentId: string): Promise<AgentLlmResponse[]> {
     return httpClient.get<AgentLlmResponse[]>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/llms/`);
   },
@@ -98,11 +99,12 @@ export const agentsApi = {
     return httpClient.post<AgentLlmResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/llms/`, data);
   },
 
-  async updateAgentLlm(agentId: string, name: string, data: UpdateAgentLlmRequest): Promise<AgentLlmResponse> {
-    return httpClient.put<AgentLlmResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/llms/${encodeURIComponent(name)}`, data);
+  // {purpose} must be the uppercase enum value — lowercase gives 400.
+  async updateAgentLlm(agentId: string, purpose: AgentLlmPurpose, data: UpdateAgentLlmRequest): Promise<AgentLlmResponse> {
+    return httpClient.put<AgentLlmResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/llms/${purpose}`, data);
   },
 
-  async deleteAgentLlm(agentId: string, name: string): Promise<void> {
-    return httpClient.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/llms/${encodeURIComponent(name)}`);
+  async deleteAgentLlm(agentId: string, purpose: AgentLlmPurpose): Promise<void> {
+    return httpClient.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/llms/${purpose}`);
   },
 };

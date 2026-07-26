@@ -64,28 +64,42 @@ function CapabilityIcons({ model }: { model: LlmProviderModelResponse }) {
   );
 }
 
-export type ModelQuickFilterKey = 'vision' | 'imageOut' | 'audioIn' | 'audioOut' | 'tools' | 'reasoning';
+// What the consuming purpose needs of a model. `hard` requirements (a media one
+// that cannot work without the modality) fold non-matching models away behind
+// an opt-in toggle; soft ones only warn on the current selection.
+export interface ModelRequirement {
+  filter: CapabilityFilter;
+  // Human sentence naming the requirement — rendered in the mismatch warnings.
+  label: string;
+  hard: boolean;
+}
 
 interface ModelPickerListProps {
   models: LlmProviderModelResponse[];
   value: string;
   onChange: (model: string) => void;
   disabled?: boolean;
-  // Pre-toggled capability filters (a hint, freely clearable). Read once on
-  // mount — re-key the component to re-seed.
-  initialQuickFilters?: readonly ModelQuickFilterKey[];
+  requirement?: ModelRequirement;
 }
 
 // Inline model picker for modal forms. The current selection lives in a card
 // above the search (always visible, × clears it); below are a search field
 // with capability filters folded behind a funnel toggle, and a scrollable list
 // of the remaining models. Models whose capabilities are unknown (null fields)
-// are never hidden by an active filter — they drop below a divider instead.
-export function ModelPickerList({ models, value, onChange, disabled, initialQuickFilters }: ModelPickerListProps) {
+// are never hidden by a filter or a requirement — null means unknown, not
+// "can't", so they drop below a divider instead.
+export function ModelPickerList({ models, value, onChange, disabled, requirement }: ModelPickerListProps) {
   const t = useTranslations('LlmProviders');
 
   const [search, setSearch] = useState('');
-  const [quick, setQuick] = useState<Set<string>>(() => new Set(initialQuickFilters));
+  const [quick, setQuick] = useState<Set<string>>(() => new Set());
+  // Escape hatch for a hard requirement: provider listings are incomplete often
+  // enough that the picker must never be a dead end.
+  const [showUnfit, setShowUnfit] = useState(false);
+
+  // 'excluded' = the model's own metadata says it lacks what the purpose needs.
+  const unfitsRequirement = (m: LlmProviderModelResponse) =>
+    !!requirement && matchCapabilityFilter(m, requirement.filter) === 'excluded';
 
   const visibleQuickFilters = useMemo(
     () => QUICK_FILTERS.filter((f) => models.some((m) => {
@@ -108,7 +122,7 @@ export function ModelPickerList({ models, value, onChange, disabled, initialQuic
   const selectedMissing = !!value && !selectedRow;
 
   // The list offers everything except the current selection — that lives in the card.
-  const { matched, unknown } = useMemo(() => {
+  const { matched, unknown, unfit } = useMemo(() => {
     const q = search.trim().toLowerCase();
     const bySearch = (m: LlmProviderModelResponse) =>
       !q || m.model.toLowerCase().includes(q) || (m.displayName ?? '').toLowerCase().includes(q);
@@ -119,14 +133,30 @@ export function ModelPickerList({ models, value, onChange, disabled, initialQuic
       });
     const matched: LlmProviderModelResponse[] = [];
     const unknown: LlmProviderModelResponse[] = [];
+    const unfit: LlmProviderModelResponse[] = [];
     for (const m of models) {
       if (m.model === value || !bySearch(m)) continue;
+      // A hard requirement is applied before the quick filters: a model the purpose
+      // cannot use is set aside whatever else matches, and one whose modalities
+      // the provider never reported goes below the divider rather than mixing
+      // in with models that actually declare the capability.
+      if (requirement?.hard) {
+        const req = matchCapabilityFilter(m, requirement.filter);
+        if (req === 'excluded') {
+          unfit.push(m);
+          continue;
+        }
+        if (req === 'unknown') {
+          unknown.push(m);
+          continue;
+        }
+      }
       const match = matchCapabilityFilter(m, capFilter);
       if (match === 'match') matched.push(m);
       else if (match === 'unknown') unknown.push(m);
     }
-    return { matched: sortModels(matched), unknown: sortModels(unknown) };
-  }, [models, search, capFilter, value]);
+    return { matched: sortModels(matched), unknown: sortModels(unknown), unfit: sortModels(unfit) };
+  }, [models, search, capFilter, value, requirement]);
 
   const toggleQuick = (key: string) =>
     setQuick((prev) => {
@@ -150,6 +180,14 @@ export function ModelPickerList({ models, value, onChange, disabled, initialQuic
           </span>
           <CapabilityIcons model={m} />
         </span>
+        {/* Only under a hard requirement, where these rows are the opt-in
+            bucket — flagging every soft miss in the list would be noise. */}
+        {requirement?.hard && unfitsRequirement(m) && (
+          <span className="flex items-center gap-1 text-xs text-warning mt-0.5">
+            <ExclamationTriangleIcon className="h-3 w-3 shrink-0" />
+            {t('modelUnfit')}
+          </span>
+        )}
         {m.status === 'UNAVAILABLE' && (
           <span className="flex items-center gap-1 text-xs text-warning mt-0.5">
             <ExclamationTriangleIcon className="h-3 w-3 shrink-0" />
@@ -195,6 +233,14 @@ export function ModelPickerList({ models, value, onChange, disabled, initialQuic
               <span className="flex items-center gap-1 text-xs text-warning mt-0.5">
                 <ExclamationTriangleIcon className="h-3 w-3 shrink-0" />
                 {t('modelNotInRegistry')}
+              </span>
+            )}
+            {/* Reachable via search, the unfit list, or a model that lost the
+                capability since it was bound — say why it does not fit. */}
+            {selectedRow && unfitsRequirement(selectedRow) && (
+              <span className="flex items-center gap-1 text-xs text-warning mt-0.5">
+                <ExclamationTriangleIcon className="h-3 w-3 shrink-0" />
+                {requirement?.label}
               </span>
             )}
             {selectedRow?.status === 'UNAVAILABLE' && (
@@ -252,7 +298,7 @@ export function ModelPickerList({ models, value, onChange, disabled, initialQuic
       <div className="bg-surface-secondary border border-border rounded-lg max-h-56 overflow-y-auto divide-y divide-border/50">
         {matched.map(renderRow)}
 
-        {filterActive && unknown.length > 0 && (
+        {(filterActive || requirement?.hard) && unknown.length > 0 && (
           <div className="px-3 py-1.5 text-xs text-muted bg-surface">
             {t('modelCapabilityUnknown')}
           </div>
@@ -260,7 +306,22 @@ export function ModelPickerList({ models, value, onChange, disabled, initialQuic
         {unknown.map(renderRow)}
 
         {matched.length === 0 && unknown.length === 0 && (
-          <div className="px-3 py-6 text-center text-sm text-muted">{t('noModelsMatch')}</div>
+          <div className="px-3 py-6 text-center text-sm text-muted">
+            {unfit.length > 0 ? t('noFittingModels') : t('noModelsMatch')}
+          </div>
+        )}
+
+        {unfit.length > 0 && (
+          <>
+            <button
+              type="button"
+              onClick={() => setShowUnfit((prev) => !prev)}
+              className="w-full px-3 py-1.5 text-xs text-muted hover:text-foreground bg-surface text-left transition-colors"
+            >
+              {showUnfit ? t('hideUnfitModels') : t('showUnfitModels', { count: unfit.length })}
+            </button>
+            {showUnfit && unfit.map(renderRow)}
+          </>
         )}
       </div>
     </div>

@@ -12,6 +12,7 @@ export const agentKeys = {
   list: (teamId?: string) => [...agentKeys.lists(), teamId ?? 'all'] as const,
   detail: (id: string) => [...agentKeys.all, 'detail', id] as const,
   connections: (id: string) => [...agentKeys.detail(id), 'connections'] as const,
+  llms: (id: string) => [...agentKeys.detail(id), 'llms'] as const,
 };
 
 export const agentsListOptions = (teamId?: string) =>
@@ -32,6 +33,14 @@ export const agentConnectionsOptions = (agentId: string) =>
   queryOptions({
     queryKey: agentKeys.connections(agentId),
     queryFn: () => apiService.getAgentConnections(agentId),
+  });
+
+// Model bindings of one agent, keyed by purpose. A zero-binding agent gets a
+// single synthetic PLATFORM row back — never a real row, see AgentLlmSource.
+export const agentLlmsOptions = (agentId: string) =>
+  queryOptions({
+    queryKey: agentKeys.llms(agentId),
+    queryFn: () => apiService.getAgentLlms(agentId),
   });
 
 // A large single page used to build id→agent lookup maps.
@@ -61,6 +70,8 @@ export function useAgentCacheActions() {
   return {
     invalidateAgent: (id: string) =>
       queryClient.invalidateQueries({ queryKey: agentKeys.detail(id) }),
+    invalidateAgentLlms: (id: string) =>
+      queryClient.invalidateQueries({ queryKey: agentKeys.llms(id) }),
     invalidateAll: () =>
       queryClient.invalidateQueries({ queryKey: agentKeys.all }),
   };
