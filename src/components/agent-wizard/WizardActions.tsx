@@ -1,12 +1,14 @@
-// The step's navigation, pinned to the bottom of the viewport while the step is
-// scrolled and settling into place as a footer once its end is reached — a long
-// preset gallery or skill list must never put "Next" out of reach.
+// The step's navigation: while the step is taller than the viewport the bar
+// clings to the bottom of the window, and once its end is reached it settles
+// into place as the step card's footer — a long preset gallery or skill list
+// must never put "Next" out of reach.
 //
-// It is the step card's last child and carries its own padding (the card has
-// none, each step pads its own body): a sticky box must have no margins of its
-// own, since the browser pins its *margin* box to the scrollport and a negative
-// margin would leave a see-through band of that height underneath. The
-// background is fully opaque for the same reason — content passes beneath it.
+// `-bottom-6` rather than `bottom-0`: the sticky offset is measured against the
+// content area of the scroll container, and the dashboard's <main> has p-6, so
+// bottom-0 parks the bar 24px above the window edge and leaves the page's own
+// text scrolling through that gap. The offset moves the resting point down by
+// exactly that padding; pb-6 keeps air under the buttons either way. The
+// background is fully opaque because content passes beneath it.
 export default function WizardActions({
   left,
   children,
@@ -16,7 +18,7 @@ export default function WizardActions({
   children: React.ReactNode;
 }) {
   return (
-    <div className="sticky bottom-0 flex items-center justify-between gap-3 rounded-b-xl border-t border-border bg-surface px-6 py-4">
+    <div className="sticky -bottom-6 flex items-center justify-between gap-3 rounded-b-xl border-t border-border bg-surface px-6 pt-4 pb-6">
       <div className="flex items-center gap-3">{left}</div>
       <div className="flex items-center gap-3">{children}</div>
     </div>
