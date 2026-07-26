@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { AgentCreatedResponse } from '@/types';
 import WizardStepper from './WizardStepper';
@@ -64,6 +64,23 @@ export default function AgentWizard({ teamId = null }: AgentWizardProps) {
   const [current, setCurrent] = useState(0);
   const [maxReached, setMaxReached] = useState(0);
   const [data, setDataState] = useState<WizardData>(EMPTY);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // Steps are tall and their action bar sits at the bottom, so a step change
+  // would otherwise leave the new step scrolled into its middle. The dashboard
+  // scrolls <main>, not the window — walk up to whichever ancestor scrolls.
+  useEffect(() => {
+    let node = rootRef.current?.parentElement ?? null;
+    while (node) {
+      const overflowY = getComputedStyle(node).overflowY;
+      if (node.scrollHeight > node.clientHeight && (overflowY === 'auto' || overflowY === 'scroll')) {
+        node.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      node = node.parentElement;
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [current]);
 
   const setData = (patch: Partial<WizardData>) =>
     setDataState((prev) => ({ ...prev, ...patch }));
@@ -102,7 +119,7 @@ export default function AgentWizard({ teamId = null }: AgentWizardProps) {
   const stepProps: WizardStepProps = { data, setData, goNext, goBack, teamId };
 
   return (
-    <div className="space-y-6">
+    <div ref={rootRef} className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
         <p className="text-muted mt-1">{t('subtitle')}</p>
