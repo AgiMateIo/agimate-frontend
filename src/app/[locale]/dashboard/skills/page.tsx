@@ -2,61 +2,64 @@
 
 import { useState, Suspense } from 'react';
 import { useTranslations } from 'next-intl';
-import { Button } from '@/components/ui/Button';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { SearchToolbar } from '@/components/ui/SearchToolbar';
-import { Tabs } from '@/components/ui/Tabs';
+import { FilterPill, FilterRow } from '@/components/ui/FilterPill';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
-import { useSkillsListQuery, useSkillsCacheActions, type SkillListTab } from '@/queries/skills';
+import {
+  useSkillPickerSuspenseQuery,
+  useSkillsCacheActions,
+  type SkillPickerSource,
+} from '@/queries/skills';
 import { Link } from '@/i18n/navigation';
 import SkillsList from '@/components/skills/SkillsList';
 
+// Rows revealed at once; "show more" grows the list in place. Both scopes are
+// merged client-side, so there is no server page to walk (see the query module).
+const CHUNK = 12;
+
+const SOURCES: SkillPickerSource[] = ['all', 'my', 'public'];
+
+const EMPTY_KEY = {
+  all: 'noSkillsFound',
+  my: 'noSkills',
+  public: 'noPublicSkills',
+} as const;
+
 function SkillsContent({
-  tab,
+  source,
   search,
-  page,
-  onPageChange,
 }: {
-  tab: SkillListTab;
+  source: SkillPickerSource;
   search: string;
-  page: number;
-  onPageChange: (page: number) => void;
 }) {
   const t = useTranslations('Skills');
-  const { data } = useSkillsListQuery(tab, search, page);
+  const { skills, truncated } = useSkillPickerSuspenseQuery(source, search);
   const { removeSkillFromLists } = useSkillsCacheActions();
+  // Remounted by the caller's key whenever the source or search changes, which
+  // collapses the list back to one chunk.
+  const [visible, setVisible] = useState(CHUNK);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <SkillsList
-        skills={data.content}
-        variant={tab}
+        skills={skills.slice(0, visible)}
+        emptyText={t(EMPTY_KEY[source])}
         onDeleteSuccess={removeSkillFromLists}
       />
 
-      {/* Pagination */}
-      {data.totalPages > 1 && (
-        <div className="flex items-center justify-between pt-2">
-          <span className="text-sm text-muted">
-            {t('page', { current: page + 1, total: data.totalPages })}
-          </span>
-          <div className="flex gap-2">
-            <Button
-              variant="secondary"
-              onClick={() => onPageChange(page - 1)}
-              disabled={page === 0}
-            >
-              {t('previous')}
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => onPageChange(page + 1)}
-              disabled={page >= data.totalPages - 1}
-            >
-              {t('next')}
-            </Button>
-          </div>
-        </div>
+      {visible < skills.length && (
+        <button
+          type="button"
+          onClick={() => setVisible((v) => v + CHUNK)}
+          className="w-full rounded-lg border border-dashed border-border py-2 text-sm font-medium text-muted transition-colors hover:border-accent/50 hover:text-foreground"
+        >
+          {t('showMore', { count: skills.length - visible })}
+        </button>
+      )}
+
+      {truncated && visible >= skills.length && (
+        <p className="pt-1 text-center text-xs text-muted">{t('refineSearch')}</p>
       )}
     </div>
   );
@@ -64,45 +67,9 @@ function SkillsContent({
 
 export default function SkillsPage() {
   const t = useTranslations('Skills');
-  const [activeTab, setActiveTab] = useState<SkillListTab>('my');
+  const [source, setSource] = useState<SkillPickerSource>('all');
   const [search, setSearch] = useState('');
-  const [page, setPage] = useState(0);
   const debouncedSearch = useDebouncedValue(search, 300);
-
-  const handleTabChange = (tabId: string) => {
-    setActiveTab(tabId as SkillListTab);
-    setSearch('');
-    setPage(0);
-  };
-
-  const tabContent = (
-    <>
-      {/* Search — outside Suspense so it never unmounts */}
-      <div className="mb-4">
-        <SearchToolbar
-          value={search}
-          onChange={(value) => {
-            setSearch(value);
-            setPage(0);
-          }}
-          placeholder={t('searchPlaceholder')}
-        />
-      </div>
-
-      <ErrorBoundary>
-        <Suspense fallback={
-          <div className="text-center py-12 text-muted">{t('loading')}</div>
-        }>
-          <SkillsContent
-            tab={activeTab}
-            search={debouncedSearch}
-            page={page}
-            onPageChange={setPage}
-          />
-        </Suspense>
-      </ErrorBoundary>
-    </>
-  );
 
   return (
     <div className="space-y-6">
@@ -119,14 +86,34 @@ export default function SkillsPage() {
         </Link>
       </div>
 
-      <Tabs
-        tabs={[
-          { id: 'my', label: t('mySkills'), content: tabContent },
-          { id: 'public', label: t('publicSkills'), content: tabContent },
-        ]}
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
+      {/* Outside the Suspense boundary: typing must never unmount the field. */}
+      <SearchToolbar
+        value={search}
+        onChange={setSearch}
+        placeholder={t('searchPlaceholder')}
+        filtersActive={source !== 'all'}
+        filters={
+          <FilterRow label={t('sourceLabel')}>
+            {SOURCES.map((key) => (
+              <FilterPill key={key} active={source === key} onClick={() => setSource(key)}>
+                {t(`source_${key}`)}
+              </FilterPill>
+            ))}
+          </FilterRow>
+        }
       />
+
+      <ErrorBoundary>
+        <Suspense
+          fallback={<div className="text-center py-12 text-muted">{t('loading')}</div>}
+        >
+          <SkillsContent
+            key={`${source}:${debouncedSearch}`}
+            source={source}
+            search={debouncedSearch}
+          />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 }

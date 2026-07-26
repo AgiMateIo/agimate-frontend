@@ -3,6 +3,7 @@ import {
   useQueries,
   useQuery,
   useQueryClient,
+  useSuspenseQueries,
   useSuspenseQuery,
 } from '@tanstack/react-query';
 import apiService from '@/services/api';
@@ -55,13 +56,17 @@ export const skillsListOptions = (
       }),
   });
 
-export function useSkillsListQuery(tab: SkillListTab, search: string, page: number) {
-  return useSuspenseQuery(skillsListOptions(tab, search, page));
-}
-
-// The skill picker (agent wizard): one searchable list over both scopes, since
-// "where does this skill come from" is a filter there, not the primary axis.
+// The skill picker (agent wizard, Skills page): one searchable list over both
+// scopes, since "where does this skill come from" is a filter there, not the
+// primary axis.
 export type SkillPickerSource = 'all' | 'my' | 'public';
+
+export type PickedSkill = SkillResponse & {
+  // Came from the MINE scope — an own skill of any visibility. The scope is the
+  // dependable ownership signal: every field of the User payload is optional,
+  // so comparing userId against the current user's id can silently fail.
+  mine: boolean;
+};
 
 const PICKER_SCOPES: Record<SkillPickerSource, SkillScope[]> = {
   all: ['MINE', 'PUBLIC'],
@@ -72,7 +77,7 @@ const PICKER_SCOPES: Record<SkillPickerSource, SkillScope[]> = {
 // Same trade-off as the by-connector list below: merging two independently paged
 // sources would drop rows, so take one large page per scope and report
 // `truncated` instead of paging.
-const PICKER_SIZE = 50;
+const PICKER_SIZE = 100;
 
 export const skillsPickerOptions = (scope: SkillScope, search: string) =>
   queryOptions({
@@ -85,31 +90,51 @@ export const skillsPickerOptions = (scope: SkillScope, search: string) =>
       }),
   });
 
-// Non-suspense on purpose: the wizard step renders its own inline loading and
-// error states and must not suspend the step it lives in.
+function mergePickerPages(
+  scopes: SkillScope[],
+  pages: (PagedResponse<SkillResponse> | undefined)[],
+) {
+  // Scopes are mine-first, so insert back-to-front: a skill that is both mine
+  // and public keeps its MINE row, and with it `mine: true`.
+  const byId = new Map<string, PickedSkill>();
+  for (let i = pages.length - 1; i >= 0; i--) {
+    for (const skill of pages[i]?.content ?? []) {
+      byId.set(skill.id, { ...skill, mine: scopes[i] === 'MINE' });
+    }
+  }
+
+  return {
+    skills: [...byId.values()].sort((a, b) => a.title.localeCompare(b.title)),
+    // A scope had more rows than one page — narrowing the search is the only way
+    // to reach the rest.
+    truncated: pages.some((p) => p && p.totalElements > p.content.length),
+  };
+}
+
+// Non-suspense: the wizard step renders its own inline loading and error states
+// and must not suspend the step it lives in.
 export function useSkillPickerQuery(source: SkillPickerSource, search: string) {
   const scopes = PICKER_SCOPES[source];
   const results = useQueries({
     queries: scopes.map((scope) => skillsPickerOptions(scope, search)),
   });
 
-  // Scopes are mine-first, so insert back-to-front: a skill that is both mine
-  // and public keeps its MINE row.
-  const byId = new Map<string, SkillResponse>();
-  for (let i = results.length - 1; i >= 0; i--) {
-    for (const skill of results[i].data?.content ?? []) byId.set(skill.id, skill);
-  }
-
   return {
-    skills: [...byId.values()].sort((a, b) => a.title.localeCompare(b.title)),
+    ...mergePickerPages(scopes, results.map((r) => r.data)),
     isPending: results.some((r) => r.isPending),
     error: results.find((r) => r.error)?.error ?? null,
-    // A scope had more rows than one page — narrowing the search is the only way
-    // to reach the rest.
-    truncated: results.some(
-      (r) => r.data && r.data.totalElements > r.data.content.length,
-    ),
   };
+}
+
+// Suspense variant for the Skills page, which keeps its toolbar outside the
+// ErrorBoundary + Suspense shell so typing never unmounts the search field.
+export function useSkillPickerSuspenseQuery(source: SkillPickerSource, search: string) {
+  const scopes = PICKER_SCOPES[source];
+  const results = useSuspenseQueries({
+    queries: scopes.map((scope) => skillsPickerOptions(scope, search)),
+  });
+
+  return mergePickerPages(scopes, results.map((r) => r.data));
 }
 
 // One page per scope, deliberately large: the two scopes are merged client-side

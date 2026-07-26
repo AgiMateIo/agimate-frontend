@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { SkillResponse } from '@/types';
+import type { PickedSkill } from '@/queries/skills';
 import { TrashIcon, PencilIcon, LinkIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
 import SkillCard from './SkillCard';
@@ -10,14 +11,15 @@ import DeleteSkillModal from './DeleteSkillModal';
 import AddSkillAgentModal from './AddSkillAgentModal';
 
 interface SkillsListProps {
-  skills: SkillResponse[];
-  variant: 'my' | 'public';
+  skills: PickedSkill[];
+  // Shown when the list is empty; the wording depends on the active source filter.
+  emptyText: string;
   onDeleteSuccess: (skillId: string) => void;
 }
 
 export default function SkillsList({
   skills,
-  variant,
+  emptyText,
   onDeleteSuccess,
 }: SkillsListProps) {
   const t = useTranslations('Skills');
@@ -32,11 +34,7 @@ export default function SkillsList({
   };
 
   if (skills.length === 0) {
-    return (
-      <div className="text-center py-8 text-muted">
-        {variant === 'my' ? t('noSkills') : t('noPublicSkills')}
-      </div>
-    );
+    return <div className="text-center py-8 text-muted">{emptyText}</div>;
   }
 
   return (
@@ -50,7 +48,8 @@ export default function SkillsList({
             showConnectorCodes
             actions={
               <>
-                {variant === 'my' && (
+                {/* Own skills are editable; everyone else's can only be bound. */}
+                {skill.mine && (
                   <>
                     <button
                       onClick={() => router.push(`/dashboard/skills/${skill.id}/edit`)}
@@ -67,7 +66,7 @@ export default function SkillsList({
                   </>
                 )}
 
-                {variant === 'public' && (
+                {!skill.mine && (
                   <button
                     onClick={() => setBindingSkill(skill)}
                     className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 transition-colors whitespace-nowrap"
