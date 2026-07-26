@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations, useLocale } from 'next-intl';
+import { AcademicCapIcon } from '@heroicons/react/24/outline';
 import { SkillResponse } from '@/types';
 import { Link } from '@/i18n/navigation';
 import { formatDate } from '@/utils/date';
@@ -28,23 +29,29 @@ export default function SkillCard({
   const locale = useLocale();
 
   const body = (
-    <div className="flex items-start justify-between gap-4">
+    <div className="flex items-start gap-3">
+      {/* Same tile as the connector's tool/trigger cards — the skill's icon is
+          the one the sidebar and the agent tabs already use for skills. */}
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
+        <AcademicCapIcon className="h-5 w-5" />
+      </div>
+
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
+        {/* Title leads; version and visibility trail it as metadata. */}
+        <div className="flex items-baseline gap-2 flex-wrap">
+          <h3 className="font-medium text-foreground">{skill.title}</h3>
+          <span className="text-xs text-muted">
+            {t('version', { version: skill.version })}
+          </span>
           {skill.isPublic && (
             <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-success/10 text-success">
               {t('public')}
             </span>
           )}
-          <span className="text-xs text-muted">
-            {t('version', { version: skill.version })}
-          </span>
         </div>
 
-        <h3 className="font-medium text-foreground mt-1">{skill.title}</h3>
-
         {skill.description && (
-          <p className="text-sm text-muted mt-0.5 line-clamp-2">
+          <p className="text-sm text-muted mt-1 line-clamp-2">
             {skill.description}
           </p>
         )}
@@ -68,7 +75,7 @@ export default function SkillCard({
       </div>
 
       {actions && (
-        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+        <div className="flex shrink-0 items-center gap-2" onClick={(e) => e.stopPropagation()}>
           {actions}
         </div>
       )}
