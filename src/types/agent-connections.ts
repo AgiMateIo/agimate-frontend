@@ -21,6 +21,22 @@ export interface AgentConnectionResponse {
   createdAt: string;
 }
 
+// Reverse listing of the same binding row: which agents a connection is available to.
+// `id` is the *binding* id (the {agentConnectionId} of the policy endpoints), `agentId` the
+// agent itself; `enabled` is the agent's flag, not the connection's — disabled agents stay in
+// the list, since their owner can re-enable them and the binding comes back to life.
+// This is an inventory of access ("who is affected by a change"), not a delivery forecast:
+// events also depend on the connection being enabled and on the binding's policies.
+export interface ConnectionAgentResponse {
+  id: string;
+  agentId: string;
+  name: string;
+  description: string | null;
+  enabled: boolean;
+  // when the connection was bound to the agent
+  createdAt: string;
+}
+
 export interface BindConnectionRequest {
   // an existing connection instance of an *external* connector
   connectionId: string;

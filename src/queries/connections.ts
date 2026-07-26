@@ -1,6 +1,7 @@
 import {
   queryOptions,
   useMutation,
+  useQuery,
   useQueryClient,
   useSuspenseQuery,
 } from '@tanstack/react-query';
@@ -17,6 +18,7 @@ export const connectionKeys = {
   list: (connectorCode?: string) =>
     [...connectionKeys.lists(), connectorCode ?? 'all'] as const,
   detail: (id: string) => [...connectionKeys.all, 'detail', id] as const,
+  agents: (id: string) => [...connectionKeys.detail(id), 'agents'] as const,
 };
 
 export interface ConnectionWithConnector {
@@ -41,6 +43,18 @@ export function useConnectionDetailQuery(id: string) {
       return { connection, connector };
     },
   });
+}
+
+// Agents the connection is available to. Nested under the detail key so removing
+// a connection from the cache drops this list with it.
+export const connectionAgentsOptions = (id: string) =>
+  queryOptions({
+    queryKey: connectionKeys.agents(id),
+    queryFn: () => apiService.getConnectionAgents(id),
+  });
+
+export function useConnectionAgentsQuery(id: string) {
+  return useQuery(connectionAgentsOptions(id));
 }
 
 export function useUpdateConnectionMutation(id: string) {

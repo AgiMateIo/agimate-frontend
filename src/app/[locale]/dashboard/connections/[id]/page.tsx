@@ -25,12 +25,13 @@ import TestConnectionModal from '@/components/connections/TestConnectionModal';
 import { Button } from '@/components/ui/Button';
 import { PencilIcon, KeyIcon, TrashIcon, BeakerIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
+import ConnectionAgentsTab from '@/components/connections/ConnectionAgentsTab';
 import ConnectionSkillsTab from '@/components/connections/ConnectionSkillsTab';
 import ConnectionToolsTab from '@/components/connections/ConnectionToolsTab';
 import ConnectionTriggersTab from '@/components/connections/ConnectionTriggersTab';
 import ConnectionJobsTab from '@/components/connections/ConnectionJobsTab';
 
-type Tab = 'info' | 'tools' | 'triggers' | 'jobs' | 'skills';
+type Tab = 'info' | 'tools' | 'triggers' | 'jobs' | 'skills' | 'agents';
 
 function ConnectionDetailContent({ id }: { id: string }) {
   const t = useTranslations('ConnectionDetail');
@@ -221,6 +222,16 @@ function ConnectionDetailContent({ id }: { id: string }) {
             id: 'skills',
             label: t('tabSkills'),
             content: <ConnectionSkillsTab connectorCode={connection.connectorCode} />,
+          },
+          {
+            id: 'agents',
+            label: t('tabAgents'),
+            content: (
+              <ConnectionAgentsTab
+                connectionId={connection.id}
+                canBind={!!connector.integrationMeta}
+              />
+            ),
           },
         ]}
         activeTab={activeTab}

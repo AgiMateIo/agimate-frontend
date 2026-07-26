@@ -8,6 +8,7 @@ import { API } from '@/config/constants';
 import type {
   ConnectorToolSpec,
   ConnectorJobResponse,
+  ConnectionAgentResponse,
   ConnectionResponse,
   CreateConnectionRequest,
   TriggerSpecificationResponse,
@@ -63,6 +64,13 @@ export const connectionsApi = {
   // Trigger *specs* (type-declared ∪ per-connection dynamic) the instance emits.
   async getConnectionTriggers(id: string): Promise<TriggerSpecificationResponse[]> {
     return httpClient.get<TriggerSpecificationResponse[]>(`${API.ENDPOINTS.CONTROL_API}/manage/connections/${id}/triggers/`);
+  },
+
+  // Agents this connection is available to, oldest binding first. Rows carry the
+  // *binding* id, so a policy call needs no extra lookup. Disabled agents are
+  // included on purpose (see ConnectionAgentResponse).
+  async getConnectionAgents(id: string): Promise<ConnectionAgentResponse[]> {
+    return httpClient.get<ConnectionAgentResponse[]>(`${API.ENDPOINTS.CONTROL_API}/manage/connections/${id}/agents/`);
   },
 
   // Background job *instances* scheduled/running for this connection. Runtime
