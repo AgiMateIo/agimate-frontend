@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import DashboardViewSwitch from '@/components/dashboard/DashboardViewSwitch';
 import OverviewGreeting from '@/components/dashboard/OverviewGreeting';
@@ -13,9 +13,11 @@ function DashboardHome() {
   const t = useTranslations('DashboardHome');
   const { mode, setMode } = useDashboardViewMode();
   const resources = useDashboardResources();
+  // Polling belongs to the work mode; the overview reads the same data once.
+  const [refreshSeconds, setRefreshSeconds] = useState<number | null>(null);
   // Fetched in both modes: the overview needs it for the banner and the dot on
   // the switch, which is the whole point of surfacing it there.
-  const attention = useAttentionSignals();
+  const attention = useAttentionSignals(mode === 'pro' ? refreshSeconds : null);
 
   return (
     <div className="space-y-6">
@@ -34,7 +36,12 @@ function DashboardHome() {
       {mode === 'overview' ? (
         <OverviewMode resources={resources} attentionCount={attention.signals.length} />
       ) : (
-        <WorkMode resources={resources} attention={attention} />
+        <WorkMode
+          resources={resources}
+          attention={attention}
+          refreshSeconds={refreshSeconds}
+          onRefreshSecondsChange={setRefreshSeconds}
+        />
       )}
     </div>
   );

@@ -1,28 +1,51 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { Alert } from '@/components/ui/Alert';
+import { RefreshControls } from '@/components/ui/RefreshControls';
 import { Link } from '@/i18n/navigation';
-import type { DashboardResources, useAttentionSignals } from '@/queries/dashboard';
+import {
+  dashboardKeys,
+  type DashboardResources,
+  type useAttentionSignals,
+} from '@/queries/dashboard';
+import { llmProviderKeys } from '@/queries/llm-providers';
+import { webchatKeys } from '@/queries/webchat';
+import ActivityFeed from './ActivityFeed';
 import AttentionPanel from './AttentionPanel';
+import LlmSpend from './LlmSpend';
+import RecentChats from './RecentChats';
+import UpcomingRuns from './UpcomingRuns';
 import { RESOURCE_CARDS } from './resources';
 
 /**
- * Dense working home. First slice: the counters as a one-line strip, so the
- * space goes to the blocks that follow (attention list, activity feed, upcoming
- * runs, LLM spend) rather than to six big cards.
+ * Dense working home: what is broken, what just ran, what runs next, what it
+ * costs. The counters shrink to a single line so the space goes to the blocks
+ * that answer those questions.
  */
 export default function WorkMode({
   resources,
   attention,
+  refreshSeconds,
+  onRefreshSecondsChange,
 }: {
   resources: DashboardResources;
   attention: ReturnType<typeof useAttentionSignals>;
+  refreshSeconds: number | null;
+  onRefreshSecondsChange: (seconds: number | null) => void;
 }) {
   const t = useTranslations('DashboardHome');
+  const queryClient = useQueryClient();
+
+  // One control refreshes every block, including the ones fed by shared keys.
+  const refreshAll = () => {
+    queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
+    queryClient.invalidateQueries({ queryKey: llmProviderKeys.usage() });
+    queryClient.invalidateQueries({ queryKey: webchatKeys.sessions() });
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl border border-border bg-surface px-5 py-3">
         {RESOURCE_CARDS.map((spec) => {
           const { count, loading, error } = resources[spec.key];
@@ -48,6 +71,13 @@ export default function WorkMode({
             </Link>
           );
         })}
+        <div className="ml-auto">
+          <RefreshControls
+            value={refreshSeconds}
+            onChange={onRefreshSecondsChange}
+            onRefresh={refreshAll}
+          />
+        </div>
       </div>
 
       <AttentionPanel
@@ -56,10 +86,17 @@ export default function WorkMode({
         error={attention.error}
       />
 
-      <Alert variant="info">
-        <p className="text-sm font-medium">{t('workModeSoonTitle')}</p>
-        <p className="mt-1 text-sm text-muted">{t('workModeSoonBody')}</p>
-      </Alert>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <ActivityFeed refreshSeconds={refreshSeconds} />
+        </div>
+        <div className="space-y-4">
+          <UpcomingRuns refreshSeconds={refreshSeconds} />
+          <RecentChats />
+        </div>
+      </div>
+
+      <LlmSpend />
     </div>
   );
 }

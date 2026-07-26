@@ -199,8 +199,14 @@
     "actionChat": "Talk to an agent",
     "actionCreateAgent": "Create an agent",
     "actionConnect": "Add a connector",
-    "workModeSoonTitle": "Work mode is in progress",
-    "workModeSoonBody": "This is where the attention list, the tool-call activity feed, upcoming scheduled runs and detailed token spend will land."
+    "activityTitle": "Recent tool calls",
+    "activityEmpty": "Your agents haven't called any tools yet",
+    "upcomingTitle": "Upcoming runs",
+    "upcomingEmpty": "Nothing scheduled to run",
+    "chatsTitle": "Recent chats",
+    "chatsEmpty": "No agent conversations yet",
+    "chatUntitled": "Untitled",
+    "spendTitle": "Token spend"
   },
   "ApiKeys": {
     "title": "API Keys",

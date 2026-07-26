@@ -1,6 +1,11 @@
 'use client';
 
-import { useQueries, type UseQueryResult } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useQueries,
+  useQuery,
+  type UseQueryResult,
+} from '@tanstack/react-query';
 import apiService from '@/services/api';
 import { parseBackendDate } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
@@ -77,7 +82,13 @@ export const dashboardKeys = {
   toolLogs: (kind: 'errors' | 'denied') =>
     [...dashboardKeys.attention(), 'tool-logs', kind] as const,
   webhookScan: () => [...dashboardKeys.attention(), 'webhooks'] as const,
+  activity: () => [...dashboardKeys.all, 'activity'] as const,
 };
+
+// Seconds → the shape React Query wants, so every dashboard query reacts to the
+// one refresh selector in the work mode's header.
+const toInterval = (seconds: number | null) =>
+  seconds ? seconds * 1000 : (false as const);
 
 // Neither connector jobs nor webhook deliveries can be filtered by outcome on
 // the backend, so those signals are derived from a scanned page. When the page
@@ -117,6 +128,15 @@ export interface AttentionSignal {
   href: string;
 }
 
+// One scan serves both the attention panel and the upcoming-runs list: same key,
+// same options, so the two observers share a single request.
+const jobScanOptions = (refreshSeconds: number | null) => ({
+  queryKey: dashboardKeys.jobScan(),
+  queryFn: () => apiService.getConnectorJobs({ size: JOB_SCAN_SIZE }),
+  staleTime: 30_000,
+  refetchInterval: toInterval(refreshSeconds),
+});
+
 const newest = (values: (string | null)[]): string | null =>
   values.filter((v): v is string => !!v).sort().at(-1) ?? null;
 
@@ -128,23 +148,21 @@ const newest = (values: (string | null)[]): string | null =>
  * Feeds both the work-mode panel and the dot on the mode switch, so the friendly
  * mode can't quietly hide a broken workspace.
  */
-export function useAttentionSignals() {
+export function useAttentionSignals(refreshSeconds: number | null = null) {
   const [jobs, toolErrors, toolDenied, connections, webhooks] = useQueries({
     queries: [
-      {
-        queryKey: dashboardKeys.jobScan(),
-        queryFn: () => apiService.getConnectorJobs({ size: JOB_SCAN_SIZE }),
-        staleTime: 30_000,
-      },
+      jobScanOptions(refreshSeconds),
       {
         queryKey: dashboardKeys.toolLogs('errors'),
         queryFn: () => apiService.getToolUseLogs({ status: 'ERROR', size: SAMPLE_SIZE }),
         staleTime: 30_000,
+        refetchInterval: toInterval(refreshSeconds),
       },
       {
         queryKey: dashboardKeys.toolLogs('denied'),
         queryFn: () => apiService.getToolUseLogs({ accessEffect: 'DENY', size: SAMPLE_SIZE }),
         staleTime: 30_000,
+        refetchInterval: toInterval(refreshSeconds),
       },
       // Same key as the connections count — one request serves both.
       connectionsListOptions(),
@@ -152,6 +170,7 @@ export function useAttentionSignals() {
         queryKey: dashboardKeys.webhookScan(),
         queryFn: () => apiService.getWebhookDeliveryLogs({ size: WEBHOOK_SCAN_SIZE }),
         staleTime: 30_000,
+        refetchInterval: toInterval(refreshSeconds),
       },
     ],
   });
@@ -247,5 +266,45 @@ export function useAttentionSignals() {
     loading: results.some((r) => r.isPending),
     // Surfaced rather than swallowed: a failed check is not a clean workspace.
     error: firstError ? getErrorMessage(firstError, '') : null,
+  };
+}
+
+const ACTIVITY_SIZE = 8;
+const UPCOMING_SIZE = 5;
+
+/** Newest tool calls across every agent — the work mode's "what just happened". */
+export function useActivityFeed(refreshSeconds: number | null = null) {
+  const query = useQuery({
+    queryKey: dashboardKeys.activity(),
+    queryFn: () => apiService.getToolUseLogs({ size: ACTIVITY_SIZE }),
+    staleTime: 15_000,
+    refetchInterval: toInterval(refreshSeconds),
+    // Keep rows on screen while a background refresh lands, like the log tabs.
+    placeholderData: keepPreviousData,
+  });
+
+  return {
+    logs: query.data?.content ?? [],
+    loading: query.isPending,
+    error: query.error ? getErrorMessage(query.error, '') : null,
+  };
+}
+
+/**
+ * The next few scheduled connector runs. Reuses the attention scan, which the
+ * backend already sorts by nextRunAt ascending; paused jobs are dropped because
+ * their next run will not happen.
+ */
+export function useUpcomingJobs(refreshSeconds: number | null = null) {
+  const query = useQuery(jobScanOptions(refreshSeconds));
+
+  const jobs = (query.data?.content ?? [])
+    .filter((j) => j.pausedAt === null && j.nextRunAt !== null)
+    .slice(0, UPCOMING_SIZE);
+
+  return {
+    jobs,
+    loading: query.isPending,
+    error: query.error ? getErrorMessage(query.error, '') : null,
   };
 }

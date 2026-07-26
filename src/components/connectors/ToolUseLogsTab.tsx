@@ -4,7 +4,8 @@ import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import apiService from '@/services/api';
-import type { ToolCallStatus, ToolUseLogResponse } from '@/types';
+import type { ToolCallStatus } from '@/types';
+import { STATUS_BADGE, getRowStatus } from './toolCallStatus';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { RefreshControls } from '@/components/ui/RefreshControls';
 import { Pagination } from '@/components/ui/Pagination';
@@ -17,27 +18,10 @@ import { agentConnectionsOptions } from '@/queries/agents';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { formatDateTimeFull, formatDateTimeShort } from '@/utils/date';
 
-// DENY rows never executed, so they carry no SUCCESS/ERROR/PENDING status —
-// the badge is derived client-side from accessEffect + finishAt/error (spec §3).
-type RowStatus = ToolCallStatus | 'DENIED';
 export type StatusFilter = 'ALL' | ToolCallStatus;
 export type AccessFilter = 'ALL' | 'ALLOW' | 'DENY';
 
 const STATUS_FILTERS: StatusFilter[] = ['ALL', 'SUCCESS', 'ERROR', 'PENDING'];
-
-const STATUS_BADGE = {
-  SUCCESS: { className: 'bg-success/10 text-success', labelKey: 'statusSuccess' },
-  ERROR: { className: 'bg-error/10 text-error', labelKey: 'statusError' },
-  PENDING: { className: 'bg-muted/10 text-muted', labelKey: 'statusPending' },
-  DENIED: { className: 'bg-warning/10 text-warning', labelKey: 'statusDenied' },
-} as const satisfies Record<RowStatus, { className: string; labelKey: string }>;
-
-const getRowStatus = (log: ToolUseLogResponse): RowStatus => {
-  if (log.accessEffect === 'DENY') return 'DENIED';
-  if (log.error) return 'ERROR';
-  if (log.finishAt) return 'SUCCESS';
-  return 'PENDING';
-};
 
 // Standalone on the tool-use-logs page; scoped to one agent when `agentId` is
 // set (the agent page's Tool Calls tab — filter selectors then offer only the
