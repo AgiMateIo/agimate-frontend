@@ -75,6 +75,7 @@
     "instructionsLabel": "Instructions",
     "instructionsHint": "System prompt: how the agent should behave. Edit it freely — this exact text will be used.",
     "instructionsPlaceholder": "Enter instructions for the agent...",
+    "instructionsEmpty": "Not set — click to write them",
     "skillsTitle": "Choose the skills",
     "skillsSubtitle": "Role skills are already on. Tick any others — connections are set up after the agent is created.",
     "selectedSkills": "Agent skills ({count})",

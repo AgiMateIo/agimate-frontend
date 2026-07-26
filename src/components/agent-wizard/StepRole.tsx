@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { CheckIcon } from '@heroicons/react/24/solid';
-import { PencilSquareIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
 import { AgentPresetResponse } from '@/types';
 import { useAgentPresetsQuery } from '@/queries/agent-presets';
 import { Button } from '@/components/ui/Button';
@@ -36,8 +36,14 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
     data.presetName ?? (data.name || data.instructions ? SCRATCH : null),
   );
 
+  // The system prompt is the tallest field on the step and, coming from a preset,
+  // is read far more often than edited — it collapses to a two-line preview.
+  // An empty one opens, since a from-scratch agent has nothing to preview.
+  const [instructionsOpen, setInstructionsOpen] = useState(!data.instructions.trim());
+
   const applyPreset = (preset: AgentPresetResponse) => {
     setSelectedCard(preset.name);
+    setInstructionsOpen(false);
     // Pure prefill — every field below stays editable before creation.
     setData({
       presetName: preset.name,
@@ -55,6 +61,7 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
 
   const applyScratch = () => {
     setSelectedCard(SCRATCH);
+    setInstructionsOpen(true);
     setData({
       presetName: null,
       presetConnectorCodes: [],
@@ -190,14 +197,49 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
               />
             </FormField>
 
-            <FormField label={t('instructionsLabel')} hint={t('instructionsHint')}>
-              <TextArea
-                value={data.instructions}
-                onChange={(e) => setData({ instructions: e.target.value })}
-                placeholder={t('instructionsPlaceholder')}
-                rows={8}
-              />
-            </FormField>
+            {/* Hand-rolled instead of <FormField>: the label row doubles as the
+                disclosure control (same pattern as the agent key on the last step). */}
+            {instructionsOpen ? (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setInstructionsOpen(false)}
+                  aria-expanded
+                  className="mb-2 flex w-full items-center justify-between gap-3 text-left"
+                >
+                  <span className="text-sm font-medium text-foreground">
+                    {t('instructionsLabel')}
+                  </span>
+                  <ChevronDownIcon className="h-4 w-4 shrink-0 rotate-180 text-muted" />
+                </button>
+                <TextArea
+                  value={data.instructions}
+                  onChange={(e) => setData({ instructions: e.target.value })}
+                  placeholder={t('instructionsPlaceholder')}
+                  rows={8}
+                />
+                <p className="text-xs text-muted mt-1">{t('instructionsHint')}</p>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setInstructionsOpen(true)}
+                aria-expanded={false}
+                className="block w-full text-left"
+              >
+                <span className="mb-2 flex items-center justify-between gap-3">
+                  <span className="text-sm font-medium text-foreground">
+                    {t('instructionsLabel')}
+                  </span>
+                  <ChevronDownIcon className="h-4 w-4 shrink-0 text-muted" />
+                </span>
+                <span className="block rounded-lg border border-border bg-surface-secondary px-4 py-2.5">
+                  <span className="line-clamp-2 whitespace-pre-line text-sm text-muted">
+                    {data.instructions.trim() || t('instructionsEmpty')}
+                  </span>
+                </span>
+              </button>
+            )}
           </div>
         )}
       </div>
