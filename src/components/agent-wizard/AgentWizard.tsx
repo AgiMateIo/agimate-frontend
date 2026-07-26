@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { AgentCreatedResponse } from '@/types';
-import WizardStepper from './WizardStepper';
-import WizardSummary from './WizardSummary';
+import WizardStepper, { type StepperStep } from './WizardStepper';
+import { AgentSummary, SkillsSummary } from './WizardSummary';
 import StepRole from './StepRole';
 import StepSkills from './StepSkills';
 import StepDone from './StepDone';
@@ -89,9 +89,32 @@ export default function AgentWizard({ teamId = null }: AgentWizardProps) {
     setCurrent(0);
   };
 
-  const steps = [
-    { key: 'role', label: t('stepRole') },
-    { key: 'skills', label: t('stepSkills') },
+  // From step two on, each stepper cell carries what its step has gathered, so
+  // the draft is visible without repeating it inside the open step. Step one
+  // needs none of it: the fields are right there.
+  const name = data.name.trim();
+  const showSummary = current > 0 && Boolean(name);
+
+  const steps: StepperStep[] = [
+    {
+      key: 'role',
+      label: t('stepRole'),
+      detail: showSummary ? <AgentSummary name={name} /> : undefined,
+    },
+    {
+      key: 'skills',
+      label: t('stepSkills'),
+      detail: showSummary ? (
+        <SkillsSummary
+          skills={data.skills}
+          onRemoveSkill={
+            data.created
+              ? undefined
+              : (id) => setData({ skills: data.skills.filter((s) => s.id !== id) })
+          }
+        />
+      ) : undefined,
+    },
     { key: 'done', label: t('stepDone') },
   ];
 
@@ -111,21 +134,6 @@ export default function AgentWizard({ teamId = null }: AgentWizardProps) {
           maxReached={data.created ? current : maxReached}
           onStepClick={goTo}
         />
-
-        {/* What the later steps are about. Sits below the stepper so appearing
-            doesn't shift it, and stays put across steps — the draft belongs to
-            the wizard, not to whichever step is open. */}
-        {current > 0 && data.name.trim() && (
-          <WizardSummary
-            name={data.name.trim()}
-            skills={data.skills}
-            onRemoveSkill={
-              data.created
-                ? undefined
-                : (id) => setData({ skills: data.skills.filter((s) => s.id !== id) })
-            }
-          />
-        )}
       </div>
 
       {/* No padding here and no overflow clipping: each step pads its own body so
