@@ -7,7 +7,6 @@ import {
   CheckCircleIcon,
   CheckIcon,
   ExclamationTriangleIcon,
-  XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import { FilterPill, FilterRow } from '@/components/ui/FilterPill';
@@ -108,9 +107,6 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
     });
   };
 
-  const removeSkill = (id: string) =>
-    setData({ skills: data.skills.filter((s) => s.id !== id) });
-
   const { loading, error, handleSubmit } = useAsyncForm({
     defaultError: t('createError'),
   });
@@ -149,38 +145,6 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
         <div>
           <h2 className="text-lg font-semibold text-foreground">{t('skillsTitle')}</h2>
           <p className="text-sm text-muted mt-0.5">{t('skillsSubtitle')}</p>
-        </div>
-
-        {/* The agent's skill set, summarised. Removal only — adding happens in the
-            list below, so the two views never compete for the same gesture. */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-foreground">
-            {t('selectedSkills', { count: data.skills.length })}
-          </h3>
-          {data.skills.length === 0 ? (
-            <p className="text-sm text-muted">{t('noSelectedSkills')}</p>
-          ) : (
-            <div className="flex flex-wrap gap-1.5">
-              {/* Hand-rolled rather than <Chip>: this pill owns a remove button. */}
-              {data.skills.map((skill) => (
-                <span
-                  key={skill.id}
-                  className="inline-flex items-center gap-1 rounded-full bg-accent/10 py-1 pl-2.5 pr-1 text-xs font-medium text-accent"
-                >
-                  <span className="truncate max-w-[14rem]">{skill.title}</span>
-                  <button
-                    type="button"
-                    onClick={() => removeSkill(skill.id)}
-                    title={t('removeSkill')}
-                    aria-label={t('removeSkill')}
-                    className="rounded-full p-0.5 transition-colors hover:bg-accent/20"
-                  >
-                    <XMarkIcon className="h-3 w-3" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
         </div>
 
         <div className="space-y-3">

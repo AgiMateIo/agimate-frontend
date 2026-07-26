@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { AgentCreatedResponse } from '@/types';
-import { getAgentAvatarUrl } from '@/utils/avatar';
 import WizardStepper from './WizardStepper';
+import WizardSummary from './WizardSummary';
 import StepRole from './StepRole';
 import StepSkills from './StepSkills';
 import StepDone from './StepDone';
@@ -112,20 +112,19 @@ export default function AgentWizard({ teamId = null }: AgentWizardProps) {
           onStepClick={goTo}
         />
 
-        {/* Who the later steps are about. Sits below the stepper so appearing
-            doesn't shift it, and stays put across steps — the identity belongs
-            to the wizard, not to whichever step is open. */}
+        {/* What the later steps are about. Sits below the stepper so appearing
+            doesn't shift it, and stays put across steps — the draft belongs to
+            the wizard, not to whichever step is open. */}
         {current > 0 && data.name.trim() && (
-          <div className="mt-4 flex items-center gap-2.5 border-t border-border pt-4">
-            <img
-              src={getAgentAvatarUrl(data.name.trim())}
-              alt=""
-              className="h-8 w-8 shrink-0 rounded-lg"
-            />
-            <span className="truncate text-sm font-semibold text-foreground">
-              {data.name.trim()}
-            </span>
-          </div>
+          <WizardSummary
+            name={data.name.trim()}
+            skills={data.skills}
+            onRemoveSkill={
+              data.created
+                ? undefined
+                : (id) => setData({ skills: data.skills.filter((s) => s.id !== id) })
+            }
+          />
         )}
       </div>
 

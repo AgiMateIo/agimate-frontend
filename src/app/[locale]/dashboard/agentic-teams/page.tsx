@@ -5,7 +5,6 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { PlusIcon } from '@heroicons/react/24/outline';
-import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { useAgenticTeamsQuery, useAgenticTeamCacheActions } from '@/queries/agentic-teams';
@@ -56,9 +55,6 @@ export default function AgenticTeamsPage() {
           {t('createTeam')}
         </Button>
       </div>
-
-      {/* Info banner */}
-      <Alert variant="info">{t('description')}</Alert>
 
       {/* Teams grid */}
       <ErrorBoundary>
