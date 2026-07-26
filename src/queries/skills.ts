@@ -37,18 +37,24 @@ export function useSkillDetailQuery(id: string) {
   return useQuery(skillDetailOptions(id));
 }
 
-export function useSkillsListQuery(tab: SkillListTab, search: string, page: number) {
-  return useSuspenseQuery({
+export const skillsListOptions = (
+  tab: SkillListTab,
+  search = '',
+  page = 0,
+) =>
+  queryOptions({
     queryKey: skillKeys.list(tab, search, page),
-    queryFn: () => {
-      return apiService.getSkills({
+    queryFn: () =>
+      apiService.getSkills({
         search: search || undefined,
         scope: tab === 'my' ? 'MINE' : 'PUBLIC',
         page,
         size: 20,
-      });
-    },
+      }),
   });
+
+export function useSkillsListQuery(tab: SkillListTab, search: string, page: number) {
+  return useSuspenseQuery(skillsListOptions(tab, search, page));
 }
 
 // One page per scope, deliberately large: the two scopes are merged client-side
