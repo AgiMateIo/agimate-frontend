@@ -46,7 +46,7 @@ export default function StepDone({ data, onReset }: StepDoneProps) {
   if (!agent) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <div className="text-center py-2">
         <div className="mx-auto h-14 w-14 rounded-full bg-success/15 flex items-center justify-center">
           <CheckBadgeIcon className="h-8 w-8 text-success" />

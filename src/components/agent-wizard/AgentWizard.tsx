@@ -112,7 +112,9 @@ export default function AgentWizard({ teamId = null }: AgentWizardProps) {
         />
       </div>
 
-      <div className="bg-surface rounded-xl border border-border p-6">
+      {/* No padding here and no overflow clipping: each step pads its own body so
+          its sticky action bar can sit flush at the card's bottom edge. */}
+      <div className="bg-surface rounded-xl border border-border">
         {current === 0 && <StepRole {...stepProps} />}
         {current === 1 && <StepSkills {...stepProps} />}
         {current === 2 && <StepDone {...stepProps} onReset={reset} />}
