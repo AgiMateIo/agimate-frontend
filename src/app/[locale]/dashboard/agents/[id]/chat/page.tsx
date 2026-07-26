@@ -3,8 +3,9 @@
 import { useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { ChatBubbleOvalLeftEllipsisIcon } from '@heroicons/react/24/outline';
+import { ChatBubbleOvalLeftEllipsisIcon, PlusIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
+import { Button } from '@/components/ui/Button';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import WebchatSessionsPane from '@/components/webchat/WebchatSessionsPane';
 import WebchatConversation from '@/components/webchat/WebchatConversation';
@@ -26,7 +27,12 @@ export default function AgentChatPage() {
 
   const agentsById = useMemo(() => ({ [agent.id]: agent }), [agent]);
   const sessions = sessionsQuery.data ?? [];
-  const activeSession = sessions.find((s) => s.sessionId === activeSessionId) ?? null;
+  // Land straight in the newest conversation rather than an empty frame — the
+  // backend sorts by lastMessageAt desc, so sessions[0] is where the user left off.
+  // Derived instead of an effect: nothing to sync, and a session that disappears
+  // from the list falls back to the newest on its own.
+  const activeSession =
+    sessions.find((s) => s.sessionId === activeSessionId) ?? sessions[0] ?? null;
 
   const error =
     actionError ||
@@ -48,10 +54,10 @@ export default function AgentChatPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex h-full min-h-[420px] flex-col gap-4">
       {error && <ErrorAlert>{error}</ErrorAlert>}
 
-      <div className="flex h-[calc(100vh-14rem)] min-h-[420px] bg-surface rounded-xl border border-border overflow-hidden">
+      <div className="flex flex-1 min-h-0 bg-surface rounded-xl border border-border overflow-hidden">
         <WebchatSessionsPane
           agents={[agent]}
           agentsById={agentsById}
@@ -59,7 +65,7 @@ export default function AgentChatPage() {
           onAgentChange={() => {}}
           sessions={sessions}
           sessionsLoading={sessionsQuery.isPending}
-          activeSessionId={activeSessionId}
+          activeSessionId={activeSession?.sessionId ?? null}
           onSelectSession={setActiveSessionId}
           onNewSession={handleNewSession}
           creating={creating}
@@ -75,11 +81,22 @@ export default function AgentChatPage() {
               onSessionClosed={patchSession}
               onActivity={invalidateSessions}
             />
+          ) : sessionsQuery.isPending ? (
+            <div className="flex-1 grid place-items-center text-sm text-muted">
+              {t('loadingSessions')}
+            </div>
           ) : (
+            // Only reachable with zero sessions now that the newest one is
+            // auto-selected — so it opens the first chat instead of asking the
+            // user to pick from an empty list.
             <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center p-8">
               <ChatBubbleOvalLeftEllipsisIcon className="h-12 w-12 text-muted/50" />
-              <div className="text-sm font-medium text-foreground">{t('selectSessionTitle')}</div>
-              <div className="text-sm text-muted max-w-sm">{t('selectSessionHint')}</div>
+              <div className="text-sm font-medium text-foreground">{t('noSessionsTitle')}</div>
+              <div className="text-sm text-muted max-w-sm">{t('noSessionsHint')}</div>
+              <Button onClick={handleNewSession} loading={creating}>
+                <PlusIcon className="h-4 w-4" />
+                {t('newSession')}
+              </Button>
             </div>
           )}
         </div>

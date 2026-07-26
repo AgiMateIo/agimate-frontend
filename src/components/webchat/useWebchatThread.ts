@@ -18,18 +18,23 @@ export interface ThreadMessage {
   messageId: string | null; // null until the send POST resolves
   direction: WebchatDirection;
   stream: WebchatStream | null;
-  text: string; // normalized to '' for attachment-only messages (wire sends null)
+  text: string; // trimmed; normalized to '' for attachment-only messages (wire sends null)
   parts: WebchatPart[]; // attachments (normalized to [] when the wire field is null)
   createdAt: string;
   pending: boolean; // optimistic send not yet acknowledged by the backend
 }
+
+// Agent/model output regularly carries leading or trailing blank lines, which
+// render as empty space inside the bubble — normalize text at the wire boundary
+// so everything downstream (rendering, echo matching) sees the trimmed form.
+const normalizeText = (text: string | null): string => text?.trim() ?? '';
 
 const fromHistory = (m: WebchatMessageResponse): ThreadMessage => ({
   key: m.messageId,
   messageId: m.messageId,
   direction: m.direction,
   stream: m.stream,
-  text: m.text ?? '',
+  text: normalizeText(m.text),
   parts: m.parts ?? [],
   createdAt: m.createdAt,
   pending: false,
@@ -40,7 +45,7 @@ const fromEvent = (p: WebchatMessagePayload): ThreadMessage => ({
   messageId: p.messageId,
   direction: p.direction,
   stream: p.stream,
-  text: p.text ?? '',
+  text: normalizeText(p.text),
   parts: p.parts ?? [],
   createdAt: p.createdAt,
   pending: false,
@@ -189,7 +194,7 @@ export function useWebchatThread(sessionId: string | null) {
           // consecutive identical/attachment-only sends straight.
           for (let i = 0; i < prev.length; i++) {
             const m = prev[i];
-            if (m.direction === 'USER' && m.messageId === null && m.text === (p.text ?? '')) {
+            if (m.direction === 'USER' && m.messageId === null && m.text === normalizeText(p.text)) {
               const next = prev.slice();
               next[i] = { ...m, messageId: p.messageId, parts: p.parts ?? m.parts, pending: false };
               return next;

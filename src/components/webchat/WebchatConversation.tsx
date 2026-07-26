@@ -11,6 +11,7 @@ import {
 import apiService from '@/services/api';
 import { Button } from '@/components/ui/Button';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { getAgentAvatarUrl } from '@/utils/avatar';
 import { formatDateTimeShort } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
 import { useWebchatSubscription } from '@/realtime/useWebchatSubscription';
@@ -30,6 +31,10 @@ interface WebchatConversationProps {
   onActivity: () => void;
 }
 
+// Progress lines are a running commentary of one agent turn, not separate
+// messages — they read as a block when packed tighter than real bubbles.
+const isProgressRow = (m: ThreadMessage) => m.direction === 'AGENT' && m.stream === 'progress';
+
 function MessageRow({
   message,
   onExpired,
@@ -37,7 +42,7 @@ function MessageRow({
   message: ThreadMessage;
   onExpired: () => Promise<void>;
 }) {
-  if (message.direction === 'AGENT' && message.stream === 'progress') {
+  if (isProgressRow(message)) {
     return (
       <div className="flex justify-start">
         <div className="flex items-center gap-1.5 px-3 py-1 text-xs text-muted italic">
@@ -61,13 +66,13 @@ function MessageRow({
               : 'bg-surface-secondary text-foreground'
         }`}
       >
-        {message.text.trim() && (
+        {message.text && (
           <div className="text-sm">
             <ChatMessageText text={message.text} />
           </div>
         )}
         {message.parts.length > 0 && (
-          <div className={message.text.trim() ? 'mt-2' : ''}>
+          <div className={message.text ? 'mt-2' : ''}>
             <ChatMessageAttachments parts={message.parts} onExpired={onExpired} />
           </div>
         )}
@@ -233,17 +238,19 @@ export default function WebchatConversation({
           </div>
         </div>
       )}
-      {/* Header */}
+      {/* Header — carries the agent identity, since the chat section drops the
+          page-level agent header to give the conversation the full canvas. */}
       <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border shrink-0">
-        <div className="min-w-0">
-          <div className="text-sm font-medium text-foreground truncate">
-            {session.title || t('untitledSession')}
-          </div>
-          <div className="text-xs text-muted truncate">
-            {agentName}
-            {session.closedAt
-              ? ` · ${t('closedAt', { date: formatDateTimeShort(session.closedAt) })}`
-              : ''}
+        <div className="flex items-center gap-2.5 min-w-0">
+          <img src={getAgentAvatarUrl(agentName)} alt={agentName} className="h-8 w-8 rounded-lg shrink-0" />
+          <div className="min-w-0">
+            <div className="text-sm font-semibold text-foreground truncate">{agentName}</div>
+            <div className="text-xs text-muted truncate">
+              {session.title || t('untitledSession')}
+              {session.closedAt
+                ? ` · ${t('closedAt', { date: formatDateTimeShort(session.closedAt) })}`
+                : ''}
+            </div>
           </div>
         </div>
         {!session.closedAt && (
@@ -254,107 +261,120 @@ export default function WebchatConversation({
       </div>
 
       {/* Messages */}
-      <div
-        ref={listRef}
-        onScroll={handleScroll}
-        className="flex-1 overflow-y-auto min-h-0 p-4 space-y-3"
-      >
-        {(thread.error || closeError) && <ErrorAlert>{thread.error || closeError}</ErrorAlert>}
+      <div ref={listRef} onScroll={handleScroll} className="flex-1 overflow-y-auto min-h-0">
+        {/* Reading column: the pane is as wide as the window allows, but a chat
+            line past ~75 characters stops scanning as a conversation. */}
+        <div className="mx-auto w-full max-w-3xl p-4 space-y-3">
+          {(thread.error || closeError) && <ErrorAlert>{thread.error || closeError}</ErrorAlert>}
 
-        {thread.hasOlder && (
-          <div className="text-center">
-            <button
-              onClick={handleLoadOlder}
-              disabled={thread.loadingOlder}
-              className="text-xs text-accent hover:text-accent/80 disabled:opacity-50 transition-colors"
-            >
-              {thread.loadingOlder ? t('loadingMessages') : t('loadOlder')}
-            </button>
-          </div>
-        )}
-
-        {thread.loading ? (
-          <div className="text-center py-8 text-muted text-sm">{t('loadingMessages')}</div>
-        ) : thread.messages.length === 0 && !thread.awaitingReply ? (
-          <div className="text-center py-8 text-muted text-sm">{t('noMessages')}</div>
-        ) : (
-          thread.messages.map((m) => (
-            <MessageRow key={m.key} message={m} onExpired={thread.refreshParts} />
-          ))
-        )}
-
-        {thread.awaitingReply && !thread.loading && (
-          <div className="flex justify-start">
-            <div className="flex items-center gap-2 bg-surface-secondary rounded-lg px-3 py-2">
-              <span className="flex gap-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-muted animate-bounce [animation-delay:-0.3s]" />
-                <span className="h-1.5 w-1.5 rounded-full bg-muted animate-bounce [animation-delay:-0.15s]" />
-                <span className="h-1.5 w-1.5 rounded-full bg-muted animate-bounce" />
-              </span>
-              <span className="text-xs text-muted">{t('agentThinking')}</span>
+          {thread.hasOlder && (
+            <div className="text-center">
+              <button
+                onClick={handleLoadOlder}
+                disabled={thread.loadingOlder}
+                className="text-xs text-accent hover:text-accent/80 disabled:opacity-50 transition-colors"
+              >
+                {thread.loadingOlder ? t('loadingMessages') : t('loadOlder')}
+              </button>
             </div>
-          </div>
-        )}
+          )}
+
+          {thread.loading ? (
+            <div className="text-center py-8 text-muted text-sm">{t('loadingMessages')}</div>
+          ) : thread.messages.length === 0 && !thread.awaitingReply ? (
+            <div className="text-center py-8 text-muted text-sm">{t('noMessages')}</div>
+          ) : (
+            // Own spacing instead of the container's space-y so consecutive
+            // progress lines can sit closer together than message bubbles.
+            <div>
+              {thread.messages.map((m, i) => {
+                const prev = thread.messages[i - 1];
+                const tight = i > 0 && isProgressRow(m) && isProgressRow(prev);
+                return (
+                  <div key={m.key} className={i === 0 ? '' : tight ? 'mt-0.5' : 'mt-3'}>
+                    <MessageRow message={m} onExpired={thread.refreshParts} />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {thread.awaitingReply && !thread.loading && (
+            <div className="flex justify-start">
+              <div className="flex items-center gap-2 bg-surface-secondary rounded-lg px-3 py-2">
+                <span className="flex gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-muted animate-bounce [animation-delay:-0.3s]" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-muted animate-bounce [animation-delay:-0.15s]" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-muted animate-bounce" />
+                </span>
+                <span className="text-xs text-muted">{t('agentThinking')}</span>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Composer */}
-      <div className="border-t border-border p-4 shrink-0">
-        {thread.sendError && (
-          <div className="mb-2">
-            <ErrorAlert>{thread.sendError}</ErrorAlert>
-          </div>
-        )}
-        {session.closedAt ? (
-          <div className="text-center text-sm text-muted py-2">{t('sessionClosedNotice')}</div>
-        ) : (
-          <>
-            <ComposerAttachments
-              attachments={composer.attachments}
-              onRemove={composer.remove}
-              onRetry={composer.retry}
-            />
-            <div className="flex items-end gap-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                hidden
-                onChange={(e) => {
-                  composer.addFiles(Array.from(e.target.files ?? []));
-                  e.target.value = ''; // allow re-picking the same file
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={!composer.canAddMore}
-                title={composer.canAddMore ? t('attachFiles') : t('maxAttachments', { max: MAX_ATTACHMENTS })}
-                className="shrink-0 rounded-lg border border-border p-2.5 text-muted transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:text-muted"
-              >
-                <PaperClipIcon className="h-4 w-4" />
-                <span className="sr-only">{t('attachFiles')}</span>
-              </button>
-              <textarea
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={handleComposerKeyDown}
-                onPaste={handleComposerPaste}
-                placeholder={t('composerPlaceholder')}
-                rows={2}
-                className="flex-1 px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-accent placeholder:text-muted"
-              />
-              <Button
-                onClick={handleSend}
-                loading={sending}
-                disabled={!draft.trim() && composer.attachments.length === 0}
-                title={t('send')}
-              >
-                <PaperAirplaneIcon className="h-4 w-4" />
-                {t('send')}
-              </Button>
+      {/* Composer — same reading column as the messages, so the input lines up
+          with the conversation instead of spanning the whole pane. */}
+      <div className="border-t border-border shrink-0">
+        <div className="mx-auto w-full max-w-3xl p-4">
+          {thread.sendError && (
+            <div className="mb-2">
+              <ErrorAlert>{thread.sendError}</ErrorAlert>
             </div>
-          </>
-        )}
+          )}
+          {session.closedAt ? (
+            <div className="text-center text-sm text-muted py-2">{t('sessionClosedNotice')}</div>
+          ) : (
+            <>
+              <ComposerAttachments
+                attachments={composer.attachments}
+                onRemove={composer.remove}
+                onRetry={composer.retry}
+              />
+              <div className="flex items-end gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  hidden
+                  onChange={(e) => {
+                    composer.addFiles(Array.from(e.target.files ?? []));
+                    e.target.value = ''; // allow re-picking the same file
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={!composer.canAddMore}
+                  title={composer.canAddMore ? t('attachFiles') : t('maxAttachments', { max: MAX_ATTACHMENTS })}
+                  className="shrink-0 rounded-lg border border-border p-2.5 text-muted transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:text-muted"
+                >
+                  <PaperClipIcon className="h-4 w-4" />
+                  <span className="sr-only">{t('attachFiles')}</span>
+                </button>
+                <textarea
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  onKeyDown={handleComposerKeyDown}
+                  onPaste={handleComposerPaste}
+                  placeholder={t('composerPlaceholder')}
+                  rows={2}
+                  className="flex-1 px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-accent placeholder:text-muted"
+                />
+                <Button
+                  onClick={handleSend}
+                  loading={sending}
+                  disabled={!draft.trim() && composer.attachments.length === 0}
+                  title={t('send')}
+                >
+                  <PaperAirplaneIcon className="h-4 w-4" />
+                  {t('send')}
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

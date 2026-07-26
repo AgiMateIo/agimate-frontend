@@ -13,9 +13,19 @@ import { getAgentAvatarUrl } from '@/utils/avatar';
 // agent header, breadcrumb override and the ErrorBoundary + Suspense boundary the
 // section pages render inside. The agent's contextual sidebar lives in SidebarNav,
 // which detects the same route from the pathname.
-function AgentShellHeader({ agentId }: { agentId: string }) {
+function AgentShellHeader({
+  agentId,
+  // The chat section shows the agent in its own conversation header, so it takes
+  // the shell for the breadcrumb override alone and keeps the height for messages.
+  breadcrumbOnly = false,
+}: {
+  agentId: string;
+  breadcrumbOnly?: boolean;
+}) {
   const { data: agent } = useAgentDetailSuspenseQuery(agentId);
   useSetBreadcrumb(agentId, agent.name);
+
+  if (breadcrumbOnly) return null;
 
   return (
     <div className="flex items-center gap-3">
@@ -37,11 +47,16 @@ export default function AgentDetailLayout({ children }: { children: React.ReactN
   // let it own the whole canvas instead of stacking the section header on top of it.
   if (pathname.endsWith('/edit')) return <>{children}</>;
 
+  // Chat stretches to the bottom of the viewport instead of sitting in the
+  // section rhythm: `h-full` hands the page the canvas height so its composer
+  // lands on the viewport floor, with no hardcoded chrome offset to keep in sync.
+  const isChat = pathname.endsWith('/chat');
+
   return (
-    <div className="space-y-6">
+    <div className={isChat ? 'h-full' : 'space-y-6'}>
       <ErrorBoundary resetKeys={[agentId]}>
         <Suspense fallback={<div className="text-center py-12 text-muted">{t('loadingAgents')}</div>}>
-          <AgentShellHeader agentId={agentId} />
+          <AgentShellHeader agentId={agentId} breadcrumbOnly={isChat} />
           {children}
         </Suspense>
       </ErrorBoundary>

@@ -21,6 +21,13 @@ function resolvePartUrl(url: string): string {
   return url.startsWith('blob:') ? url : resolveControlFileUrl(url);
 }
 
+// Every image occupies the same tile regardless of its own dimensions, so a
+// thread mixing screenshots, portrait photos and tiny icons keeps one rhythm
+// instead of a ragged column. `object-contain` inside the tile letterboxes
+// rather than crops, and the img's own max-* stop a small image from being
+// upscaled into a blur — it just sits centered in the tile.
+const IMAGE_TILE = 'h-52 w-72 max-w-full shrink-0 rounded-lg border border-border bg-surface-secondary';
+
 // Signed image link that expires (~15 min). On the first load error we ask the
 // thread to re-read history (fresh URLs) once; a second failure — 404 (gone) or
 // a still-broken link — falls back to a placeholder.
@@ -36,9 +43,10 @@ function AttachmentImage({
   const retriedRef = useRef(false);
 
   if (failed) {
+    // Same tile as a loaded image — a broken link must not reflow the thread.
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-border bg-surface-secondary px-3 py-2 text-xs text-muted">
-        <PhotoIcon className="h-4 w-4 shrink-0" />
+      <div className={`${IMAGE_TILE} flex flex-col items-center justify-center gap-2 text-xs text-muted`}>
+        <PhotoIcon className="h-6 w-6" />
         <span>{t('imageUnavailable')}</span>
       </div>
     );
@@ -46,13 +54,19 @@ function AttachmentImage({
 
   const src = resolvePartUrl(part.url);
   return (
-    <a href={src} target="_blank" rel="noopener noreferrer" className="block w-fit">
+    <a
+      href={src}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={t('openFullSize')}
+      className={`${IMAGE_TILE} grid place-items-center overflow-hidden transition-colors hover:border-accent`}
+    >
       {/* eslint-disable-next-line @next/next/no-img-element -- signed cross-origin URL, not a local asset */}
       <img
         src={src}
         alt={t('imageAttachmentAlt')}
         loading="lazy"
-        className="max-h-80 max-w-full rounded-lg border border-border object-contain"
+        className="max-h-full max-w-full object-contain"
         onError={() => {
           if (retriedRef.current) {
             setFailed(true);
@@ -106,7 +120,9 @@ export function ChatMessageAttachments({
 }) {
   if (parts.length === 0) return null;
   return (
-    <div className="flex flex-col gap-2">
+    // Uniform tiles pack into rows; `items-start` keeps the short file chips
+    // from stretching to a tile's height.
+    <div className="flex flex-wrap items-start gap-2">
       {parts.map((part) =>
         part.type === 'image' ? (
           <AttachmentImage key={part.fileId} part={part} onExpired={onExpired} />
