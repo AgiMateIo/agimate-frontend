@@ -3,6 +3,7 @@
 import { useState, useSyncExternalStore } from 'react';
 import { Link, usePathname } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
+import { APP_VERSION } from '@/config/constants';
 import {
   HomeIcon,
   DevicePhoneMobileIcon,
@@ -288,7 +289,9 @@ export default function SidebarNav() {
 
       {/* Footer */}
       <div className="border-t border-border p-4">
-        <div className="text-xs text-muted">{collapsed ? 'v1' : 'AgiMate v1.0.0'}</div>
+        <div className="text-xs text-muted" title={`AgiMate v${APP_VERSION}`}>
+          {collapsed ? `v${APP_VERSION}` : `AgiMate v${APP_VERSION}`}
+        </div>
       </div>
     </aside>
   );
