@@ -1,8 +1,11 @@
 'use client';
 
-// Per-connector avatar tile: a two-letter mark on a color-tinted background.
-// There's no per-connector logo from the backend, so the color is derived
-// deterministically from the connector code (stable across renders/sessions).
+import { getConnectorLogo } from './connectorLogo';
+
+// Per-connector avatar tile. Known connectors get their hardcoded mark (see
+// connectorLogo.tsx); anything else falls back to a two-letter initials mark on
+// a color-tinted background, the color derived deterministically from the
+// connector code (stable across renders/sessions).
 const PALETTE = [
   'bg-emerald-500/15 text-emerald-500',
   'bg-orange-500/15 text-orange-500',
@@ -30,19 +33,28 @@ function initials(name: string): string {
   return trimmed.slice(0, 2).toUpperCase();
 }
 
+type AvatarSize = 'sm' | 'md' | 'lg';
+
+const SIZES: Record<AvatarSize, { tile: string; glyph: string }> = {
+  sm: { tile: 'h-8 w-8 rounded-lg text-[11px]', glyph: 'h-4 w-4' },
+  md: { tile: 'h-11 w-11 rounded-xl text-sm', glyph: 'h-5 w-5' },
+  lg: { tile: 'h-12 w-12 rounded-xl text-base', glyph: 'h-6 w-6' },
+};
+
 interface ConnectionAvatarProps {
   connectorCode: string;
   connectorName: string;
-  size?: 'md' | 'lg';
+  size?: AvatarSize;
 }
 
 export function ConnectionAvatar({ connectorCode, connectorName, size = 'md' }: ConnectionAvatarProps) {
-  const dim = size === 'lg' ? 'h-12 w-12 text-base' : 'h-11 w-11 text-sm';
-  const className = PALETTE[hashCode(connectorCode) % PALETTE.length];
+  const { tile, glyph } = SIZES[size];
+  const logo = getConnectorLogo(connectorCode);
+  const tone = logo?.tone ?? PALETTE[hashCode(connectorCode) % PALETTE.length];
 
   return (
-    <div className={`${dim} rounded-xl flex items-center justify-center font-bold shrink-0 ${className}`}>
-      {initials(connectorName)}
+    <div className={`${tile} flex items-center justify-center font-bold shrink-0 ${tone}`}>
+      {logo ? <logo.Icon className={glyph} /> : initials(connectorName)}
     </div>
   );
 }

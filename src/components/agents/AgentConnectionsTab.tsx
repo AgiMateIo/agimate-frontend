@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
 import { PlusIcon, TrashIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { ConnectionAvatar } from '@/components/connections/ConnectionAvatar';
 import BindConnectionModal from './BindConnectionModal';
 import ConnectionPoliciesPanel from './ConnectionPoliciesPanel';
 
@@ -100,6 +101,11 @@ export default function AgentConnectionsTab({
                   >
                     <ChevronRightIcon
                       className={`h-4 w-4 shrink-0 text-muted transition-transform ${expanded ? 'rotate-90' : ''}`}
+                    />
+                    <ConnectionAvatar
+                      connectorCode={conn.connectorCode}
+                      connectorName={conn.name}
+                      size="sm"
                     />
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">

@@ -6,6 +6,7 @@ import { ConnectorCatalogEntry } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { ConnectionAvatar } from '@/components/connections/ConnectionAvatar';
 import { useConnectorSearchQuery } from '@/queries/connectors';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { getConnectorKind, ConnectorKind } from '@/utils/connector';
@@ -76,9 +77,12 @@ function ConnectorCard({ connector }: { connector: ConnectorCatalogEntry }) {
   return (
     <div className="bg-surface rounded-xl border border-border p-5 flex flex-col gap-3">
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="text-base font-semibold text-foreground truncate">{connector.name}</h3>
-          <code className="text-xs text-muted font-mono">{connector.code}</code>
+        <div className="flex items-start gap-3 min-w-0">
+          <ConnectionAvatar connectorCode={connector.code} connectorName={connector.name} />
+          <div className="min-w-0">
+            <h3 className="text-base font-semibold text-foreground truncate">{connector.name}</h3>
+            <code className="text-xs text-muted font-mono">{connector.code}</code>
+          </div>
         </div>
         <span
           className={`shrink-0 inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border ${KIND_BADGE[kind]}`}
