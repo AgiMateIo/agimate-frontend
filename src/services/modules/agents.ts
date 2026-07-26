@@ -22,8 +22,14 @@ import type {
 
 export const agentsApi = {
   // Agents
-  async getAgentsList(params?: { agenticTeamId?: string; search?: string; page?: number; size?: number }): Promise<PagedResponse<AgentResponse>> {
-    const query = buildPagedQuery({ agenticTeamId: params?.agenticTeamId, search: params?.search }, params);
+  // `sort` is a Spring Pageable sort ("createdAt,desc"). Callers that care about
+  // order also sort what comes back, since an endpoint that builds its own
+  // PageRequest would drop the parameter silently.
+  async getAgentsList(params?: { agenticTeamId?: string; search?: string; sort?: string; page?: number; size?: number }): Promise<PagedResponse<AgentResponse>> {
+    const query = buildPagedQuery(
+      { agenticTeamId: params?.agenticTeamId, search: params?.search, sort: params?.sort },
+      params,
+    );
     return httpClient.get<PagedResponse<AgentResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/?${query}`);
   },
 

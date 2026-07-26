@@ -5,6 +5,8 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query';
 import apiService from '@/services/api';
+import { parseBackendDate } from '@/utils/date';
+import type { AgentResponse, PagedResponse } from '@/types';
 
 export const agentKeys = {
   all: ['agents'] as const,
@@ -15,11 +17,25 @@ export const agentKeys = {
   llms: (id: string) => [...agentKeys.detail(id), 'llms'] as const,
 };
 
+// Newest first. The sort parameter is what makes it hold across pages; the
+// select is the fallback for a backend that ignores it, so at least the page
+// the user sees is ordered.
+const NEWEST_FIRST = 'createdAt,desc';
+
+const byCreatedAtDesc = (page: PagedResponse<AgentResponse>) => ({
+  ...page,
+  content: [...page.content].sort(
+    (a, b) =>
+      parseBackendDate(b.createdAt).getTime() - parseBackendDate(a.createdAt).getTime(),
+  ),
+});
+
 export const agentsListOptions = (teamId?: string) =>
   queryOptions({
     queryKey: agentKeys.list(teamId),
     queryFn: () =>
-      apiService.getAgentsList(teamId ? { agenticTeamId: teamId } : undefined),
+      apiService.getAgentsList({ agenticTeamId: teamId, sort: NEWEST_FIRST }),
+    select: byCreatedAtDesc,
   });
 
 export const agentDetailOptions = (id: string) =>
