@@ -33,11 +33,11 @@ export const RESOURCE_CARDS: ResourceCardSpec[] = [
     createHref: '/dashboard/agents/create',
   },
   {
-    key: 'skills',
-    labelKey: 'skills',
-    emptyKey: 'noSkills',
-    icon: AcademicCapIcon,
-    href: '/dashboard/skills',
+    key: 'teams',
+    labelKey: 'teams',
+    emptyKey: 'noTeams',
+    icon: UserGroupIcon,
+    href: '/dashboard/agentic-teams',
   },
   {
     key: 'connections',
@@ -54,11 +54,11 @@ export const RESOURCE_CARDS: ResourceCardSpec[] = [
     href: '/dashboard/channels',
   },
   {
-    key: 'teams',
-    labelKey: 'teams',
-    emptyKey: 'noTeams',
-    icon: UserGroupIcon,
-    href: '/dashboard/agentic-teams',
+    key: 'skills',
+    labelKey: 'skills',
+    emptyKey: 'noSkills',
+    icon: AcademicCapIcon,
+    href: '/dashboard/skills',
   },
   {
     key: 'apps',
