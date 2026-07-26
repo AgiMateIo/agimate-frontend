@@ -3,7 +3,8 @@
 import { useTranslations } from 'next-intl';
 import { Alert } from '@/components/ui/Alert';
 import { Link } from '@/i18n/navigation';
-import type { DashboardResources } from '@/queries/dashboard';
+import type { DashboardResources, useAttentionSignals } from '@/queries/dashboard';
+import AttentionPanel from './AttentionPanel';
 import { RESOURCE_CARDS } from './resources';
 
 /**
@@ -13,8 +14,10 @@ import { RESOURCE_CARDS } from './resources';
  */
 export default function WorkMode({
   resources,
+  attention,
 }: {
   resources: DashboardResources;
+  attention: ReturnType<typeof useAttentionSignals>;
 }) {
   const t = useTranslations('DashboardHome');
 
@@ -46,6 +49,12 @@ export default function WorkMode({
           );
         })}
       </div>
+
+      <AttentionPanel
+        signals={attention.signals}
+        loading={attention.loading}
+        error={attention.error}
+      />
 
       <Alert variant="info">
         <p className="text-sm font-medium">{t('workModeSoonTitle')}</p>

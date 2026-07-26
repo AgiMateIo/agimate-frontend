@@ -20,8 +20,8 @@ import { formatDateTimeFull, formatDateTimeShort } from '@/utils/date';
 // DENY rows never executed, so they carry no SUCCESS/ERROR/PENDING status —
 // the badge is derived client-side from accessEffect + finishAt/error (spec §3).
 type RowStatus = ToolCallStatus | 'DENIED';
-type StatusFilter = 'ALL' | ToolCallStatus;
-type AccessFilter = 'ALL' | 'ALLOW' | 'DENY';
+export type StatusFilter = 'ALL' | ToolCallStatus;
+export type AccessFilter = 'ALL' | 'ALLOW' | 'DENY';
 
 const STATUS_FILTERS: StatusFilter[] = ['ALL', 'SUCCESS', 'ERROR', 'PENDING'];
 
@@ -41,15 +41,24 @@ const getRowStatus = (log: ToolUseLogResponse): RowStatus => {
 
 // Standalone on the tool-use-logs page; scoped to one agent when `agentId` is
 // set (the agent page's Tool Calls tab — filter selectors then offer only the
-// agent's bound connectors/connections).
-export default function ToolUseLogsTab({ agentId }: { agentId?: string }) {
+// agent's bound connectors/connections). `initialStatus`/`initialAccess` only
+// seed the filters, so the user can clear them like any other.
+export default function ToolUseLogsTab({
+  agentId,
+  initialStatus = 'ALL',
+  initialAccess = 'ALL',
+}: {
+  agentId?: string;
+  initialStatus?: StatusFilter;
+  initialAccess?: AccessFilter;
+}) {
   const t = useTranslations('Connectors');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search.trim(), 300);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
-  const [accessFilter, setAccessFilter] = useState<AccessFilter>('ALL');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(initialStatus);
+  const [accessFilter, setAccessFilter] = useState<AccessFilter>(initialAccess);
   const [connectorFilter, setConnectorFilter] = useState('ALL');
   const [connectionFilter, setConnectionFilter] = useState('ALL');
 
