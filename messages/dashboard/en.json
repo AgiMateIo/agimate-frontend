@@ -380,6 +380,7 @@
       "COMPLETED": "Completed"
     },
     "nextRun": "Next run",
+    "createdLabel": "Created",
     "connector": "Connector",
     "kindLabel": "Kind",
     "job": "Job",

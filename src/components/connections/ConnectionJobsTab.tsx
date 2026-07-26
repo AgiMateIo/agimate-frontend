@@ -8,7 +8,7 @@ import { getErrorMessage } from '@/utils/error';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { JobRow } from '@/components/connectors/JobRow';
+import { JobCard } from '@/components/connectors/JobCard';
 
 interface ConnectionJobsTabProps {
   connectionId: string;
@@ -16,7 +16,9 @@ interface ConnectionJobsTabProps {
 
 // Background jobs scheduled for a single connection. Listing is by connectionId;
 // lifecycle actions (pause/resume/run-now/delete) go by job id through the
-// shared connector-jobs endpoints. JobRow hides Delete for SYSTEM jobs.
+// shared connector-jobs endpoints. JobCard hides Delete for SYSTEM jobs.
+// Cards, not the cross-connector table: everything the table's connector and
+// connection columns carried is this page's own context.
 export default function ConnectionJobsTab({ connectionId }: ConnectionJobsTabProps) {
   const t = useTranslations('ConnectorJobs');
   const [loading, setLoading] = useState(true);
@@ -113,35 +115,20 @@ export default function ConnectionJobsTab({ connectionId }: ConnectionJobsTabPro
   return (
     <div className="space-y-4">
       {actionError && <ErrorAlert>{actionError}</ErrorAlert>}
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-border">
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('kindLabel')}</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('connector')}</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('job')}</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('schedule')}</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('nextRun')}</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('statusLabel')}</th>
-              <th className="text-right py-3 px-4 text-sm font-medium text-muted">{t('actions')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {jobs.map((job) => (
-              <JobRow
-                key={job.id}
-                job={job}
-                isExpanded={expandedIds.has(job.id)}
-                acting={actingIds.has(job.id)}
-                onToggleExpand={() => toggleExpand(job.id)}
-                onRunNow={() => handleRunNow(job.id)}
-                onPause={() => runAction(job.id, () => apiService.pauseConnectorJob(job.id))}
-                onResume={() => runAction(job.id, () => apiService.resumeConnectorJob(job.id))}
-                onDelete={() => setDeleteTarget(job)}
-              />
-            ))}
-          </tbody>
-        </table>
+      <div className="space-y-3">
+        {jobs.map((job) => (
+          <JobCard
+            key={job.id}
+            job={job}
+            isExpanded={expandedIds.has(job.id)}
+            acting={actingIds.has(job.id)}
+            onToggleExpand={() => toggleExpand(job.id)}
+            onRunNow={() => handleRunNow(job.id)}
+            onPause={() => runAction(job.id, () => apiService.pauseConnectorJob(job.id))}
+            onResume={() => runAction(job.id, () => apiService.resumeConnectorJob(job.id))}
+            onDelete={() => setDeleteTarget(job)}
+          />
+        ))}
       </div>
 
       <Modal

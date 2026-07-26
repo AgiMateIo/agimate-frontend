@@ -380,6 +380,7 @@
       "COMPLETED": "Завершено"
     },
     "nextRun": "Следующий запуск",
+    "createdLabel": "Создано",
     "connector": "Коннектор",
     "kindLabel": "Тип",
     "job": "Задание",

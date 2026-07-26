@@ -2,13 +2,14 @@ import type { ComponentType, ReactNode, SVGProps } from 'react';
 
 // Compact metadata pill for a card's secondary row (host, model, timestamp, count).
 // `default` is an outlined neutral pill; the tinted tones carry light semantic weight.
-export type ChipTone = 'default' | 'accent' | 'warning' | 'success';
+export type ChipTone = 'default' | 'accent' | 'warning' | 'success' | 'error';
 
 const TONES: Record<ChipTone, string> = {
   default: 'border border-border text-muted',
   accent: 'bg-accent/10 text-accent',
   warning: 'bg-warning/10 text-warning',
   success: 'bg-success/10 text-success',
+  error: 'bg-error/10 text-error',
 };
 
 interface ChipProps {
