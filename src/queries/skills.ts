@@ -17,6 +17,8 @@ export const skillKeys = {
     [...skillKeys.lists(), tab, search, page] as const,
   byConnector: (connectorCode: string, scope: SkillScope) =>
     [...skillKeys.lists(), 'by-connector', connectorCode, scope] as const,
+  picker: (scope: SkillScope, search: string) =>
+    [...skillKeys.lists(), 'picker', scope, search] as const,
   detail: (id: string) => [...skillKeys.all, 'detail', id] as const,
 };
 
@@ -55,6 +57,59 @@ export const skillsListOptions = (
 
 export function useSkillsListQuery(tab: SkillListTab, search: string, page: number) {
   return useSuspenseQuery(skillsListOptions(tab, search, page));
+}
+
+// The skill picker (agent wizard): one searchable list over both scopes, since
+// "where does this skill come from" is a filter there, not the primary axis.
+export type SkillPickerSource = 'all' | 'my' | 'public';
+
+const PICKER_SCOPES: Record<SkillPickerSource, SkillScope[]> = {
+  all: ['MINE', 'PUBLIC'],
+  my: ['MINE'],
+  public: ['PUBLIC'],
+};
+
+// Same trade-off as the by-connector list below: merging two independently paged
+// sources would drop rows, so take one large page per scope and report
+// `truncated` instead of paging.
+const PICKER_SIZE = 50;
+
+export const skillsPickerOptions = (scope: SkillScope, search: string) =>
+  queryOptions({
+    queryKey: skillKeys.picker(scope, search),
+    queryFn: () =>
+      apiService.getSkills({
+        search: search || undefined,
+        scope,
+        size: PICKER_SIZE,
+      }),
+  });
+
+// Non-suspense on purpose: the wizard step renders its own inline loading and
+// error states and must not suspend the step it lives in.
+export function useSkillPickerQuery(source: SkillPickerSource, search: string) {
+  const scopes = PICKER_SCOPES[source];
+  const results = useQueries({
+    queries: scopes.map((scope) => skillsPickerOptions(scope, search)),
+  });
+
+  // Scopes are mine-first, so insert back-to-front: a skill that is both mine
+  // and public keeps its MINE row.
+  const byId = new Map<string, SkillResponse>();
+  for (let i = results.length - 1; i >= 0; i--) {
+    for (const skill of results[i].data?.content ?? []) byId.set(skill.id, skill);
+  }
+
+  return {
+    skills: [...byId.values()].sort((a, b) => a.title.localeCompare(b.title)),
+    isPending: results.some((r) => r.isPending),
+    error: results.find((r) => r.error)?.error ?? null,
+    // A scope had more rows than one page — narrowing the search is the only way
+    // to reach the rest.
+    truncated: results.some(
+      (r) => r.data && r.data.totalElements > r.data.content.length,
+    ),
+  };
 }
 
 // One page per scope, deliberately large: the two scopes are merged client-side
