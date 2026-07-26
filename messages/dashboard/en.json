@@ -78,6 +78,7 @@
     "skillsTitle": "Choose the skills",
     "skillsSubtitle": "Role skills are already on. Tick any others — connections are set up after the agent is created.",
     "selectedSkills": "Agent skills ({count})",
+    "selectedCount": "{count} selected",
     "noSelectedSkills": "Nothing selected yet — you can create the agent without skills and add them later.",
     "removeSkill": "Remove skill",
     "skillsSourceLabel": "Source",

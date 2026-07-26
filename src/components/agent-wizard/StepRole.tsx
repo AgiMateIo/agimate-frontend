@@ -12,6 +12,7 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { getErrorMessage } from '@/utils/error';
 import { getAgentAvatarUrl } from '@/utils/avatar';
 import { WizardStepProps } from './AgentWizard';
+import WizardActions from './WizardActions';
 
 // Card id of the "start from scratch" option (presets use their `name`).
 const SCRATCH = 'scratch';
@@ -199,11 +200,11 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
         </div>
       )}
 
-      <div className="flex justify-end pt-2">
+      <WizardActions>
         <Button type="button" onClick={goNext} disabled={!formVisible || !data.name.trim()}>
           {t('next')}
         </Button>
-      </div>
+      </WizardActions>
     </div>
   );
 }
