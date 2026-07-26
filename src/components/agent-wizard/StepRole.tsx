@@ -76,16 +76,16 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
       {error ? (
         <ErrorAlert>{getErrorMessage(error, t('presetsLoadError'))}</ErrorAlert>
       ) : isPending ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-40 rounded-xl border border-border bg-surface-secondary animate-pulse" />
+            <div key={i} className="h-36 rounded-xl border border-border bg-surface-secondary animate-pulse" />
           ))}
         </div>
       ) : null}
 
       {/* Gallery is built strictly from the API response; nothing hardcoded. */}
       {!isPending && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {(presets ?? []).map((preset, i) => {
             const selected = selectedCard === preset.name;
             return (
@@ -97,27 +97,30 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
                   selected ? 'border-accent ring-2 ring-accent' : 'border-border hover:border-accent/50'
                 }`}
               >
-                <div className={`relative flex h-14 items-center justify-end gap-2 px-3 bg-gradient-to-br ${GRADIENTS[i % GRADIENTS.length]}`}>
-                  {selected && (
-                    <span className="absolute left-3 top-2 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-white text-accent shadow">
-                      <CheckIcon className="h-3.5 w-3.5" />
-                    </span>
-                  )}
-                  <span className="min-w-0 truncate text-sm font-semibold text-white drop-shadow-sm">
+                {/* Avatar and title share the band in one row: no overlap to
+                    collide, and no dead space left over. */}
+                <div className={`flex items-center gap-2.5 px-3 py-2.5 bg-gradient-to-br ${GRADIENTS[i % GRADIENTS.length]}`}>
+                  <span className="relative shrink-0">
+                    <img
+                      src={getAgentAvatarUrl(preset.title)}
+                      alt=""
+                      className="h-12 w-12 rounded-xl bg-surface shadow-sm ring-2 ring-white/40"
+                    />
+                    {/* Pinned to the avatar corner so it never steals width from
+                        the title, which is the scarce resource on a narrow card. */}
+                    {selected && (
+                      <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-accent shadow">
+                        <CheckIcon className="h-3 w-3" />
+                      </span>
+                    )}
+                  </span>
+                  <span className="min-w-0 line-clamp-2 text-sm font-semibold leading-tight text-white drop-shadow-sm">
                     {preset.title}
                   </span>
                 </div>
 
-                {/* Avatar overlapping the band — relative+z-10 so it paints above
-                    the positioned gradient header instead of being covered by it */}
-                <img
-                  src={getAgentAvatarUrl(preset.title)}
-                  alt={preset.title}
-                  className="relative z-10 -mt-10 ml-4 h-24 w-24 rounded-2xl bg-surface shadow-sm inset-shadow-sm ring-4 ring-surface"
-                />
-
-                <div className="flex flex-1 flex-col px-4 pb-4 pt-2">
-                  <p className="line-clamp-3 text-xs text-muted">{preset.description}</p>
+                <div className="flex flex-1 flex-col px-4 pb-4 pt-3">
+                  <p className="line-clamp-2 text-xs text-muted">{preset.description}</p>
                   {preset.connectorCodes.length > 0 && (
                     <div className="mt-auto flex flex-wrap gap-1 pt-2">
                       {preset.connectorCodes.map((code) => (
@@ -139,7 +142,7 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
           <button
             type="button"
             onClick={applyScratch}
-            className={`flex min-h-40 flex-col items-center justify-center gap-2 rounded-xl border border-dashed p-4 text-center transition-all hover:-translate-y-0.5 hover:shadow-lg ${
+            className={`flex min-h-32 flex-col items-center justify-center gap-2 rounded-xl border border-dashed p-4 text-center transition-all hover:-translate-y-0.5 hover:shadow-lg ${
               selectedCard === SCRATCH
                 ? 'border-accent ring-2 ring-accent'
                 : 'border-border hover:border-accent/50'
