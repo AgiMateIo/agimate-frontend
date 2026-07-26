@@ -7,11 +7,9 @@ import { Link } from '@/i18n/navigation';
 import { localeMap } from '@/i18n/routing';
 import { ConnectionResponse, ConnectorCatalogEntry } from '@/types';
 import { formatDate } from '@/utils/date';
-import { Toggle } from '@/components/ui/Toggle';
 import { Chip } from '@/components/ui/Chip';
 import { FilterPill } from '@/components/ui/FilterPill';
 import { SearchToolbar } from '@/components/ui/SearchToolbar';
-import { useUpdateConnectionMutation } from '@/queries/connections';
 import { ConnectionAvatar } from './ConnectionAvatar';
 
 interface ConnectionsListProps {
@@ -31,24 +29,19 @@ function ConnectionCard({
   const t = useTranslations('Connections');
   const locale = useLocale();
   const bcp47Locale = localeMap[locale];
-  const updateMutation = useUpdateConnectionMutation(connection.id);
   const connectorName = connector?.name ?? connection.connectorCode;
 
-  const handleToggleEnabled = () => {
-    updateMutation.mutate({ enabled: !connection.enabled });
-  };
-
   return (
-    <div className="group relative bg-surface-secondary rounded-xl border border-border hover:border-accent/50 transition-colors p-4">
-      <div className="absolute top-4 right-4" title={connection.enabled ? t('enabled') : t('disabled')}>
-        <Toggle
-          checked={connection.enabled}
-          onChange={handleToggleEnabled}
-          disabled={updateMutation.isPending}
-        />
-      </div>
+    <div
+      className={`group relative bg-surface-secondary rounded-xl border border-border hover:border-accent/50 transition-colors p-4 ${connection.enabled ? '' : 'opacity-60'}`}
+    >
+      {/* Status only — switching it lives on the connection page, same as agents. */}
+      <span
+        className={`absolute top-4 right-4 h-2.5 w-2.5 rounded-full ${connection.enabled ? 'bg-success' : 'bg-muted'}`}
+        title={connection.enabled ? t('enabled') : t('disabled')}
+      />
 
-      <Link href={`/dashboard/connections/${connection.id}`} className="block pr-10">
+      <Link href={`/dashboard/connections/${connection.id}`} className="block pr-6">
         <div className="flex items-start gap-3 min-w-0">
           <ConnectionAvatar connectorCode={connection.connectorCode} connectorName={connectorName} />
 
