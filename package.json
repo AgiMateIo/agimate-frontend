@@ -1,7 +1,17 @@
 {
-  "name": "frontend",
+  "name": "agimate-frontend",
   "version": "1.2.5",
   "private": true,
+  "description": "Web dashboard for the AgiMate platform: AI agents, skills, connectors, agentic teams and real-time chat.",
+  "license": "Apache-2.0",
+  "homepage": "https://agimate.io",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AgiMateIo/frontend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AgiMateIo/frontend/issues"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

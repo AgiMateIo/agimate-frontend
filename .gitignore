@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -41,4 +42,7 @@ yarn-error.log*
 next-env.d.ts
 
 .idea
-.claude
+
+# local Claude Code state — .claude/CLAUDE.md is checked in on purpose
+.claude/*
+!.claude/CLAUDE.md
