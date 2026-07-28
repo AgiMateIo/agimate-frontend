@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { LlmProviderModelResponse, LlmProviderResponse, UpdateLlmProviderRequest } from '@/types';
+import { LlmProviderResponse, UpdateLlmProviderRequest } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input } from '@/components/ui/FormField';
@@ -11,22 +11,20 @@ import { Toggle } from '@/components/ui/Toggle';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { ExtraBodyField } from './ExtraBodyField';
-import { ModelPickerList } from './ModelPickerList';
 import { formatExtraBody, parseExtraBodyInput } from './extraBody';
 
 interface EditLlmProviderModalProps {
   provider: LlmProviderResponse;
-  models: LlmProviderModelResponse[];
   onClose: () => void;
   onSuccess: (updated: LlmProviderResponse) => void;
 }
 
-export default function EditLlmProviderModal({ provider, models, onClose, onSuccess }: EditLlmProviderModalProps) {
+// Credentials and connection settings only — which model serves which purpose is
+// its own screen (ProviderPurposesSection), since it needs the model registry.
+export default function EditLlmProviderModal({ provider, onClose, onSuccess }: EditLlmProviderModalProps) {
   const t = useTranslations('LlmProviders');
-  const tu = useTranslations('LlmUsage');
   const [name, setName] = useState(provider.name);
   const [baseUrl, setBaseUrl] = useState(provider.baseUrl ?? '');
-  const [defaultModel, setDefaultModel] = useState(provider.defaultModel ?? '');
   const [enabled, setEnabled] = useState(provider.enabled);
   const [extraBodyText, setExtraBodyText] = useState(formatExtraBody(provider.extraBody));
 
@@ -52,9 +50,6 @@ export default function EditLlmProviderModal({ provider, models, onClose, onSucc
       const trimmedUrl = baseUrl.trim();
       if (trimmedUrl !== (provider.baseUrl ?? '')) {
         body.baseUrl = trimmedUrl === '' ? '' : trimmedUrl;
-      }
-      if (defaultModel !== (provider.defaultModel ?? '')) {
-        body.defaultModel = defaultModel === '' ? null : defaultModel;
       }
       if (enabled !== provider.enabled) body.enabled = enabled;
       // PATCH semantics: absent = keep; {} = clear the stored value.
@@ -90,22 +85,6 @@ export default function EditLlmProviderModal({ provider, models, onClose, onSucc
             disabled={loading}
             required={isCompatible}
           />
-        </FormField>
-
-        <FormField
-          label={isPlatform ? tu('fallbackModel') : tu('defaultModel')}
-          hint={isPlatform ? tu('fallbackModelHint') : tu('defaultModelHint')}
-        >
-          {models.length === 0 && !defaultModel ? (
-            <p className="text-sm text-muted py-1">{t('noModelsYet')}</p>
-          ) : (
-            <ModelPickerList
-              models={models}
-              value={defaultModel}
-              onChange={setDefaultModel}
-              disabled={loading}
-            />
-          )}
         </FormField>
 
         <ExtraBodyField value={extraBodyText} onChange={setExtraBodyText} disabled={loading} />

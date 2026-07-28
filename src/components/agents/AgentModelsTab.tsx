@@ -20,11 +20,12 @@ import AgentLlmRowEditor from './AgentLlmRowEditor';
 import DeleteAgentLlmModal from './DeleteAgentLlmModal';
 import { matchCapabilityFilter } from '@/components/llm-providers/modelRegistry';
 import {
-  AGENT_LLM_PURPOSES,
+  LLM_PURPOSES,
   purposeLabelKey,
   purposeRequirement,
   purposeRequirementLabelKey,
-} from './agentLlmPurpose';
+  purposeState,
+} from '@/components/llm-providers/llmPurpose';
 
 interface AgentModelsTabProps {
   agentId: string;
@@ -44,6 +45,9 @@ const providerTypeBadge: Record<LlmProviderType, string> = {
 export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
   const t = useTranslations('Agents');
   const tu = useTranslations('LlmUsage');
+  // Purpose names and their model requirements are LLM-domain vocabulary shared
+  // with the provider screens — they live in the LlmProviders namespace.
+  const tp = useTranslations('LlmProviders');
   const locale = useLocale();
   const bcp47 = localeMap[locale];
 
@@ -80,9 +84,10 @@ export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
   const modelsQueries = useQueries({
     queries: boundProviderIds.map((id) => ({ ...llmProviderModelsOptions(id), staleTime: 30_000 })),
   });
+  const registryOf = (providerId: string) => modelsQueries[boundProviderIds.indexOf(providerId)]?.data;
   const registryRow = (binding: AgentLlmResponse) => {
     if (!binding.llmProviderId) return undefined;
-    const registry = modelsQueries[boundProviderIds.indexOf(binding.llmProviderId)]?.data;
+    const registry = registryOf(binding.llmProviderId);
     // An empty registry means models were never refreshed — nothing to judge by.
     if (!registry || registry.length === 0) return undefined;
     return { registry, row: registry.find((m) => m.model === binding.model) };
@@ -126,6 +131,23 @@ export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
   const platformRow = bindings.find((b) => b.source === 'PLATFORM');
   const noProviders = bindableProviders.length === 0;
 
+  // A purpose the agent has not bound is served by the purpose list of the
+  // provider carrying its CHAT binding — and by nothing else, since the backend
+  // no longer picks a model by capability. Show what that resolves to, so an
+  // unbound row is not read as "the platform will figure it out".
+  const chatBinding = byPurpose.get('CHAT');
+  const chatProvider = chatBinding?.llmProviderId ? providerById(chatBinding.llmProviderId) : undefined;
+  // First model of the list the provider would actually reach for: UNAVAILABLE
+  // ones are skipped in favour of the next. Without a registry to check against,
+  // the head of the list is the best guess.
+  const inheritedModel = (purpose: AgentLlmPurpose): string | undefined => {
+    const list = chatProvider?.purposePriority?.[purpose];
+    if (!list || list.length === 0) return undefined;
+    const registry = chatProvider ? registryOf(chatProvider.id) : undefined;
+    if (!registry || registry.length === 0) return list[0];
+    return list.find((m) => registry.find((r) => r.model === m)?.status !== 'UNAVAILABLE') ?? list[0];
+  };
+
   // Without a provider of their own there is nothing to pick a model from, so
   // the call to action is the key, not the model.
   const setModelAction = (purpose: AgentLlmPurpose, label: string) =>
@@ -168,7 +190,7 @@ export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
             </tr>
           </thead>
           <tbody>
-            {AGENT_LLM_PURPOSES.map((purpose) => {
+            {LLM_PURPOSES.map((purpose) => {
               if (editing === purpose) {
                 return (
                   <tr key={purpose} className="border-b border-border last:border-b-0">
@@ -191,6 +213,13 @@ export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
               // practice) and only while the agent has no bindings at all.
               const platform = !binding && platformRow?.purpose === purpose ? platformRow : undefined;
               const provider = binding?.llmProviderId ? providerById(binding.llmProviderId) : undefined;
+              // Only meaningful for an unbound row, and only once a chat
+              // provider exists to inherit from.
+              const unbound = !binding && !platform;
+              const inheritedState = unbound && chatProvider
+                ? purposeState(chatProvider.purposePriority, purpose)
+                : 'unset';
+              const inherited = inheritedState === 'list' ? inheritedModel(purpose) : undefined;
 
               return (
                 <tr
@@ -200,7 +229,7 @@ export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
                   <td className="py-3 px-4 text-sm">
                     {/* Tool purposes stand out; CHAT (the norm) stays neutral. */}
                     <Chip tone={purpose === 'CHAT' ? 'default' : 'accent'}>
-                      {t(purposeLabelKey[purpose])}
+                      {tp(purposeLabelKey[purpose])}
                     </Chip>
                   </td>
                   <td className="py-3 px-4 text-sm">
@@ -238,19 +267,35 @@ export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
                             </span>
                           )}
                         </>
+                      ) : inherited ? (
+                        <span className="text-muted" title={t('inheritedModelHint')}>
+                          {t('inheritedFromProvider', { provider: chatProvider!.name })}
+                        </span>
+                      ) : inheritedState === 'off' ? (
+                        <span
+                          title={t('purposeOffHint', { provider: chatProvider!.name })}
+                          className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning"
+                        >
+                          <ExclamationTriangleIcon className="h-3 w-3" />
+                          {t('purposeOff')}
+                        </span>
                       ) : (
-                        <span className="text-muted" title={t('autoModelHint')}>
-                          {t('autoModel')}
+                        <span className="text-muted" title={t('unsetModelHint')}>
+                          {t('unsetModel')}
                         </span>
                       )}
                     </div>
                   </td>
                   <td className="py-3 px-4 text-sm text-foreground font-mono">
                     <div className="flex items-center gap-2 flex-wrap">
-                      {binding?.model ?? platform?.model ?? <span className="text-muted font-sans">—</span>}
+                      {binding?.model ?? platform?.model ?? (
+                        inherited
+                          ? <span className="text-muted">{inherited}</span>
+                          : <span className="text-muted font-sans">—</span>
+                      )}
                       {binding && isModelUnfit(binding) && (
                         <span
-                          title={t(purposeRequirementLabelKey[binding.purpose])}
+                          title={tp(purposeRequirementLabelKey[binding.purpose])}
                           className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning font-sans"
                         >
                           <ExclamationTriangleIcon className="h-3 w-3" />

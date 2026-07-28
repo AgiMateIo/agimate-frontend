@@ -28,7 +28,7 @@ export default function AddPlatformProviderModal({ onClose, onSuccess }: AddPlat
   const [presetKey, setPresetKey] = useState(DEFAULT_PROVIDER_PRESET.key);
   const [baseUrl, setBaseUrl] = useState(DEFAULT_PROVIDER_PRESET.defaultBaseUrl);
   const [apiKey, setApiKey] = useState('');
-  const [defaultModel, setDefaultModel] = useState('');
+  const [chatModel, setChatModel] = useState('');
 
   const [creating, setCreating] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -62,7 +62,9 @@ export default function AddPlatformProviderModal({ onClose, onSuccess }: AddPlat
         providerType,
         apiKey: apiKey.trim(),
         baseUrl: baseUrl.trim() || undefined,
-        defaultModel: defaultModel.trim() || undefined,
+        // The registry is empty at creation time, so any id is accepted here.
+        // Vision/image lists are configured afterwards, once models are fetched.
+        purposePriority: chatModel.trim() ? { CHAT: [chatModel.trim()] } : undefined,
       };
       const created = await apiService.createPlatformLlmProvider(body);
       createdId = created.id;
@@ -141,8 +143,8 @@ export default function AddPlatformProviderModal({ onClose, onSuccess }: AddPlat
         <FormField label={tu('fallbackModel')} hint={tu('fallbackModelHint')}>
           <Input
             type="text"
-            value={defaultModel}
-            onChange={(e) => setDefaultModel(e.target.value)}
+            value={chatModel}
+            onChange={(e) => setChatModel(e.target.value)}
             placeholder="gpt-5-mini"
             disabled={busy}
           />

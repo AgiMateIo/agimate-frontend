@@ -10,7 +10,12 @@ import { Button } from '@/components/ui/Button';
 import { FormField, Select } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { ModelField } from '@/components/llm-providers/ModelField';
-import { purposeLabelKey, purposeRequirement, purposeRequirementLabelKey } from './agentLlmPurpose';
+import {
+  firstPurposeModel,
+  purposeLabelKey,
+  purposeRequirement,
+  purposeRequirementLabelKey,
+} from '@/components/llm-providers/llmPurpose';
 
 interface AgentLlmRowEditorProps {
   agentId: string;
@@ -36,12 +41,15 @@ export default function AgentLlmRowEditor({
   onSuccess,
 }: AgentLlmRowEditorProps) {
   const t = useTranslations('Agents');
+  const tp = useTranslations('LlmProviders');
 
   const initialProvider = binding?.llmProviderId ?? providers[0]?.id ?? '';
   const [providerId, setProviderId] = useState(initialProvider);
-  // On a fresh row the provider's defaultModel is a preselect; nothing more.
+  // On a fresh row the provider's own first choice for this purpose is a
+  // preselect; nothing more — the binding that gets saved is whatever is here.
+  const initialProviderRow = providers.find((p) => p.id === initialProvider);
   const [model, setModel] = useState(
-    binding?.model ?? providers.find((p) => p.id === initialProvider)?.defaultModel ?? ''
+    binding?.model ?? (initialProviderRow ? firstPurposeModel(initialProviderRow, purpose) : null) ?? ''
   );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +58,7 @@ export default function AgentLlmRowEditor({
   // and shown as the field hint — the free-text case has no metadata to check.
   const requirement = {
     ...purposeRequirement[purpose],
-    label: t(purposeRequirementLabelKey[purpose]),
+    label: tp(purposeRequirementLabelKey[purpose]),
   };
 
   const handleSubmit = async () => {
@@ -75,7 +83,7 @@ export default function AgentLlmRowEditor({
   return (
     <div className="bg-surface-secondary border-l-2 border-accent px-4 py-4 space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <span className="text-sm font-medium text-foreground">{t(purposeLabelKey[purpose])}</span>
+        <span className="text-sm font-medium text-foreground">{tp(purposeLabelKey[purpose])}</span>
         <button
           type="button"
           onClick={onCancel}
@@ -97,7 +105,7 @@ export default function AgentLlmRowEditor({
             onChange={(e) => {
               const next = providers.find((p) => p.id === e.target.value);
               setProviderId(e.target.value);
-              setModel(next?.defaultModel ?? '');
+              setModel((next && firstPurposeModel(next, purpose)) ?? '');
             }}
             disabled={submitting}
             required

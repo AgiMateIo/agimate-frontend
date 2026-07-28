@@ -5,7 +5,7 @@ import apiService from '@/services/api';
 import { AgentLlmResponse } from '@/types';
 import { Alert } from '@/components/ui/Alert';
 import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
-import { purposeLabelKey } from './agentLlmPurpose';
+import { purposeLabelKey } from '@/components/llm-providers/llmPurpose';
 
 interface DeleteAgentLlmModalProps {
   agentId: string;
@@ -25,6 +25,7 @@ export default function DeleteAgentLlmModal({
   onSuccess,
 }: DeleteAgentLlmModalProps) {
   const t = useTranslations('Agents');
+  const tp = useTranslations('LlmProviders');
 
   return (
     <ConfirmDeleteModal
@@ -39,7 +40,7 @@ export default function DeleteAgentLlmModal({
     >
       <p className="text-foreground">{t('removeBindingConfirm')}</p>
       <div className="text-sm text-muted space-y-1">
-        <div><strong>{t('purpose')}:</strong> {t(purposeLabelKey[binding.purpose])}</div>
+        <div><strong>{t('purpose')}:</strong> {tp(purposeLabelKey[binding.purpose])}</div>
         <div><strong>{t('provider')}:</strong> {binding.llmProviderName}</div>
         <div><strong>{t('model')}:</strong> <span className="font-mono">{binding.model}</span></div>
       </div>

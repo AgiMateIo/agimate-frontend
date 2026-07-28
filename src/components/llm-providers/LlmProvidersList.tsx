@@ -11,6 +11,7 @@ import { Link } from '@/i18n/navigation';
 import { localeMap } from '@/i18n/routing';
 import { formatDate } from '@/utils/date';
 import { PROVIDER_TYPE_LABEL_KEY, deriveProviderNameFromUrl } from './providerPresets';
+import { firstPurposeModel } from './llmPurpose';
 import { ProviderAvatar } from './ProviderAvatar';
 
 interface LlmProvidersListProps {
@@ -71,6 +72,7 @@ export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersLi
 
     const typeLabel = t(PROVIDER_TYPE_LABEL_KEY[provider.providerType] ?? 'providerTypeOpenAICompatible');
     const host = provider.baseUrl ? deriveProviderNameFromUrl(provider.baseUrl) : '';
+    const chatModel = firstPurposeModel(provider, 'CHAT');
 
     return (
       <div
@@ -101,7 +103,10 @@ export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersLi
               <div className="flex items-center gap-1.5 flex-wrap mt-2">
                 {neverRefreshed && <Chip tone="warning">{t('noModelsYet')}</Chip>}
                 {host && <Chip icon={GlobeAltIcon}>{host}</Chip>}
-                {provider.defaultModel && <Chip icon={CpuChipIcon}>{provider.defaultModel}</Chip>}
+                {/* The chat model the provider would try first — the one number
+                    that fits a card; the rest of the purpose map lives on the
+                    detail page. */}
+                {chatModel && <Chip icon={CpuChipIcon}>{chatModel}</Chip>}
                 {provider.modelsRefreshedAt && (
                   <Chip icon={ClockIcon}>{formatDate(provider.modelsRefreshedAt, bcp47)}</Chip>
                 )}

@@ -9,8 +9,11 @@ export type LlmProviderType = 'OPENAI' | 'ANTHROPIC' | 'GEMINI' | 'OPENAI_COMPAT
 export type LlmExtraBody = Record<string, unknown>;
 
 // AVAILABLE — present in the provider's latest model listing.
-// UNAVAILABLE — advisory only: dropped from the listing (or never listed), but
-// still bindable and still served credentials at runtime. UI warns, never blocks.
+// UNAVAILABLE — dropped from the listing (or never listed). Still bindable and
+// still saveable (listings are incomplete often enough), but no longer harmless:
+// inside a provider's purpose list such a model is skipped in favour of the next
+// one, and as an agent's explicit binding it makes the call fail rather than be
+// silently substituted. UI warns, never blocks.
 export type LlmProviderModelStatus = 'AVAILABLE' | 'UNAVAILABLE';
 
 // A row of the provider's model registry (null fields are omitted in JSON).
@@ -38,13 +41,26 @@ export interface LlmProviderModelResponse {
   lastSeenAt?: string | null;
 }
 
+// Per-purpose ordered allow-list of models — the provider-level answer to "which
+// model serves this purpose". Keys are uppercase `AgentLlmPurpose` values;
+// a lowercase or unknown key is rejected with 400 while parsing the body.
+//
+// Three states, three meanings:
+//   key absent   — the purpose is not configured; resolution falls through to the
+//                  platform provider;
+//   []           — the purpose is switched off deliberately; the chain stops here;
+//   [a, b, …]    — priority order: the first model the registry does not mark
+//                  UNAVAILABLE wins.
+// It is an allow-list, not a UI preset: a model that is not in it is never used.
+export type LlmPurposePriority = Partial<Record<AgentLlmPurpose, string[]>>;
+
 export interface LlmProviderResponse {
   id: string;
   name: string;
   providerType: LlmProviderType;
   baseUrl: string | null;
-  // Fallback model on the platform row; a UI preselect on user providers.
-  defaultModel: string | null;
+  // null = nothing configured for any purpose.
+  purposePriority: LlmPurposePriority | null;
   apiKeyMask: string;
   modelsRefreshedAt: string | null;
   extraBody: LlmExtraBody | null;
@@ -59,7 +75,7 @@ export interface CreateLlmProviderRequest {
   name: string;
   providerType: LlmProviderType;
   baseUrl?: string | null;
-  defaultModel?: string | null;
+  purposePriority?: LlmPurposePriority;
   apiKey: string;
   enabled?: boolean;
   extraBody?: LlmExtraBody;
@@ -68,7 +84,9 @@ export interface CreateLlmProviderRequest {
 export interface UpdateLlmProviderRequest {
   name?: string;
   baseUrl?: string | null;
-  defaultModel?: string | null;
+  // Replaces the whole map — keys are not merged. Absent = keep, {} = clear.
+  // Editing one purpose still means sending every other purpose back untouched.
+  purposePriority?: LlmPurposePriority;
   apiKey?: string;
   enabled?: boolean;
   // Partial semantics: absent/null = keep, {} = clear.
@@ -81,7 +99,7 @@ export interface UpdateLlmProviderRequest {
 export interface CreatePlatformLlmProviderRequest {
   providerType: LlmProviderType;
   baseUrl?: string | null;
-  defaultModel?: string | null;
+  purposePriority?: LlmPurposePriority;
   apiKey: string;
 }
 
@@ -102,7 +120,8 @@ export interface UpdateModelExtraBodyRequest {
 
 // USER — a real `agent_llms` row, editable/deletable as usual.
 // PLATFORM — a virtual free-tier fallback the backend synthesizes when the agent
-// has zero user bindings and the platform provider is enabled. Not addressable
+// has zero user bindings and the platform provider is enabled with a non-empty
+// CHAT list (its `model` is that list's first entry). Not addressable
 // (llmProviderId is null) and not persisted, so it must not be edited/deleted.
 export type AgentLlmSource = 'USER' | 'PLATFORM';
 
@@ -110,8 +129,12 @@ export type AgentLlmSource = 'USER' | 'PLATFORM';
 // media connector (image generation / vision / speech-to-text / text-to-speech).
 // The purpose IS the binding's identity: one model per purpose per agent, and
 // the value travels in the PUT/DELETE path (uppercase — lowercase gives 400).
-// An explicit binding beats the backend's capability-based auto-pick and is
-// advisory (not checked against the registry).
+// Resolution order, with no guessing at any step: the agent's own binding →
+// `purposePriority` of the provider carrying the agent's CHAT binding → the
+// platform provider's. Nothing found = the tool call fails, and the user reads
+// the reason verbatim in the chat.
+// AUDIO_IN/AUDIO_OUT are accepted and stored everywhere, but no speech tools
+// exist yet — bindings on them do nothing so far.
 export type AgentLlmPurpose = 'CHAT' | 'IMAGE' | 'VISION' | 'AUDIO_IN' | 'AUDIO_OUT';
 
 export interface AgentLlmResponse {

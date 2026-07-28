@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useSuspenseQueries } from '@tanstack/react-query';
 import {
+  AdjustmentsHorizontalIcon,
   ArrowLeftIcon,
   CpuChipIcon,
   ExclamationTriangleIcon,
@@ -34,6 +35,8 @@ import { ProviderAvatar } from '@/components/llm-providers/ProviderAvatar';
 import { UsageBars } from '@/components/llm-providers/UsageBars';
 import ProviderQuotasSection from '@/components/llm-providers/ProviderQuotasSection';
 import ProviderModelsSection from '@/components/llm-providers/ProviderModelsSection';
+import ProviderPurposesSection from '@/components/llm-providers/ProviderPurposesSection';
+import { PROVIDER_PURPOSES, purposeLabelKey, purposeState } from '@/components/llm-providers/llmPurpose';
 import EditLlmProviderModal from '@/components/llm-providers/EditLlmProviderModal';
 import RotateLlmProviderKeyModal from '@/components/llm-providers/RotateLlmProviderKeyModal';
 import DeleteLlmProviderModal from '@/components/llm-providers/DeleteLlmProviderModal';
@@ -53,7 +56,7 @@ function ProviderDetailContent({ id }: { id: string }) {
 
   const provider = providers.find((p) => p.id === id);
 
-  const [activeTab, setActiveTab] = useState<'info' | 'models' | 'usage' | 'quotas'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'models' | 'purposes' | 'usage' | 'quotas'>('info');
   const [editing, setEditing] = useState(false);
   const [rotating, setRotating] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -96,6 +99,22 @@ function ProviderDetailContent({ id }: { id: string }) {
   const usage = usageQuery.data?.find((u) => u.llmProviderId === provider.id);
   const displayName = provider.platform ? tu('platformProviderName') : provider.name;
   const hasModels = models.length > 0;
+
+  // One line per configured purpose: the model that would be tried first, plus
+  // how many fallbacks sit behind it. Audio purposes are omitted here for the
+  // same reason the editor omits them — nothing consumes them yet.
+  const purposeSummary = PROVIDER_PURPOSES.map((purpose) => {
+    const label = t(purposeLabelKey[purpose]);
+    const list = provider.purposePriority?.[purpose];
+    switch (purposeState(provider.purposePriority, purpose)) {
+      case 'off':
+        return `${label}: ${t('purposeStateOff')}`;
+      case 'list':
+        return `${label}: ${list![0]}${list!.length > 1 ? ` +${list!.length - 1}` : ''}`;
+      default:
+        return `${label}: ${t('purposeStateUnset')}`;
+    }
+  }).join(' · ');
 
   return (
     <div className="space-y-6">
@@ -154,9 +173,15 @@ function ProviderDetailContent({ id }: { id: string }) {
                     action={<RowAction icon={PencilIcon} label={t('editProvider')} onClick={() => setEditing(true)} />}
                   />
                   <FieldRow
-                    label={tu('defaultModel')}
-                    value={provider.defaultModel ?? tu('noDefaultModel')}
-                    mono={!!provider.defaultModel}
+                    label={t('purposesTitle')}
+                    value={purposeSummary}
+                    action={(
+                      <RowAction
+                        icon={AdjustmentsHorizontalIcon}
+                        label={t('purposesManage')}
+                        onClick={() => setActiveTab('purposes')}
+                      />
+                    )}
                   />
                   <FieldRow
                     label={t('modelsLabel')}
@@ -206,6 +231,17 @@ function ProviderDetailContent({ id }: { id: string }) {
             ),
           },
           {
+            id: 'purposes',
+            label: t('tabPurposes'),
+            content: (
+              <ProviderPurposesSection
+                provider={provider}
+                models={models}
+                onSaved={applyUpdated}
+              />
+            ),
+          },
+          {
             id: 'usage',
             label: tu('tabUsage'),
             content: (
@@ -239,7 +275,6 @@ function ProviderDetailContent({ id }: { id: string }) {
       {editing && (
         <EditLlmProviderModal
           provider={provider}
-          models={models}
           onClose={() => setEditing(false)}
           onSuccess={(updated) => {
             applyUpdated(updated);
