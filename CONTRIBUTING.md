@@ -60,5 +60,6 @@ Open an issue with the steps to reproduce, the expected and actual behaviour,
 your browser, and anything relevant from the browser console or network tab.
 Please redact tokens and API keys.
 
-For security issues, follow [SECURITY.md](SECURITY.md) instead — do not open a
-public issue.
+For security issues, follow the
+[AgiMate security policy](https://github.com/AgiMateIo/.github/blob/main/SECURITY.md)
+instead — do not open a public issue.
