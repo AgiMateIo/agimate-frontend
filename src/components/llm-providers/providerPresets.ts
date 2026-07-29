@@ -1,4 +1,4 @@
-import { LlmProviderType } from '@/types';
+import { LlmMediaTransport, LlmProviderType } from '@/types';
 
 // Presets shown in the "Provider Type" dropdown of the Add modal. A preset is a
 // selectable entry, not necessarily a distinct backend type — OpenRouter and the
@@ -62,6 +62,22 @@ export const PROVIDER_TYPE_LABEL_KEY: Partial<Record<LlmProviderType, ProviderLa
     if (preset.key === preset.providerType) acc[preset.providerType] = preset.labelKey;
     return acc;
   }, {});
+
+// Hosts known to want a dedicated media endpoint for image generation. Everything
+// else — OpenRouter included, and any address we have not seen — is served by
+// chat/completions with modalities.
+const MEDIA_ENDPOINT_HOSTS = ['polza.ai'];
+
+// A *suggestion* for the media-transport field, derived from the base URL. It only
+// seeds the control: the value cannot be inferred reliably (two providers of the
+// same `providerType` differ), so the user always keeps the final say.
+export function suggestMediaTransport(baseUrl: string): LlmMediaTransport {
+  const host = deriveProviderNameFromUrl(baseUrl).toLowerCase();
+  const wantsMediaEndpoint = MEDIA_ENDPOINT_HOSTS.some(
+    (known) => host === known || host.endsWith(`.${known}`)
+  );
+  return wantsMediaEndpoint ? 'MEDIA_ENDPOINT' : 'CHAT_MODALITIES';
+}
 
 // Derive a provider name from a base URL's domain, e.g.
 // "https://openrouter.ai/api/v1" -> "openrouter.ai", "https://api.openai.com/v1" -> "openai.com".

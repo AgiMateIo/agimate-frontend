@@ -173,6 +173,14 @@ function ProviderDetailContent({ id }: { id: string }) {
                     action={<RowAction icon={PencilIcon} label={t('editProvider')} onClick={() => setEditing(true)} />}
                   />
                   <FieldRow
+                    label={t('mediaTransport')}
+                    value={provider.mediaTransport === 'MEDIA_ENDPOINT'
+                      ? t('mediaTransportMedia')
+                      : t('mediaTransportChat')}
+                    sub={provider.mediaTransport === null ? t('mediaTransportDefaultSub') : undefined}
+                    action={<RowAction icon={PencilIcon} label={t('editProvider')} onClick={() => setEditing(true)} />}
+                  />
+                  <FieldRow
                     label={t('purposesTitle')}
                     value={purposeSummary}
                     action={(
@@ -249,6 +257,11 @@ function ProviderDetailContent({ id }: { id: string }) {
                 <p className="text-sm text-muted">
                   {provider.platform ? tu('usageSubtitlePlatform') : tu('usageSubtitleUser')}
                 </p>
+                {/* Media endpoints bill in money, not tokens, so their calls land here
+                    as zero-token rows. Say so, or the screen reads as broken. */}
+                {provider.mediaTransport === 'MEDIA_ENDPOINT' && (
+                  <p className="text-xs text-muted">{tu('usageMediaEndpointNote')}</p>
+                )}
                 {usageQuery.isPending ? (
                   <div className="text-sm text-muted py-2">{tu('loadingUsage')}</div>
                 ) : usageQuery.isError ? (

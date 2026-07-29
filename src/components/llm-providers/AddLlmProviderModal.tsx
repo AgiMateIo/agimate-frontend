@@ -14,7 +14,9 @@ import {
   LLM_PROVIDER_PRESETS,
   DEFAULT_PROVIDER_PRESET,
   deriveProviderNameFromUrl,
+  suggestMediaTransport,
 } from './providerPresets';
+import { MediaTransportField, type MediaTransportChoice } from './MediaTransportField';
 import { ExtraBodyField } from './ExtraBodyField';
 import { parseExtraBodyInput } from './extraBody';
 
@@ -33,6 +35,9 @@ export default function AddLlmProviderModal({ onClose, onSuccess }: AddLlmProvid
   const [baseUrl, setBaseUrl] = useState(DEFAULT_PROVIDER_PRESET.defaultBaseUrl);
   const [apiKey, setApiKey] = useState('');
   const [extraBodyText, setExtraBodyText] = useState('');
+  const [mediaTransport, setMediaTransport] = useState<MediaTransportChoice>('');
+  // Once the user picks a transport, the URL stops steering it.
+  const [mediaTransportEdited, setMediaTransportEdited] = useState(false);
 
   const [creating, setCreating] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -43,16 +48,30 @@ export default function AddLlmProviderModal({ onClose, onSuccess }: AddLlmProvid
   const providerType = preset.providerType;
   const isCompatible = providerType === 'OPENAI_COMPATIBLE';
 
+  // Only a host that actually needs the media endpoint moves the control off
+  // "default" — for everything else the field stays unsent, exactly as before.
+  const suggestTransport = (url: string) => {
+    if (mediaTransportEdited) return;
+    setMediaTransport(suggestMediaTransport(url) === 'MEDIA_ENDPOINT' ? 'MEDIA_ENDPOINT' : '');
+  };
+
   const handlePresetChange = (key: string) => {
     setPresetKey(key);
     const next = LLM_PROVIDER_PRESETS.find((p) => p.key === key) ?? DEFAULT_PROVIDER_PRESET;
     setBaseUrl(next.defaultBaseUrl);
     if (!nameEdited) setName(deriveProviderNameFromUrl(next.defaultBaseUrl));
+    suggestTransport(next.defaultBaseUrl);
   };
 
   const handleBaseUrlChange = (value: string) => {
     setBaseUrl(value);
     if (!nameEdited) setName(deriveProviderNameFromUrl(value));
+    suggestTransport(value);
+  };
+
+  const handleMediaTransportChange = (value: MediaTransportChoice) => {
+    setMediaTransport(value);
+    setMediaTransportEdited(true);
   };
 
   const handleNameChange = (value: string) => {
@@ -85,6 +104,7 @@ export default function AddLlmProviderModal({ onClose, onSuccess }: AddLlmProvid
         providerType,
         apiKey: apiKey.trim(),
         baseUrl: baseUrl.trim() || undefined,
+        mediaTransport: mediaTransport || undefined,
         extraBody: parsedExtraBody.value ?? undefined,
       };
       const created = await apiService.createLlmProvider(body);
@@ -157,6 +177,12 @@ export default function AddLlmProviderModal({ onClose, onSuccess }: AddLlmProvid
             required={isCompatible}
           />
         </FormField>
+
+        <MediaTransportField
+          value={mediaTransport}
+          onChange={handleMediaTransportChange}
+          disabled={busy}
+        />
 
         <FormField label={t('apiKey')} required hint={t('apiKeyHint')}>
           <Input

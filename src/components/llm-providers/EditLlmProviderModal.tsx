@@ -12,6 +12,7 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { ExtraBodyField } from './ExtraBodyField';
 import { formatExtraBody, parseExtraBodyInput } from './extraBody';
+import { MediaTransportField, type MediaTransportChoice } from './MediaTransportField';
 
 interface EditLlmProviderModalProps {
   provider: LlmProviderResponse;
@@ -26,6 +27,11 @@ export default function EditLlmProviderModal({ provider, onClose, onSuccess }: E
   const [name, setName] = useState(provider.name);
   const [baseUrl, setBaseUrl] = useState(provider.baseUrl ?? '');
   const [enabled, setEnabled] = useState(provider.enabled);
+  // A provider saved before the field existed answers null; that maps to "default",
+  // and leaving it alone keeps the request free of the key.
+  const [mediaTransport, setMediaTransport] = useState<MediaTransportChoice>(
+    provider.mediaTransport ?? ''
+  );
   const [extraBodyText, setExtraBodyText] = useState(formatExtraBody(provider.extraBody));
 
   const isCompatible = provider.providerType === 'OPENAI_COMPATIBLE';
@@ -52,6 +58,12 @@ export default function EditLlmProviderModal({ provider, onClose, onSuccess }: E
         body.baseUrl = trimmedUrl === '' ? '' : trimmedUrl;
       }
       if (enabled !== provider.enabled) body.enabled = enabled;
+      // PATCH has no way to write the field back to null, so moving off
+      // MEDIA_ENDPOINT sends CHAT_MODALITIES explicitly — behaviourally the same
+      // as the null default, and the only value the endpoint accepts.
+      if (mediaTransport !== (provider.mediaTransport ?? '')) {
+        body.mediaTransport = mediaTransport || 'CHAT_MODALITIES';
+      }
       // PATCH semantics: absent = keep; {} = clear the stored value.
       if (JSON.stringify(parsedExtraBody.value) !== JSON.stringify(provider.extraBody ?? null)) {
         body.extraBody = parsedExtraBody.value ?? {};
@@ -86,6 +98,12 @@ export default function EditLlmProviderModal({ provider, onClose, onSuccess }: E
             required={isCompatible}
           />
         </FormField>
+
+        <MediaTransportField
+          value={mediaTransport}
+          onChange={setMediaTransport}
+          disabled={loading}
+        />
 
         <ExtraBodyField value={extraBodyText} onChange={setExtraBodyText} disabled={loading} />
 

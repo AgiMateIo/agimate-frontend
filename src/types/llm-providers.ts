@@ -2,6 +2,18 @@
 
 export type LlmProviderType = 'OPENAI' | 'ANTHROPIC' | 'GEMINI' | 'OPENAI_COMPATIBLE';
 
+// How image *generation* is requested from this provider. Providers disagree here
+// and `providerType` cannot tell them apart — OpenRouter and Polza are both
+// OPENAI_COMPATIBLE — so the choice is the user's, not something we can derive.
+//   CHAT_MODALITIES — chat/completions carrying image modalities (OpenRouter and
+//                     proxies that pass it through). The backend default.
+//   MEDIA_ENDPOINT  — a dedicated media endpoint (Polza, api.polza.ai).
+// Getting it wrong is expensive, not just broken: a media-endpoint provider asked
+// the chat way answers with a server error or — worse — an empty result that was
+// still billed. Hence a visible field rather than a guess.
+// Applies to generation only; VISION (image recognition) is identical everywhere.
+export type LlmMediaTransport = 'CHAT_MODALITIES' | 'MEDIA_ENDPOINT';
+
 // Extra request parameters merged into every chat/completions call (aggregator
 // extensions like OpenRouter `provider` routing). Backend deep-merges provider-level
 // ⊕ model-level (model wins, arrays replaced whole). Max 16 KB serialized; never
@@ -59,6 +71,9 @@ export interface LlmProviderResponse {
   name: string;
   providerType: LlmProviderType;
   baseUrl: string | null;
+  // null = never set — the backend treats it as CHAT_MODALITIES. Providers created
+  // before the field existed answer null, which is "as it was", not a misconfiguration.
+  mediaTransport: LlmMediaTransport | null;
   // null = nothing configured for any purpose.
   purposePriority: LlmPurposePriority | null;
   apiKeyMask: string;
@@ -75,6 +90,8 @@ export interface CreateLlmProviderRequest {
   name: string;
   providerType: LlmProviderType;
   baseUrl?: string | null;
+  // Omitted = let the backend default to CHAT_MODALITIES.
+  mediaTransport?: LlmMediaTransport;
   purposePriority?: LlmPurposePriority;
   apiKey: string;
   enabled?: boolean;
@@ -84,6 +101,8 @@ export interface CreateLlmProviderRequest {
 export interface UpdateLlmProviderRequest {
   name?: string;
   baseUrl?: string | null;
+  // Same partial semantics as the rest: absent = keep, present = overwrite.
+  mediaTransport?: LlmMediaTransport;
   // Replaces the whole map — keys are not merged. Absent = keep, {} = clear.
   // Editing one purpose still means sending every other purpose back untouched.
   purposePriority?: LlmPurposePriority;
