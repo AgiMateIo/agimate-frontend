@@ -486,7 +486,7 @@ export default function DesktopPage() {
         links={[
           { label: t('footer.github'), href: 'https://github.com/AgiMateIo/desktop', external: true },
           { label: t('footer.telegram'), href: 'https://t.me/agimate', external: true },
-          { label: t('footer.docs'), href: '#' },
+          { label: t('footer.docs'), href: 'https://github.com/AgiMateIo/desktop', external: true },
         ]}
       />
     </div>

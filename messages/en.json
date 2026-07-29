@@ -1,66 +1,67 @@
 {
   "Metadata": {
-    "title": "AgiMate — Multi-Agent AI Platform for Business",
-    "description": "AgiMate is a platform where specialized AI agents work together: email, calendar, marketplaces. Each knows its job. Each under your control.",
-    "ogTitle": "AgiMate — AI Agent Team for Your Business",
-    "ogDescription": "Specialized AI agents work in parallel, securely, and under your control. Open-source automation platform."
+    "title": "AgiMate — an AI agent platform with access control",
+    "description": "Build an AI agent from skills, grant access to each tool deliberately, and see every call in the log. Your own model key, Telegram and web chat, self-hosted.",
+    "ogTitle": "AgiMate — AI agents under your control",
+    "ogDescription": "An agent assembled from skills, tool access you grant yourself, every call written to the log. Your own model on your own key, deployable on your own server."
   },
   "HomePage": {
     "nav": {
       "howItWorks": "How it works",
       "useCases": "Use cases",
       "security": "Security",
+      "models": "Models",
       "connections": "Connections",
       "dashboard": "Dashboard",
       "login": "Sign in",
       "waitlist": "Join Waitlist"
     },
     "hero": {
-      "title": "Your AI assistant.",
-      "titleHighlight": "A team, not a solo act.",
-      "subtitle": "AgiMate is a platform where specialized AI agents work together: one monitors email, another handles the calendar, a third manages orders. Each knows its job. Each under your control.",
+      "title": "Build an AI agent —",
+      "titleHighlight": "and keep control of it.",
+      "subtitle": "AgiMate: the agent is assembled from skills, you grant access to every tool yourself, and every call lands in the log. The model runs on your own key.",
       "cta": "Request Early Access",
       "secondaryCta": "See how it works"
     },
     "heroScheme": {
       "user": "You",
       "telegram": "Telegram",
-      "supervisor": "Supervisor",
-      "calendarAgent": "Calendar",
-      "emailAgent": "Email",
-      "response": "Response"
+      "agent": "Agent",
+      "skills": "Skills",
+      "connections": "Connections",
+      "response": "Reply + log"
     },
     "problems": {
       "title": "Sound familiar?",
       "items": [
         {
-          "title": "One agent — one task",
-          "description": "While your AI checks the calendar, it misses an incoming email. You get an outdated answer."
-        },
-        {
           "title": "All or nothing",
-          "description": "Your AI assistant has access to everything — email, files, banking. One malicious plugin and the entire system is compromised."
+          "description": "The assistant gets access to everything at once — email, files, calendar. One bad tool and the boundaries are gone."
         },
         {
           "title": "Black box",
-          "description": "You don't know what AI does behind the scenes. Which APIs did it call? What did it read? Where did it send your data?"
+          "description": "You don't know what the assistant did: which tool it called, with what parameters, what came back. Nothing to investigate with."
+        },
+        {
+          "title": "Someone else's model, someone else's bill",
+          "description": "The model was chosen for you, spend is invisible, tokens are resold at a markup. Switching providers isn't an option."
         }
       ]
     },
     "solution": {
-      "title": "A team of AI specialists, each in their place",
+      "title": "An agent you assemble, under rules you set",
       "columns": [
         {
-          "title": "Work in parallel",
-          "description": "While one agent checks the calendar, another reads email. Results are combined instantly."
+          "title": "Assembled from skills",
+          "description": "Start from a ready-made role or from scratch: name, instructions, a set of skills. A few steps later the agent is already answering in chat."
         },
         {
-          "title": "Each — only their own",
-          "description": "The email agent can't access files. The analytics agent can't send messages. Security is built in, not bolted on."
+          "title": "You grant the access",
+          "description": "The agent only sees the connections you bind to it. Inside a connection there are rules: this tool is allowed, this one isn't, this one only with these parameters."
         },
         {
-          "title": "Everything under control",
-          "description": "Every action of every agent is logged. You see who did what and can set the rules."
+          "title": "Every call in the log",
+          "description": "Who called what, when, with what result. Denials are logged too — so you can see exactly what the agent tried to do."
         }
       ]
     },
@@ -69,84 +70,85 @@
       "tabs": [
         {
           "label": "Event",
-          "title": "An event starts the process",
-          "description": "You write in Telegram. Or an email arrives. Or stock runs low. AgiMate receives the event and gets to work.",
+          "title": "An event starts the agent",
+          "description": "A message in Telegram or web chat, a scheduled job, a webhook from an external system. AgiMate takes the event and hands it to the agent.",
           "sources": [
             "Telegram",
-            "Email",
-            "Ozon"
+            "Web chat",
+            "Schedule",
+            "Webhook"
           ]
         },
         {
-          "label": "Team works",
-          "title": "Agents work in parallel",
-          "description": "AgiMate routes the event to the right agents. The Supervisor coordinates. Agents share context and work simultaneously.",
-          "agents": [
-            "Calendar",
-            "Email",
-            "CRM",
-            "Analytics"
+          "label": "Agent works",
+          "title": "The agent picks the right tool",
+          "description": "The agent chooses a tool from its skills and connections. Access rules are checked before the call: a forbidden tool never fires, and the attempt stays in the log.",
+          "toolbox": [
+            "Skills",
+            "Connections",
+            "Access rules",
+            "Your model"
           ]
         },
         {
           "label": "Result",
-          "title": "Response and audit log",
-          "description": "The Supervisor collects agent responses and sends you the result. Every action is recorded in the log."
+          "title": "Reply and log entry",
+          "description": "The agent replies in the same channel the event came from. The call, its parameters and its result stay in the log — visible in the dashboard."
         }
       ]
     },
     "useCases": {
-      "title": "What it looks like in practice",
-      "subtitle": "Real scenarios where a team of agents outperforms a solo AI",
+      "title": "What you can build today",
+      "subtitle": "Scenarios made of parts that already exist in the dashboard — each one shows what it's assembled from",
       "items": [
         {
-          "title": "\"Am I free today?\"",
-          "description": "You ask in Telegram: \"Am I free from 5 to 6?\" The calendar agent starts checking. But the email agent spots a message from your boss: \"Meeting at 5 PM.\" The Supervisor responds: \"No — a meeting email just came in.\"",
+          "title": "An agent in Telegram",
+          "description": "Set up a channel: the Telegram connector, an incoming-message trigger, a reply tool. The agent answers per your instructions and the conversation is stored as sessions you can read in the dashboard.",
           "flow": [
-            "Telegram",
-            "Supervisor",
-            "Calendar + Email",
-            "Response"
+            "Telegram channel",
+            "Agent",
+            "Skills",
+            "Sessions in dashboard"
           ]
         },
         {
-          "title": "Smart procurement",
-          "description": "A product is running low on Ozon. The marketplace agent reports it. The Supervisor asks to check supplier prices. But the analytics agent notices: 3 returns this week. The Supervisor asks you: \"Should we reorder? Here are the numbers.\"",
+          "title": "A scheduled check",
+          "description": "A connector job runs on a schedule: the agent visits an external service, checks what matters and writes to you. Jobs can be paused or run right now.",
           "flow": [
-            "Ozon trigger",
-            "Supervisor",
-            "Procurement + Analytics",
-            "Recommendation"
+            "Schedule",
+            "Connection",
+            "Agent",
+            "Summary to channel"
           ]
         },
         {
-          "title": "Meeting prep",
-          "description": "An hour before a call, the calendar agent alerts you. The Supervisor simultaneously requests recent correspondence and deal status. In a minute you get a brief: \"Ivanov wants to discuss a discount. Deal at $50K, negotiation stage.\"",
+          "title": "Reacting to an event",
+          "description": "An external system sends a webhook — the agent parses the event and takes the next step. Every delivery and every tool call stays in the trigger logs.",
           "flow": [
-            "Calendar",
-            "Supervisor",
-            "Email + CRM",
-            "Brief"
+            "Webhook",
+            "Trigger",
+            "Agent",
+            "Trigger log"
           ]
         },
         {
-          "title": "AI secretary",
-          "description": "While you're busy, email and messenger agents monitor incoming messages. Routine questions — they answer themselves. Important ones go to the Supervisor, who sends you a prioritized summary.",
+          "title": "Your own service as a tool",
+          "description": "Connect your API as a key-authenticated app or an MCP server — its methods become the agent's tools. What exactly it may do is up to your rules.",
           "flow": [
-            "Email + Telegram",
-            "Agents",
-            "Supervisor",
-            "Summary"
+            "MCP / app",
+            "Connection",
+            "Rules",
+            "Agent"
           ]
         },
         {
-          "title": "E-commerce control",
-          "description": "New order on Wildberries. The marketplace agent updates the status. Meanwhile, the warehouse agent checks stock and the logistics agent checks delivery times. You only get an alert if something's wrong.",
+          "title": "A team board",
+          "description": "A team of agents works a shared board: tasks with statuses, an assigned agent, comments. Changes reach the dashboard in real time.",
           "flow": [
-            "WB trigger",
-            "3 agents",
-            "Supervisor",
-            "Alert"
+            "Team",
+            "Task board",
+            "Assigned agent",
+            "Live updates"
           ]
         }
       ]
@@ -155,43 +157,83 @@
       "title": "Security is architecture, not configuration",
       "items": [
         {
-          "title": "Each agent — within its boundaries",
-          "description": "The email agent only works with email. It physically cannot access files, banking, or messengers. Even if something goes wrong — damage is contained."
+          "title": "The agent only sees what's bound",
+          "description": "Until a connection is bound to an agent, its tools don't exist for that agent. Bindings are visible from both sides: on the agent and on the connection."
+        },
+        {
+          "title": "Rules are checked before the call",
+          "description": "Allow or deny a specific tool, constrain its parameters, close a connection entirely. The rule fires before the external service is ever contacted, and the denial goes to the log."
         },
         {
           "title": "Every action logged",
-          "description": "Who called what, when, with what result. You always know what's happening."
+          "description": "Who called what, when, with what result. Errors and policy denials are collected separately, so you know where to look."
+        }
+      ]
+    },
+    "models": {
+      "title": "Your model, your key",
+      "subtitle": "Tokens are billed by your provider at your rate — no markup from us",
+      "items": [
+        {
+          "title": "Your key at your provider",
+          "description": "Connect a provider with your own key and pay it directly. The model list is pulled from the provider, and unavailable ones are flagged."
         },
         {
-          "title": "You decide what's allowed",
-          "description": "Simple rules: this agent gets read-only email access. This one can send, but only with your confirmation. No surprises."
+          "title": "Different models for different jobs",
+          "description": "Chat, vision, image generation — each job gets its own priority list of models. If the first doesn't fit, the next one is used."
+        },
+        {
+          "title": "Spend visible in the dashboard",
+          "description": "How many tokens went out, from which agent, on which model. No key of your own yet — start on the platform free tier."
         }
       ]
     },
     "connections": {
       "channels": {
-        "title": "Where your assistant lives",
-        "subtitle": "Chat with your assistant wherever is convenient",
+        "title": "Where your agent lives",
+        "subtitle": "Talk to your agent wherever suits you",
+        "soonLabel": "Coming soon",
         "items": [
-          "Telegram",
-          "WhatsApp",
-          "Web UI"
+          {
+            "name": "Telegram",
+            "soon": false
+          },
+          {
+            "name": "Web chat",
+            "soon": false
+          },
+          {
+            "name": "WhatsApp",
+            "soon": true
+          }
         ]
       },
       "integrations": {
         "title": "What agents connect to",
-        "subtitle": "100+ services. Open-source community plugins.",
+        "subtitle": "MCP servers and your own API already cover almost anything. The catalog of ready-made integrations keeps growing.",
         "items": [
-          "Email",
-          "Google Calendar",
-          "Ozon",
-          "Wildberries",
-          "1C",
+          "MCP servers",
+          "Your API by key",
+          "Webhooks",
           "Telegram",
-          "WhatsApp",
-          "Notion",
+          "Android",
+          "Desktop",
+          "n8n"
+        ],
+        "upcomingLabel": "Coming soon",
+        "upcoming": [
+          "Gmail",
+          "Google Calendar",
+          "Google Drive",
           "Google Sheets",
-          "CRM"
+          "Google Docs",
+          "Notion",
+          "Slack",
+          "GitHub",
+          "Airtable",
+          "Dropbox",
+          "Discord",
+          "Zapier"
         ]
       },
       "install": {
@@ -216,18 +258,18 @@
       }
     },
     "openSource": {
-      "title": "Open-source & self-hosted",
-      "description": "The server-side of AgiMate will become fully open-source after passing all testing — including security audits. You'll be able to deploy the platform on your own server and maintain full control over your data.",
-      "selfHosted": "Self-hosted — your data stays on your server",
-      "audit": "Publishing after security audit",
-      "github": "Follow our progress on GitHub"
+      "title": "Self-hosted and open code",
+      "description": "The platform can be deployed on your own server: data, model keys and logs stay with you. Repositories and deployment instructions are on GitHub; server-side components are opened up as they pass security review.",
+      "selfHosted": "Self-hosted — your data and keys stay with you",
+      "audit": "Code opened up as it passes security review",
+      "github": "Repositories and instructions on GitHub"
     },
     "cta": {
-      "title": "Build your AI team",
+      "title": "Build your agent",
       "subtitle": "We're onboarding early users now. Join the waitlist to get access.",
       "button": "Join Waitlist",
-      "docsLink": "Documentation",
-      "finePrint": "Open-source · Your data on your server · No subscription"
+      "docsLink": "Docs on GitHub",
+      "finePrint": "Self-hosted · Your own model key · Every call logged"
     },
     "waitlist": {
       "title": "Request Early Access",
@@ -252,8 +294,83 @@
       "telegram": "Telegram",
       "telegramChat": "Community chat",
       "docs": "Documentation",
-      "blog": "Blog"
+      "terms": "Terms of Use",
+      "privacy": "Privacy"
     }
+  },
+  "Terms": {
+    "meta": {
+      "title": "Terms of Use — AgiMate",
+      "description": "Terms of use for the AgiMate platform. The document is in progress — the substance is set out here."
+    },
+    "title": "Terms of Use",
+    "draftBadge": "Draft",
+    "draftNotice": "The final wording will land before public launch. While the document is being prepared, here is the substance — it won't change in spirit.",
+    "sections": [
+      {
+        "title": "What the service is",
+        "body": "AgiMate is a platform for building AI agents: you assemble an agent from skills, grant it access to tools, and talk to it through channels."
+      },
+      {
+        "title": "Early access",
+        "body": "The service runs in early access. Expect occasional downtime, changes in functionality, and limits on usage volume."
+      },
+      {
+        "title": "Your content and keys",
+        "body": "Agent instructions, conversations, and third-party provider keys belong to you. We use them only to make the service work."
+      },
+      {
+        "title": "Responsibility",
+        "body": "The agent acts on your instructions, within the boundaries you set. Review your access rules before granting an agent access to sensitive tools."
+      },
+      {
+        "title": "Changes",
+        "body": "We'll announce changes to these terms on this page and in the community chat."
+      }
+    ],
+    "contactTitle": "Questions",
+    "contactBody": "Write to us in the community chat — we'll answer.",
+    "contactLink": "Community chat",
+    "backHome": "Back home"
+  },
+  "Privacy": {
+    "meta": {
+      "title": "Privacy Policy — AgiMate",
+      "description": "What data AgiMate stores, where keys and logs live. The document is in progress — the substance is set out here."
+    },
+    "title": "Privacy Policy",
+    "draftBadge": "Draft",
+    "draftNotice": "The final wording will land before public launch. While the document is being prepared, here is how things work today.",
+    "sections": [
+      {
+        "title": "What we store",
+        "body": "Your OAuth provider profile (name and email address), the agents you create, skills, connections, and your conversations with agents."
+      },
+      {
+        "title": "Tokens and keys",
+        "body": "The refresh token lives in an HTTP-only cookie and is unreachable from JavaScript. LLM provider keys and connection secrets are stored server-side and are never shown again in the interface."
+      },
+      {
+        "title": "Third-party services",
+        "body": "Model requests go to the provider whose key you connected. Tool calls go to the services you connected yourself."
+      },
+      {
+        "title": "Logs",
+        "body": "We keep a log of tool calls and triggers — it exists for your own troubleshooting and is visible in the dashboard."
+      },
+      {
+        "title": "Self-hosted",
+        "body": "When deployed on your own server, data never leaves your infrastructure."
+      },
+      {
+        "title": "Deletion",
+        "body": "Write to us and we'll delete your account and the data attached to it."
+      }
+    ],
+    "contactTitle": "Questions",
+    "contactBody": "Write to us in the community chat — we'll answer.",
+    "contactLink": "Community chat",
+    "backHome": "Back home"
   },
   "Login": {
     "title": "Sign in to AgiMate",
@@ -312,7 +429,7 @@
       "title": "AgiMate + n8n — Connect real devices to your workflows",
       "description": "Three n8n nodes: device event triggers, connector method calls, and mobile device management. Install in under a minute.",
       "ogTitle": "AgiMate + n8n — Nodes for real-device automation",
-      "ogDescription": "Event triggers, connectors for 100+ services, mobile device management — all through n8n."
+      "ogDescription": "Event triggers, connector method calls, mobile device control — all through n8n."
     },
     "nav": {
       "nodes": "Nodes",
@@ -326,7 +443,7 @@
     "hero": {
       "title": "AgiMate",
       "titleHighlight": "+ n8n",
-      "subtitle": "Three nodes to connect real devices and 100+ services to your workflows.",
+      "subtitle": "Three nodes to connect real devices and AgiMate connectors to your workflows.",
       "cta": "Install"
     },
     "nodes": {
@@ -337,22 +454,22 @@
         "description": "Starts a workflow on device or service events. Works as a webhook — n8n listens and reacts.",
         "features": [
           "Mobile device events",
-          "Notifications from 100+ services",
+          "Notifications from connected services",
           "Filter by event type",
           "Automatic retry on errors"
         ],
         "useCaseLabel": "Example",
         "useCase": [
-          "New Ozon order",
+          "An event in a service",
           "AgiMate Trigger",
-          "Process in n8n"
+          "Handled in n8n"
         ]
       },
       "connectors": {
         "title": "AgiMate Connectors",
         "description": "Calls connector methods — fetching data, updating statuses, sending messages. Any service from the catalog.",
         "features": [
-          "100+ services: Ozon, WB, Telegram, etc.",
+          "Telegram, MCP servers and your API by key",
           "Full access to API methods",
           "Dynamic method and parameter selection",
           "Automatic authorization"

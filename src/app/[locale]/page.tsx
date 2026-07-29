@@ -10,27 +10,33 @@ import LandingFooter from '@/components/landing/LandingFooter';
 import WaitlistModal from '@/components/landing/WaitlistModal';
 import {
   ArrowRightIcon,
-  ClockIcon,
   ShieldExclamationIcon,
   EyeSlashIcon,
-  ArrowsPointingOutIcon,
+  BanknotesIcon,
+  Squares2X2Icon,
   ShieldCheckIcon,
   ClipboardDocumentListIcon,
   BoltIcon,
-  UserGroupIcon,
+  WrenchScrewdriverIcon,
   CheckCircleIcon,
   AdjustmentsHorizontalIcon,
   GlobeAltIcon,
+  KeyIcon,
+  SparklesIcon,
+  ChartBarIcon,
+  UserGroupIcon,
   DevicePhoneMobileIcon,
   ComputerDesktopIcon,
   ChatBubbleLeftRightIcon,
   ServerIcon,
 } from '@heroicons/react/24/outline';
 
-const problemIcons = [ClockIcon, ShieldExclamationIcon, EyeSlashIcon];
-const solutionIcons = [ArrowsPointingOutIcon, ShieldCheckIcon, ClipboardDocumentListIcon];
-const tabIcons = [BoltIcon, UserGroupIcon, CheckCircleIcon];
-const securityIcons = [ShieldCheckIcon, ClipboardDocumentListIcon, AdjustmentsHorizontalIcon];
+const problemIcons = [ShieldExclamationIcon, EyeSlashIcon, BanknotesIcon];
+const solutionIcons = [Squares2X2Icon, ShieldCheckIcon, ClipboardDocumentListIcon];
+const tabIcons = [BoltIcon, WrenchScrewdriverIcon, CheckCircleIcon];
+// Order mirrors security.items: binding gate → pre-call rules → log.
+const securityIcons = [ShieldCheckIcon, AdjustmentsHorizontalIcon, ClipboardDocumentListIcon];
+const modelIcons = [KeyIcon, SparklesIcon, ChartBarIcon];
 
 export default function HomePage() {
   const { user } = useUser();
@@ -45,7 +51,7 @@ export default function HomePage() {
     title: string;
     description: string;
     sources?: string[];
-    agents?: string[];
+    toolbox?: string[];
   }>;
   const useCaseItems = t.raw('useCases.items') as Array<{
     title: string;
@@ -53,15 +59,20 @@ export default function HomePage() {
     flow: string[];
   }>;
   const securityItems = t.raw('security.items') as Array<{ title: string; description: string }>;
-  const channelItems = t.raw('connections.channels.items') as string[];
+  const modelItems = t.raw('models.items') as Array<{ title: string; description: string }>;
+  const channelItems = t.raw('connections.channels.items') as Array<{
+    name: string;
+    soon: boolean;
+  }>;
   const integrationItems = t.raw('connections.integrations.items') as string[];
+  const upcomingIntegrations = t.raw('connections.integrations.upcoming') as string[];
   const installItems = t.raw('connections.install.items') as Array<{
     title: string;
     description?: string;
     button: string;
   }>;
 
-  const channelIcons = [ChatBubbleLeftRightIcon, ChatBubbleLeftRightIcon, GlobeAltIcon];
+  const channelIcons = [ChatBubbleLeftRightIcon, GlobeAltIcon, ChatBubbleLeftRightIcon];
   const installIcons = [DevicePhoneMobileIcon, ComputerDesktopIcon, BoltIcon];
   const installHrefs = ['/android', '/desktop', '/n8n'];
 
@@ -78,6 +89,7 @@ export default function HomePage() {
           { href: '#how-it-works', label: t('nav.howItWorks') },
           { href: '#use-cases', label: t('nav.useCases') },
           { href: '#security', label: t('nav.security') },
+          { href: '#models', label: t('nav.models') },
           { href: '#connections', label: t('nav.connections') },
         ]}
         loginLabel={t('nav.login')}
@@ -129,9 +141,9 @@ export default function HomePage() {
             labels={{
               user: t('heroScheme.user'),
               telegram: t('heroScheme.telegram'),
-              supervisor: t('heroScheme.supervisor'),
-              calendarAgent: t('heroScheme.calendarAgent'),
-              emailAgent: t('heroScheme.emailAgent'),
+              agent: t('heroScheme.agent'),
+              skills: t('heroScheme.skills'),
+              connections: t('heroScheme.connections'),
               response: t('heroScheme.response'),
             }}
           />
@@ -219,7 +231,7 @@ export default function HomePage() {
           <p className="mb-8 max-w-2xl text-muted">{howItWorksTabs[activeTab].description}</p>
 
           {activeTab === 0 && <HowItWorksStep1 sources={howItWorksTabs[0].sources || []} />}
-          {activeTab === 1 && <HowItWorksStep2 agents={howItWorksTabs[1].agents || []} />}
+          {activeTab === 1 && <HowItWorksStep2 toolbox={howItWorksTabs[1].toolbox || []} />}
           {activeTab === 2 && <HowItWorksStep3 />}
         </div>
       </section>
@@ -281,6 +293,33 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Models — bring your own key */}
+      <section id="models" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">
+          {t('models.title')}
+        </h2>
+        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-xl text-center text-muted">
+          {t('models.subtitle')}
+        </p>
+        <div className="grid gap-6 sm:grid-cols-3">
+          {modelItems.map((item, i) => {
+            const Icon = modelIcons[i];
+            return (
+              <div
+                key={item.title}
+                className="rounded-2xl border border-border/50 bg-surface shadow-card p-6"
+              >
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                  <Icon className="h-6 w-6" />
+                </div>
+                <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
+                <p className="text-sm leading-relaxed text-muted">{item.description}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       {/* Connections */}
       <section id="connections" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
         {/* Channels */}
@@ -293,32 +332,58 @@ export default function HomePage() {
             {channelItems.map((ch, i) => {
               const Icon = channelIcons[i];
               return (
-                <div key={ch} className="flex flex-col items-center gap-2">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                <div key={ch.name} className="flex flex-col items-center gap-2">
+                  <div
+                    className={`flex h-14 w-14 items-center justify-center rounded-xl ${
+                      ch.soon ? 'bg-surface-secondary text-muted' : 'bg-accent/10 text-accent'
+                    }`}
+                  >
                     <Icon className="h-7 w-7" />
                   </div>
-                  <span className="text-sm font-medium">{ch}</span>
+                  <span className={`text-sm font-medium ${ch.soon ? 'text-muted' : ''}`}>
+                    {ch.name}
+                  </span>
+                  {ch.soon && (
+                    <span className="rounded-full border border-border/50 px-2 py-0.5 text-[11px] font-medium text-muted">
+                      {t('connections.channels.soonLabel')}
+                    </span>
+                  )}
                 </div>
               );
             })}
           </div>
         </div>
 
-        {/* Integrations */}
+        {/* Integrations — available now, then the catalog in progress */}
         <div className="mb-12 sm:mb-16 text-center">
           <h3 className="mb-2 text-xl sm:text-2xl font-bold tracking-tight">
             {t('connections.integrations.title')}
           </h3>
-          <p className="mx-auto mb-8 max-w-md text-muted">{t('connections.integrations.subtitle')}</p>
+          <p className="mx-auto mb-8 max-w-lg text-muted">{t('connections.integrations.subtitle')}</p>
           <div className="mx-auto flex max-w-2xl flex-wrap justify-center gap-2">
             {integrationItems.map((svc) => (
               <span
                 key={svc}
-                className="rounded-lg border border-border/50 bg-surface-secondary px-3 py-1.5 text-sm font-medium text-muted"
+                className="rounded-lg border border-accent/30 bg-accent/5 px-3 py-1.5 text-sm font-medium text-foreground"
               >
                 {svc}
               </span>
             ))}
+          </div>
+          <div className="mx-auto mt-6 max-w-2xl">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">
+              {t('connections.integrations.upcomingLabel')}
+            </span>
+            <div className="mt-3 flex flex-wrap justify-center gap-2">
+              {upcomingIntegrations.map((svc) => (
+                <span
+                  key={svc}
+                  className="rounded-lg border border-dashed border-border/60 px-3 py-1.5 text-sm text-muted"
+                >
+                  {svc}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -433,7 +498,9 @@ export default function HomePage() {
               </button>
             )}
             <a
-              href="#"
+              href="https://github.com/AgiMateIo"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-sm font-medium text-muted hover:text-accent transition-colors"
             >
               {t('cta.docsLink')}
@@ -450,24 +517,27 @@ export default function HomePage() {
           { label: t('footer.github'), href: 'https://github.com/AgiMateIo', external: true },
           { label: t('footer.telegram'), href: 'https://t.me/agimate', external: true },
           { label: t('footer.telegramChat'), href: 'https://t.me/agimate', external: true },
-          { label: t('footer.docs'), href: '#' },
-          { label: t('footer.blog'), href: '#' },
+          { label: t('footer.docs'), href: 'https://github.com/AgiMateIo', external: true },
+          { label: t('footer.terms'), href: '/terms', localized: true },
+          { label: t('footer.privacy'), href: '/privacy', localized: true },
         ]}
       />
     </div>
   );
 }
 
-/* ── Hero Scheme ── */
+/* ── Hero Scheme ──
+   Event → agent → the two things you bind to it (skills, connections) → reply + log.
+   Deliberately the real object graph of the dashboard, not an orchestration metaphor. */
 function HeroScheme({
   labels,
 }: {
   labels: {
     user: string;
     telegram: string;
-    supervisor: string;
-    calendarAgent: string;
-    emailAgent: string;
+    agent: string;
+    skills: string;
+    connections: string;
     response: string;
   };
 }) {
@@ -478,20 +548,20 @@ function HeroScheme({
         {/* User */}
         <SchemeNode label={labels.user} variant="default" />
         <SchemeArrow direction="right" />
-        {/* Telegram */}
+        {/* Channel */}
         <SchemeNode label={labels.telegram} variant="default" />
         <SchemeArrow direction="right" />
-        {/* Supervisor */}
-        <SchemeNode label={labels.supervisor} variant="supervisor" />
-        {/* Fork to agents */}
+        {/* Agent */}
+        <SchemeNode label={labels.agent} variant="hub" />
+        {/* Fork to what the agent is built from */}
         <div className="flex flex-col items-start gap-3">
           <div className="flex items-center gap-3">
             <SchemeArrow direction="right" />
-            <SchemeNode label={labels.calendarAgent} variant="agent" delay={0} />
+            <SchemeNode label={labels.skills} variant="branch" delay={0} />
           </div>
           <div className="flex items-center gap-3">
             <SchemeArrow direction="right" />
-            <SchemeNode label={labels.emailAgent} variant="agent" delay={1} />
+            <SchemeNode label={labels.connections} variant="branch" delay={1} />
           </div>
         </div>
         <SchemeArrow direction="right" />
@@ -505,15 +575,15 @@ function HeroScheme({
         <SchemeArrow direction="down" />
         <SchemeNode label={labels.telegram} variant="default" />
         <SchemeArrow direction="down" />
-        <SchemeNode label={labels.supervisor} variant="supervisor" />
+        <SchemeNode label={labels.agent} variant="hub" />
         <div className="flex items-start gap-4 mt-1">
           <div className="flex flex-col items-center gap-2">
             <SchemeArrow direction="down" />
-            <SchemeNode label={labels.calendarAgent} variant="agent" delay={0} />
+            <SchemeNode label={labels.skills} variant="branch" delay={0} />
           </div>
           <div className="flex flex-col items-center gap-2">
             <SchemeArrow direction="down" />
-            <SchemeNode label={labels.emailAgent} variant="agent" delay={1} />
+            <SchemeNode label={labels.connections} variant="branch" delay={1} />
           </div>
         </div>
         <SchemeArrow direction="down" />
@@ -529,18 +599,18 @@ function SchemeNode({
   delay,
 }: {
   label: string;
-  variant: 'default' | 'supervisor' | 'agent';
+  variant: 'default' | 'hub' | 'branch';
   delay?: number;
 }) {
   const base = 'flex items-center justify-center rounded-xl px-4 py-2.5 text-xs font-medium whitespace-nowrap';
-  if (variant === 'supervisor') {
+  if (variant === 'hub') {
     return (
       <div className={`${base} border-2 border-accent bg-accent/10 text-accent animate-pulse-dot`}>
         {label}
       </div>
     );
   }
-  if (variant === 'agent') {
+  if (variant === 'branch') {
     const animClass = delay === 1 ? 'animate-agent-activate-delay-1' : 'animate-agent-activate';
     return (
       <div className={`${base} rounded-full border border-accent/40 bg-accent/5 text-accent ${animClass}`}>
@@ -606,23 +676,20 @@ function HowItWorksStep1({ sources }: { sources: string[] }) {
   );
 }
 
-function HowItWorksStep2({ agents }: { agents: string[] }) {
+function HowItWorksStep2({ toolbox }: { toolbox: string[] }) {
   return (
     <div className="flex flex-col items-center gap-6">
-      {/* Supervisor */}
-      <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-accent bg-accent/10 text-accent font-bold text-xs animate-pulse-dot">
-        S
-      </div>
-      {/* Connection lines (visual) */}
+      <AgentGlyph />
+      {/* What the agent draws on when it picks a tool */}
       <div className="flex flex-wrap justify-center gap-4">
-        {agents.map((agent, i) => {
+        {toolbox.map((item, i) => {
           const delays = ['animate-agent-activate', 'animate-agent-activate-delay-1', 'animate-agent-activate-delay-2', 'animate-agent-activate'];
           return (
             <div
-              key={agent}
+              key={item}
               className={`flex h-12 items-center justify-center rounded-full border border-accent/40 bg-accent/5 px-4 text-xs font-medium text-accent ${delays[i % delays.length]}`}
             >
-              {agent}
+              {item}
             </div>
           );
         })}
@@ -631,12 +698,18 @@ function HowItWorksStep2({ agents }: { agents: string[] }) {
   );
 }
 
+function AgentGlyph() {
+  return (
+    <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-accent bg-accent/10 text-accent animate-pulse-dot">
+      <SparklesIcon className="h-6 w-6" />
+    </div>
+  );
+}
+
 function HowItWorksStep3() {
   return (
     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-accent bg-accent/10 text-accent font-bold text-xs animate-pulse-dot">
-        S
-      </div>
+      <AgentGlyph />
       <div className="text-accent animate-flow-right hidden sm:block">
         <div className="flex items-center gap-1">
           <div className="h-px w-12 bg-accent" />

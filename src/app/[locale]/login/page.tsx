@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useSyncExternalStore } from 'react';
 import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import { API } from '@/config/constants';
 import { getApiBaseUrl } from '@/utils/api-url';
 import AuthShell from '@/components/landing/AuthShell';
@@ -88,9 +89,9 @@ export default function LoginPage() {
           <div className="mt-8 pt-6 border-t border-border/50 text-center">
             <p className="text-muted text-xs">
               {t('terms')}{' '}
-              <a href="#" className="text-accent hover:underline">{t('termsLink')}</a>
+              <Link href="/terms" className="text-accent hover:underline">{t('termsLink')}</Link>
               {' '}{t('and')}{' '}
-              <a href="#" className="text-accent hover:underline">{t('privacyLink')}</a>.
+              <Link href="/privacy" className="text-accent hover:underline">{t('privacyLink')}</Link>.
             </p>
           </div>
         </div>
