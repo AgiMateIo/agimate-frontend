@@ -58,6 +58,11 @@ export default function HomePage() {
     description: string;
     flow: string[];
   }>;
+  const quickStartSteps = t.raw('quickStart.steps') as Array<{
+    title: string;
+    description: string;
+  }>;
+  const quickStartTuneItems = t.raw('quickStart.tuneItems') as string[];
   const securityItems = t.raw('security.items') as Array<{ title: string; description: string }>;
   const modelItems = t.raw('models.items') as Array<{ title: string; description: string }>;
   const channelItems = t.raw('connections.channels.items') as Array<{
@@ -147,6 +152,46 @@ export default function HomePage() {
               response: t('heroScheme.response'),
             }}
           />
+        </div>
+      </section>
+
+      {/* Quick start — backs the hero's promise before the page argues anything else */}
+      <section id="quick-start" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">
+          {t('quickStart.title')}
+        </h2>
+        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-xl text-center text-muted">
+          {t('quickStart.subtitle')}
+        </p>
+        <div className="grid gap-6 sm:grid-cols-3">
+          {quickStartSteps.map((step, i) => (
+            <div
+              key={step.title}
+              className="rounded-2xl border border-accent/20 bg-surface shadow-card p-6"
+            >
+              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-accent text-accent-foreground font-semibold">
+                {i + 1}
+              </div>
+              <h3 className="mb-2 text-lg font-semibold">{step.title}</h3>
+              <p className="text-sm leading-relaxed text-muted">{step.description}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Nothing is a one-way door — what stays open after creation */}
+        <div className="mt-8 rounded-2xl border border-border/50 bg-surface-secondary/50 p-6">
+          <h3 className="mb-4 text-center text-base font-semibold">{t('quickStart.tuneTitle')}</h3>
+          <div className="flex flex-wrap justify-center gap-2">
+            {quickStartTuneItems.map((item) => (
+              <span
+                key={item}
+                className="inline-flex items-center gap-2 rounded-lg border border-border/50 bg-surface px-3 py-1.5 text-sm text-muted"
+              >
+                <CheckCircleIcon className="h-4 w-4 shrink-0 text-accent" />
+                {item}
+              </span>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -389,9 +434,10 @@ export default function HomePage() {
 
         {/* Install */}
         <div className="text-center">
-          <h3 className="mb-6 text-xl sm:text-2xl font-bold tracking-tight">
+          <h3 className="mb-2 text-xl sm:text-2xl font-bold tracking-tight">
             {t('connections.install.title')}
           </h3>
+          <p className="mx-auto mb-6 max-w-lg text-muted">{t('connections.install.subtitle')}</p>
           <div className="mx-auto grid max-w-3xl gap-4 sm:grid-cols-3">
             {installItems.map((item, i) => {
               const Icon = installIcons[i];

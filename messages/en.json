@@ -1,9 +1,9 @@
 {
   "Metadata": {
-    "title": "AgiMate — an AI agent platform with access control",
-    "description": "Build an AI agent from skills, grant access to each tool deliberately, and see every call in the log. Your own model key, Telegram and web chat, self-hosted.",
-    "ogTitle": "AgiMate — AI agents under your control",
-    "ogDescription": "An agent assembled from skills, tool access you grant yourself, every call written to the log. Your own model on your own key, deployable on your own server."
+    "title": "AgiMate — an AI agent from a ready-made role in a couple of taps",
+    "description": "Pick a ready-made role: skills and instructions are already written. Three steps and the agent answers in chat. Then tune access, channels, your own model, a team, and work with your devices.",
+    "ogTitle": "AgiMate — a working AI agent in a couple of taps",
+    "ogDescription": "Role presets instead of setup from scratch, with tuning when you need it: skills, access rules, channels, your own model, a team of agents, your phone and computer."
   },
   "HomePage": {
     "nav": {
@@ -17,9 +17,9 @@
       "waitlist": "Join Waitlist"
     },
     "hero": {
-      "title": "Build an AI agent —",
-      "titleHighlight": "and keep control of it.",
-      "subtitle": "AgiMate: the agent is assembled from skills, you grant access to every tool yourself, and every call lands in the log. The model runs on your own key.",
+      "title": "A working AI agent —",
+      "titleHighlight": "in a couple of taps.",
+      "subtitle": "Pick a ready-made role: skills and instructions are already written. Three steps and the agent answers in chat. Then tune it as far as you like — access, channels, your own model, a team of agents.",
       "cta": "Request Early Access",
       "secondaryCta": "See how it works"
     },
@@ -30,6 +30,33 @@
       "skills": "Skills",
       "connections": "Connections",
       "response": "Reply + log"
+    },
+    "quickStart": {
+      "title": "Three steps to a working agent",
+      "subtitle": "A ready-made role brings its own instructions and skills. Everything it prefills stays editable — before creation and at any point after.",
+      "steps": [
+        {
+          "title": "Pick a role",
+          "description": "A gallery of ready-made roles: the description, instructions and matching skills are already written. Or start from scratch if the job is your own."
+        },
+        {
+          "title": "Check the skills",
+          "description": "The role's skills are already ticked. Drop the ones you don't need, add your own — or just move on and come back to it later."
+        },
+        {
+          "title": "Start talking",
+          "description": "The agent exists and answers in the dashboard chat. Everything else gets connected when you need it, not before the first message."
+        }
+      ],
+      "tuneTitle": "And you can always tune it further",
+      "tuneItems": [
+        "Instructions and the set of skills",
+        "Connections and access rules",
+        "Channels: Telegram, web chat",
+        "Your own model per job",
+        "A team of agents on a shared board",
+        "Your phone, computer and IDE"
+      ]
     },
     "problems": {
       "title": "Sound familiar?",
@@ -52,8 +79,8 @@
       "title": "An agent you assemble, under rules you set",
       "columns": [
         {
-          "title": "Assembled from skills",
-          "description": "Start from a ready-made role or from scratch: name, instructions, a set of skills. A few steps later the agent is already answering in chat."
+          "title": "Starts from a ready-made role",
+          "description": "The preset brings instructions and a set of skills — three steps and the agent answers in chat. None of it is locked: edit before creation and after."
         },
         {
           "title": "You grant the access",
@@ -132,6 +159,26 @@
           ]
         },
         {
+          "title": "An agent on your device",
+          "description": "The Android and desktop apps are connectors to your own hardware, and there is nowhere else to get them. Notifications, calls and device events become triggers, and the agent answers with a push, spoken text or a command carried out on the device.",
+          "flow": [
+            "Device event",
+            "Android / Desktop",
+            "Agent",
+            "Action on the device"
+          ]
+        },
+        {
+          "title": "An agent in your IDE",
+          "description": "Over the ACP protocol the agent plugs into your editor and works next to the code — with the same skills, access rules and log as everywhere else.",
+          "flow": [
+            "IDE",
+            "ACP",
+            "Agent",
+            "The same log"
+          ]
+        },
+        {
           "title": "Your own service as a tool",
           "description": "Connect your API as a key-authenticated app or an MCP server — its methods become the agent's tools. What exactly it may do is up to your rules.",
           "flow": [
@@ -142,8 +189,8 @@
           ]
         },
         {
-          "title": "A team board",
-          "description": "A team of agents works a shared board: tasks with statuses, an assigned agent, comments. Changes reach the dashboard in real time.",
+          "title": "A team of agents on a shared board",
+          "description": "One agent is not the ceiling: assemble a team and give it a shared board. Tasks with statuses, an assigned agent, comments in the thread. Changes reach the dashboard in real time.",
           "flow": [
             "Team",
             "Task board",
@@ -218,6 +265,7 @@
           "Telegram",
           "Android",
           "Desktop",
+          "IDE (ACP)",
           "n8n"
         ],
         "upcomingLabel": "Coming soon",
@@ -237,7 +285,8 @@
         ]
       },
       "install": {
-        "title": "Installation",
+        "title": "Your devices as the agent's tools",
+        "subtitle": "The phone and desktop apps are connectors you can't get anywhere else: the agent sees what happens on your hardware and acts on it.",
         "items": [
           {
             "title": "Android",
@@ -265,7 +314,7 @@
       "github": "Repositories and instructions on GitHub"
     },
     "cta": {
-      "title": "Build your agent",
+      "title": "Start from a ready-made role",
       "subtitle": "We're onboarding early users now. Join the waitlist to get access.",
       "button": "Join Waitlist",
       "docsLink": "Docs on GitHub",
