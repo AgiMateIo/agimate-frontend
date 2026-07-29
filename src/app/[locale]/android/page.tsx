@@ -59,6 +59,11 @@ export default function AndroidPage() {
 
   const devPermissions = t.raw('developers.permissions') as string[];
 
+  // Payload samples are literal JSON, not sentences: read them raw so the braces
+  // never reach the ICU parser, which would read `{` as an argument placeholder.
+  const triggerFormatJson = t.raw('developers.triggerFormat.json') as string;
+  const actionFormatJson = t.raw('developers.actionFormat.json') as string;
+
   return (
     <div className="min-h-screen text-foreground">
       <LandingBackground />
@@ -246,7 +251,7 @@ export default function AndroidPage() {
             <div className="px-4 sm:px-6 pb-4 sm:pb-6">
               <p className="mb-4 text-sm text-muted">{t('developers.triggerFormat.description')}</p>
               <pre className="overflow-x-auto rounded-lg border border-border/50 bg-background/80 p-3 sm:p-4 font-mono text-xs sm:text-sm">
-                <code>{t('developers.triggerFormat.json')}</code>
+                <code>{triggerFormatJson}</code>
               </pre>
             </div>
           </details>
@@ -262,7 +267,7 @@ export default function AndroidPage() {
             <div className="px-4 sm:px-6 pb-4 sm:pb-6">
               <p className="mb-4 text-sm text-muted">{t('developers.actionFormat.description')}</p>
               <pre className="overflow-x-auto rounded-lg border border-border/50 bg-background/80 p-3 sm:p-4 font-mono text-xs sm:text-sm">
-                <code>{t('developers.actionFormat.json')}</code>
+                <code>{actionFormatJson}</code>
               </pre>
             </div>
           </details>
