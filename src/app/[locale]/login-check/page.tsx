@@ -13,37 +13,37 @@ export default function LoginCheckPage() {
   const { fetchUser } = useUser();
   const t = useTranslations('LoginCheck');
   const hasRun = useRef(false);
-  const [error, setError] = useState(false);
+  // 'network' — the gateway was unreachable, retrying the same id can work.
+  // 'rejected' — the exchange itself failed (expired/spent id), only a fresh
+  // sign-in helps. Both must surface: a silent bounce back to /login looks
+  // exactly like nothing happening.
+  const [error, setError] = useState<'network' | 'rejected' | null>(null);
 
-  // Returns false when the token exchange failed and the retry UI should show.
-  const runOAuthCallback = useCallback(async (): Promise<boolean> => {
+  // Returns the failure kind, or null when the callback handled itself.
+  const runOAuthCallback = useCallback(async (): Promise<'network' | 'rejected' | null> => {
     const hash = window.location.hash.substring(1);
 
-    if (hash.startsWith('rti-')) {
-      const refreshTokenId = hash.substring(4);
-      try {
-        const success = await apiService.refreshAuthTokens(refreshTokenId);
-
-        if (success) {
-          await fetchUser();
-          router.replace('/dashboard');
-          return true;
-        }
-      } catch {
-        return false;
-      }
+    if (!hash.startsWith('rti-')) {
+      router.replace('/login');
+      return null;
     }
 
-    router.replace('/login');
-    return true;
+    try {
+      const success = await apiService.refreshAuthTokens(hash.substring(4));
+      if (!success) return 'rejected';
+    } catch {
+      return 'network';
+    }
+
+    await fetchUser();
+    router.replace('/dashboard');
+    return null;
   }, [fetchUser, router]);
 
   useEffect(() => {
     if (hasRun.current) return;
     hasRun.current = true;
-    runOAuthCallback().then((ok) => {
-      if (!ok) setError(true);
-    });
+    runOAuthCallback().then(setError);
   }, [runOAuthCallback]);
 
   if (error) {
@@ -55,23 +55,33 @@ export default function LoginCheckPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
               </svg>
             </div>
-            <h1 className="text-xl font-semibold text-foreground mb-2">{t('connectionError')}</h1>
-            <p className="text-muted text-sm mb-6">{t('connectionErrorHint')}</p>
+            <h1 className="text-xl font-semibold text-foreground mb-2">
+              {t(error === 'network' ? 'connectionError' : 'authError')}
+            </h1>
+            <p className="text-muted text-sm mb-6">
+              {t(error === 'network' ? 'connectionErrorHint' : 'authErrorHint')}
+            </p>
             <div className="flex flex-col gap-2">
-              <button
-                onClick={() => {
-                  setError(false);
-                  runOAuthCallback().then((ok) => {
-                    if (!ok) setError(true);
-                  });
-                }}
-                className="w-full py-2.5 px-4 rounded-lg bg-accent text-white font-medium hover:bg-accent/90 transition-colors"
-              >
-                {t('retry')}
-              </button>
+              {/* Retrying only makes sense while the id is still unspent — a
+                  rejected exchange needs a fresh sign-in, not another attempt. */}
+              {error === 'network' && (
+                <button
+                  onClick={() => {
+                    setError(null);
+                    runOAuthCallback().then(setError);
+                  }}
+                  className="w-full py-2.5 px-4 rounded-lg bg-accent text-white font-medium hover:bg-accent/90 transition-colors"
+                >
+                  {t('retry')}
+                </button>
+              )}
               <Link
                 href="/login"
-                className="w-full py-2.5 px-4 rounded-lg border border-border/50 text-muted font-medium hover:bg-surface-secondary transition-colors"
+                className={`w-full py-2.5 px-4 rounded-lg font-medium transition-colors ${
+                  error === 'network'
+                    ? 'border border-border/50 text-muted hover:bg-surface-secondary'
+                    : 'bg-accent text-white hover:bg-accent/90'
+                }`}
               >
                 {t('backToLogin')}
               </Link>

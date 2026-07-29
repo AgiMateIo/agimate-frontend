@@ -271,6 +271,8 @@
     "pleaseWait": "Please wait while we complete the sign-in",
     "connectionError": "Could not connect to the server",
     "connectionErrorHint": "This is usually temporary. Please check your internet connection and try again.",
+    "authError": "Could not complete the sign-in",
+    "authErrorHint": "The server turned down this sign-in link. It has most likely expired — please sign in again.",
     "retry": "Try again",
     "backToLogin": "Back to sign in"
   },

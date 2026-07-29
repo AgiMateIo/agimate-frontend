@@ -120,7 +120,9 @@ class HttpClient {
 
     // If there's already a refresh in progress, return the same promise to prevent multiple calls
     if (this.tokenRefreshPromise) {
-      return this.tokenRefreshPromise;
+      // Piggybacking callers only need the boolean — the initiator below logs
+      // the reason, so a rejection must not escape through them.
+      return this.tokenRefreshPromise.catch(() => false);
     }
 
     // Create a new refresh promise
@@ -136,33 +138,33 @@ class HttpClient {
     }
   }
 
+  // Throws when the gateway is unreachable (safeFetch maps that to
+  // SERVICE_UNAVAILABLE); returns false when the backend rejected the refresh
+  // token. The two are kept apart on purpose: refreshAccessToken flattens both
+  // into false for the silent 401 retry, while the OAuth callback screen has to
+  // tell "try again" from "sign in again".
   private async performTokenRefresh(tokenToUse: string): Promise<boolean> {
-    try {
-      const response = await safeFetch(`${getApiBaseUrl()}${API.ENDPOINTS.USER_API}/oauth2/refresh`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ refreshTokenId: tokenToUse }),
-      });
+    const response = await safeFetch(`${getApiBaseUrl()}${API.ENDPOINTS.USER_API}/oauth2/refresh`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ refreshTokenId: tokenToUse }),
+    });
 
-      if (response.ok) {
-        const jsonData = await response.json();
-        const data = extractResponseData<{accessToken: string, refreshTokenId: string}>(jsonData);
-
-        // Store tokens using the helper function
-        storeTokens(data.accessToken, data.refreshTokenId);
-
-        return true;
-      } else {
-        console.error('Failed to refresh token:', response.status);
-        return false;
-      }
-    } catch (error) {
-      console.error('Error during token refresh:', error);
+    if (!response.ok) {
+      console.error('Failed to refresh token:', response.status);
       return false;
     }
+
+    const jsonData = await response.json();
+    const data = extractResponseData<{accessToken: string, refreshTokenId: string}>(jsonData);
+
+    // Store tokens using the helper function
+    storeTokens(data.accessToken, data.refreshTokenId);
+
+    return true;
   }
 
   // Builds request headers with the current access token attached. FormData
@@ -290,10 +292,12 @@ class HttpClient {
     });
   }
 
-  // Method to refresh authentication tokens from URL fragment - uses the same refreshAccessToken method
+  // Exchanges the refresh token id from the OAuth callback fragment. Unlike the
+  // internal retry path this does not swallow the failure reason: a rejected
+  // exchange resolves false, an unreachable gateway throws. Dedup is skipped —
+  // it runs once on page load, with no concurrent refresh to join.
   async refreshAuthTokens(refreshTokenId: string): Promise<boolean> {
-    // Use the same refresh method for consistency
-    return this.refreshAccessToken(refreshTokenId);
+    return this.performTokenRefresh(refreshTokenId);
   }
 
   // Logout function to call backend endpoint and clear all stored tokens

@@ -73,14 +73,16 @@ Sophisticated OAuth2 flow with JWT tokens and automatic refresh.
 - **Refresh Token ID**: identifier in `localStorage`, prevents token replay
 
 ### Authentication Flow
-1. User redirects to backend `/oauth2/authorization/{provider}?redirect_to=<login_url>`
-2. After provider auth, backend redirects to `/login#refreshTokenId`
-3. Frontend extracts the refresh token ID from the URL fragment and calls `/oauth2/refresh`
+1. `/login` sends the user to backend `/oauth2/authorization/{provider}?redirect_to=<login_check_url>`
+2. After provider auth, backend redirects to `/login-check#rti-<refreshTokenId>`
+3. `/login-check` extracts the refresh token ID from the URL fragment and calls `/oauth2/refresh`
 4. Backend validates the refresh-token cookie + ID, returns a new access token and refresh token ID
 5. Tokens stored locally, user redirected to the dashboard
 
+The two pages are split on purpose: `/login` only offers the providers, `/login-check` owns the callback. Nothing on `/login` reads the fragment, so a backend that ignores `redirect_to` and lands the user on `/login#rti-…` produces a dead page with no request in the network tab — check the callback-side `redirect_to` allowlist before suspecting the frontend.
+
 ### Multi-Domain OAuth2 Redirect
-The backend supports OAuth2 login from multiple frontend domains. The frontend appends `?redirect_to=<encoded_login_url>` so the backend knows where to redirect back. `redirect_to` is computed client-side from `window.location.origin + '/login'` (via `useState` + `useEffect` to avoid SSR hydration mismatches). The path is hardcoded to `/login` without a locale prefix — the next-intl middleware adds the locale on redirect.
+The backend supports OAuth2 login from multiple frontend domains. The frontend appends `?redirect_to=<encoded_login_check_url>` so the backend knows where to redirect back. `redirect_to` is computed client-side from `window.location.origin + '/login-check'` (via `useSyncExternalStore` to avoid SSR hydration mismatches). The path is hardcoded to `/login-check` without a locale prefix — the next-intl middleware adds the locale on redirect.
 
 ### Token Storage Security
 - **Access tokens**: `sessionStorage` (cleared on tab close)
