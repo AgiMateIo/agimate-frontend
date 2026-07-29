@@ -24,12 +24,20 @@
       "secondaryCta": "See how it works"
     },
     "heroScheme": {
-      "user": "You",
-      "telegram": "Telegram",
-      "agent": "Agent",
-      "skills": "Skills",
-      "connections": "Connections",
-      "response": "Reply + log"
+      "steps": [
+        {
+          "label": "A ready-made role",
+          "sub": "instructions already written"
+        },
+        {
+          "label": "Skills",
+          "sub": "already ticked for you"
+        },
+        {
+          "label": "The agent answers",
+          "sub": "in the dashboard chat"
+        }
+      ]
     },
     "quickStart": {
       "title": "Three steps to a working agent",

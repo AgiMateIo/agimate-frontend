@@ -143,14 +143,7 @@ export default function HomePage() {
         {/* Hero Scheme */}
         <div className="mt-12 sm:mt-16">
           <HeroScheme
-            labels={{
-              user: t('heroScheme.user'),
-              telegram: t('heroScheme.telegram'),
-              agent: t('heroScheme.agent'),
-              skills: t('heroScheme.skills'),
-              connections: t('heroScheme.connections'),
-              response: t('heroScheme.response'),
-            }}
+            steps={t.raw('heroScheme.steps') as HeroStep[]}
           />
         </div>
       </section>
@@ -573,100 +566,79 @@ export default function HomePage() {
 }
 
 /* ── Hero Scheme ──
-   Event → agent → the two things you bind to it (skills, connections) → reply + log.
-   Deliberately the real object graph of the dashboard, not an orchestration metaphor. */
-function HeroScheme({
-  labels,
-}: {
-  labels: {
-    user: string;
-    telegram: string;
-    agent: string;
-    skills: string;
-    connections: string;
-    response: string;
-  };
-}) {
+   The creation path the hero promises: a ready-made role → skills already ticked →
+   the agent answering. The three `agent-activate` delays (0s/2s/4s of one 6s cycle)
+   light the steps in order, so the animation reads as "three taps" rather than
+   decoration. The section below the fold carries the same three steps in prose. */
+interface HeroStep {
+  label: string;
+  sub: string;
+}
+
+function HeroScheme({ steps }: { steps: HeroStep[] }) {
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-3xl">
       {/* Horizontal layout (sm+) */}
-      <div className="hidden sm:flex items-center justify-center gap-3">
-        {/* User */}
-        <SchemeNode label={labels.user} variant="default" />
-        <SchemeArrow direction="right" />
-        {/* Channel */}
-        <SchemeNode label={labels.telegram} variant="default" />
-        <SchemeArrow direction="right" />
-        {/* Agent */}
-        <SchemeNode label={labels.agent} variant="hub" />
-        {/* Fork to what the agent is built from */}
-        <div className="flex flex-col items-start gap-3">
-          <div className="flex items-center gap-3">
-            <SchemeArrow direction="right" />
-            <SchemeNode label={labels.skills} variant="branch" delay={0} />
+      <div className="hidden sm:flex items-start justify-center gap-3">
+        {steps.map((step, i) => (
+          <div key={step.label} className="flex items-start gap-3">
+            {i > 0 && (
+              <div className="pt-5">
+                <SchemeArrow direction="right" />
+              </div>
+            )}
+            <SchemeStep step={step} index={i} isLast={i === steps.length - 1} />
           </div>
-          <div className="flex items-center gap-3">
-            <SchemeArrow direction="right" />
-            <SchemeNode label={labels.connections} variant="branch" delay={1} />
-          </div>
-        </div>
-        <SchemeArrow direction="right" />
-        {/* Response */}
-        <SchemeNode label={labels.response} variant="default" />
+        ))}
       </div>
 
       {/* Vertical layout (mobile) */}
       <div className="flex sm:hidden flex-col items-center gap-2">
-        <SchemeNode label={labels.user} variant="default" />
-        <SchemeArrow direction="down" />
-        <SchemeNode label={labels.telegram} variant="default" />
-        <SchemeArrow direction="down" />
-        <SchemeNode label={labels.agent} variant="hub" />
-        <div className="flex items-start gap-4 mt-1">
-          <div className="flex flex-col items-center gap-2">
-            <SchemeArrow direction="down" />
-            <SchemeNode label={labels.skills} variant="branch" delay={0} />
+        {steps.map((step, i) => (
+          <div key={step.label} className="flex flex-col items-center gap-2">
+            {i > 0 && <SchemeArrow direction="down" />}
+            <SchemeStep step={step} index={i} isLast={i === steps.length - 1} />
           </div>
-          <div className="flex flex-col items-center gap-2">
-            <SchemeArrow direction="down" />
-            <SchemeNode label={labels.connections} variant="branch" delay={1} />
-          </div>
-        </div>
-        <SchemeArrow direction="down" />
-        <SchemeNode label={labels.response} variant="default" />
+        ))}
       </div>
     </div>
   );
 }
 
-function SchemeNode({
-  label,
-  variant,
-  delay,
+function SchemeStep({
+  step,
+  index,
+  isLast,
 }: {
-  label: string;
-  variant: 'default' | 'hub' | 'branch';
-  delay?: number;
+  step: HeroStep;
+  index: number;
+  isLast: boolean;
 }) {
-  const base = 'flex items-center justify-center rounded-xl px-4 py-2.5 text-xs font-medium whitespace-nowrap';
-  if (variant === 'hub') {
-    return (
-      <div className={`${base} border-2 border-accent bg-accent/10 text-accent animate-pulse-dot`}>
-        {label}
-      </div>
-    );
-  }
-  if (variant === 'branch') {
-    const animClass = delay === 1 ? 'animate-agent-activate-delay-1' : 'animate-agent-activate';
-    return (
-      <div className={`${base} rounded-full border border-accent/40 bg-accent/5 text-accent ${animClass}`}>
-        {label}
-      </div>
-    );
-  }
+  const activation = [
+    'animate-agent-activate',
+    'animate-agent-activate-delay-1',
+    'animate-agent-activate-delay-2',
+  ][index] ?? 'animate-agent-activate';
+
   return (
-    <div className={`${base} border border-border/50 bg-surface-secondary text-muted`}>
-      {label}
+    <div className="flex w-36 flex-col items-center gap-1.5 text-center sm:w-40">
+      <div
+        className={`flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-medium ${activation} ${
+          isLast
+            ? 'border-2 border-accent bg-accent/10 text-accent'
+            : 'border border-border/50 bg-surface-secondary text-foreground'
+        }`}
+      >
+        <span
+          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
+            isLast ? 'bg-accent text-accent-foreground' : 'bg-accent/10 text-accent'
+          }`}
+        >
+          {index + 1}
+        </span>
+        {step.label}
+      </div>
+      <span className="text-[11px] leading-snug text-muted">{step.sub}</span>
     </div>
   );
 }
