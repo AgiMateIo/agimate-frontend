@@ -5,7 +5,9 @@ import { useRouter } from '@/i18n/navigation';
 import { useEffect } from 'react';
 import SidebarNav from '@/components/layout/SidebarNav';
 import TopBar from '@/components/layout/TopBar';
+import PendingActivationNotice from '@/components/dashboard/PendingActivationNotice';
 import { BreadcrumbProvider } from '@/contexts/BreadcrumbContext';
+import { useIsGuest } from '@/hooks/useIsGuest';
 
 export default function DashboardLayout({
   children,
@@ -13,6 +15,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { user, loading } = useUser();
+  const isGuest = useIsGuest();
   const router = useRouter();
 
   useEffect(() => {
@@ -21,7 +24,9 @@ export default function DashboardLayout({
     }
   }, [user, loading, router]);
 
-  if (loading) {
+  // Only the initial load blanks the screen; a re-fetch (e.g. the guest polling
+  // for activation) keeps the current UI and shows its own inline spinner.
+  if (loading && !user) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="text-muted">Loading...</div>
@@ -36,11 +41,13 @@ export default function DashboardLayout({
   return (
     <BreadcrumbProvider>
       <div className="flex h-screen bg-background">
-        <SidebarNav />
+        <SidebarNav disabled={isGuest} />
         <div className="flex flex-1 flex-col overflow-hidden">
-          <TopBar />
+          <TopBar disabled={isGuest} />
+          {/* A guest account has access to no dashboard route, so the notice
+              replaces the page instead of rendering alongside it. */}
           <main className="flex-1 overflow-y-auto p-6">
-            {children}
+            {isGuest ? <PendingActivationNotice /> : children}
           </main>
         </div>
       </div>

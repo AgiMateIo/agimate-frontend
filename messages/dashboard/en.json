@@ -1198,5 +1198,12 @@
     "window": "Window",
     "limitTokens": "Token limit",
     "limitTokensHint": "Maximum tokens per window (at least 1)."
+  },
+  "PendingActivation": {
+    "title": "Your account is not activated yet",
+    "description": "You are signed in, but access to the workspace has not been granted yet. We will email you once the account is activated — the sections on the left will unlock then.",
+    "signedInAs": "Signed in as",
+    "checkAgain": "Check again",
+    "logOut": "Log out"
   }
 }

@@ -9,7 +9,9 @@ import LocaleSwitcher from '@/components/ui/LocaleSwitcher';
 import { ChevronRightIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
-export default function TopBar() {
+// `disabled` drops every in-app link (breadcrumbs, settings) and leaves only the
+// locale switcher and sign-out — used while the account is awaiting activation.
+export default function TopBar({ disabled = false }: { disabled?: boolean }) {
   const pathname = usePathname();
   const { user, logout } = useUser();
   const t = useTranslations('TopBar');
@@ -57,8 +59,10 @@ export default function TopBar() {
         {breadcrumbs.map((crumb, index) => (
           <span key={crumb.href} className="flex items-center gap-2">
             {index > 0 && <ChevronRightIcon className="h-4 w-4 text-muted" />}
-            {crumb.isLast ? (
-              <span className="text-foreground font-medium">{crumb.label}</span>
+            {crumb.isLast || disabled ? (
+              <span className={crumb.isLast ? 'text-foreground font-medium' : 'text-muted'}>
+                {crumb.label}
+              </span>
             ) : (
               <Link href={crumb.href} className="text-muted hover:text-foreground transition-colors">
                 {crumb.label}
@@ -86,26 +90,37 @@ export default function TopBar() {
 
         {showUserMenu && (
           <div className="absolute right-0 top-full mt-2 w-48 bg-surface border border-border rounded-lg shadow-lg py-1 z-50">
-            <Link
-              href="/dashboard/settings"
-              onClick={() => setShowUserMenu(false)}
-              className="block px-4 py-2 border-b border-border hover:bg-surface-secondary transition-colors"
-            >
-              <div className="font-medium text-sm text-foreground truncate">
-                {user?.displayName || 'User'}
+            {disabled ? (
+              <div className="block px-4 py-2 border-b border-border">
+                <div className="font-medium text-sm text-foreground truncate">
+                  {user?.displayName || 'User'}
+                </div>
+                <div className="text-xs text-muted truncate">{user?.email}</div>
               </div>
-              <div className="text-xs text-muted truncate">
-                {user?.email}
-              </div>
-            </Link>
-            <Link
-              href="/dashboard/settings"
-              onClick={() => setShowUserMenu(false)}
-              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-foreground hover:bg-surface-secondary transition-colors"
-            >
-              <Cog6ToothIcon className="h-4 w-4 text-muted" />
-              {t('settings')}
-            </Link>
+            ) : (
+              <>
+                <Link
+                  href="/dashboard/settings"
+                  onClick={() => setShowUserMenu(false)}
+                  className="block px-4 py-2 border-b border-border hover:bg-surface-secondary transition-colors"
+                >
+                  <div className="font-medium text-sm text-foreground truncate">
+                    {user?.displayName || 'User'}
+                  </div>
+                  <div className="text-xs text-muted truncate">
+                    {user?.email}
+                  </div>
+                </Link>
+                <Link
+                  href="/dashboard/settings"
+                  onClick={() => setShowUserMenu(false)}
+                  className="flex items-center gap-2 w-full px-4 py-2 text-sm text-foreground hover:bg-surface-secondary transition-colors"
+                >
+                  <Cog6ToothIcon className="h-4 w-4 text-muted" />
+                  {t('settings')}
+                </Link>
+              </>
+            )}
             <button
               onClick={() => {
                 setShowUserMenu(false);

@@ -132,7 +132,9 @@ const getNavGroups = (t: ReturnType<typeof useTranslations>): NavGroup[] => [
   },
 ];
 
-export default function SidebarNav() {
+// `disabled` renders the whole nav read-only: no links, no create actions, no
+// contextual nav — used while the account is still awaiting activation.
+export default function SidebarNav({ disabled = false }: { disabled?: boolean }) {
   const pathname = usePathname();
   const t = useTranslations('Sidebar');
 
@@ -143,7 +145,7 @@ export default function SidebarNav() {
   );
   const toggleCollapsed = () => collapseStore.toggle(collapsed);
 
-  const contextRoute = matchContextRoute(pathname);
+  const contextRoute = disabled ? null : matchContextRoute(pathname);
 
   // Direction of the nav swap, for the slide animation. Forward (from the right)
   // when entering a contextual nav or switching between entities; back (from the
@@ -194,15 +196,24 @@ export default function SidebarNav() {
 
       {/* Logo */}
       <div className="h-16 flex items-center gap-2 px-4 border-b border-border">
-        <Link
-          href="/dashboard"
-          className="flex items-center gap-2 text-xl font-bold text-foreground min-w-0"
-        >
-          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-accent text-sm font-extrabold text-accent-foreground">
-            A
-          </span>
-          {!collapsed && <span className="truncate">AgiMate</span>}
-        </Link>
+        {(() => {
+          const logo = (
+            <>
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-accent text-sm font-extrabold text-accent-foreground">
+                A
+              </span>
+              {!collapsed && <span className="truncate">AgiMate</span>}
+            </>
+          );
+          const logoClass = 'flex items-center gap-2 text-xl font-bold text-foreground min-w-0';
+          return disabled ? (
+            <div className={logoClass}>{logo}</div>
+          ) : (
+            <Link href="/dashboard" className={logoClass}>
+              {logo}
+            </Link>
+          );
+        })()}
       </div>
 
       {/* Navigation */}
@@ -236,26 +247,40 @@ export default function SidebarNav() {
 
             <div className="space-y-0.5">
               {group.items.map((item) => {
-                const isActive = activeHref === item.href;
+                const isActive = !disabled && activeHref === item.href;
+                const itemClass = `flex flex-1 items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors
+                        ${collapsed ? 'justify-center' : ''}
+                        ${
+                          disabled
+                            ? 'cursor-not-allowed text-muted/50'
+                            : isActive
+                              ? 'bg-accent text-accent-foreground'
+                              : 'text-muted hover:bg-surface-secondary hover:text-foreground'
+                        }`;
+                const itemBody = (
+                  <>
+                    <item.icon className="h-5 w-5 shrink-0" />
+                    {!collapsed && <span className="truncate">{item.label}</span>}
+                  </>
+                );
 
                 return (
                   <div key={item.href} className="group/item relative flex items-center">
-                    <Link
-                      href={item.href}
-                      title={collapsed ? item.label : undefined}
-                      className={`flex flex-1 items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors
-                        ${collapsed ? 'justify-center' : ''}
-                        ${
-                          isActive
-                            ? 'bg-accent text-accent-foreground'
-                            : 'text-muted hover:bg-surface-secondary hover:text-foreground'
-                        }`}
-                    >
-                      <item.icon className="h-5 w-5 shrink-0" />
-                      {!collapsed && <span className="truncate">{item.label}</span>}
-                    </Link>
+                    {disabled ? (
+                      <div aria-disabled="true" className={itemClass}>
+                        {itemBody}
+                      </div>
+                    ) : (
+                      <Link
+                        href={item.href}
+                        title={collapsed ? item.label : undefined}
+                        className={itemClass}
+                      >
+                        {itemBody}
+                      </Link>
+                    )}
 
-                    {!collapsed && item.createHref && (
+                    {!disabled && !collapsed && item.createHref && (
                       <Link
                         href={item.createHref}
                         title={item.createLabel}
