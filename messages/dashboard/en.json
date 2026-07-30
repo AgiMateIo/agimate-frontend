@@ -55,6 +55,7 @@
       "admin": "Administration",
       "users": "Users"
     },
+    "openMenu": "Open menu",
     "settings": "Settings",
     "logOut": "Log out"
   },

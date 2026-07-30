@@ -20,8 +20,10 @@ import {
   ShieldCheckIcon,
   PlusIcon,
   ChevronDoubleLeftIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
+import { useIsDesktop } from '@/hooks/useMediaQuery';
 import AdminContextNav from './AdminContextNav';
 import AgentContextNav from './AgentContextNav';
 import TeamContextNav from './TeamContextNav';
@@ -164,10 +166,22 @@ const getNavGroups = (
 
 // `disabled` renders the whole nav read-only: no links, no create actions, no
 // contextual nav — used while the account is still awaiting activation.
-export default function SidebarNav({ disabled = false }: { disabled?: boolean }) {
+// `open`/`onClose` drive the mobile drawer; on `lg` and up the sidebar is always
+// in the flow and both are ignored.
+export default function SidebarNav({
+  disabled = false,
+  open = false,
+  onClose,
+}: {
+  disabled?: boolean;
+  open?: boolean;
+  onClose?: () => void;
+}) {
   const pathname = usePathname();
   const t = useTranslations('Sidebar');
+  const tCommon = useTranslations('Common');
   const isAdmin = useIsAdmin();
+  const isDesktop = useIsDesktop();
 
   const collapsed = useSyncExternalStore(
     collapseStore.subscribe,
@@ -175,6 +189,10 @@ export default function SidebarNav({ disabled = false }: { disabled?: boolean })
     collapseStore.getServerSnapshot,
   );
   const toggleCollapsed = () => collapseStore.toggle(collapsed);
+  // The drawer is always full width, so the persisted collapse flag applies to
+  // the desktop sidebar only — otherwise a user who collapsed on desktop would
+  // get a 256px-wide icons-only drawer on their phone.
+  const iconOnly = collapsed && isDesktop;
 
   const matchedRoute = disabled ? null : matchContextRoute(pathname);
   // Someone without the role who deep-links into /dashboard/admin keeps the global
@@ -215,15 +233,23 @@ export default function SidebarNav({ disabled = false }: { disabled?: boolean })
 
   return (
     <aside
-      className={`${collapsed ? 'w-[68px]' : 'w-64'} relative border-r border-border bg-surface flex flex-col shrink-0 transition-[width] duration-200`}
+      // Overlay drawer below `lg`, in-flow column from `lg` up. Hidden off-canvas
+      // it is `inert` so its links stay out of the tab order.
+      inert={!isDesktop && !open}
+      className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-border bg-surface
+        transition-transform duration-200
+        lg:relative lg:z-auto lg:shrink-0 lg:translate-x-0 lg:transition-[width]
+        ${open ? 'translate-x-0' : '-translate-x-full'}
+        ${collapsed ? 'lg:w-[68px]' : 'lg:w-64'}`}
     >
-      {/* Collapse/expand handle straddling the right border, aligned with the footer. */}
+      {/* Collapse/expand handle straddling the right border, aligned with the
+          footer. Meaningless for the drawer, so desktop-only. */}
       <button
         type="button"
         onClick={toggleCollapsed}
         title={collapsed ? t('expand') : t('collapse')}
         aria-label={collapsed ? t('expand') : t('collapse')}
-        className="absolute -right-2.5 bottom-3 z-30 grid h-8 w-5 place-items-center rounded-full border border-border bg-surface text-muted shadow-sm transition-colors hover:border-accent hover:text-accent"
+        className="absolute -right-2.5 bottom-3 z-30 hidden h-8 w-5 place-items-center rounded-full border border-border bg-surface text-muted shadow-sm transition-colors hover:border-accent hover:text-accent lg:grid"
       >
         <ChevronDoubleLeftIcon className={`h-3.5 w-3.5 ${collapsed ? 'rotate-180' : ''}`} />
       </button>
@@ -236,7 +262,7 @@ export default function SidebarNav({ disabled = false }: { disabled?: boolean })
               <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-accent text-sm font-extrabold text-accent-foreground">
                 A
               </span>
-              {!collapsed && <span className="truncate">AgiMate</span>}
+              {!iconOnly && <span className="truncate">AgiMate</span>}
             </>
           );
           const logoClass = 'flex items-center gap-2 text-xl font-bold text-foreground min-w-0';
@@ -248,6 +274,16 @@ export default function SidebarNav({ disabled = false }: { disabled?: boolean })
             </Link>
           );
         })()}
+
+        {/* Backdrop and Escape also close the drawer; this is the thumb-reachable way. */}
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={tCommon('close')}
+          className="ml-auto -mr-1 grid h-9 w-9 shrink-0 place-items-center rounded-lg text-muted transition-colors hover:bg-surface-secondary hover:text-foreground lg:hidden"
+        >
+          <XMarkIcon className="h-5 w-5" />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -258,22 +294,22 @@ export default function SidebarNav({ disabled = false }: { disabled?: boolean })
             <AgentContextNav
               agentId={contextRoute.id}
               currentSection={contextRoute.section}
-              collapsed={collapsed}
+              collapsed={iconOnly}
             />
           ) : contextRoute.type === 'team' ? (
             <TeamContextNav
               teamId={contextRoute.id}
               currentSection={contextRoute.section}
-              collapsed={collapsed}
+              collapsed={iconOnly}
             />
           ) : (
-            <AdminContextNav currentSection={contextRoute.section} collapsed={collapsed} />
+            <AdminContextNav currentSection={contextRoute.section} collapsed={iconOnly} />
           )
         ) : (
           groups.map((group, groupIndex) => (
           <div key={group.label ?? `group-${groupIndex}`} className="mb-3.5 last:mb-0">
             {group.label &&
-              (collapsed ? (
+              (iconOnly ? (
                 <div className="mx-2 my-2 h-px bg-border" />
               ) : (
                 <div className="px-2.5 pb-1 pt-1.5 text-[10.5px] font-bold uppercase tracking-wider text-muted/80">
@@ -285,7 +321,7 @@ export default function SidebarNav({ disabled = false }: { disabled?: boolean })
               {group.items.map((item) => {
                 const isActive = !disabled && activeHref === item.href;
                 const itemClass = `flex flex-1 items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors
-                        ${collapsed ? 'justify-center' : ''}
+                        ${iconOnly ? 'justify-center' : ''}
                         ${
                           disabled
                             ? 'cursor-not-allowed text-muted/50'
@@ -296,7 +332,7 @@ export default function SidebarNav({ disabled = false }: { disabled?: boolean })
                 const itemBody = (
                   <>
                     <item.icon className="h-5 w-5 shrink-0" />
-                    {!collapsed && <span className="truncate">{item.label}</span>}
+                    {!iconOnly && <span className="truncate">{item.label}</span>}
                   </>
                 );
 
@@ -309,14 +345,14 @@ export default function SidebarNav({ disabled = false }: { disabled?: boolean })
                     ) : (
                       <Link
                         href={item.href}
-                        title={collapsed ? item.label : undefined}
+                        title={iconOnly ? item.label : undefined}
                         className={itemClass}
                       >
                         {itemBody}
                       </Link>
                     )}
 
-                    {!disabled && !collapsed && item.createHref && (
+                    {!disabled && !iconOnly && item.createHref && (
                       <Link
                         href={item.createHref}
                         title={item.createLabel}
@@ -333,7 +369,7 @@ export default function SidebarNav({ disabled = false }: { disabled?: boolean })
                     )}
 
                     {/* Tooltip for collapsed mode */}
-                    {collapsed && (
+                    {iconOnly && (
                       <span className="pointer-events-none absolute left-full z-20 ml-2 hidden whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background shadow-lg group-hover/item:block">
                         {item.label}
                       </span>
@@ -351,7 +387,7 @@ export default function SidebarNav({ disabled = false }: { disabled?: boolean })
       {/* Footer */}
       <div className="border-t border-border p-4">
         <div className="text-xs text-muted" title={`AgiMate v${APP_VERSION}`}>
-          {collapsed ? `v${APP_VERSION}` : `AgiMate v${APP_VERSION}`}
+          {iconOnly ? `v${APP_VERSION}` : `AgiMate v${APP_VERSION}`}
         </div>
       </div>
     </aside>

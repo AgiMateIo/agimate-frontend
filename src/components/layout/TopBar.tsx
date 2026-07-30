@@ -6,12 +6,19 @@ import { useTranslations } from 'next-intl';
 import { useUser } from '@/contexts/UserContext';
 import { useBreadcrumbOverrides } from '@/contexts/BreadcrumbContext';
 import LocaleSwitcher from '@/components/ui/LocaleSwitcher';
-import { ChevronRightIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, ChevronRightIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
 // `disabled` drops every in-app link (breadcrumbs, settings) and leaves only the
 // locale switcher and sign-out — used while the account is awaiting activation.
-export default function TopBar({ disabled = false }: { disabled?: boolean }) {
+// `onMenuClick` opens the mobile sidebar drawer (the burger is `lg:hidden`).
+export default function TopBar({
+  disabled = false,
+  onMenuClick,
+}: {
+  disabled?: boolean;
+  onMenuClick?: () => void;
+}) {
   const pathname = usePathname();
   const { user, logout } = useUser();
   const t = useTranslations('TopBar');
@@ -55,34 +62,52 @@ export default function TopBar({ disabled = false }: { disabled?: boolean }) {
   });
 
   return (
-    <header className="h-16 border-b border-border bg-surface flex items-center justify-between px-6 shrink-0">
-      {/* Left: Breadcrumbs */}
-      <nav className="flex items-center gap-2 text-sm">
-        {breadcrumbs.map((crumb, index) => (
-          <span key={crumb.href} className="flex items-center gap-2">
-            {index > 0 && <ChevronRightIcon className="h-4 w-4 text-muted" />}
-            {crumb.isLast || disabled ? (
-              <span className={crumb.isLast ? 'text-foreground font-medium' : 'text-muted'}>
-                {crumb.label}
-              </span>
-            ) : (
-              <Link href={crumb.href} className="text-muted hover:text-foreground transition-colors">
-                {crumb.label}
-              </Link>
-            )}
-          </span>
-        ))}
-      </nav>
+    <header className="h-16 border-b border-border bg-surface flex items-center justify-between gap-2 px-4 shrink-0 sm:px-6">
+      {/* Left: burger (mobile) + breadcrumbs */}
+      <div className="flex min-w-0 items-center gap-2">
+        {onMenuClick && (
+          <button
+            type="button"
+            onClick={onMenuClick}
+            aria-label={t('openMenu')}
+            className="-ml-1.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg text-muted transition-colors hover:bg-surface-secondary hover:text-foreground lg:hidden"
+          >
+            <Bars3Icon className="h-5 w-5" />
+          </button>
+        )}
+
+        {/* A deep path doesn't fit next to the avatar on a phone, and the drawer
+            covers navigating up — so below `sm` only the current page shows. */}
+        <nav className="flex min-w-0 items-center gap-2 text-sm">
+          {breadcrumbs.map((crumb, index) => (
+            <span
+              key={crumb.href}
+              className={`items-center gap-2 ${crumb.isLast ? 'flex min-w-0' : 'hidden sm:flex'}`}
+            >
+              {index > 0 && <ChevronRightIcon className="hidden h-4 w-4 shrink-0 text-muted sm:block" />}
+              {crumb.isLast || disabled ? (
+                <span className={`truncate ${crumb.isLast ? 'text-foreground font-medium' : 'text-muted'}`}>
+                  {crumb.label}
+                </span>
+              ) : (
+                <Link href={crumb.href} className="truncate text-muted hover:text-foreground transition-colors">
+                  {crumb.label}
+                </Link>
+              )}
+            </span>
+          ))}
+        </nav>
+      </div>
 
       {/* Right: Language + User Avatar */}
-      <div className="flex items-center gap-3">
+      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
         <LocaleSwitcher />
       <div className="relative">
         <button
           onClick={() => setShowUserMenu(!showUserMenu)}
-          className="flex items-center gap-3 hover:bg-surface-secondary rounded-lg px-3 py-2 transition-colors"
+          className="flex items-center gap-3 hover:bg-surface-secondary rounded-lg px-1.5 py-2 transition-colors sm:px-3"
         >
-          <span className="text-sm text-muted hidden sm:block">
+          <span className="text-sm text-muted hidden sm:block truncate max-w-[180px]">
             {user?.displayName || user?.email || 'User'}
           </span>
           <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-accent-foreground font-medium text-sm">
