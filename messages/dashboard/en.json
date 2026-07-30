@@ -22,7 +22,9 @@
     "createAgent": "Create agent",
     "collapse": "Collapse menu",
     "expand": "Expand menu",
-    "createTeam": "Create team"
+    "createTeam": "Create team",
+    "administration": "Administration",
+    "users": "Users"
   },
   "TopBar": {
     "breadcrumbs": {
@@ -49,7 +51,9 @@
       "general": "General",
       "models": "Models",
       "channels": "Channels",
-      "toolCalls": "Tool Calls"
+      "toolCalls": "Tool Calls",
+      "admin": "Administration",
+      "users": "Users"
     },
     "settings": "Settings",
     "logOut": "Log out"
@@ -1215,5 +1219,35 @@
     "signedInAs": "Signed in as",
     "checkAgain": "Check again",
     "logOut": "Log out"
+  },
+  "Admin": {
+    "usersTitle": "Users",
+    "usersSubtitle": "Who signed up, what role they hold and what they spend.",
+    "noAccess": "This section is available to administrators only.",
+    "searchPlaceholder": "Search by email or display name",
+    "filterAllRoles": "All",
+    "role_GUEST": "Guest",
+    "role_USER": "User",
+    "role_ADMIN": "Admin",
+    "columnUser": "User",
+    "columnRole": "Role",
+    "columnCreatedAt": "Registered",
+    "rowsPerPage": "Rows per page",
+    "usersTotal": "{count, plural, one {# user} other {# users}}",
+    "noUsers": "No users yet.",
+    "noUsersFiltered": "No users match the filters.",
+    "loadingUsers": "Loading users…",
+    "toggleDetails": "Show details",
+    "changeRoleTitle": "Role",
+    "roleMeaningHint": "Guest — signed up, no access to the platform; User — ordinary access; Admin — that plus this section. Moving Guest to User is what approving a request means.",
+    "selfRoleHint": "You cannot change your own role — that is what keeps the platform from ending up with no admin at all.",
+    "roleChangeFailed": "Failed to change the role",
+    "roleChangeDelayNotice": "Role updated. The rest of the platform reads the role from the user’s access token, so the change reaches it only once their session refreshes — up to a day. Until then their previous rights hold: a demotion does not revoke access right away, and a new admin sees this section only after signing in again.",
+    "usageTitle": "Token usage",
+    "usageSourceOwnKey": "Own key",
+    "usageScopePlatform": "This user’s personal spend on the platform model.",
+    "usageScopeOwnKey": "Spend of the whole key — every agent of this user together.",
+    "usageUtcNote": "The current calendar day and month in UTC, so they do not line up with your local day. Tokens, not money: input + output + cache writes, cache reads excluded.",
+    "usageNoProviders": "Neither the platform provider nor a key of their own."
   }
 }

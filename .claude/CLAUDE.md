@@ -46,7 +46,8 @@ The frontend reaches the backend through the API gateway using two service prefi
 
 ### User API (`user/`)
 - **OAuth2**: `POST /oauth2/refresh`, `POST /oauth2/logout`
-- **User**: `GET /user/me`
+- **User**: `GET /user/me` (the `/user/user/me` double segment is a wart of that controller, not the convention — the admin area below sits at `user/admin/…`)
+- **Admin** (ADMIN only): paged directory `GET /admin/users/` (`search` = substring of email *or* display name, `role` = exact, order fixed newest-first with no sort parameter, `size` capped at 100), role change `PATCH /admin/users/{id}/role` (returns the updated user; 400 on your own row so the platform can't end up with no admin; setting the role a user already has is a no-op success). The gate is the `/admin` path prefix, not the individual handler — 403 for a non-ADMIN, 401 without a token, and any endpoint added under it inherits that. **A role change is not platform-wide at once**: user-api applies it immediately, the rest of the API reads the role from the user's access token, so it lands there only after their session refreshes (up to a day) — never promise "access revoked".
 
 ### Control API (`control/`)
 All paths below are under `control/manage/…` unless noted. Representative groups:
@@ -61,6 +62,7 @@ All paths below are under `control/manage/…` unless noted. Representative grou
 - **Connector catalog** (read-only): `/connectors/`, `/connectors/{code}`
 - **Logs**: tool-use logs, connector jobs (pause/resume/run-now/delete), trigger logs, webhook delivery logs
 - **Webchat** (dashboard chat with agents): sessions `/webchat/sessions` (POST creates, GET lists, DELETE soft-closes), newest-first paged history + send `/webchat/sessions/{id}/messages`, per-session Centrifugo tokens `POST /webchat/sessions/{id}/token`; agent replies arrive as `webchat_message` events (streams: progress/answer/error, at-least-once — dedupe by `messageId`)
+- **Admin** (ADMIN only, same path-prefix gate as user-api's): per-user token spend `GET /manage/admin/llm-usage/{userId}/` — the shape of the caller's own `/manage/llm-usage`, for an arbitrary user. Never 404s (control-api doesn't own the user directory, so an unknown id answers with the platform row at zero) and an empty array is legal. `source` changes what the numbers mean: `PLATFORM` = that user's own free-tier spend, `USER` = the whole own key across all their agents — do not label them alike.
 - **Centrifugo**: `POST /control/manage/centrifugo/token`
 
 ## OAuth2 Authentication Architecture
@@ -93,7 +95,7 @@ Never store the actual refresh token in JavaScript-accessible storage.
 
 ## API Service (`src/services/`)
 
-`apiService` (default export of `src/services/api.ts`) is a singleton exposing all backend calls behind a **flat facade**. `api.ts` only composes per-domain modules from `src/services/modules/` (`agents`, `apps`, `skills`, `llmProviders`, `channels`, `boards`, `connections`, `connectors`, `agenticTeams`, `logs`, `misc`, `webchat`) over the shared transport core in `src/services/httpClient.ts`. Consumers call `apiService.getAgent(...)` etc. and never touch the modules directly. When adding an endpoint, put the method in the matching domain module (or add a new module and spread it into the facade in `api.ts`).
+`apiService` (default export of `src/services/api.ts`) is a singleton exposing all backend calls behind a **flat facade**. `api.ts` only composes per-domain modules from `src/services/modules/` (`admin`, `agents`, `apps`, `skills`, `llmProviders`, `channels`, `boards`, `connections`, `connectors`, `agenticTeams`, `logs`, `misc`, `webchat`) over the shared transport core in `src/services/httpClient.ts`. Consumers call `apiService.getAgent(...)` etc. and never touch the modules directly. When adding an endpoint, put the method in the matching domain module (or add a new module and spread it into the facade in `api.ts`).
 
 `httpClient.ts` owns the transport: `get/post/put/patch/delete`, the token-refresh flow, in-flight GET dedup, response unwrapping, `buildPagedQuery`, and the `ApiError` class (re-exported from `@/services/api`).
 
@@ -144,7 +146,8 @@ messages/
                                    #   Sidebar, TopBar, DashboardHome, ApiKeys,
                                    #   ConnectorCatalog, Connectors, Agents, LlmProviders,
                                    #   AgenticTeams, Connections, ConnectionDetail, Board,
-                                   #   Skills, SkillConnectors, SkillAgents, Settings, Channels, Chat
+                                   #   Skills, SkillConnectors, SkillAgents, Settings, Channels, Chat,
+                                   #   Admin
 ```
 When adding keys: landing/auth → `messages/{locale}.json`; dashboard → `messages/dashboard/{locale}.json`. Shared UI strings (`cancel`, `save`, `delete`, `edit`, `close`, …) live in the base **`Common`** namespace, which is merged into the dashboard bundle too — use `useTranslations('Common')` for them instead of re-defining per dashboard namespace.
 
@@ -157,6 +160,7 @@ src/
 │   └── [locale]/                  # Locale-prefixed routes (next-intl)
 │       ├── dashboard/
 │       │   ├── page.tsx           # home: overview / work mode (see Dashboard Home)
+│       │   ├── admin/users/       # ADMIN only: user directory, roles, per-user spend
 │       │   ├── agents/            # list, create, [id], [id]/edit, [id]/chat, deliveries
 │       │   ├── agentic-teams/     # list, [id], [id]/agents, [id]/board
 │       │   ├── apps/              # list, [id]
@@ -172,7 +176,7 @@ src/
 │       ├── login/  login-check/  logout/
 │       └── n8n/  desktop/  android/   # landing pages
 ├── components/
-│   ├── agents/  agentic-teams/  boards/  channels/  connectors/
+│   ├── admin/  agents/  agentic-teams/  boards/  channels/  connectors/
 │   ├── connections/  dashboard/  llm-providers/  skills/  webchat/
 │   ├── landing/  layout/
 │   └── ui/                        # Alert, Button, FormField (+ Select), Modal, ConfirmDeleteModal,
@@ -344,7 +348,7 @@ Component-level limits (name/description `maxLength`, clipboard timeout) are inl
 
 ## Type Organization
 
-Types live in `src/types/`, one file per domain (`agents`, `skills`, `apps`, `channels`, `boards`, `agentic-teams`, `connections`, `llm-providers`, `agent-connections`, `agent-skills`, `connector-jobs`, `webhooks`, `centrifugo`, `tool-use-logs`, …), re-exported from `index.ts`.
+Types live in `src/types/`, one file per domain (`agents`, `skills`, `apps`, `channels`, `boards`, `agentic-teams`, `connections`, `llm-providers`, `agent-connections`, `agent-skills`, `connector-jobs`, `webhooks`, `centrifugo`, `tool-use-logs`, `admin`, …), re-exported from `index.ts`.
 ```typescript
 import { AgentResponse, SkillResponse } from '@/types';        // from root
 import type { AgentResponse } from '@/types/agents';           // or domain file

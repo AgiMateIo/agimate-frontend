@@ -4,6 +4,7 @@
 // `import apiService from '@/services/api'` exposes every method, and
 // `import { ApiError } from '@/services/api'` keeps working.
 import { httpClient, ApiError } from './httpClient';
+import { adminApi } from './modules/admin';
 import { agentsApi } from './modules/agents';
 import { agentPresetsApi } from './modules/agentPresets';
 import { appsApi } from './modules/apps';
@@ -19,6 +20,7 @@ import { miscApi } from './modules/misc';
 import { webchatApi } from './modules/webchat';
 
 const apiService = {
+  ...adminApi,
   ...agentsApi,
   ...agentPresetsApi,
   ...appsApi,

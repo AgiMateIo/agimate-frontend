@@ -53,6 +53,9 @@ function EntityAvatar({
 // link with an optional inline create action, an entity switcher, and section links.
 // Purely presentational — wrappers own route config and data fetching (the entity and
 // the lazily-fetched switcher list).
+//
+// `switcher` is optional: a section with nothing to switch between (administration)
+// gets the same header as a static row.
 export default function ContextNav({
   collapsed,
   backHref,
@@ -78,7 +81,7 @@ export default function ContextNav({
   status?: { on: boolean; label: string };
   sections: ContextSection[];
   currentSection: string;
-  switcher: {
+  switcher?: {
     label: string;
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -167,45 +170,58 @@ export default function ContextNav({
     );
   }
 
+  const headerBody = (
+    <>
+      {name ? (
+        <EntityAvatar
+          avatarUrl={avatarUrl}
+          fallbackIcon={fallbackIcon}
+          name={name}
+          sizeClass="h-7 w-7"
+          roundedClass="rounded-md"
+        />
+      ) : (
+        <span className="h-7 w-7 shrink-0 animate-pulse rounded-md bg-border" />
+      )}
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-[13.5px] font-semibold text-foreground">
+          {name ?? '…'}
+        </span>
+        {status && (
+          <span className="flex items-center gap-1 text-[11px] text-muted">
+            <span className={`h-1.5 w-1.5 rounded-full ${status.on ? 'bg-success' : 'bg-muted'}`} />
+            {status.label}
+          </span>
+        )}
+      </span>
+    </>
+  );
+
+  const headerClass =
+    'flex w-full items-center gap-2.5 rounded-lg border border-border bg-surface-secondary px-2.5 py-2';
+
   return (
     <div>
       {backLink}
 
-      {/* Entity switcher */}
+      {/* Entity header — a switcher button when there is something to switch to */}
       <div className="relative mt-2 mb-3">
-        <button
-          type="button"
-          onClick={() => switcher.onOpenChange(!switcher.open)}
-          aria-label={switcher.label}
-          aria-expanded={switcher.open}
-          className="flex w-full items-center gap-2.5 rounded-lg border border-border bg-surface-secondary px-2.5 py-2 text-left transition-colors hover:border-accent"
-        >
-          {name ? (
-            <EntityAvatar
-              avatarUrl={avatarUrl}
-              fallbackIcon={fallbackIcon}
-              name={name}
-              sizeClass="h-7 w-7"
-              roundedClass="rounded-md"
-            />
-          ) : (
-            <span className="h-7 w-7 shrink-0 animate-pulse rounded-md bg-border" />
-          )}
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-[13.5px] font-semibold text-foreground">
-              {name ?? '…'}
-            </span>
-            {status && (
-              <span className="flex items-center gap-1 text-[11px] text-muted">
-                <span className={`h-1.5 w-1.5 rounded-full ${status.on ? 'bg-success' : 'bg-muted'}`} />
-                {status.label}
-              </span>
-            )}
-          </span>
-          <ChevronUpDownIcon className="h-4 w-4 shrink-0 text-muted" />
-        </button>
+        {switcher ? (
+          <button
+            type="button"
+            onClick={() => switcher.onOpenChange(!switcher.open)}
+            aria-label={switcher.label}
+            aria-expanded={switcher.open}
+            className={`${headerClass} text-left transition-colors hover:border-accent`}
+          >
+            {headerBody}
+            <ChevronUpDownIcon className="h-4 w-4 shrink-0 text-muted" />
+          </button>
+        ) : (
+          <div className={headerClass}>{headerBody}</div>
+        )}
 
-        {switcher.open && (
+        {switcher?.open && (
           <>
             <button
               type="button"

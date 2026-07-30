@@ -17,19 +17,26 @@ import {
   ChatBubbleLeftRightIcon,
   ClockIcon,
   UserCircleIcon,
+  ShieldCheckIcon,
   PlusIcon,
   ChevronDoubleLeftIcon,
 } from '@heroicons/react/24/outline';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
+import AdminContextNav from './AdminContextNav';
 import AgentContextNav from './AgentContextNav';
 import TeamContextNav from './TeamContextNav';
 
 // Route segments under /dashboard/agents that are not an agent instance.
 const NON_AGENT_SEGMENTS = new Set(['create', 'deliveries']);
 
-// When on an agent or agentic-team detail route the sidebar swaps its global nav for
-// that entity's contextual nav. Returns { type, id, section } or null. section is
-// 'general' for the base route, the sub-route name otherwise (e.g. 'models', 'board').
-type ContextRoute = { type: 'agent' | 'team'; id: string; section: string };
+// When on an agent/agentic-team detail route or inside the admin area the sidebar
+// swaps its global nav for that section's contextual nav. `section` is 'general'
+// for an entity's base route, the sub-route name otherwise (e.g. 'models', 'board').
+// The admin area has no entity, so the union keeps `id` off that branch rather
+// than inventing a placeholder.
+type ContextRoute =
+  | { type: 'agent' | 'team'; id: string; section: string }
+  | { type: 'admin'; section: string };
 
 const matchContextRoute = (pathname: string): ContextRoute | null => {
   const agent = pathname.match(/^\/dashboard\/agents\/([^/]+)(?:\/([^/]+))?$/);
@@ -41,6 +48,11 @@ const matchContextRoute = (pathname: string): ContextRoute | null => {
   const team = pathname.match(/^\/dashboard\/agentic-teams\/([^/]+)(?:\/([^/]+))?(?:\/.+)?$/);
   if (team) {
     return { type: 'team', id: team[1], section: team[2] ?? 'general' };
+  }
+  // /dashboard/admin has no page of its own — the only section is the entry point.
+  const admin = pathname.match(/^\/dashboard\/admin(?:\/([^/]+))?(?:\/.*)?$/);
+  if (admin) {
+    return { type: 'admin', section: admin[1] ?? 'users' };
   }
   return null;
 };
@@ -90,7 +102,10 @@ const matchedLength = (pathname: string, href: string): number => {
   return -1;
 };
 
-const getNavGroups = (t: ReturnType<typeof useTranslations>): NavGroup[] => [
+const getNavGroups = (
+  t: ReturnType<typeof useTranslations>,
+  isAdmin: boolean,
+): NavGroup[] => [
   {
     label: t('workspace'),
     items: [
@@ -130,6 +145,21 @@ const getNavGroups = (t: ReturnType<typeof useTranslations>): NavGroup[] => [
       { label: t('toolUseLogs'), icon: WrenchScrewdriverIcon, href: '/dashboard/tool-use-logs' },
     ],
   },
+  // Own unlabelled group so it reads as a separate area — and disappears whole
+  // for everyone but an admin. The link goes straight to the only section there is.
+  ...(isAdmin
+    ? [
+        {
+          items: [
+            {
+              label: t('administration'),
+              icon: ShieldCheckIcon,
+              href: '/dashboard/admin/users',
+            },
+          ],
+        },
+      ]
+    : []),
 ];
 
 // `disabled` renders the whole nav read-only: no links, no create actions, no
@@ -137,6 +167,7 @@ const getNavGroups = (t: ReturnType<typeof useTranslations>): NavGroup[] => [
 export default function SidebarNav({ disabled = false }: { disabled?: boolean }) {
   const pathname = usePathname();
   const t = useTranslations('Sidebar');
+  const isAdmin = useIsAdmin();
 
   const collapsed = useSyncExternalStore(
     collapseStore.subscribe,
@@ -145,7 +176,10 @@ export default function SidebarNav({ disabled = false }: { disabled?: boolean })
   );
   const toggleCollapsed = () => collapseStore.toggle(collapsed);
 
-  const contextRoute = disabled ? null : matchContextRoute(pathname);
+  const matchedRoute = disabled ? null : matchContextRoute(pathname);
+  // Someone without the role who deep-links into /dashboard/admin keeps the global
+  // nav — the page itself reports the missing access.
+  const contextRoute = matchedRoute?.type === 'admin' && !isAdmin ? null : matchedRoute;
 
   // Direction of the nav swap, for the slide animation. Forward (from the right)
   // when entering a contextual nav or switching between entities; back (from the
@@ -155,7 +189,7 @@ export default function SidebarNav({ disabled = false }: { disabled?: boolean })
   // store-info-from-previous-render pattern (setState during render) to avoid
   // reading a ref during render.
   const navMode = contextRoute?.type ?? 'global';
-  const navId = contextRoute?.id ?? null;
+  const navId = contextRoute && 'id' in contextRoute ? contextRoute.id : null;
   const navKey = `${navMode}:${navId ?? ''}`;
   const [navSlide, setNavSlide] = useState({ mode: navMode, id: navId, slide: '' });
   let slideClass = navSlide.slide;
@@ -164,7 +198,7 @@ export default function SidebarNav({ disabled = false }: { disabled?: boolean })
     setNavSlide({ mode: navMode, id: navId, slide: slideClass });
   }
 
-  const groups = getNavGroups(t);
+  const groups = getNavGroups(t, isAdmin);
 
   // Resolve the single most-specific active leaf across every group.
   let activeHref: string | null = null;
@@ -226,12 +260,14 @@ export default function SidebarNav({ disabled = false }: { disabled?: boolean })
               currentSection={contextRoute.section}
               collapsed={collapsed}
             />
-          ) : (
+          ) : contextRoute.type === 'team' ? (
             <TeamContextNav
               teamId={contextRoute.id}
               currentSection={contextRoute.section}
               collapsed={collapsed}
             />
+          ) : (
+            <AdminContextNav currentSection={contextRoute.section} collapsed={collapsed} />
           )
         ) : (
           groups.map((group, groupIndex) => (

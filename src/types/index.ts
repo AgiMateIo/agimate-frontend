@@ -23,3 +23,4 @@ export * from './webchat';
 export * from './llm-providers';
 export * from './channels';
 export * from './connector-jobs';
+export * from './admin';

@@ -40,6 +40,8 @@ export default function TopBar({ disabled = false }: { disabled?: boolean }) {
     channels: t('breadcrumbs.channels'),
     'tool-calls': t('breadcrumbs.toolCalls'),
     settings: t('breadcrumbs.settings'),
+    admin: t('breadcrumbs.admin'),
+    users: t('breadcrumbs.users'),
     create: t('breadcrumbs.create'),
     edit: t('breadcrumbs.edit'),
     board: t('breadcrumbs.board'),
