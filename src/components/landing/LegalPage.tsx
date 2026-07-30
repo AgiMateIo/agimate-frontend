@@ -1,12 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import LandingHeader from '@/components/landing/LandingHeader';
 import LandingBackground from '@/components/landing/LandingBackground';
 import LandingFooter from '@/components/landing/LandingFooter';
-import WaitlistModal from '@/components/landing/WaitlistModal';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 // Shared shell for the Terms / Privacy pages. Both are placeholders on purpose:
@@ -16,21 +14,17 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 export default function LegalPage({ namespace }: { namespace: 'Terms' | 'Privacy' }) {
   const t = useTranslations(namespace);
   const tHome = useTranslations('HomePage');
-  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
 
   const sections = t.raw('sections') as Array<{ title: string; body: string }>;
 
   return (
     <div className="min-h-screen text-foreground">
       <LandingBackground />
-      <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
 
       <LandingHeader
         navLinks={[]}
         loginLabel={tHome('nav.login')}
         dashboardLabel={tHome('nav.dashboard')}
-        onWaitlistClick={() => setIsWaitlistOpen(true)}
-        waitlistLabel={tHome('nav.waitlist')}
       />
 
       <main className="mx-auto max-w-3xl px-4 sm:px-6 py-12 sm:py-16">

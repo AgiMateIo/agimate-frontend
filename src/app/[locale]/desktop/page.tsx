@@ -1,11 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import LandingHeader from '@/components/landing/LandingHeader';
 import LandingBackground from '@/components/landing/LandingBackground';
 import LandingFooter from '@/components/landing/LandingFooter';
-import WaitlistModal from '@/components/landing/WaitlistModal';
 import {
   ArrowRightIcon,
   ArrowDownIcon,
@@ -34,7 +32,6 @@ const useCaseIcons = [
 
 export default function DesktopPage() {
   const t = useTranslations('DesktopPage');
-  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
 
   const triggers = [
     { key: 'fileWatcher', icon: <FolderIcon className="h-6 w-6" /> },
@@ -83,7 +80,6 @@ export default function DesktopPage() {
     <div className="min-h-screen text-foreground">
       {/* Background gradient mesh */}
       <LandingBackground />
-      <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
 
       {/* Header */}
       <LandingHeader
@@ -95,8 +91,6 @@ export default function DesktopPage() {
         ]}
         loginLabel={t('nav.login')}
         dashboardLabel={t('nav.dashboard')}
-        onWaitlistClick={() => setIsWaitlistOpen(true)}
-        waitlistLabel={t('nav.waitlist')}
       />
 
       {/* Hero */}

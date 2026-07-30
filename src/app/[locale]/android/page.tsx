@@ -1,11 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import LandingHeader from '@/components/landing/LandingHeader';
 import LandingBackground from '@/components/landing/LandingBackground';
 import LandingFooter from '@/components/landing/LandingFooter';
-import WaitlistModal from '@/components/landing/WaitlistModal';
 import {
   ArrowRightIcon,
   ArrowDownIcon,
@@ -22,7 +20,6 @@ import {
 
 export default function AndroidPage() {
   const t = useTranslations('AndroidPage');
-  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
 
   const triggers = [
     { key: 'wifi', icon: <WifiIcon className="h-6 w-6" /> },
@@ -67,7 +64,6 @@ export default function AndroidPage() {
   return (
     <div className="min-h-screen text-foreground">
       <LandingBackground />
-      <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
 
       <LandingHeader
         navLinks={[
@@ -78,8 +74,6 @@ export default function AndroidPage() {
         ]}
         loginLabel={t('nav.login')}
         dashboardLabel={t('nav.dashboard')}
-        onWaitlistClick={() => setIsWaitlistOpen(true)}
-        waitlistLabel={t('nav.waitlist')}
       />
 
       {/* Hero */}

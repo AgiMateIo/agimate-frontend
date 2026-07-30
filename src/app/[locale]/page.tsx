@@ -7,7 +7,6 @@ import { useTranslations } from 'next-intl';
 import LandingHeader from '@/components/landing/LandingHeader';
 import LandingBackground from '@/components/landing/LandingBackground';
 import LandingFooter from '@/components/landing/LandingFooter';
-import WaitlistModal from '@/components/landing/WaitlistModal';
 import {
   ArrowRightIcon,
   ShieldExclamationIcon,
@@ -42,7 +41,6 @@ export default function HomePage() {
   const { user } = useUser();
   const t = useTranslations('HomePage');
   const [activeTab, setActiveTab] = useState(0);
-  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
 
   const problemItems = t.raw('problems.items') as Array<{ title: string; description: string }>;
   const solutionColumns = t.raw('solution.columns') as Array<{ title: string; description: string }>;
@@ -85,9 +83,6 @@ export default function HomePage() {
     <div className="min-h-screen text-foreground">
       <LandingBackground />
 
-      {/* Waitlist Modal */}
-      <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
-
       {/* Header */}
       <LandingHeader
         navLinks={[
@@ -99,8 +94,6 @@ export default function HomePage() {
         ]}
         loginLabel={t('nav.login')}
         dashboardLabel={t('nav.dashboard')}
-        onWaitlistClick={() => setIsWaitlistOpen(true)}
-        waitlistLabel={t('nav.waitlist')}
       />
 
       {/* Hero */}
@@ -124,13 +117,13 @@ export default function HomePage() {
               <ArrowRightIcon className="h-4 w-4" />
             </Link>
           ) : (
-            <button
-              onClick={() => setIsWaitlistOpen(true)}
+            <Link
+              href="/login"
               className="w-full sm:w-auto justify-center inline-flex items-center gap-2 rounded-lg bg-accent px-7 py-3.5 font-medium text-accent-foreground shadow-lg shadow-accent/25 hover:bg-accent/90 transition-colors"
             >
               {t('hero.cta')}
               <ArrowRightIcon className="h-4 w-4" />
-            </button>
+            </Link>
           )}
           <a
             href="#how-it-works"
@@ -528,13 +521,13 @@ export default function HomePage() {
                 <ArrowRightIcon className="h-5 w-5" />
               </Link>
             ) : (
-              <button
-                onClick={() => setIsWaitlistOpen(true)}
+              <Link
+                href="/login"
                 className="inline-flex items-center gap-2 rounded-lg bg-accent px-8 py-4 text-lg font-medium text-accent-foreground shadow-lg shadow-accent/25 hover:bg-accent/90 transition-colors"
               >
                 {t('cta.button')}
                 <ArrowRightIcon className="h-5 w-5" />
-              </button>
+              </Link>
             )}
             <a
               href="https://github.com/AgiMateIo"

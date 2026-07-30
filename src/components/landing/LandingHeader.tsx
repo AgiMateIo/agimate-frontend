@@ -15,11 +15,9 @@ interface LandingHeaderProps {
   navLinks: NavLink[];
   loginLabel: string;
   dashboardLabel: string;
-  onWaitlistClick?: () => void;
-  waitlistLabel?: string;
 }
 
-export default function LandingHeader({ navLinks, loginLabel, dashboardLabel, onWaitlistClick, waitlistLabel }: LandingHeaderProps) {
+export default function LandingHeader({ navLinks, loginLabel, dashboardLabel }: LandingHeaderProps) {
   const { user, loading } = useUser();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -69,13 +67,6 @@ export default function LandingHeader({ navLinks, loginLabel, dashboardLabel, on
             >
               {dashboardLabel}
             </Link>
-          ) : onWaitlistClick ? (
-            <button
-              onClick={onWaitlistClick}
-              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent/90 transition-colors"
-            >
-              {waitlistLabel || loginLabel}
-            </button>
           ) : (
             <Link
               href="/login"

@@ -13,14 +13,13 @@
       "models": "Модели",
       "connections": "Подключения",
       "dashboard": "Dashboard",
-      "login": "Войти",
-      "waitlist": "Ранний доступ"
+      "login": "Войти"
     },
     "hero": {
       "title": "Готовый AI-агент —",
       "titleHighlight": "за пару касаний.",
       "subtitle": "Выберите готовую роль: навыки и инструкции уже написаны. Три шага — и агент отвечает в чате. А дальше донастраивайте сколько нужно: доступы, каналы, свою модель, команду агентов.",
-      "cta": "Получить ранний доступ",
+      "cta": "Начать бесплатно",
       "secondaryCta": "Посмотреть как работает"
     },
     "heroScheme": {
@@ -323,27 +322,10 @@
     },
     "cta": {
       "title": "Начните с готовой роли",
-      "subtitle": "Мы подключаем первых пользователей. Оставьте заявку, чтобы получить доступ.",
-      "button": "Ранний доступ",
+      "subtitle": "Войдите через Google или Яндекс — аккаунт создаётся при первом входе.",
+      "button": "Создать аккаунт",
       "docsLink": "Документация на GitHub",
       "finePrint": "Self-hosted · Свой ключ к модели · Журнал каждого вызова"
-    },
-    "waitlist": {
-      "title": "Получить ранний доступ",
-      "successTitle": "Вы в списке!",
-      "emailLabel": "Email",
-      "emailPlaceholder": "you@company.com",
-      "nameLabel": "Имя / Компания",
-      "namePlaceholder": "Иван или ООО «Пример»",
-      "messageLabel": "Как вы планируете использовать AgiMate?",
-      "messagePlaceholder": "Расскажите о вашем сценарии (необязательно)",
-      "submit": "Отправить заявку",
-      "perks": "Первые пользователи получат бонусы — от бесплатного периода до скидок на платные тарифы.",
-      "alreadyRegistered": "Вы уже зарегистрировались с",
-      "useAnotherEmail": "Зарегистрироваться с другим email",
-      "successMessage": "Вы зарегистрированы!",
-      "successDescription": "Мы уведомим вас об открытии сервиса в числе первых.",
-      "close": "Понятно"
     },
     "footer": {
       "copyright": "AgiMate © 2025",
@@ -494,8 +476,7 @@
       "examples": "Примеры",
       "install": "Скачать",
       "dashboard": "Dashboard",
-      "login": "Войти",
-      "waitlist": "Ранний доступ"
+      "login": "Войти"
     },
     "hero": {
       "title": "AgiMate",
@@ -739,8 +720,7 @@
       "specs": "Характеристики",
       "install": "Установка",
       "dashboard": "Dashboard",
-      "login": "Войти",
-      "waitlist": "Ранний доступ"
+      "login": "Войти"
     },
     "hero": {
       "title": "AgiMate",
@@ -1062,8 +1042,7 @@
       "interface": "Интерфейс",
       "install": "Установка",
       "dashboard": "Dashboard",
-      "login": "Войти",
-      "waitlist": "Ранний доступ"
+      "login": "Войти"
     },
     "hero": {
       "title": "AgiMate",

@@ -13,14 +13,13 @@
       "models": "Models",
       "connections": "Connections",
       "dashboard": "Dashboard",
-      "login": "Sign in",
-      "waitlist": "Join Waitlist"
+      "login": "Sign in"
     },
     "hero": {
       "title": "A working AI agent —",
       "titleHighlight": "in a couple of taps.",
       "subtitle": "Pick a ready-made role: skills and instructions are already written. Three steps and the agent answers in chat. Then tune it as far as you like — access, channels, your own model, a team of agents.",
-      "cta": "Request Early Access",
+      "cta": "Start free",
       "secondaryCta": "See how it works"
     },
     "heroScheme": {
@@ -323,27 +322,10 @@
     },
     "cta": {
       "title": "Start from a ready-made role",
-      "subtitle": "We're onboarding early users now. Join the waitlist to get access.",
-      "button": "Join Waitlist",
+      "subtitle": "Sign in with Google or Yandex — the account is created on the first login.",
+      "button": "Create an account",
       "docsLink": "Docs on GitHub",
       "finePrint": "Self-hosted · Your own model key · Every call logged"
-    },
-    "waitlist": {
-      "title": "Request Early Access",
-      "successTitle": "You're on the list!",
-      "emailLabel": "Email",
-      "emailPlaceholder": "you@company.com",
-      "nameLabel": "Name / Company",
-      "namePlaceholder": "John or Acme Inc.",
-      "messageLabel": "How do you plan to use AgiMate?",
-      "messagePlaceholder": "Tell us about your use case (optional)",
-      "submit": "Join Waitlist",
-      "perks": "Early users get bonuses — from a free trial period to discounts on paid plans.",
-      "alreadyRegistered": "You've already signed up with",
-      "useAnotherEmail": "Register with another email",
-      "successMessage": "You're registered!",
-      "successDescription": "We'll notify you among the first when the service launches.",
-      "close": "Got it"
     },
     "footer": {
       "copyright": "AgiMate © 2025",
@@ -494,8 +476,7 @@
       "examples": "Examples",
       "install": "Install",
       "dashboard": "Dashboard",
-      "login": "Sign in",
-      "waitlist": "Join Waitlist"
+      "login": "Sign in"
     },
     "hero": {
       "title": "AgiMate",
@@ -739,8 +720,7 @@
       "specs": "Specs",
       "install": "Install",
       "dashboard": "Dashboard",
-      "login": "Sign in",
-      "waitlist": "Join Waitlist"
+      "login": "Sign in"
     },
     "hero": {
       "title": "AgiMate",
@@ -1062,8 +1042,7 @@
       "interface": "Interface",
       "install": "Install",
       "dashboard": "Dashboard",
-      "login": "Sign in",
-      "waitlist": "Join Waitlist"
+      "login": "Sign in"
     },
     "hero": {
       "title": "AgiMate",

@@ -1,11 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import LandingHeader from '@/components/landing/LandingHeader';
 import LandingBackground from '@/components/landing/LandingBackground';
 import LandingFooter from '@/components/landing/LandingFooter';
-import WaitlistModal from '@/components/landing/WaitlistModal';
 import { useClipboard } from '@/hooks/useClipboard';
 import {
   ArrowRightIcon,
@@ -23,7 +21,6 @@ import {
 export default function N8nPage() {
   const t = useTranslations('N8nPage');
   const { copied, copy } = useClipboard();
-  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
 
   const nodeCards = [
     {
@@ -70,7 +67,6 @@ export default function N8nPage() {
   return (
     <div className="min-h-screen text-foreground">
       <LandingBackground />
-      <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
 
       <LandingHeader
         navLinks={[
@@ -81,8 +77,6 @@ export default function N8nPage() {
         ]}
         loginLabel={t('nav.login')}
         dashboardLabel={t('nav.dashboard')}
-        onWaitlistClick={() => setIsWaitlistOpen(true)}
-        waitlistLabel={t('nav.waitlist')}
       />
 
       {/* Hero */}
