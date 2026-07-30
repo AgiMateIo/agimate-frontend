@@ -202,10 +202,12 @@ export default function BoardPage() {
   useSetBreadcrumb('board', t('title'));
 
   // Full-bleed kanban canvas: cancel the main area's horizontal padding and fill
-  // the viewport below the top bar, layout header and paddings (4 + 1.5 + 3 + 1.5
-  // + 1.5 rem).
+  // what's left below the top bar, layout header and paddings — 4 + 1.5 + 3 +
+  // 1.5 + 1.5 rem on desktop, less padding but a header that may wrap to two
+  // rows on a phone. `dvh` there so the canvas ends above the browser's own
+  // bottom bar rather than under it.
   return (
-    <div className="-mx-6 flex flex-col" style={{ minHeight: 'calc(100vh - 11.5rem)' }}>
+    <div className="-mx-4 flex flex-col min-h-[calc(100dvh-13rem)] sm:-mx-6 sm:min-h-[calc(100vh-11.5rem)]">
       <BoardResolver teamId={teamId} />
     </div>
   );

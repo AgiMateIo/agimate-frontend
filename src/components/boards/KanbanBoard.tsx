@@ -6,7 +6,8 @@ import {
   DragEndEvent,
   DragStartEvent,
   DragOverlay,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   pointerWithin,
@@ -38,8 +39,13 @@ export default function KanbanBoard({
 }: KanbanBoardProps) {
   const [activeTask, setActiveTask] = useState<BoardTask | null>(null);
 
+  // Split by input device instead of one PointerSensor: a finger has to be able
+  // to swipe the board sideways without picking a card up, so touch drags start
+  // on a long press while the mouse keeps the immediate distance threshold.
+  // Trade-off: a stylus emits pointer events and no longer drags.
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } })
   );
 
   // Multi-container kanban collision: prefer pointer-within, fall back to
@@ -120,7 +126,12 @@ export default function KanbanBoard({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex-1 flex items-stretch gap-3 px-6 pb-6">
+      {/* The columns scroll inside the board instead of dragging the whole page
+          sideways: four 256px columns never fit a phone. Snap makes it one
+          column per swipe; from `md` up they share the width as before and the
+          scroller only engages if the window is genuinely too narrow. dnd-kit
+          auto-scrolls this container while a card is held near its edge. */}
+      <div className="flex-1 flex items-stretch gap-3 overflow-x-auto snap-x snap-mandatory px-4 pb-4 sm:px-6 sm:pb-6 md:snap-none">
         {TASK_STATUSES.map((status) => (
           <KanbanColumn
             key={status}

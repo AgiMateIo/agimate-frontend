@@ -38,11 +38,14 @@ function TeamShellHeader({
   useSetBreadcrumb(teamId, team.name);
 
   return (
-    <div className="flex items-center gap-3">
+    // Wraps on a phone: the team name and the section's action buttons don't
+    // share one row there, and `ml-auto` keeps the actions right-aligned in
+    // whichever row they end up in.
+    <div className="flex flex-wrap items-center gap-3">
       <span className="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-accent/10 text-accent">
         <UserGroupIcon className="h-7 w-7" />
       </span>
-      <h1 className="text-2xl font-bold text-foreground">{team.name}</h1>
+      <h1 className="min-w-0 truncate text-2xl font-bold text-foreground">{team.name}</h1>
       <div ref={onActionsRef} className="ml-auto flex items-center gap-2" />
     </div>
   );

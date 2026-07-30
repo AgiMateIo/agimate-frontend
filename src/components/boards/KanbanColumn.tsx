@@ -38,7 +38,9 @@ export default function KanbanColumn({
   const taskIds = tasks.map((task) => task.id);
 
   return (
-    <div className="flex flex-col flex-1 min-w-64">
+    // Phone: a fixed slice of the viewport so the next column peeks in and the
+    // swipe has somewhere to land. From `md` up: back to sharing the row evenly.
+    <div className="flex flex-col shrink-0 w-[85vw] snap-start sm:w-72 md:w-auto md:flex-1 md:min-w-64">
       <div className={`rounded-t-lg px-3 py-2 flex items-center justify-between ${STATUS_COLORS[status]}`}>
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-foreground uppercase tracking-wide">

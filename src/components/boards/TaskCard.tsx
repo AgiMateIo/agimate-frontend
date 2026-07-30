@@ -58,7 +58,9 @@ export default function TaskCard({
       {...(isDragOverlay ? {} : attributes)}
       {...(isDragOverlay ? {} : listeners)}
       onClick={onClick}
-      className={`bg-surface rounded-lg p-3 border border-border cursor-pointer
+      // touch-manipulation, not touch-none: the browser keeps scrolling the
+      // board until the TouchSensor's long press wins the gesture.
+      className={`bg-surface rounded-lg p-3 border border-border cursor-pointer touch-manipulation
         hover:border-accent/40 transition-colors space-y-2 select-none
         ${isDragOverlay ? 'shadow-lg ring-2 ring-accent/30 rotate-2' : ''}
         ${highlighted && !isDragOverlay && !isDragging ? 'animate-task-arrive' : ''}`}
