@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, ClipboardEvent, DragEvent, KeyboardEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import {
+  ArrowLeftIcon,
   ArrowUpTrayIcon,
   Cog6ToothIcon,
   PaperAirplaneIcon,
@@ -29,6 +30,9 @@ interface WebchatConversationProps {
   // Title/lastMessageAt change server-side as messages flow — the parent
   // refreshes the sessions list on non-progress events.
   onActivity: () => void;
+  // Returns to the sessions list where the two panes can't share the screen
+  // (below `md`); the button that calls it is hidden from `md` up.
+  onBack?: () => void;
 }
 
 // Progress lines are a running commentary of one agent turn, not separate
@@ -58,7 +62,7 @@ function MessageRow({
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`max-w-[80%] rounded-lg px-3 py-2 ${
+        className={`max-w-[85%] rounded-lg px-3 py-2 sm:max-w-[80%] ${
           isUser
             ? `bg-accent text-accent-foreground ${message.pending ? 'opacity-60' : ''}`
             : isError
@@ -93,8 +97,10 @@ export default function WebchatConversation({
   agentName,
   onSessionClosed,
   onActivity,
+  onBack,
 }: WebchatConversationProps) {
   const t = useTranslations('Chat');
+  const tCommon = useTranslations('Common');
   const thread = useWebchatThread(session.sessionId);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
@@ -240,8 +246,18 @@ export default function WebchatConversation({
       )}
       {/* Header — carries the agent identity, since the chat section drops the
           page-level agent header to give the conversation the full canvas. */}
-      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border shrink-0">
+      <div className="flex items-center justify-between gap-2 px-3 py-3 border-b border-border shrink-0 sm:gap-3 sm:px-4">
         <div className="flex items-center gap-2.5 min-w-0">
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              aria-label={tCommon('back')}
+              className="-ml-1 grid h-9 w-9 shrink-0 place-items-center rounded-lg text-muted transition-colors hover:bg-surface-secondary hover:text-foreground md:hidden"
+            >
+              <ArrowLeftIcon className="h-5 w-5" />
+            </button>
+          )}
           <img src={getAgentAvatarUrl(agentName)} alt={agentName} className="h-8 w-8 rounded-lg shrink-0" />
           <div className="min-w-0">
             <div className="text-sm font-semibold text-foreground truncate">{agentName}</div>
@@ -254,7 +270,12 @@ export default function WebchatConversation({
           </div>
         </div>
         {!session.closedAt && (
-          <Button variant="secondary" onClick={handleClose} loading={closing}>
+          <Button
+            variant="secondary"
+            onClick={handleClose}
+            loading={closing}
+            className="shrink-0 text-sm"
+          >
             {t('closeSession')}
           </Button>
         )}
@@ -264,7 +285,7 @@ export default function WebchatConversation({
       <div ref={listRef} onScroll={handleScroll} className="flex-1 overflow-y-auto min-h-0">
         {/* Reading column: the pane is as wide as the window allows, but a chat
             line past ~75 characters stops scanning as a conversation. */}
-        <div className="mx-auto w-full max-w-3xl p-4 space-y-3">
+        <div className="mx-auto w-full max-w-3xl p-3 space-y-3 sm:p-4">
           {(thread.error || closeError) && <ErrorAlert>{thread.error || closeError}</ErrorAlert>}
 
           {thread.hasOlder && (
@@ -317,7 +338,7 @@ export default function WebchatConversation({
       {/* Composer — same reading column as the messages, so the input lines up
           with the conversation instead of spanning the whole pane. */}
       <div className="border-t border-border shrink-0">
-        <div className="mx-auto w-full max-w-3xl p-4">
+        <div className="mx-auto w-full max-w-3xl p-3 sm:p-4">
           {thread.sendError && (
             <div className="mb-2">
               <ErrorAlert>{thread.sendError}</ErrorAlert>
@@ -360,16 +381,20 @@ export default function WebchatConversation({
                   onPaste={handleComposerPaste}
                   placeholder={t('composerPlaceholder')}
                   rows={2}
-                  className="flex-1 px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-accent placeholder:text-muted"
+                  // 16px below `sm`: iOS Safari zooms the page in on a focused
+                  // input with a smaller font, and never zooms back out.
+                  className="flex-1 min-w-0 px-3 py-2 bg-background border border-border rounded-lg text-base text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-accent placeholder:text-muted sm:text-sm"
                 />
                 <Button
                   onClick={handleSend}
                   loading={sending}
                   disabled={!draft.trim() && composer.attachments.length === 0}
                   title={t('send')}
+                  aria-label={t('send')}
+                  className="shrink-0"
                 >
                   <PaperAirplaneIcon className="h-4 w-4" />
-                  {t('send')}
+                  <span className="hidden sm:inline">{t('send')}</span>
                 </Button>
               </div>
             </>

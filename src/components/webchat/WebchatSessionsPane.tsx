@@ -20,6 +20,9 @@ interface WebchatSessionsPaneProps {
   // Agent-scoped chat (an agent's Chat section): the agent is fixed by the route,
   // so hide the agent picker and always allow starting a session.
   hideAgentFilter?: boolean;
+  // Display utility only (`flex`/`hidden`): below `md` the page shows one pane at
+  // a time. The width stays here so the pane always has a definite one.
+  className?: string;
 }
 
 export default function WebchatSessionsPane({
@@ -34,11 +37,18 @@ export default function WebchatSessionsPane({
   onNewSession,
   creating,
   hideAgentFilter = false,
+  className = 'flex',
 }: WebchatSessionsPaneProps) {
   const t = useTranslations('Chat');
 
   return (
-    <div className="w-72 shrink-0 border-r border-border flex flex-col min-h-0">
+    // A definite width in both modes — full screen on a phone, a fixed column
+    // from `md` up. Never `flex-1`: a flex item's `min-width: auto` is its
+    // min-content, so a grow-based pane refuses to go narrower than its rows and
+    // spills over the conversation. The divider only exists next to one.
+    <div
+      className={`${className} w-full shrink-0 flex-col min-h-0 overflow-hidden border-border md:flex md:w-72 md:border-r`}
+    >
       <div className="p-4 border-b border-border space-y-3">
         {!hideAgentFilter && (
           <div>

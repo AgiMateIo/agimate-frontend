@@ -21,6 +21,10 @@ export default function AgentChatPage() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [actionError, setActionError] = useState('');
+  // Below `md` the two panes don't fit side by side, so one is shown at a time.
+  // The conversation wins by default — same reasoning as auto-selecting the
+  // newest session: land where the user left off, not on a picker.
+  const [mobilePane, setMobilePane] = useState<'list' | 'conversation'>('conversation');
 
   const sessionsQuery = useWebchatSessionsQuery(agentId);
   const { addSession, patchSession, invalidateSessions } = useWebchatCacheActions();
@@ -46,6 +50,7 @@ export default function AgentChatPage() {
       const session = await apiService.createWebchatSession(agentId);
       addSession(session);
       setActiveSessionId(session.sessionId);
+      setMobilePane('conversation');
     } catch (err) {
       setActionError(getErrorMessage(err, 'Failed to create session'));
     } finally {
@@ -58,7 +63,9 @@ export default function AgentChatPage() {
       {error && <ErrorAlert>{error}</ErrorAlert>}
 
       <div className="flex flex-1 min-h-0 bg-surface rounded-xl border border-border overflow-hidden">
+        {/* Both panes stay mounted; below `md` only one is displayed at a time. */}
         <WebchatSessionsPane
+          className={mobilePane === 'list' ? 'flex' : 'hidden'}
           agents={[agent]}
           agentsById={agentsById}
           selectedAgentId={agentId}
@@ -66,13 +73,18 @@ export default function AgentChatPage() {
           sessions={sessions}
           sessionsLoading={sessionsQuery.isPending}
           activeSessionId={activeSession?.sessionId ?? null}
-          onSelectSession={setActiveSessionId}
+          onSelectSession={(sessionId) => {
+            setActiveSessionId(sessionId);
+            setMobilePane('conversation');
+          }}
           onNewSession={handleNewSession}
           creating={creating}
           hideAgentFilter
         />
 
-        <div className="flex-1 min-w-0 flex flex-col">
+        <div
+          className={`${mobilePane === 'conversation' ? 'flex' : 'hidden'} flex-1 min-w-0 flex-col md:flex`}
+        >
           {activeSession ? (
             <WebchatConversation
               key={activeSession.sessionId}
@@ -80,6 +92,7 @@ export default function AgentChatPage() {
               agentName={agent.name}
               onSessionClosed={patchSession}
               onActivity={invalidateSessions}
+              onBack={() => setMobilePane('list')}
             />
           ) : sessionsQuery.isPending ? (
             <div className="flex-1 grid place-items-center text-sm text-muted">
