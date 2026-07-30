@@ -2,6 +2,7 @@
 import { httpClient } from '../httpClient';
 import { API } from '@/config/constants';
 import type {
+  LlmProviderCatalogEntry,
   LlmProviderResponse,
   CreateLlmProviderRequest,
   CreatePlatformLlmProviderRequest,
@@ -19,6 +20,12 @@ export const llmProvidersApi = {
   // LLM Providers
   async getLlmProviders(): Promise<LlmProviderResponse[]> {
     return httpClient.get<LlmProviderResponse[]>(`${API.ENDPOINTS.CONTROL_API}/manage/llm-providers/`);
+  },
+
+  // Known gateways with ready-made form values. An empty array means this
+  // installation ships no recommendations — a legal state, not a failure.
+  async getLlmProviderCatalog(): Promise<LlmProviderCatalogEntry[]> {
+    return httpClient.get<LlmProviderCatalogEntry[]>(`${API.ENDPOINTS.CONTROL_API}/manage/llm-providers/catalog/`);
   },
 
   async createLlmProvider(data: CreateLlmProviderRequest): Promise<LlmProviderResponse> {

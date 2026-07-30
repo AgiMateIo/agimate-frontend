@@ -30,7 +30,7 @@ import {
   useLlmProviderCacheActions,
   useLlmUsageQuery,
 } from '@/queries/llm-providers';
-import { PROVIDER_TYPE_LABEL_KEY } from '@/components/llm-providers/providerPresets';
+import { PROVIDER_TYPE_LABEL_KEY } from '@/components/llm-providers/providerTypes';
 import { ProviderAvatar } from '@/components/llm-providers/ProviderAvatar';
 import { UsageBars } from '@/components/llm-providers/UsageBars';
 import ProviderQuotasSection from '@/components/llm-providers/ProviderQuotasSection';
@@ -132,7 +132,7 @@ function ProviderDetailContent({ id }: { id: string }) {
             <h1 className="text-2xl font-bold text-foreground truncate">{displayName}</h1>
             <div className="flex items-center gap-2 flex-wrap mt-1">
               <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent">
-                {t(PROVIDER_TYPE_LABEL_KEY[provider.providerType] ?? 'providerTypeOpenAICompatible')}
+                {t(PROVIDER_TYPE_LABEL_KEY[provider.providerType])}
               </span>
               {provider.platform && (
                 <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-success/10 text-success">

@@ -13,7 +13,17 @@ export const llmProviderKeys = {
   usage: () => [...llmProviderKeys.all, 'usage'] as const,
   quotas: (providerId: string) => [...llmProviderKeys.all, 'quotas', providerId] as const,
   models: (providerId: string) => [...llmProviderKeys.all, 'models', providerId] as const,
+  catalog: () => [...llmProviderKeys.all, 'catalog'] as const,
 };
+
+export function llmProviderCatalogOptions() {
+  return queryOptions({
+    queryKey: llmProviderKeys.catalog(),
+    queryFn: () => apiService.getLlmProviderCatalog(),
+    // Ships with the installation; nothing to gain from refetching mid-form.
+    staleTime: 5 * 60 * 1000,
+  });
+}
 
 export function llmProvidersListOptions() {
   return queryOptions({
@@ -31,6 +41,12 @@ export function llmProviderModelsOptions(providerId: string) {
 
 export function useLlmProvidersQuery() {
   return useSuspenseQuery(llmProvidersListOptions());
+}
+
+// Non-suspense: the add-provider modal renders its own loading state and treats
+// both an empty catalog and a failed fetch the same way — a blank manual form.
+export function useLlmProviderCatalogQuery() {
+  return useQuery(llmProviderCatalogOptions());
 }
 
 // Non-suspense: used in modals where the provider is picked interactively.

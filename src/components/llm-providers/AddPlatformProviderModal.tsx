@@ -3,14 +3,19 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { CreatePlatformLlmProviderRequest } from '@/types';
+import { CreatePlatformLlmProviderRequest, LlmProviderType } from '@/types';
 import { getErrorMessage } from '@/utils/error';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input, Select } from '@/components/ui/FormField';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
-import { LLM_PROVIDER_PRESETS, DEFAULT_PROVIDER_PRESET } from './providerPresets';
+import {
+  DEFAULT_BASE_URL,
+  DEFAULT_PROVIDER_TYPE,
+  PROVIDER_TYPE_LABEL_KEY,
+  providerTypeOptions,
+} from './providerTypes';
 
 interface AddPlatformProviderModalProps {
   onClose: () => void;
@@ -25,8 +30,8 @@ export default function AddPlatformProviderModal({ onClose, onSuccess }: AddPlat
   const t = useTranslations('LlmProviders');
   const tu = useTranslations('LlmUsage');
 
-  const [presetKey, setPresetKey] = useState(DEFAULT_PROVIDER_PRESET.key);
-  const [baseUrl, setBaseUrl] = useState(DEFAULT_PROVIDER_PRESET.defaultBaseUrl);
+  const [providerType, setProviderType] = useState<LlmProviderType>(DEFAULT_PROVIDER_TYPE);
+  const [baseUrl, setBaseUrl] = useState(DEFAULT_BASE_URL[DEFAULT_PROVIDER_TYPE]);
   const [apiKey, setApiKey] = useState('');
   const [chatModel, setChatModel] = useState('');
 
@@ -35,14 +40,11 @@ export default function AddPlatformProviderModal({ onClose, onSuccess }: AddPlat
   const [error, setError] = useState<string | null>(null);
   const [refreshError, setRefreshError] = useState<string | null>(null);
 
-  const preset = LLM_PROVIDER_PRESETS.find((p) => p.key === presetKey) ?? DEFAULT_PROVIDER_PRESET;
-  const providerType = preset.providerType;
   const isCompatible = providerType === 'OPENAI_COMPATIBLE';
 
-  const handlePresetChange = (key: string) => {
-    setPresetKey(key);
-    const next = LLM_PROVIDER_PRESETS.find((p) => p.key === key) ?? DEFAULT_PROVIDER_PRESET;
-    setBaseUrl(next.defaultBaseUrl);
+  const handleProviderTypeChange = (next: LlmProviderType) => {
+    setProviderType(next);
+    setBaseUrl(DEFAULT_BASE_URL[next]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -102,13 +104,13 @@ export default function AddPlatformProviderModal({ onClose, onSuccess }: AddPlat
 
         <FormField label={t('providerType')} required>
           <Select
-            value={presetKey}
-            onChange={(e) => handlePresetChange(e.target.value)}
+            value={providerType}
+            onChange={(e) => handleProviderTypeChange(e.target.value as LlmProviderType)}
             disabled={busy}
           >
-            {LLM_PROVIDER_PRESETS.map((p) => (
-              <option key={p.key} value={p.key}>
-                {t(p.labelKey)}
+            {providerTypeOptions(providerType).map((type) => (
+              <option key={type} value={type}>
+                {t(PROVIDER_TYPE_LABEL_KEY[type])}
               </option>
             ))}
           </Select>

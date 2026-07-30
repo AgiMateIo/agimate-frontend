@@ -687,7 +687,6 @@
     "providerTypeOpenAI": "OpenAI",
     "providerTypeAnthropic": "Anthropic",
     "providerTypeGemini": "Gemini",
-    "providerTypeOpenRouter": "OpenRouter",
     "providerTypeOpenAICompatible": "OpenAI-совместимый",
     "createdAt": "Создан",
     "lastRefreshed": "Последнее обновление",
@@ -762,7 +761,18 @@
     "purposeMoveDown": "Ниже",
     "purposeRemoveModel": "Убрать из списка",
     "purposeModelSkipped": "Нет в листинге провайдера — будет пропущена",
-    "modelIdPlaceholder": "provider/model-id"
+    "modelIdPlaceholder": "provider/model-id",
+    "catalogTitle": "Выберите провайдера",
+    "catalogSubtitle": "Выберите известный шлюз — настройки подставятся сами, останется вписать название и API-ключ. Любого другого провайдера по-прежнему можно завести вручную.",
+    "catalogManual": "Настроить вручную",
+    "catalogManualHint": "Тип провайдера, базовый URL и ключ вводятся вручную",
+    "apiKeyWhereToGet": "Где взять ключ",
+    "seedTitle": "Модели на старт",
+    "seedHint": "Подставлены из каталога и ещё не сверены с провайдером. Полный список приоритета редактируется на странице провайдера после создания.",
+    "seedMismatchTitle": "Провайдер создан, но часть подставленных моделей недоступна",
+    "seedMismatchHint": "Провайдер их не отдаёт и пропустит. Замените их в списках приоритета на странице провайдера.",
+    "configurePurposes": "Настроить модели",
+    "later": "Позже"
   },
   "AgenticTeams": {
     "title": "Команды агентов",

@@ -86,6 +86,35 @@ export interface LlmProviderResponse {
   createdAt: string;
 }
 
+// GET /llm-providers/catalog/ — known gateways with ready-made values for the
+// create form. Pre-fill only: the catalog takes no part in how a provider works,
+// and later catalog changes never touch a provider that was already created.
+// Server-sorted and server-filtered — render in the order received; entries
+// disabled on this installation never arrive. An empty list is legal (no
+// recommendations here), not an error: the form then opens blank, as before.
+export interface LlmProviderCatalogEntry {
+  // Record key (`openrouter`, `polza`) — the React key of the choice list.
+  code: string;
+  // Gateway name, for the choice screen only: `name` in the request is always
+  // the user's (it must be unique within their account).
+  name: string;
+  // One sentence about the provider, in the installation's language.
+  description?: string | null;
+  providerType: LlmProviderType;
+  // For OPENAI_COMPATIBLE this is the value the user cannot know by heart, and
+  // creation without it is a 400.
+  baseUrl?: string | null;
+  // null = the default (CHAT_MODALITIES). A value, not a blank — do not render
+  // it as "unfilled" or flag it.
+  mediaTransport?: LlmMediaTransport | null;
+  // Models to start with. Unverified: shipped with the installation, so it can
+  // lag behind the provider's listing — reconcile against the registry after
+  // refresh-models rather than trusting it.
+  purposePriority?: LlmPurposePriority | null;
+  // Page where the user gets the key.
+  apiKeyUrl?: string | null;
+}
+
 export interface CreateLlmProviderRequest {
   name: string;
   providerType: LlmProviderType;

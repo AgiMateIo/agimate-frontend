@@ -1,4 +1,9 @@
-import { AgentLlmPurpose, LlmProviderResponse, LlmPurposePriority } from '@/types';
+import {
+  AgentLlmPurpose,
+  LlmProviderModelResponse,
+  LlmProviderResponse,
+  LlmPurposePriority,
+} from '@/types';
 import type { CapabilityFilter } from './modelRegistry';
 
 // A purpose is both the identity of an agent's model binding and a key of a
@@ -55,6 +60,24 @@ export function purposeState(priority: LlmPurposePriority | null | undefined, pu
   const models = priority?.[purpose];
   if (!models) return 'unset';
   return models.length === 0 ? 'off' : 'list';
+}
+
+// Purpose lists seeded from the provider catalog are unverified: they ship with
+// the installation and can lag behind what the gateway actually lists. Once the
+// registry has been fetched, these are the entries the backend would skip — a
+// model it never listed, or one it has dropped. Returns [] while the registry is
+// empty, since then there is nothing to compare against yet.
+export function unusableSeededModels(
+  priority: LlmPurposePriority | null | undefined,
+  models: LlmProviderModelResponse[]
+): { purpose: AgentLlmPurpose; model: string }[] {
+  if (models.length === 0) return [];
+  const usable = new Set(models.filter((m) => m.status === 'AVAILABLE').map((m) => m.model));
+  return Object.entries(priority ?? {}).flatMap(([purpose, list]) =>
+    (list ?? [])
+      .filter((model) => !usable.has(model))
+      .map((model) => ({ purpose: purpose as AgentLlmPurpose, model }))
+  );
 }
 
 // The model the provider would try first for a purpose — what the UI shows when

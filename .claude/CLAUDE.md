@@ -57,7 +57,7 @@ All paths below are under `control/manage/…` unless noted. Representative grou
 - **Agentic Teams**: CRUD `/agentic-teams/`
 - **Boards**: `/boards/`, tasks `/boards/{id}/tasks/`, task status, task comments
 - **Connections** (connector instances): `/connections/…` incl. secret update and test
-- **LLM Providers**: CRUD `/llm-providers/`, `purposePriority` on create/patch/response (uppercase-purpose → ordered model allow-list; key absent = fall through to the platform provider, `[]` = purpose switched off, PATCH replaces the whole map — there is no `defaultModel` any more), refresh models (upsert into the model registry), model registry `/llm-providers/{id}/models/` (rows persist with `AVAILABLE`/`UNAVAILABLE` status — still saveable as a binding, but UNAVAILABLE is skipped inside a purpose list and fails an agent's explicit binding; capability fields `inputModalities`/`outputModalities`/`supportedParameters`/`maxOutputTokens` come from the provider verbatim — compare case-insensitively, `null` = unknown, not "can't"), per-model extra-body `PUT /llm-providers/{id}/models/extra-body` (`model` in the body); provider-level `extraBody` on create/patch/response (≤16 KB JSON object, deep-merged with model-level by the backend, no secrets)
+- **LLM Providers**: CRUD `/llm-providers/`, `purposePriority` on create/patch/response (uppercase-purpose → ordered model allow-list; key absent = fall through to the platform provider, `[]` = purpose switched off, PATCH replaces the whole map — there is no `defaultModel` any more), refresh models (upsert into the model registry), model registry `/llm-providers/{id}/models/` (rows persist with `AVAILABLE`/`UNAVAILABLE` status — still saveable as a binding, but UNAVAILABLE is skipped inside a purpose list and fails an agent's explicit binding; capability fields `inputModalities`/`outputModalities`/`supportedParameters`/`maxOutputTokens` come from the provider verbatim — compare case-insensitively, `null` = unknown, not "can't"), per-model extra-body `PUT /llm-providers/{id}/models/extra-body` (`model` in the body); provider-level `extraBody` on create/patch/response (≤16 KB JSON object, deep-merged with model-level by the backend, no secrets), read-only catalog `GET /llm-providers/catalog/` (known gateways pre-filling the create form — server-sorted, empty is legal; pre-fill only, it never takes part in how a created provider works)
 - **Connector catalog** (read-only): `/connectors/`, `/connectors/{code}`
 - **Logs**: tool-use logs, connector jobs (pause/resume/run-now/delete), trigger logs, webhook delivery logs
 - **Webchat** (dashboard chat with agents): sessions `/webchat/sessions` (POST creates, GET lists, DELETE soft-closes), newest-first paged history + send `/webchat/sessions/{id}/messages`, per-session Centrifugo tokens `POST /webchat/sessions/{id}/token`; agent replies arrive as `webchat_message` events (streams: progress/answer/error, at-least-once — dedupe by `messageId`)
@@ -377,3 +377,23 @@ Backend limits this surface has to work around — keep them in mind before addi
 - **Optimistic updates**: update UI immediately, revert on error; track per-item loading with `Set<string>` for O(1) lookup.
 - **One-time secret display**: keys/tokens shown once after creation; clipboard "Copied!" feedback + warning banner (connectors use the shared `SecretKeyReveal`).
 - **Masked display**: sensitive identifiers show a prefix + first chars + asterisks (e.g. `amobZ3h5****`).
+
+## Commits
+
+```
+<тип>: <объект> — <дельта>
+```
+
+- **Язык — английский**, и субъект, и тело. Репозиторий публичный: историю читает контрибьютор, а не только команда.
+- **Тип** — один из: `feat`, `fix`, `refactor`, `perf`, `test`, `docs`, `chore`. Развилку «фича или рефакторинг» решает признак **«заметно ли снаружи»** (пользователю, API, агенту), а не объём правки. Тесты рядом с фичей входят в `feat`; `test` — только когда коммит целиком про тесты.
+- **Объект** — существительное первым словом после типа: страница, компонент, хук, эндпойнт, i18n-неймспейс. То, по чему будут грепать историю. Не глагол.
+- **Дельта** — результат, а не действие (`per-purpose priority lists instead of a provider default model`, не `fix provider models`). Замену писать как «A instead of B».
+- Тире — не обязательная часть, а инструмент: ставится, когда объект сам себя не объясняет.
+- **Scope в скобках не используем** — нужный участок называется словами в объекте (`agent wizard`, `dashboard work mode`).
+- ≤72 символа, без точки в конце, строчная буква после двоеточия.
+- **«+» в субъекте означает, что коммит надо разделить** — это единственная проверка на атомарность, которую можно сделать глазами.
+- Фазовый маркер долгой работы — в конце субъекта: `(1a)`, `v2.1`.
+
+Тело — опционально, 2–4 буллета, один буллет = один смысловой блок. В буллеты идёт **почему так, а не иначе** и неочевидные следствия; не идёт — список файлов, «обновил тесты» (подразумевается) и пересказ диффа.
+
+Без трейлера `Co-Authored-By`.

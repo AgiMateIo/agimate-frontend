@@ -687,7 +687,6 @@
     "providerTypeOpenAI": "OpenAI",
     "providerTypeAnthropic": "Anthropic",
     "providerTypeGemini": "Gemini",
-    "providerTypeOpenRouter": "OpenRouter",
     "providerTypeOpenAICompatible": "OpenAI-compatible",
     "createdAt": "Created",
     "lastRefreshed": "Last refreshed",
@@ -762,7 +761,18 @@
     "purposeMoveDown": "Move down",
     "purposeRemoveModel": "Remove from the list",
     "purposeModelSkipped": "Not listed by the provider — will be skipped",
-    "modelIdPlaceholder": "provider/model-id"
+    "modelIdPlaceholder": "provider/model-id",
+    "catalogTitle": "Choose a provider",
+    "catalogSubtitle": "Pick a known gateway and its settings are filled in for you — you only add a name and an API key. Any other provider can still be set up by hand.",
+    "catalogManual": "Set up manually",
+    "catalogManualHint": "Enter the provider type, base URL and key yourself",
+    "apiKeyWhereToGet": "Where to get a key",
+    "seedTitle": "Starting models",
+    "seedHint": "Pre-filled from the catalog and not checked against the provider yet. The full priority list is editable on the provider page after creation.",
+    "seedMismatchTitle": "Provider created, but some pre-filled models are unavailable",
+    "seedMismatchHint": "The provider does not list them, so it will skip them. Replace them in the purpose priority lists on the provider page.",
+    "configurePurposes": "Configure models",
+    "later": "Later"
   },
   "AgenticTeams": {
     "title": "Agentic Teams",

@@ -10,7 +10,7 @@ import { Chip } from '@/components/ui/Chip';
 import { Link } from '@/i18n/navigation';
 import { localeMap } from '@/i18n/routing';
 import { formatDate } from '@/utils/date';
-import { PROVIDER_TYPE_LABEL_KEY, deriveProviderNameFromUrl } from './providerPresets';
+import { PROVIDER_TYPE_LABEL_KEY, deriveProviderNameFromUrl } from './providerTypes';
 import { firstPurposeModel } from './llmPurpose';
 import { ProviderAvatar } from './ProviderAvatar';
 
@@ -70,7 +70,7 @@ export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersLi
     const isPlatform = provider.platform;
     const displayName = isPlatform ? tu('platformProviderName') : provider.name;
 
-    const typeLabel = t(PROVIDER_TYPE_LABEL_KEY[provider.providerType] ?? 'providerTypeOpenAICompatible');
+    const typeLabel = t(PROVIDER_TYPE_LABEL_KEY[provider.providerType]);
     const host = provider.baseUrl ? deriveProviderNameFromUrl(provider.baseUrl) : '';
     const chatModel = firstPurposeModel(provider, 'CHAT');
 
