@@ -22,6 +22,7 @@ import {
   ChevronDoubleLeftIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
+import Logo from '@/components/ui/Logo';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useIsDesktop } from '@/hooks/useMediaQuery';
 import AdminContextNav from './AdminContextNav';
@@ -259,8 +260,8 @@ export default function SidebarNav({
         {(() => {
           const logo = (
             <>
-              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-accent text-sm font-extrabold text-accent-foreground">
-                A
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-accent text-accent-foreground">
+                <Logo className="h-4 w-auto" />
               </span>
               {!iconOnly && <span className="truncate">AgiMate</span>}
             </>

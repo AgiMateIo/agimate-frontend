@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from '@/i18n/navigation';
 import { useUser } from '@/contexts/UserContext';
 import LocaleSwitcher from '@/components/ui/LocaleSwitcher';
+import Logo from '@/components/ui/Logo';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 
 interface NavLink {
@@ -46,7 +47,11 @@ export default function LandingHeader({ navLinks, loginLabel, dashboardLabel }: 
   return (
     <header className="sticky top-0 z-50 border-b border-border/40 backdrop-blur-md bg-background/80">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-6 py-4">
-        <Link href="/" className="text-xl font-bold tracking-tight hover:text-accent transition-colors">
+        <Link
+          href="/"
+          className="group flex items-center gap-2 text-xl font-bold tracking-tight hover:text-accent transition-colors"
+        >
+          <Logo className="h-6 w-auto shrink-0 text-accent transition-colors group-hover:text-foreground" />
           AgiMate
         </Link>
         <nav className="flex items-center gap-4 sm:gap-6 text-sm text-muted">

@@ -1,0 +1,19 @@
+<!-- Favicon: the same mark as public/logo-tile.svg, cropped tighter — a browser tab
+     renders this at 16-32px, where the tile's full padding eats the detail. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="14 13 100 95" role="img" aria-label="AgiMate">
+  <style>
+    /* globals.css: dark is the default, light comes from prefers-color-scheme */
+    .agimate-tile { fill: #6366f1; }
+    .agimate-mark { fill: #ffffff; }
+    @media (prefers-color-scheme: light) {
+      .agimate-tile { fill: #4f46e5; }
+    }
+  </style>
+  <rect class="agimate-tile" x="14" y="13" width="100" height="95" />
+  <path class="agimate-mark"
+        d="M62.23 24.77 A2.5 2.5 0 0 1 65.77 24.77 L76.73 35.73 A2.5 2.5 0 0 1 76.73 39.27 L65.77 50.23 A2.5 2.5 0 0 1 62.23 50.23 L51.27 39.27 A2.5 2.5 0 0 1 51.27 35.73 Z
+           M43.6 55.75 A2.5 2.5 0 0 1 43.44 52.06 L47.79 47.71 A2.5 2.5 0 0 1 51.16 47.55 L62.4 56.92 A2.5 2.5 0 0 0 65.6 56.92 L76.84 47.55 A2.5 2.5 0 0 1 80.21 47.71 L84.56 52.06 A2.5 2.5 0 0 1 84.4 55.75 L65.6 71.42 A2.5 2.5 0 0 1 62.4 71.42 Z
+           M34.6 71.75 A2.5 2.5 0 0 1 34.44 68.06 L38.79 63.71 A2.5 2.5 0 0 1 42.16 63.55 L62.4 80.42 A2.5 2.5 0 0 0 65.6 80.42 L85.84 63.55 A2.5 2.5 0 0 1 89.21 63.71 L93.56 68.06 A2.5 2.5 0 0 1 93.4 71.75 L65.6 94.92 A2.5 2.5 0 0 1 62.4 94.92 Z
+           M33.16 79.55 A2.5 2.5 0 0 0 29.79 79.71 L24.73 84.77 A2.5 2.5 0 0 0 24 86.54 L24 95.5 A2.5 2.5 0 0 0 26.5 98 L48.39 98 A2.5 2.5 0 0 0 50 93.58 Z
+           M94.84 79.55 A2.5 2.5 0 0 1 98.21 79.71 L103.27 84.77 A2.5 2.5 0 0 1 104 86.54 L104 95.5 A2.5 2.5 0 0 1 101.5 98 L79.61 98 A2.5 2.5 0 0 1 78 93.58 Z" />
+</svg>
