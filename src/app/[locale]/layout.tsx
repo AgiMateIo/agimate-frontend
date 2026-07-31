@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { resolveLocale, routing } from '@/i18n/routing';
 import { UserProvider } from '@/contexts/UserContext';
 import { QueryProvider } from '@/contexts/QueryProvider';
+import { YandexMetrika } from '@/components/analytics/YandexMetrika';
 import { Geist, Geist_Mono } from 'next/font/google';
 import '../globals.css';
 
@@ -58,6 +59,7 @@ export default async function LocaleLayout({
             <UserProvider>{children}</UserProvider>
           </QueryProvider>
         </NextIntlClientProvider>
+        <YandexMetrika />
       </body>
     </html>
   );
