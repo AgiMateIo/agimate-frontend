@@ -59,7 +59,11 @@ export function YandexMetrika() {
         ym(${COUNTER_ID}, "init", {
           defer: true,
           ssr: true,
-          webvisor: true,
+          // Вебвизор выключен намеренно: он пишет DOM целиком, а маскируются
+          // только поля ввода — переписка с агентами и e-mail в админке
+          // уехали бы в Метрику как обычный текст. Включать только вместе с
+          // ym-hide-content на этих блоках.
+          webvisor: false,
           clickmap: true,
           ecommerce: "dataLayer",
           accurateTrackBounce: true,
