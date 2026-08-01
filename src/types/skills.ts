@@ -48,9 +48,23 @@ export interface UpdateSkillConnectorsRequest {
 
 // Connector catalog entry (from GET /control/manage/connectors/)
 
+// How a credential field is entered. The backend owns this list and may grow
+// it, hence the open union — an unrecognised type is treated as SECRET, because
+// masking a plain value is a nuisance while printing a secret is not.
+export type CredentialFieldType = 'URL' | 'SECRET' | 'JSON' | 'TEXT' | (string & {});
+
+// One declared credential input. Replaces the bare label string the catalog
+// used to return, so masking and optionality are no longer guessed from the
+// field's name and the wording of its label.
+export interface CredentialFieldSpec {
+  label: string;
+  type: CredentialFieldType;
+  required: boolean;
+}
+
 export interface IntegrationMeta {
-  // field code → human-readable label (keys are sent as credential codes)
-  credentialFields: Record<string, string>;
+  // field code → its declaration (keys are sent as credential codes)
+  credentialFields: Record<string, CredentialFieldSpec>;
   supportsWebhooks: boolean;
 }
 

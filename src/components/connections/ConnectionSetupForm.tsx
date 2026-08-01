@@ -60,7 +60,7 @@ export default function ConnectionSetupForm({
   const [pendingAuth, setPendingAuth] = useState<ConnectionResponse | null>(null);
 
   const credentialFields = connector.integrationMeta?.credentialFields ?? {};
-  const { credentials, handleFieldChange, allFieldsFilled, filledCredentials } =
+  const { credentials, handleFieldChange, canSubmit, filledCredentials } =
     useCredentialFields(credentialFields);
 
   // null result = we are leaving the SPA for the consent screen; routing to the
@@ -198,7 +198,7 @@ export default function ConnectionSetupForm({
         </Button>
         <Button
           type="submit"
-          disabled={busy || !allFieldsFilled}
+          disabled={busy || !canSubmit}
           loading={busy}
           className="flex-1"
         >

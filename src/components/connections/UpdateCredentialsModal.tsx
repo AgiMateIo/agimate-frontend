@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { ConnectionResponse } from '@/types';
+import { ConnectionResponse, CredentialFieldSpec } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
@@ -12,8 +12,8 @@ import CredentialFieldsForm, { useCredentialFields } from './CredentialFieldsFor
 
 interface UpdateCredentialsModalProps {
   connection: ConnectionResponse;
-  // field code → human-readable label
-  credentialFields: Record<string, string>;
+  // field code → its declaration
+  credentialFields: Record<string, CredentialFieldSpec>;
   onClose: () => void;
   onSuccess: (connection: ConnectionResponse) => void;
 }
@@ -25,7 +25,8 @@ export default function UpdateCredentialsModal({
   onSuccess,
 }: UpdateCredentialsModalProps) {
   const t = useTranslations('Connections');
-  const { credentials, handleFieldChange, allFieldsFilled } = useCredentialFields(credentialFields);
+  const { credentials, handleFieldChange, canSubmit, filledCredentials } =
+    useCredentialFields(credentialFields);
 
   const { loading, error, fieldErrors, handleSubmit } = useAsyncForm<ConnectionResponse>({
     onSuccess,
@@ -33,8 +34,10 @@ export default function UpdateCredentialsModal({
   });
 
   const onSubmit = (e: React.FormEvent) =>
+    // A field the user typed into and then cleared must not be sent as an empty
+    // string — that would overwrite a working credential with nothing.
     handleSubmit(e, () =>
-      apiService.updateConnectionSecret(connection.id, { credentials })
+      apiService.updateConnectionSecret(connection.id, { credentials: filledCredentials() })
     );
 
   return (
@@ -65,7 +68,7 @@ export default function UpdateCredentialsModal({
           </Button>
           <Button
             type="submit"
-            disabled={loading || !allFieldsFilled}
+            disabled={loading || !canSubmit}
             loading={loading}
             className="flex-1"
           >

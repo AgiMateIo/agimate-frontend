@@ -867,6 +867,7 @@
     "updateCredentials": "Update Credentials",
     "updateCredentialsWarning": "This will replace the existing credentials for this connection.",
     "createError": "Failed to create connection",
+    "invalidJson": "This doesn't look like valid JSON",
     "updateError": "Failed to update connection",
     "updateCredentialsError": "Failed to update credentials",
     "deleteError": "Failed to delete connection",
