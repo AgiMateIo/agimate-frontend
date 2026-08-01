@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, Suspense } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { localeMap } from '@/i18n/routing';
 import type { ConnectionResponse } from '@/types';
 import { formatDate } from '@/utils/date';
+import { Alert } from '@/components/ui/Alert';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { Tabs } from '@/components/ui/Tabs';
 import { Toggle } from '@/components/ui/Toggle';
@@ -25,6 +26,11 @@ import TestConnectionModal from '@/components/connections/TestConnectionModal';
 import { Button } from '@/components/ui/Button';
 import { PencilIcon, KeyIcon, TrashIcon, BeakerIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
+import {
+  ConnectionAuthBadge,
+  ConnectionAuthPanel,
+  needsAuthorization,
+} from '@/components/connections/ConnectionAuth';
 import ConnectionAgentsTab from '@/components/connections/ConnectionAgentsTab';
 import ConnectionSkillsTab from '@/components/connections/ConnectionSkillsTab';
 import ConnectionToolsTab from '@/components/connections/ConnectionToolsTab';
@@ -36,9 +42,12 @@ type Tab = 'info' | 'tools' | 'triggers' | 'jobs' | 'skills' | 'agents';
 function ConnectionDetailContent({ id }: { id: string }) {
   const t = useTranslations('ConnectionDetail');
   const tInt = useTranslations('Connections');
+  const tAuth = useTranslations('ConnectionAuth');
   const locale = useLocale();
   const bcp47Locale = localeMap[locale];
   const router = useRouter();
+  // Set by the OAuth callback screen when it hands the user back here.
+  const justAuthorized = useSearchParams().get('authorized') === '1';
 
   const { data: { connection, connector } } = useConnectionDetailQuery(id);
   useSetBreadcrumb(id, connection.name || connection.fullCode);
@@ -94,6 +103,7 @@ function ConnectionDetailContent({ id }: { id: string }) {
             >
               {connection.enabled ? tInt('enabled') : tInt('disabled')}
             </span>
+            <ConnectionAuthBadge status={connection.authStatus} />
           </div>
           <p className="text-sm text-muted mt-1 font-mono">{connection.fullCode}</p>
           {connection.name && connection.subCode && (
@@ -143,6 +153,15 @@ function ConnectionDetailContent({ id }: { id: string }) {
         </div>
       </div>
 
+      {/* The connection is inert until the grant is in place — say so before the
+          tabs, where the empty tool list would otherwise read as a bug. */}
+      <ConnectionAuthPanel connectionId={connection.id} status={connection.authStatus} />
+
+      {/* Arrived here straight from the provider's consent screen. */}
+      {justAuthorized && !needsAuthorization(connection.authStatus) && (
+        <Alert variant="success">{tAuth('completed')}</Alert>
+      )}
+
       {/* Tabs */}
       <Tabs
         tabs={[
@@ -189,6 +208,14 @@ function ConnectionDetailContent({ id }: { id: string }) {
                       </span>
                     </dd>
                   </div>
+                  {needsAuthorization(connection.authStatus) && (
+                    <div>
+                      <dt className="text-sm text-muted">{tAuth('label')}</dt>
+                      <dd className="mt-0.5">
+                        <ConnectionAuthBadge status={connection.authStatus} />
+                      </dd>
+                    </div>
+                  )}
                   <div>
                     <dt className="text-sm text-muted">{tInt('created')}</dt>
                     <dd className="text-foreground mt-0.5">{formatDate(connection.createdAt, bcp47Locale)}</dd>

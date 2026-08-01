@@ -13,6 +13,7 @@ import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { SearchToolbar } from '@/components/ui/SearchToolbar';
+import { ConnectionAuthBadge } from '@/components/connections/ConnectionAuth';
 
 interface BindConnectionModalProps {
   agentId: string;
@@ -127,6 +128,9 @@ export default function BindConnectionModal({
                             {t('disabled')}
                           </span>
                         )}
+                        {/* Bindable, but it has no tools until authorized —
+                            better seen here than as an agent that stays silent. */}
+                        <ConnectionAuthBadge status={conn.authStatus} />
                       </div>
                       <p className="text-xs text-muted mt-0.5">{connectorName}</p>
                     </div>

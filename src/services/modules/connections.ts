@@ -9,8 +9,11 @@ import type {
   ConnectorToolSpec,
   ConnectorJobResponse,
   ConnectionAgentResponse,
+  ConnectionAuthorizeResponse,
   ConnectionResponse,
+  CompleteConnectionOAuthRequest,
   CreateConnectionRequest,
+  CreateConnectionResult,
   TriggerSpecificationResponse,
   UpdateConnectionRequest,
   UpdateConnectionSecretRequest,
@@ -30,8 +33,10 @@ export const connectionsApi = {
     return httpClient.get<ConnectionResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/connections/${id}`);
   },
 
-  async createConnection(data: CreateConnectionRequest): Promise<ConnectionResponse> {
-    return httpClient.post<ConnectionResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/connections/`, data);
+  // The row is always created; `status` says whether it already works or still
+  // needs the user to pass an OAuth consent screen (see startConnectionAuthorization).
+  async createConnection(data: CreateConnectionRequest): Promise<CreateConnectionResult> {
+    return httpClient.post<CreateConnectionResult>(`${API.ENDPOINTS.CONTROL_API}/manage/connections/`, data);
   },
 
   async updateConnection(id: string, data: UpdateConnectionRequest): Promise<ConnectionResponse> {
@@ -49,6 +54,29 @@ export const connectionsApi = {
   // Validates credentials and (for MCP) synchronously reloads the tools cache.
   async testConnection(id: string): Promise<ConnectionTestResponse> {
     return httpClient.post<ConnectionTestResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/connections/${id}/test`, {});
+  },
+
+  // ---- OAuth authorization (MCP servers that refuse a hand-written token) ----
+
+  // Mints a fresh consent-screen URL (valid ~10 min). Same call for the first
+  // authorization, for re-connecting an expired grant and for widening scopes.
+  // 400 when the connector can't be authorized this way or OAuth isn't
+  // configured on this installation — the backend message is the one to show.
+  async startConnectionAuthorization(id: string): Promise<ConnectionAuthorizeResponse> {
+    return httpClient.post<ConnectionAuthorizeResponse>(
+      `${API.ENDPOINTS.CONTROL_API}/manage/connections/${id}/authorize`,
+      {},
+    );
+  },
+
+  // Hands the provider's callback parameters back to the backend, which
+  // verifies them and exchanges the code. `state` is single-use: a second call
+  // with the same value is a 400, so this must never be retried automatically.
+  async completeConnectionOAuth(data: CompleteConnectionOAuthRequest): Promise<ConnectionResponse> {
+    return httpClient.post<ConnectionResponse>(
+      `${API.ENDPOINTS.CONTROL_API}/manage/connections/oauth/complete`,
+      data,
+    );
   },
 
   // ---- Per-instance capabilities (source of truth for a connection card) ----

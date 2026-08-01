@@ -170,6 +170,7 @@
     "attentionToolErrors": "Tool call errors",
     "attentionToolDenied": "Calls denied by policy",
     "attentionConnectionsDisabled": "Disabled connections",
+    "attentionConnectionsUnauthorized": "Connections need authorization",
     "attentionWebhooksFailed": "Failed webhook deliveries",
     "attentionBanner": "{count, plural, one {# signal needs} other {# signals need}} your attention",
     "attentionBannerAction": "Take a look",
@@ -875,7 +876,9 @@
     "missingConnectorParam": "The link does not specify a platform",
     "backToConnections": "Back to connections",
     "openExistingConnection": "Open the existing connection “{name}”",
-    "validatingHint": "Validating the credentials with the platform — this can take a few seconds"
+    "validatingHint": "Validating the credentials with the platform — this can take a few seconds",
+    "openPendingConnection": "Open connection “{name}” and authorize it",
+    "authorizingHint": "Redirecting to the platform's authorization page…"
   },
   "ConnectionDetail": {
     "backToConnections": "Back to Connections",
@@ -926,6 +929,27 @@
     "noParams": "No parameters",
     "annReadOnly": "Read-only",
     "annDestructive": "Destructive"
+  },
+  "ConnectionAuth": {
+    "label": "Authorization",
+    "badgePending": "Authorization required",
+    "badgeExpired": "Authorization expired",
+    "filterNeedsAuth": "Need authorization",
+    "connect": "Connect",
+    "reconnect": "Reconnect",
+    "pendingHint": "The connection is created but not authorized with the platform yet: it has no tools and agents can't see it. Authorize it to make it work.",
+    "expiredHint": "Access was revoked or expired and won't come back on its own. Authorize again to bring the connection back.",
+    "startError": "Failed to start authorization",
+    "testNeedsAuth": "The server is reachable, but authorization is required",
+    "completing": "Finishing the connection",
+    "completingHint": "Exchanging the code with the platform — this takes a couple of seconds",
+    "completed": "Connection authorized",
+    "failedTitle": "Couldn't finish the connection",
+    "deniedTitle": "Access was not granted",
+    "invalidHint": "This link is no longer valid — the authorization timed out. Start the connection again.",
+    "deniedHint": "You declined access. The connection is still unauthorized — you can start again from its card.",
+    "unknownHint": "Something went wrong and the connection wasn't finished. Try starting again from the connection card.",
+    "backToConnections": "Back to connections"
   },
   "Board": {
     "title": "Task Board",

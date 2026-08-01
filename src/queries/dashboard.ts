@@ -113,6 +113,7 @@ export type AttentionKind =
   | 'toolErrors'
   | 'toolDenied'
   | 'connectionsDisabled'
+  | 'connectionsUnauthorized'
   | 'webhooksFailed';
 
 export interface AttentionSignal {
@@ -227,6 +228,20 @@ export function useAttentionSignals(refreshSeconds: number | null = null) {
       latestAt: deniedRows[0].createdAt,
       samples: deniedRows.slice(0, 3).map((r) => `${r.name} · ${r.connectorCode ?? '—'}`),
       href: '/dashboard/tool-use-logs?access=DENY',
+    });
+  }
+
+  // Broken without anyone touching anything: an OAuth grant that was never
+  // completed or has been revoked. The fix lives on the connection card.
+  const unauthorized = (connections.data ?? []).filter((c) => c.authStatus !== 'AUTHORIZED');
+  if (unauthorized.length > 0) {
+    signals.push({
+      kind: 'connectionsUnauthorized',
+      count: unauthorized.length,
+      partial: false,
+      latestAt: null,
+      samples: unauthorized.slice(0, 3).map((c) => c.name || c.fullCode),
+      href: '/dashboard/connections',
     });
   }
 

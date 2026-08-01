@@ -1,23 +1,30 @@
 'use client';
 
-import { useMemo, useState, useSyncExternalStore } from 'react';
+import { Suspense, useMemo, useState, useSyncExternalStore } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { API } from '@/config/constants';
 import { getApiBaseUrl } from '@/utils/api-url';
+import { safeNextPath } from '@/utils/next-path';
 import AuthShell from '@/components/landing/AuthShell';
 
 const subscribe = () => () => {};
 const getSnapshot = () => window.location.origin;
 const getServerSnapshot = () => '';
 
-export default function LoginPage() {
+function LoginContent() {
   const t = useTranslations('Login');
   const origin = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const redirectParams = useMemo(
-    () => origin ? `?redirect_to=${encodeURIComponent(origin + '/login-check')}` : '',
-    [origin]
-  );
+  // Where to land after sign-in, when the user was sent here mid-flow (the MCP
+  // OAuth callback carries single-use parameters, so the whole address travels
+  // through the round trip instead of being stored anywhere).
+  const next = safeNextPath(useSearchParams().get('next'));
+  const redirectParams = useMemo(() => {
+    if (!origin) return '';
+    const loginCheck = `${origin}/login-check${next ? `?next=${encodeURIComponent(next)}` : ''}`;
+    return `?redirect_to=${encodeURIComponent(loginCheck)}`;
+  }, [origin, next]);
   // Google is hidden on the .ru domain and offered everywhere else. An unknown origin
   // (SSR, where the host isn't available to a client component) counts as hidden: the
   // button fades in after hydration elsewhere rather than flashing on .ru for a frame.
@@ -33,7 +40,6 @@ export default function LoginPage() {
   const [pendingProvider, setPendingProvider] = useState<'google' | 'yandex' | null>(null);
 
   return (
-    <AuthShell>
       <div className="bg-surface/80 backdrop-blur-sm border border-border/50 rounded-xl shadow-sm p-8 max-w-md w-full">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-foreground mb-2">{t('title')}</h1>
@@ -109,6 +115,15 @@ export default function LoginPage() {
             </p>
           </div>
         </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <AuthShell>
+      <Suspense fallback={null}>
+        <LoginContent />
+      </Suspense>
     </AuthShell>
   );
 }

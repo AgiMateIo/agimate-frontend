@@ -17,6 +17,7 @@ type LabelKey =
   | 'attentionToolErrors'
   | 'attentionToolDenied'
   | 'attentionConnectionsDisabled'
+  | 'attentionConnectionsUnauthorized'
   | 'attentionWebhooksFailed';
 
 // Broken now vs. worth a look: failures are errors, everything the user may have
@@ -30,6 +31,9 @@ const SIGNAL_STYLE: Record<
   toolErrors: { labelKey: 'attentionToolErrors', tone: 'error' },
   toolDenied: { labelKey: 'attentionToolDenied', tone: 'warning' },
   connectionsDisabled: { labelKey: 'attentionConnectionsDisabled', tone: 'warning' },
+  // Not a choice the user made — the integration is simply dead until they
+  // re-authorize, so it reads as an error.
+  connectionsUnauthorized: { labelKey: 'attentionConnectionsUnauthorized', tone: 'error' },
   webhooksFailed: { labelKey: 'attentionWebhooksFailed', tone: 'error' },
 };
 

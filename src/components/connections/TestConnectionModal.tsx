@@ -12,6 +12,7 @@ import { ConnectionTestResponse } from '@/types';
 import { getErrorMessage } from '@/utils/error';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
+import { AuthorizeConnectionButton } from './ConnectionAuth';
 
 interface TestConnectionModalProps {
   connectionId: string;
@@ -69,7 +70,7 @@ export default function TestConnectionModal({
         )}
 
         {!loading && result && (
-          <TestResultView result={result} />
+          <TestResultView result={result} connectionId={connectionId} />
         )}
 
         <div className="flex gap-3 pt-2">
@@ -91,8 +92,15 @@ export default function TestConnectionModal({
   );
 }
 
-function TestResultView({ result }: { result: ConnectionTestResponse }) {
+function TestResultView({
+  result,
+  connectionId,
+}: {
+  result: ConnectionTestResponse;
+  connectionId: string;
+}) {
   const t = useTranslations('ConnectionDetail');
+  const tAuth = useTranslations('ConnectionAuth');
 
   if (!result.valid) {
     return (
@@ -112,6 +120,25 @@ function TestResultView({ result }: { result: ConnectionTestResponse }) {
   }
 
   const title = result.displayName || result.identifier || t('testConnected');
+
+  // Reachable and the input is fine — what's missing is the user's consent.
+  // Reporting this as a failed check would send them editing a correct URL.
+  if (result.authorizationRequired) {
+    return (
+      <div className="flex items-start gap-3 p-4 rounded-lg bg-warning/10 border border-warning/30">
+        <ExclamationTriangleIcon className="h-6 w-6 text-warning shrink-0" />
+        <div className="min-w-0">
+          <p className="font-medium text-warning">{tAuth('testNeedsAuth')}</p>
+          <p className="text-sm text-foreground mt-1 break-words">{title}</p>
+          <AuthorizeConnectionButton
+            connectionId={connectionId}
+            status="AUTH_EXPIRED"
+            className="mt-3"
+          />
+        </div>
+      </div>
+    );
+  }
 
   // valid but tools failed to load
   if (result.toolsError) {

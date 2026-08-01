@@ -11,13 +11,14 @@ import { Chip } from '@/components/ui/Chip';
 import { FilterPill } from '@/components/ui/FilterPill';
 import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import { ConnectionAvatar } from './ConnectionAvatar';
+import { ConnectionAuthBadge, needsAuthorization } from './ConnectionAuth';
 
 interface ConnectionsListProps {
   connections: ConnectionResponse[];
   platforms: ConnectorCatalogEntry[];
 }
 
-type StatusFilter = 'ALL' | 'ENABLED' | 'DISABLED';
+type StatusFilter = 'ALL' | 'ENABLED' | 'DISABLED' | 'NEEDS_AUTH';
 
 function ConnectionCard({
   connection,
@@ -31,9 +32,15 @@ function ConnectionCard({
   const bcp47Locale = localeMap[locale];
   const connectorName = connector?.name ?? connection.connectorCode;
 
+  // An unauthorized connection has no working tools, so it is set apart from a
+  // merely disabled one: the user has to see why an agent "doesn't see" it.
+  const unauthorized = needsAuthorization(connection.authStatus);
+
   return (
     <div
-      className={`group relative bg-surface-secondary rounded-xl border border-border hover:border-accent/50 transition-colors p-4 ${connection.enabled ? '' : 'opacity-60'}`}
+      className={`group relative bg-surface-secondary rounded-xl border transition-colors p-4 ${
+        unauthorized ? 'border-warning/40 hover:border-warning' : 'border-border hover:border-accent/50'
+      } ${connection.enabled ? '' : 'opacity-60'}`}
     >
       {/* Status only — switching it lives on the connection page, same as agents. */}
       <span
@@ -54,6 +61,7 @@ function ConnectionCard({
         </div>
 
         <div className="flex items-center gap-1.5 flex-wrap mt-3">
+          <ConnectionAuthBadge status={connection.authStatus} />
           {connection.subCode && <Chip icon={HashtagIcon}>{connection.subCode}</Chip>}
           <Chip icon={CalendarIcon}>{formatDate(connection.createdAt, bcp47Locale)}</Chip>
           {connection.lastUsedAt && (
@@ -70,6 +78,7 @@ export default function ConnectionsList({
   platforms,
 }: ConnectionsListProps) {
   const t = useTranslations('Connections');
+  const tAuth = useTranslations('ConnectionAuth');
   const [search, setSearch] = useState('');
   const [platformFilter, setPlatformFilter] = useState<string>('ALL');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
@@ -95,6 +104,7 @@ export default function ConnectionsList({
       if (platformFilter !== 'ALL' && connection.connectorCode !== platformFilter) return false;
       if (statusFilter === 'ENABLED' && !connection.enabled) return false;
       if (statusFilter === 'DISABLED' && connection.enabled) return false;
+      if (statusFilter === 'NEEDS_AUTH' && !needsAuthorization(connection.authStatus)) return false;
       if (!query) return true;
       const connectorName = platformByCode.get(connection.connectorCode)?.name ?? '';
       return (
@@ -132,6 +142,12 @@ export default function ConnectionsList({
             <FilterPill active={statusFilter === 'DISABLED'} onClick={() => setStatusFilter('DISABLED')}>
               {t('disabled')}
             </FilterPill>
+            {/* Only worth offering once something is actually broken. */}
+            {connections.some((c) => needsAuthorization(c.authStatus)) && (
+              <FilterPill active={statusFilter === 'NEEDS_AUTH'} onClick={() => setStatusFilter('NEEDS_AUTH')}>
+                {tAuth('filterNeedsAuth')}
+              </FilterPill>
+            )}
 
             {usedPlatforms.length > 1 && (
               <>

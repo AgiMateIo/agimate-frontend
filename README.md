@@ -54,6 +54,27 @@ The API base URL is resolved at runtime by `getApiBaseUrl()` in
 So a deployed instance needs no build-time configuration — only local
 development does. See [`.env.example`](.env.example).
 
+### MCP OAuth connections
+
+MCP servers that authenticate with OAuth (Notion, Linear, Atlassian, Sentry…)
+identify this app by fetching
+[`/connections/oauth/client.json`](src/app/connections/oauth/client.json/route.ts)
+from their own servers. The two addresses in that document are read from the
+environment at runtime and **must equal the backend's
+`APP_CONNECTORS_MCP_OAUTH_*` settings byte for byte** — a trailing slash or a
+`www.` on only one side is `invalid_client`:
+
+| Variable | Value |
+| --- | --- |
+| `APP_CONNECTORS_MCP_OAUTH_CLIENT_ID` | `https://<frontend>/connections/oauth/client.json` — the address the document is served from, and the client identity |
+| `APP_CONNECTORS_MCP_OAUTH_REDIRECT_URI` | `https://<frontend>/connections/oauth/callback` |
+
+Both live on the same public origin as the frontend: the consent screen shows
+the app name from the document next to the host of the return address, and two
+different hosts read as two unrelated applications. Unset, the document answers
+`503` rather than serving plausible-looking wrong addresses. Local development
+needs neither variable — the handshake requires a public HTTPS origin anyway.
+
 ## Scripts
 
 ```bash

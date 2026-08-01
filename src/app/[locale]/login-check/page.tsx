@@ -1,18 +1,23 @@
 'use client';
 
 import { useRouter } from '@/i18n/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
+import { safeNextPath } from '@/utils/next-path';
 import { useUser } from '@/contexts/UserContext';
 import AuthShell from '@/components/landing/AuthShell';
 
-export default function LoginCheckPage() {
+function LoginCheckContent() {
   const router = useRouter();
   const { fetchUser } = useUser();
   const t = useTranslations('LoginCheck');
   const hasRun = useRef(false);
+  // Set when sign-in interrupted something (the MCP OAuth callback); the
+  // backend echoes it back through `redirect_to`.
+  const next = safeNextPath(useSearchParams().get('next'));
   // 'network' — the gateway was unreachable, retrying the same id can work.
   // 'rejected' — the exchange itself failed (expired/spent id), only a fresh
   // sign-in helps. Both must surface: a silent bounce back to /login looks
@@ -36,9 +41,9 @@ export default function LoginCheckPage() {
     }
 
     await fetchUser();
-    router.replace('/dashboard');
+    router.replace(next ?? '/dashboard');
     return null;
-  }, [fetchUser, router]);
+  }, [fetchUser, router, next]);
 
   useEffect(() => {
     if (hasRun.current) return;
@@ -48,7 +53,6 @@ export default function LoginCheckPage() {
 
   if (error) {
     return (
-      <AuthShell>
         <div className="bg-surface/80 backdrop-blur-sm border border-border/50 rounded-xl shadow-sm p-8 max-w-md w-full text-center">
             <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
               <svg className="w-6 h-6 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -87,12 +91,10 @@ export default function LoginCheckPage() {
               </Link>
             </div>
           </div>
-      </AuthShell>
     );
   }
 
   return (
-    <AuthShell>
       <div className="text-center">
         <svg className="w-8 h-8 mx-auto mb-4 animate-spin text-accent" viewBox="0 0 24 24" fill="none">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -101,6 +103,15 @@ export default function LoginCheckPage() {
         <h1 className="text-xl font-semibold text-foreground mb-1">{t('authorizing')}</h1>
         <p className="text-muted text-sm">{t('pleaseWait')}</p>
       </div>
+  );
+}
+
+export default function LoginCheckPage() {
+  return (
+    <AuthShell>
+      <Suspense fallback={null}>
+        <LoginCheckContent />
+      </Suspense>
     </AuthShell>
   );
 }

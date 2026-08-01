@@ -33,6 +33,8 @@ NEXT_PUBLIC_API_BASE_URL=http://api.agimate.lc:8000/
 ```
 The `NEXT_PUBLIC_` prefix exposes the variable to client-side code. There is no `.env.example` checked in.
 
+A deployed instance also needs `APP_CONNECTORS_MCP_OAUTH_CLIENT_ID` and `APP_CONNECTORS_MCP_OAUTH_REDIRECT_URI` (server-side, read per request) — see **MCP OAuth connections** below. Local dev needs neither.
+
 The base URL points to the API gateway root; service-specific prefixes are added in code (see below).
 
 ## Backend Services Architecture
@@ -57,7 +59,7 @@ All paths below are under `control/manage/…` unless noted. Representative grou
 - **Channels**: CRUD `/channels/`, sessions and session messages
 - **Agentic Teams**: CRUD `/agentic-teams/`
 - **Boards**: `/boards/`, tasks `/boards/{id}/tasks/`, task status, task comments
-- **Connections** (connector instances): `/connections/…` incl. secret update and test
+- **Connections** (connector instances): `/connections/…` incl. secret update and test. Create answers `{connection, status, authorizeUrl?}`: `status: "authorization_required"` means the row exists in `PENDING_AUTH` and does **nothing** until the user passes the provider's consent screen (see MCP OAuth below). `authStatus` (`AUTHORIZED`/`PENDING_AUTH`/`AUTH_EXPIRED`) is orthogonal to `enabled` — `enabled` is intent, `authStatus` is whether it can reach the platform. `POST /connections/{id}/authorize` mints a ~10-min consent URL (same call for first auth, re-connect and scope widening); `POST /connections/oauth/complete` finishes it. `test` gained `authorizationRequired`: `valid:true` + that flag is *not* a credential error. v1 limitation: a listing can't tell an OAuth connection from a static-token one (both `AUTHORIZED`), so the "update secret" form 400s on OAuth rows.
 - **LLM Providers**: CRUD `/llm-providers/`, `purposePriority` on create/patch/response (uppercase-purpose → ordered model allow-list; key absent = fall through to the platform provider, `[]` = purpose switched off, PATCH replaces the whole map — there is no `defaultModel` any more), refresh models (upsert into the model registry), model registry `/llm-providers/{id}/models/` (rows persist with `AVAILABLE`/`UNAVAILABLE` status — still saveable as a binding, but UNAVAILABLE is skipped inside a purpose list and fails an agent's explicit binding; capability fields `inputModalities`/`outputModalities`/`supportedParameters`/`maxOutputTokens` come from the provider verbatim — compare case-insensitively, `null` = unknown, not "can't"), per-model extra-body `PUT /llm-providers/{id}/models/extra-body` (`model` in the body); provider-level `extraBody` on create/patch/response (≤16 KB JSON object, deep-merged with model-level by the backend, no secrets), read-only catalog `GET /llm-providers/catalog/` (known gateways pre-filling the create form — server-sorted, empty is legal; pre-fill only, it never takes part in how a created provider works)
 - **Connector catalog** (read-only): `/connectors/`, `/connectors/{code}`
 - **Logs**: tool-use logs, connector jobs (pause/resume/run-now/delete), trigger logs, webhook delivery logs
@@ -92,6 +94,17 @@ The backend supports OAuth2 login from multiple frontend domains. The frontend a
 - **Refresh token**: HTTP-only cookie (inaccessible to JS — XSS-safe)
 
 Never store the actual refresh token in JavaScript-accessible storage.
+
+### Returning to an interrupted page after sign-in
+`/login` accepts `?next=<locale-less in-app path>` and threads it through as `redirect_to=<origin>/login-check?next=…`; `/login-check` navigates there instead of `/dashboard`. Values pass through `safeNextPath` (`src/utils/next-path.ts`) — in-app paths only, no absolute or protocol-relative URLs. It exists for the MCP OAuth callback, whose single-use `code`/`state` must survive the sign-in round trip **in the URL** rather than in storage.
+
+## MCP OAuth connections
+
+Some MCP servers (Notion, Linear, Atlassian, Sentry…) refuse a hand-written token. The user enters only the server URL; the backend finds out that OAuth is needed and creates the connection in `PENDING_AUTH`, and the frontend walks the user through the provider's consent screen. **No token ever reaches the frontend.**
+
+- `src/app/connections/oauth/client.json/route.ts` — outside `[locale]`, served as `application/json` without auth: the *provider's server* fetches it to learn the app name and the allowed return addresses. `client_id` and `redirect_uris` come from `APP_CONNECTORS_MCP_OAUTH_CLIENT_ID` / `APP_CONNECTORS_MCP_OAUTH_REDIRECT_URI` (read per request, `force-dynamic`) and must equal the backend's settings byte for byte — never derived from `window.location` or `Host`. Missing config answers `503` rather than serving wrong addresses. The middleware matcher already skips dotted paths, so no locale prefix is added.
+- `src/app/[locale]/connections/oauth/callback/page.tsx` — the return address. Forwards `state`/`code`/`error`/`iss` to `POST /connections/oauth/complete` verbatim and **exactly once** (a module-level `Set` of spent states, so StrictMode's second mount doesn't turn a success into "already been used"; no automatic retry). `error_description` from the URL is never rendered — until the backend has matched `iss`, anything in that query is attacker-supplied.
+- `src/components/connections/ConnectionAuth.tsx` — the shared badge, panel and "Подключить/Переподключить" button; `window.location.assign` on the minted URL (never `fetch`, never an iframe — consent screens send `X-Frame-Options`).
 
 ## API Service (`src/services/`)
 
@@ -145,7 +158,8 @@ messages/
     └── en.json / ru.json         # Dashboard namespaces:
                                    #   Sidebar, TopBar, DashboardHome, ApiKeys,
                                    #   ConnectorCatalog, Connectors, Agents, LlmProviders,
-                                   #   AgenticTeams, Connections, ConnectionDetail, Board,
+                                   #   AgenticTeams, Connections, ConnectionDetail,
+                                   #   ConnectionAuth, Board,
                                    #   Skills, SkillConnectors, SkillAgents, Settings, Channels, Chat,
                                    #   Admin
 ```
@@ -173,8 +187,11 @@ src/
 │       │   ├── tool-use-logs/     # accepts ?status= / ?access= to seed filters
 │       │   ├── trigger-logs/
 │       │   └── settings/
+│       ├── connections/             # public deep links: new/ (→ dashboard),
+│       │                            #   oauth/callback/ (MCP OAuth return address)
 │       ├── login/  login-check/  logout/
 │       └── n8n/  desktop/  android/   # landing pages
+│   └── connections/oauth/client.json/ # route handler, no locale prefix (see MCP OAuth)
 ├── components/
 │   ├── admin/  agents/  agentic-teams/  boards/  channels/  connectors/
 │   ├── connections/  dashboard/  llm-providers/  skills/  webchat/
@@ -195,7 +212,8 @@ src/
 │                                  #   boards, agentic-teams, connections, llm-providers,
 │                                  #   agent-connections, agent-skills, connector-jobs, webhooks,
 │                                  #   centrifugo, tool-use-logs, connectors via skills.ts) + index.ts
-├── utils/                         # date, error, clipboard, api-url, avatar, animateCardMove
+├── utils/                         # date, error, clipboard, api-url, avatar, animateCardMove,
+│                                  #   next-path (post-sign-in return path)
 └── middleware.ts
 ```
 Note: keep this tree approximate — verify against `src/` before relying on a specific path.
