@@ -14,6 +14,7 @@ import { channelsApi } from './modules/channels';
 import { boardsApi } from './modules/boards';
 import { connectionsApi } from './modules/connections';
 import { connectorsApi } from './modules/connectors';
+import { filesApi } from './modules/files';
 import { agenticTeamsApi } from './modules/agenticTeams';
 import { logsApi } from './modules/logs';
 import { miscApi } from './modules/misc';
@@ -30,6 +31,7 @@ const apiService = {
   ...boardsApi,
   ...connectionsApi,
   ...connectorsApi,
+  ...filesApi,
   ...agenticTeamsApi,
   ...logsApi,
   ...miscApi,

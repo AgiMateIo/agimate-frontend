@@ -64,6 +64,7 @@ All paths below are under `control/manage/…` unless noted. Representative grou
 - **Connector catalog** (read-only): `/connectors/`, `/connectors/{code}`. `integrationMeta.credentialFields` maps a field code to a declaration — `{label, type, required}`, where `type` is `URL`/`SECRET`/`JSON`/`TEXT` and the list is the backend's to grow. It used to be a bare label string, so masking and optionality were guessed from the field name and the label text; don't reintroduce that. An unrecognised `type` renders masked (`src/components/connections/CredentialFieldsForm.tsx`).
 - **Logs**: tool-use logs, connector jobs (pause/resume/run-now/delete), trigger logs, webhook delivery logs
 - **Webchat** (dashboard chat with agents): sessions `/webchat/sessions` (POST creates, GET lists, DELETE soft-closes), newest-first paged history + send `/webchat/sessions/{id}/messages`, per-session Centrifugo tokens `POST /webchat/sessions/{id}/token`; agent replies arrive as `webchat_message` events (streams: progress/answer/error, at-least-once — dedupe by `messageId`)
+- **Files** (everything that passed through the file layer — chat attachments, messenger media, agent-generated images, spreadsheet exports; one entity, one id): paged newest-first list `GET /manage/files/` (`agentId` = *who created it*, not who owns it — every row is the caller's; `name` = case-insensitive substring; no sort parameter), `DELETE /manage/files/{fileId}` (404 = already gone → treat as success and re-read). `name` is legitimately `null` where a name never existed — fall back to type + size, never to the `agf_…` id. `url` is a **relative signed link valid ~15 min** (`resolveControlFileUrl`, usable in `<img src>`, no `Authorization`): never persist it, re-read the list for fresh signatures (403 = expired signature, not an error to show). Retention is 7 days (`expiresAt`) and cannot be extended from the UI — show the remaining time or vanishing files read as data loss. Deleting breaks the file wherever it was referenced (chat, task comments, sheets), so it is always confirmed. Upload (`POST /manage/webchat/files`) now answers with `name`; its 400 (size cap / daily quota) carries a user-ready `error.message` — show it verbatim.
 - **Admin** (ADMIN only, same path-prefix gate as user-api's): per-user token spend `GET /manage/admin/llm-usage/{userId}/` — the shape of the caller's own `/manage/llm-usage`, for an arbitrary user. Never 404s (control-api doesn't own the user directory, so an unknown id answers with the platform row at zero) and an empty array is legal. `source` changes what the numbers mean: `PLATFORM` = that user's own free-tier spend, `USER` = the whole own key across all their agents — do not label them alike.
 - **Centrifugo**: `POST /control/manage/centrifugo/token`
 
@@ -108,7 +109,7 @@ Some MCP servers (Notion, Linear, Atlassian, Sentry…) refuse a hand-written to
 
 ## API Service (`src/services/`)
 
-`apiService` (default export of `src/services/api.ts`) is a singleton exposing all backend calls behind a **flat facade**. `api.ts` only composes per-domain modules from `src/services/modules/` (`admin`, `agents`, `apps`, `skills`, `llmProviders`, `channels`, `boards`, `connections`, `connectors`, `agenticTeams`, `logs`, `misc`, `webchat`) over the shared transport core in `src/services/httpClient.ts`. Consumers call `apiService.getAgent(...)` etc. and never touch the modules directly. When adding an endpoint, put the method in the matching domain module (or add a new module and spread it into the facade in `api.ts`).
+`apiService` (default export of `src/services/api.ts`) is a singleton exposing all backend calls behind a **flat facade**. `api.ts` only composes per-domain modules from `src/services/modules/` (`admin`, `agents`, `apps`, `skills`, `llmProviders`, `channels`, `boards`, `connections`, `connectors`, `files`, `agenticTeams`, `logs`, `misc`, `webchat`) over the shared transport core in `src/services/httpClient.ts`. Consumers call `apiService.getAgent(...)` etc. and never touch the modules directly. When adding an endpoint, put the method in the matching domain module (or add a new module and spread it into the facade in `api.ts`).
 
 `httpClient.ts` owns the transport: `get/post/put/patch/delete`, the token-refresh flow, in-flight GET dedup, response unwrapping, `buildPagedQuery`, and the `ApiError` class (re-exported from `@/services/api`).
 
@@ -161,7 +162,7 @@ messages/
                                    #   AgenticTeams, Connections, ConnectionDetail,
                                    #   ConnectionAuth, Board,
                                    #   Skills, SkillConnectors, SkillAgents, Settings, Channels, Chat,
-                                   #   Admin
+                                   #   Files, Admin
 ```
 When adding keys: landing/auth → `messages/{locale}.json`; dashboard → `messages/dashboard/{locale}.json`. Shared UI strings (`cancel`, `save`, `delete`, `edit`, `close`, …) live in the base **`Common`** namespace, which is merged into the dashboard bundle too — use `useTranslations('Common')` for them instead of re-defining per dashboard namespace.
 
@@ -175,13 +176,15 @@ src/
 │       ├── dashboard/
 │       │   ├── page.tsx           # home: overview / work mode (see Dashboard Home)
 │       │   ├── admin/users/       # ADMIN only: user directory, roles, per-user spend
-│       │   ├── agents/            # list, create, [id], [id]/edit, [id]/chat, deliveries
+│       │   ├── agents/            # list, create, [id], [id]/edit, [id]/chat, [id]/files, deliveries
 │       │   ├── agentic-teams/     # list, [id], [id]/agents, [id]/board
 │       │   ├── apps/              # list, [id]
 │       │   ├── channels/
 │       │   ├── connectors/        # connector catalog
 │       │   ├── connections/       # list, [id]
 │       │   ├── connector-jobs/
+│       │   ├── files/             # user files: list, delete (also the chat attachment picker
+│       │   │                      #   and the agent's own /agents/[id]/files section)
 │       │   ├── llm-providers/
 │       │   ├── skills/            # list, create, [id], [id]/edit
 │       │   ├── tool-use-logs/     # accepts ?status= / ?access= to seed filters
@@ -194,7 +197,7 @@ src/
 │   └── connections/oauth/client.json/ # route handler, no locale prefix (see MCP OAuth)
 ├── components/
 │   ├── admin/  agents/  agentic-teams/  boards/  channels/  connectors/
-│   ├── connections/  dashboard/  llm-providers/  skills/  webchat/
+│   ├── connections/  dashboard/  files/  llm-providers/  skills/  webchat/
 │   ├── landing/  layout/
 │   └── ui/                        # Alert, Button, FormField (+ Select), Modal, ConfirmDeleteModal,
 │                                  #   Toggle, Tabs, Chip, RowAction, Pagination, RefreshControls,
@@ -366,7 +369,7 @@ Component-level limits (name/description `maxLength`, clipboard timeout) are inl
 
 ## Type Organization
 
-Types live in `src/types/`, one file per domain (`agents`, `skills`, `apps`, `channels`, `boards`, `agentic-teams`, `connections`, `llm-providers`, `agent-connections`, `agent-skills`, `connector-jobs`, `webhooks`, `centrifugo`, `tool-use-logs`, `admin`, …), re-exported from `index.ts`.
+Types live in `src/types/`, one file per domain (`agents`, `skills`, `apps`, `channels`, `boards`, `agentic-teams`, `connections`, `llm-providers`, `agent-connections`, `agent-skills`, `connector-jobs`, `webhooks`, `centrifugo`, `tool-use-logs`, `files`, `admin`, …), re-exported from `index.ts`.
 ```typescript
 import { AgentResponse, SkillResponse } from '@/types';        // from root
 import type { AgentResponse } from '@/types/agents';           // or domain file

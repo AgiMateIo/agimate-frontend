@@ -16,6 +16,7 @@ import {
   SparklesIcon,
   ChatBubbleLeftRightIcon,
   ClockIcon,
+  FolderIcon,
   UserCircleIcon,
   ShieldCheckIcon,
   PlusIcon,
@@ -139,6 +140,7 @@ const getNavGroups = (
       { label: t('connections'), icon: LinkIcon, href: '/dashboard/connections' },
       { label: t('channels'), icon: ChatBubbleLeftRightIcon, href: '/dashboard/channels' },
       { label: t('connectorJobs'), icon: ClockIcon, href: '/dashboard/connector-jobs' },
+      { label: t('files'), icon: FolderIcon, href: '/dashboard/files' },
     ],
   },
   {

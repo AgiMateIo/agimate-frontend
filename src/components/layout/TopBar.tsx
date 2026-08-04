@@ -42,6 +42,7 @@ export default function TopBar({
     'connector-jobs': t('breadcrumbs.connectorJobs'),
     connections: t('breadcrumbs.connections'),
     skills: t('breadcrumbs.skills'),
+    files: t('breadcrumbs.files'),
     general: t('breadcrumbs.general'),
     models: t('breadcrumbs.models'),
     channels: t('breadcrumbs.channels'),
