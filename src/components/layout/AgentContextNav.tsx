@@ -13,6 +13,7 @@ import {
   LinkIcon,
   CommandLineIcon,
   BoltIcon,
+  FolderIcon,
   UserCircleIcon,
 } from '@heroicons/react/24/outline';
 import { useAgentDetailQuery, allAgentsOptions, agentsListOptions } from '@/queries/agents';
@@ -26,6 +27,7 @@ type SectionLabelKey =
   | 'tabChannels'
   | 'tabSkills'
   | 'tabConnections'
+  | 'tabFiles'
   | 'tabToolCalls'
   | 'tabTriggers';
 
@@ -43,6 +45,7 @@ const SECTIONS: Section[] = [
   { key: 'channels', seg: 'channels', labelKey: 'tabChannels', icon: ChatBubbleLeftRightIcon },
   { key: 'skills', seg: 'skills', labelKey: 'tabSkills', icon: AcademicCapIcon },
   { key: 'connections', seg: 'connections', labelKey: 'tabConnections', icon: LinkIcon },
+  { key: 'files', seg: 'files', labelKey: 'tabFiles', icon: FolderIcon },
   { key: 'tool-calls', seg: 'tool-calls', labelKey: 'tabToolCalls', icon: CommandLineIcon },
   { key: 'triggers', seg: 'triggers', labelKey: 'tabTriggers', icon: BoltIcon },
 ];
