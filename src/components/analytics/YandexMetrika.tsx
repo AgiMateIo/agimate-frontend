@@ -37,8 +37,11 @@ export function YandexMetrika() {
 
   useEffect(() => {
     if (!ENABLED) return;
-    // href, а не pathname: в отчёте нужен полный URL со строкой запроса.
-    const url = window.location.href;
+    // Не href: в отчёте нужен полный URL со строкой запроса, но без фрагмента —
+    // на /login-check в нём лежит ID refresh-токена, а trackHash выключен, так
+    // что для отчётов hash всё равно ничего не значит.
+    const { origin, pathname: path, search } = window.location;
+    const url = origin + path + search;
     if (url === previousUrl.current) return;
     const referer = previousUrl.current ?? document.referrer;
     previousUrl.current = url;
