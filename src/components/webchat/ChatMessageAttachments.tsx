@@ -4,21 +4,15 @@ import { useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ArrowDownTrayIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import { resolveControlFileUrl } from '@/utils/api-url';
+import { formatBytes } from '@/utils/files';
 import type { WebchatPart } from '@/types';
 
-// Human-readable byte size for attachment cards (e.g. "384 KB", "1.2 MB").
-export function formatBytes(bytes: number): string {
-  if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
-  const units = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
-  const value = bytes / 1024 ** i;
-  return `${i === 0 ? value : value.toFixed(1)} ${units[i]}`;
-}
-
-// Server parts carry control-relative signed URLs; optimistic USER parts carry
-// local blob: previews that must be used verbatim.
+// Server parts carry control-relative signed URLs. Optimistic USER parts carry
+// a ready-to-use URL instead — a local blob: preview for a fresh upload, an
+// already-resolved signed URL for a file picked from storage — so anything
+// absolute is used verbatim.
 function resolvePartUrl(url: string): string {
-  return url.startsWith('blob:') ? url : resolveControlFileUrl(url);
+  return /^(blob:|https?:)/.test(url) ? url : resolveControlFileUrl(url);
 }
 
 // Every image occupies the same tile regardless of its own dimensions, so a

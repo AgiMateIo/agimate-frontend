@@ -7,7 +7,7 @@ import {
   ExclamationTriangleIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
-import { formatBytes } from './ChatMessageAttachments';
+import { formatBytes } from '@/utils/files';
 import { MAX_ATTACHMENTS, ComposerAttachment } from './useComposerAttachments';
 
 function AttachmentChip({
@@ -20,16 +20,22 @@ function AttachmentChip({
   onRetry: () => void;
 }) {
   const t = useTranslations('Chat');
-  const isImage = attachment.file.type.startsWith('image/');
+  const isImage = attachment.mime.startsWith('image/');
   const isError = attachment.status === 'error';
 
+  // A 400 is the size cap *or* the exhausted daily quota, and the backend
+  // writes that message for the user to read — prefer it over our own guess.
+  // The chip is narrow, so the full text also goes into the tooltip.
+  const errorText = isError
+    ? attachment.error === 'rateLimited'
+      ? t('tooManyUploads')
+      : attachment.errorMessage ||
+        (attachment.error === 'tooLarge' ? t('fileTooLarge') : t('uploadFailed'))
+    : '';
+
   const statusLine = isError ? (
-    <span className="text-[11px] text-error truncate">
-      {attachment.error === 'tooLarge'
-        ? t('fileTooLarge')
-        : attachment.error === 'rateLimited'
-          ? t('tooManyUploads')
-          : attachment.errorMessage || t('uploadFailed')}
+    <span className="text-[11px] text-error truncate" title={errorText}>
+      {errorText}
     </span>
   ) : attachment.status === 'uploading' ? (
     <span className="text-[11px] text-muted truncate">
@@ -38,7 +44,7 @@ function AttachmentChip({
   ) : (
     <span className="flex items-center gap-1 text-[11px] text-muted">
       <CheckIcon className="h-3 w-3 shrink-0 text-success" />
-      {formatBytes(attachment.file.size)}
+      {formatBytes(attachment.size)}
     </span>
   );
 
@@ -53,7 +59,7 @@ function AttachmentChip({
           {/* eslint-disable-next-line @next/next/no-img-element -- local blob preview */}
           <img
             src={attachment.previewUrl}
-            alt={attachment.file.name}
+            alt={attachment.name}
             className="h-full w-full object-cover"
           />
           {attachment.status === 'uploading' && (
@@ -75,10 +81,10 @@ function AttachmentChip({
       )}
       <span className="flex min-w-0 flex-col">
         <span className="max-w-[9rem] truncate text-xs font-medium text-foreground">
-          {attachment.file.name}
+          {attachment.name}
         </span>
         {statusLine}
-        {isError && (
+        {isError && attachment.file && (
           <button
             type="button"
             onClick={onRetry}

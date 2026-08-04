@@ -6,6 +6,7 @@ import {
   ArrowLeftIcon,
   ArrowUpTrayIcon,
   Cog6ToothIcon,
+  FolderOpenIcon,
   PaperAirplaneIcon,
   PaperClipIcon,
 } from '@heroicons/react/24/outline';
@@ -20,6 +21,7 @@ import { useWebchatThread, ThreadMessage } from './useWebchatThread';
 import { ChatMessageText } from './ChatMessageText';
 import { ChatMessageAttachments } from './ChatMessageAttachments';
 import { ComposerAttachments } from './ComposerAttachments';
+import FilePickerModal from '@/components/files/FilePickerModal';
 import { useComposerAttachments, MAX_ATTACHMENTS } from './useComposerAttachments';
 import type { WebchatMessagePayload, WebchatSessionResponse } from '@/types';
 
@@ -109,6 +111,7 @@ export default function WebchatConversation({
   const composer = useComposerAttachments();
   // Depth counter for dragenter/dragleave pairs while a file hovers the pane.
   const [dragDepth, setDragDepth] = useState(0);
+  const [showFilePicker, setShowFilePicker] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const listRef = useRef<HTMLDivElement>(null);
@@ -374,6 +377,18 @@ export default function WebchatConversation({
                   <PaperClipIcon className="h-4 w-4" />
                   <span className="sr-only">{t('attachFiles')}</span>
                 </button>
+                {/* A file the user already has needs no second upload — and no
+                    second copy counting against the daily limit. */}
+                <button
+                  type="button"
+                  onClick={() => setShowFilePicker(true)}
+                  disabled={!composer.canAddMore}
+                  title={composer.canAddMore ? t('pickFromFiles') : t('maxAttachments', { max: MAX_ATTACHMENTS })}
+                  className="shrink-0 rounded-lg border border-border p-2.5 text-muted transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:text-muted"
+                >
+                  <FolderOpenIcon className="h-4 w-4" />
+                  <span className="sr-only">{t('pickFromFiles')}</span>
+                </button>
                 <textarea
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
@@ -401,6 +416,17 @@ export default function WebchatConversation({
           )}
         </div>
       </div>
+
+      {showFilePicker && (
+        <FilePickerModal
+          remainingSlots={composer.remainingSlots}
+          onClose={() => setShowFilePicker(false)}
+          onPick={(files) => {
+            composer.addExisting(files);
+            setShowFilePicker(false);
+          }}
+        />
+      )}
     </div>
   );
 }

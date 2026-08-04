@@ -26,6 +26,8 @@ export interface WebchatFileUploadResponse {
   fileId: string;
   mime: string;
   size: number;
+  // Name the file was stored under (taken from the uploaded file's name).
+  name: string;
   expiresAt: string;
 }
 
