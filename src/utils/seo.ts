@@ -30,6 +30,15 @@ export const PUBLIC_PAGES = [
  */
 export const CANONICAL_HOST = process.env.APP_PUBLIC_HOST?.trim().replace(/^www\./, '');
 
+/**
+ * Ownership token from Yandex.Webmaster, rendered as `<meta name="yandex-verification">`.
+ *
+ * Kept in the environment rather than the source: it is not a secret — the tag is
+ * public in the HTML — but it belongs to one property, and staging verifying
+ * itself as production is exactly the confusion the panel is there to prevent.
+ */
+export const YANDEX_VERIFICATION = process.env.APP_YANDEX_VERIFICATION?.trim();
+
 /** The hostname this request arrived on, without a port or `www.`. */
 export async function getRequestHost(): Promise<string> {
     const requestHeaders = await headers();

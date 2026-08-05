@@ -5,7 +5,7 @@ import { resolveLocale, routing } from '@/i18n/routing';
 import { UserProvider } from '@/contexts/UserContext';
 import { QueryProvider } from '@/contexts/QueryProvider';
 import { YandexMetrika } from '@/components/analytics/YandexMetrika';
-import { getSiteOrigin } from '@/utils/seo';
+import { getSiteOrigin, YANDEX_VERIFICATION } from '@/utils/seo';
 import { Geist, Geist_Mono } from 'next/font/google';
 import '../globals.css';
 
@@ -44,6 +44,9 @@ export async function generateMetadata({
     // X reads og:image only once a card type is declared; without this the
     // generated card degrades to a thumbnail next to the title.
     twitter: { card: 'summary_large_image' },
+    // Yandex checks the site root, which the locale middleware redirects to
+    // /ru — so the tag has to live on every locale page, not on one of them.
+    ...(YANDEX_VERIFICATION && { verification: { yandex: YANDEX_VERIFICATION } }),
   };
 }
 

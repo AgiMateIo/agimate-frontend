@@ -85,6 +85,7 @@ sections — under `/dashboard` a crawler only ever sees the pre-auth skeleton.
 | Variable | Value |
 | --- | --- |
 | `APP_PUBLIC_HOST` | The one host that may be indexed, without a scheme or `www.` (e.g. `agimate.ru`) |
+| `APP_YANDEX_VERIFICATION` | Ownership token from Yandex.Webmaster — the `content` of its `yandex-verification` tag, without the markup. Unset, no tag is rendered |
 
 Any other host — staging, a preview domain — is served a blanket
 `Disallow: /` so it cannot compete with production for the same content. Unset,
