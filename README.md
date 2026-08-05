@@ -75,6 +75,43 @@ different hosts read as two unrelated applications. Unset, the document answers
 `503` rather than serving plausible-looking wrong addresses. Local development
 needs neither variable — the handshake requires a public HTTPS origin anyway.
 
+### Crawlers
+
+[`src/app/robots.ts`](src/app/robots.ts) and
+[`src/app/sitemap.ts`](src/app/sitemap.ts) generate `/robots.txt` and
+`/sitemap.xml` per request. `robots.txt` keeps crawlers out of the authenticated
+sections — under `/dashboard` a crawler only ever sees the pre-auth skeleton.
+
+| Variable | Value |
+| --- | --- |
+| `APP_PUBLIC_HOST` | The one host that may be indexed, without a scheme or `www.` (e.g. `agimate.ru`) |
+
+Any other host — staging, a preview domain — is served a blanket
+`Disallow: /` so it cannot compete with production for the same content. Unset,
+every host is indexable and the origin is read off the request: that is the
+behaviour of having no `robots.txt` at all, and failing the other way would
+de-index production the moment the variable went missing.
+
+[`src/utils/seo.ts`](src/utils/seo.ts) holds `PUBLIC_PAGES` — **the list of
+indexable pages**. Add a public page there and it enters the sitemap, the
+`hreflang` sets and [`/llms.txt`](src/app/llms.txt/route.ts); leave it out and
+neither search engines nor answer engines learn about it. The page's own layout
+calls `buildAlternates(locale, path)` to emit `canonical` + `hreflang`, resolved
+against the `metadataBase` on the locale layout. The authenticated tree
+deliberately emits neither.
+
+`/llms.txt` and the structured-data graph
+([`src/components/seo/graph.ts`](src/components/seo/graph.ts), rendered on the
+home page) both reuse the pages' own translated titles and descriptions rather
+than prose of their own — a hand-maintained second copy drifts, and a description
+of a product version that no longer exists is worse than none.
+
+Share cards are generated per request by
+[`src/components/seo/ogImage.tsx`](src/components/seo/ogImage.tsx) behind the
+`opengraph-image.tsx` files. The Geist TTFs it needs live in `public/fonts/`:
+satori reads TTF/OTF and never the woff2 that `next/font` serves, and `public/`
+is the one directory that reaches the standalone image.
+
 ## Scripts
 
 ```bash

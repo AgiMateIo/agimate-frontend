@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { resolveLocale } from '@/i18n/routing';
+import { buildAlternates } from '@/utils/seo';
 
 export async function generateMetadata({
   params,
@@ -12,6 +13,7 @@ export async function generateMetadata({
   return {
     title: t('meta.title'),
     description: t('meta.description'),
+    alternates: buildAlternates(locale, '/desktop'),
     openGraph: {
       title: t('meta.ogTitle'),
       description: t('meta.ogDescription'),

@@ -5,6 +5,7 @@ import { resolveLocale, routing } from '@/i18n/routing';
 import { UserProvider } from '@/contexts/UserContext';
 import { QueryProvider } from '@/contexts/QueryProvider';
 import { YandexMetrika } from '@/components/analytics/YandexMetrika';
+import { getSiteOrigin } from '@/utils/seo';
 import { Geist, Geist_Mono } from 'next/font/google';
 import '../globals.css';
 
@@ -27,6 +28,11 @@ export async function generateMetadata({
   const locale = resolveLocale(requested);
   const t = await getTranslations({ locale, namespace: 'Metadata' });
   return {
+    // Inherited by every page below, so the relative canonical/hreflang paths and
+    // any OG image resolve to absolute URLs. Deliberately no `alternates` here:
+    // this layout also wraps /dashboard, which would then claim `/` as its
+    // canonical.
+    metadataBase: new URL(await getSiteOrigin()),
     title: t('title'),
     description: t('description'),
     openGraph: {
@@ -35,6 +41,9 @@ export async function generateMetadata({
       type: 'website',
       locale: locale === 'ru' ? 'ru_RU' : 'en_US',
     },
+    // X reads og:image only once a card type is declared; without this the
+    // generated card degrades to a thumbnail next to the title.
+    twitter: { card: 'summary_large_image' },
   };
 }
 
