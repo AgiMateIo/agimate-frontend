@@ -80,7 +80,11 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
   // Reset with the selection: the codes belong to the skill, not to the modal.
   const [choice, setChoice] = useState<Record<string, string>>({});
 
-  const [{ data: userConnections }, { data: agentConnections }, { data: catalog }] = useQueries({
+  const [
+    { data: userConnections },
+    { data: agentConnections, isPending: agentConnectionsPending },
+    { data: catalog },
+  ] = useQueries({
     queries: [connectionsListOptions(), agentConnectionsOptions(agentId), connectorCatalogOptions()],
   });
 
@@ -124,24 +128,30 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, async () => {
       if (!selectedSkill) return;
+      // Rebuilt from the external list rather than sent as collected: the split
+      // depends on the connector catalog, and a code picked while it was still
+      // loading could have landed in `choice` as external by mistake. Internal
+      // codes must be left out — their instance is not the caller's to name.
+      const connections = Object.fromEntries(
+        external.map((code) => [code, choice[code]]).filter(([, id]) => !!id),
+      );
       // Connections first: a skill may only point at what the agent can reach.
       await openAgentAccess(agentId, {
-        connectionIds: Object.values(choice),
+        connectionIds: Object.values(connections),
         connectorCodes: internal,
         openConnectionIds: openIds,
         openConnectorCodes: openCodes,
       });
       await apiService.bindAgentSkill(agentId, {
         skillId: selectedSkill.id,
-        // Internal codes must be left out — their instance is not the caller's
-        // to name, and sending one is a 400.
-        connections: external.length > 0 ? choice : undefined,
+        connections: Object.keys(connections).length > 0 ? connections : undefined,
       });
     });
 
   // Every external connector needs an instance: without one the backend refuses
-  // the binding rather than guessing between two accounts.
-  const incomplete = external.some((code) => !choice[code]);
+  // the binding rather than guessing between two accounts. And until the agent's
+  // own connections are known, opening one would re-open what is already open.
+  const incomplete = external.some((code) => !choice[code]) || agentConnectionsPending;
 
   const skills = pagedData?.content ?? [];
   const totalElements = pagedData?.totalElements ?? 0;

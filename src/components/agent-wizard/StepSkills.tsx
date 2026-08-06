@@ -18,11 +18,11 @@ import { useSkillPickerQuery, type SkillPickerSource } from '@/queries/skills';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { getErrorMessage } from '@/utils/error';
-import { isIntegrationConnector } from '@/utils/connector';
+import { splitSkillConnectors } from '@/components/agents/skillAccess';
 import { Select } from '@/components/ui/FormField';
 import type { SkillResponse } from '@/types';
 import { WizardStepProps } from './AgentWizard';
-import { createAgentFromWizard, internalCodesFor } from './createAgent';
+import { createAgentFromWizard, resolveSkillConnection } from './createAgent';
 import WizardActions from './WizardActions';
 
 // Rows revealed at once. "Show more" grows the list in place instead of paging,
@@ -85,38 +85,33 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
 
   const connectorState = (code: string): ConnectorState => {
     if (openedByCode.has(code)) return 'connected';
-    const entry = catalogByCode.get(code);
-    // Integrations need a connection opened on the previous step; internal ones
-    // (time, memory) are opened for the agent automatically at creation. An
-    // unknown code is assumed to need one.
-    return !entry || isIntegrationConnector(entry) ? 'needsConnection' : 'builtIn';
+    // Anything with instances of its own (integrations, device apps) needs a
+    // connection opened on the previous step; internal ones (time, memory) are
+    // opened for the agent automatically at creation.
+    const { internal } = splitSkillConnectors([code], catalog);
+    return internal.length > 0 ? 'builtIn' : 'needsConnection';
   };
 
   const selectedIds = useMemo(() => new Set(data.skills.map((s) => s.id)), [data.skills]);
 
-  // External connectors of a skill, i.e. the ones an instance must be named for.
+  // Connectors an instance must be named for — the same split the create call
+  // uses, so what the step shows is what gets sent.
   const externalCodesOf = (skill: { connectorCodes?: string[] }) =>
-    (skill.connectorCodes ?? []).filter((code) => {
-      const entry = catalogByCode.get(code);
-      return !entry || isIntegrationConnector(entry);
-    });
+    splitSkillConnectors(skill.connectorCodes ?? [], catalog).external;
 
   const toggleSkill = (skill: SkillResponse) => {
     if (selectedIds.has(skill.id)) {
-      const { [skill.id]: _dropped, ...rest } = data.skillConnections;
+      const rest = { ...data.skillConnections };
+      delete rest[skill.id];
       setData({
         skills: data.skills.filter((s) => s.id !== skill.id),
         skillConnections: rest,
       });
       return;
     }
-    // One opened connection of a type is not a choice — preselect it so the
-    // common case stays a single click.
-    const auto: Record<string, string> = {};
-    for (const code of externalCodesOf(skill)) {
-      const opened = openedByCode.get(code) ?? [];
-      if (opened.length === 1) auto[code] = opened[0].id;
-    }
+    // No instance map is stored here: it is resolved from the connections that
+    // are open at the moment of creation, so walking back and swapping them
+    // cannot leave this skill pointing at a connection the agent lost.
     setData({
       skills: [
         ...data.skills,
@@ -127,7 +122,6 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
           connectorCodes: skill.connectorCodes,
         },
       ],
-      skillConnections: { ...data.skillConnections, [skill.id]: auto },
     });
   };
 
@@ -148,7 +142,7 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
   // exists is reported on the next step rather than rolled back.
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, async () => {
-      const result = await createAgentFromWizard(data, teamId, internalCodesFor(data, catalog));
+      const result = await createAgentFromWizard(data, teamId, catalog);
       setData({
         created: result.created,
         failedConnections: result.failedConnections,
@@ -280,7 +274,7 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
                             {catalogByCode.get(code)?.name ?? code}
                           </span>
                           <Select
-                            value={data.skillConnections[skill.id]?.[code] ?? ''}
+                            value={resolveSkillConnection(data, skill.id, code)}
                             onChange={(e) => setSkillConnection(skill.id, code, e.target.value)}
                           >
                             <option value="">{t('skillInstanceNotChosen')}</option>

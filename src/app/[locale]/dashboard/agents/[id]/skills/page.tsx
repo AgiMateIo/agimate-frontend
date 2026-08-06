@@ -11,9 +11,10 @@ export default function AgentSkillsPage() {
     <div className="bg-surface rounded-xl border border-border p-6">
       <AgentSkillsTab
         agentId={agentId}
-        onConnectConnector={(code) =>
-          router.push(`/dashboard/agents/${agentId}/connections?bindConnector=${encodeURIComponent(code)}`)
-        }
+        // Only reached when the user owns no instance of that connector at all:
+        // the agent's own connections screen would offer an empty list, so the
+        // trail leads to where a connection is actually created.
+        onCreateConnection={() => router.push('/dashboard/connections')}
       />
     </div>
   );

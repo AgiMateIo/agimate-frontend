@@ -30,12 +30,12 @@ import SkillConnectorChip, { connectorFix } from './SkillConnectorChip';
 
 interface AgentSkillsTabProps {
   agentId: string;
-  // CTA for a connector the user has no instance of: switch the agent page to
-  // its Connections section with this connector preselected.
-  onConnectConnector?: (connectorCode: string) => void;
+  // CTA for a connector the user owns no instance of — the fix is creating a
+  // connection, not picking one here.
+  onCreateConnection?: (connectorCode: string) => void;
 }
 
-export default function AgentSkillsTab({ agentId, onConnectConnector }: AgentSkillsTabProps) {
+export default function AgentSkillsTab({ agentId, onCreateConnection }: AgentSkillsTabProps) {
   const t = useTranslations('Agents');
   const locale = useLocale();
   const { invalidateAgentAccess } = useAgentCacheActions();
@@ -221,7 +221,7 @@ export default function AgentSkillsTab({ agentId, onConnectConnector }: AgentSki
                                       : fix === 'choose'
                                         ? () => setEditingBinding(binding)
                                         : fix === 'connect'
-                                          ? () => onConnectConnector?.(c.connectorCode)
+                                          ? () => onCreateConnection?.(c.connectorCode)
                                           : undefined
                                   }
                                 />

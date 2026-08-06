@@ -1,5 +1,6 @@
 import apiService from '@/services/api';
 import { isInternalConnector } from '@/utils/connector';
+import { splitSkillConnectors } from '@/components/agents/skillAccess';
 import type { AgentCreatedResponse, ConnectorCatalogEntry } from '@/types';
 import type { WizardData, WizardFailure } from './AgentWizard';
 
@@ -33,11 +34,28 @@ export function internalCodesFor(
   });
 }
 
+// Which instance a picked skill will use for one of its external connectors.
+// Resolved at the moment it is needed rather than stored at pick time: the user
+// can walk back to the connections step and swap instances, and a choice that
+// points at a connection no longer open to the agent is no choice at all. With
+// exactly one open connection of that type there is nothing to ask about.
+export function resolveSkillConnection(
+  data: WizardData,
+  skillId: string,
+  connectorCode: string,
+): string {
+  const open = data.connections.filter((c) => c.connectorCode === connectorCode);
+  const chosen = data.skillConnections[skillId]?.[connectorCode];
+  if (chosen && open.some((c) => c.id === chosen)) return chosen;
+  return open.length === 1 ? open[0].id : '';
+}
+
 export async function createAgentFromWizard(
   data: WizardData,
   teamId: string | null,
-  internalCodes: string[],
+  catalog: ConnectorCatalogEntry[] | undefined,
 ): Promise<WizardCreationResult> {
+  const internalCodes = internalCodesFor(data, catalog);
   // Preset skills keep riding along with the create call: their connector codes
   // never reach the frontend, so there is nothing to map them by. Skills the
   // user picked from the library do carry their codes and get an explicit
@@ -76,10 +94,15 @@ export async function createAgentFromWizard(
   const failedSkills: WizardFailure[] = [];
   for (const skill of pickedSkills) {
     try {
-      const connections = data.skillConnections[skill.id];
+      const { external } = splitSkillConnectors(skill.connectorCodes ?? [], catalog);
+      const connections: Record<string, string> = {};
+      for (const code of external) {
+        const connectionId = resolveSkillConnection(data, skill.id, code);
+        if (connectionId) connections[code] = connectionId;
+      }
       await apiService.bindAgentSkill(agentId, {
         skillId: skill.id,
-        connections: connections && Object.keys(connections).length > 0 ? connections : undefined,
+        connections: Object.keys(connections).length > 0 ? connections : undefined,
       });
     } catch {
       failedSkills.push({ id: skill.id, name: skill.title });

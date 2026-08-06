@@ -15,7 +15,7 @@ import { connectionsListOptions } from '@/queries/connections';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { isInternalConnector } from '@/utils/connector';
 import type { WizardConnection, WizardStepProps } from './AgentWizard';
-import { createAgentFromWizard, internalCodesFor } from './createAgent';
+import { createAgentFromWizard } from './createAgent';
 import WizardActions from './WizardActions';
 
 // The connector that manages the platform itself — it can create agents and
@@ -92,7 +92,7 @@ export default function StepConnections({
   // real agent behind — it is reported on the next step, never retried silently.
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, async () => {
-      const result = await createAgentFromWizard(data, teamId, internalCodesFor(data, catalog));
+      const result = await createAgentFromWizard(data, teamId, catalog);
       setData({
         created: result.created,
         failedConnections: result.failedConnections,

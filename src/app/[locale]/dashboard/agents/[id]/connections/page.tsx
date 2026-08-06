@@ -7,8 +7,9 @@ import AgentConnectionsTab from '@/components/agents/AgentConnectionsTab';
 export default function AgentConnectionsPage() {
   const agentId = useParams().id as string;
   const router = useRouter();
-  // Preselect a connector in the bind modal when arriving from the skills page's
-  // "waiting" badge (…/connections?bindConnector=CODE).
+  // Deep link that opens the bind modal on one connector (…?bindConnector=CODE).
+  // The skills section fixes most of its own connectors in place now, so this is
+  // for links from outside the agent rather than for that trail.
   const bindConnectorCode = useSearchParams().get('bindConnector');
 
   return (

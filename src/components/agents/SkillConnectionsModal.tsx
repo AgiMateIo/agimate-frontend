@@ -36,7 +36,11 @@ export default function SkillConnectionsModal({
 }: SkillConnectionsModalProps) {
   const t = useTranslations('Agents');
 
-  const [{ data: userConnections }, { data: agentConnections }, { data: catalog }] = useQueries({
+  const [
+    { data: userConnections },
+    { data: agentConnections, isPending: agentConnectionsPending },
+    { data: catalog },
+  ] = useQueries({
     queries: [connectionsListOptions(), agentConnectionsOptions(agentId), connectorCatalogOptions()],
   });
 
@@ -88,7 +92,10 @@ export default function SkillConnectionsModal({
       await apiService.updateAgentSkillConnections(agentId, binding.skillId, map);
     });
 
-  const missingInstance = external.some((c) => instancesOf(c.connectorCode).length === 0);
+  // Saving before the agent's own connections are known would re-open what is
+  // already open — a request the backend has every right to refuse, and the
+  // skill would never get its map.
+  const notReady = agentConnectionsPending;
 
   return (
     <Modal isOpen onClose={onClose} title={t('skillConnectionsTitle')} size="md">
@@ -152,7 +159,10 @@ export default function SkillConnectionsModal({
           <Button type="button" variant="secondary" onClick={onClose} disabled={loading} className="flex-1">
             {t('cancel')}
           </Button>
-          <Button type="submit" loading={loading} disabled={loading || missingInstance} className="flex-1">
+          {/* A connector with no instance at all does not block the rest: the
+              map is replaced wholesale, and a code left out simply stays
+              without an instance — that skill connector was broken already. */}
+          <Button type="submit" loading={loading} disabled={loading || notReady} className="flex-1">
             {t('save')}
           </Button>
         </div>
