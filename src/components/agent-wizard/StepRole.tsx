@@ -48,6 +48,11 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
     setData({
       presetName: preset.name,
       presetConnectorCodes: preset.connectorCodes,
+      // Decides which wizard follows this step; null keeps the regular one.
+      agentType: preset.agentType,
+      webhookUrl: '',
+      connections: [],
+      bindFailures: [],
       name: preset.title,
       description: preset.description,
       instructions: preset.instructions,
@@ -65,6 +70,10 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
     setData({
       presetName: null,
       presetConnectorCodes: [],
+      agentType: null,
+      webhookUrl: '',
+      connections: [],
+      bindFailures: [],
       name: '',
       description: '',
       instructions: '',
@@ -73,6 +82,9 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
   };
 
   const formVisible = selectedCard !== null;
+  // The external-AI branch asks for a name and nothing else here: its prompt is
+  // the preset's, sent as-is, and there is no model to pick.
+  const external = data.agentType !== null;
 
   return (
     <div>
@@ -197,9 +209,14 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
               />
             </FormField>
 
+            {/* An MCP client gets tools only — no instructions and no skills
+                reach it yet. The preset's prompt is still saved, so it starts
+                working the day prompts ship, without recreating the agent. */}
+            {external && <p className="text-xs text-muted">{t('externalInstructionsNote')}</p>}
+
             {/* Hand-rolled instead of <FormField>: the label row doubles as the
                 disclosure control (same pattern as the agent key on the last step). */}
-            {instructionsOpen ? (
+            {!external && (instructionsOpen ? (
               <div>
                 <button
                   type="button"
@@ -239,7 +256,7 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
                   </span>
                 </span>
               </button>
-            )}
+            ))}
           </div>
         )}
       </div>
