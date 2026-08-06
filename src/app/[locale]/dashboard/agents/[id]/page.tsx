@@ -7,7 +7,12 @@ import { useQuery } from '@tanstack/react-query';
 import { LockClosedIcon, KeyIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { Link } from '@/i18n/navigation';
 import apiService from '@/services/api';
-import { agentConnectionsOptions, useAgentDetailSuspenseQuery } from '@/queries/agents';
+import {
+  agentConnectionsOptions,
+  useAgentDetailSuspenseQuery,
+  useAgentSkillsQuery,
+} from '@/queries/agents';
+import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import SecretKeyReveal from '@/components/connectors/SecretKeyReveal';
@@ -114,8 +119,38 @@ export default function AgentGeneralPage() {
         </div>
       </div>
 
+      <UnsatisfiedSkillsNotice agentId={agent.id} />
+
       {isMcpAgent(agent.type) && <McpConnectCard agentId={agent.id} />}
     </>
+  );
+}
+
+// A skill missing its connections is not handed to the agent at all — the agent
+// simply cannot do what it was hired for. People complain about the agent long
+// before they open its skills section, so the count belongs on the card.
+function UnsatisfiedSkillsNotice({ agentId }: { agentId: string }) {
+  const t = useTranslations('Agents');
+  const { data } = useAgentSkillsQuery(agentId);
+
+  const bindings = data?.content ?? [];
+  const broken = bindings.filter((b) => !b.satisfied).length;
+  if (broken === 0) return null;
+
+  return (
+    <div className="mt-6">
+      <Alert variant="warning">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <span>{t('skillsUnsatisfiedSummary', { count: broken, total: bindings.length })}</span>
+          <Link
+            href={`/dashboard/agents/${agentId}/skills`}
+            className="font-medium underline whitespace-nowrap"
+          >
+            {t('tabSkills')}
+          </Link>
+        </div>
+      </Alert>
+    </div>
   );
 }
 

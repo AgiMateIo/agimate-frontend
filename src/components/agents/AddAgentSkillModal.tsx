@@ -1,17 +1,26 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
+import { useQueries } from '@tanstack/react-query';
 import apiService from '@/services/api';
 import { SkillResponse, PagedResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
+import { Alert } from '@/components/ui/Alert';
+import { Chip } from '@/components/ui/Chip';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { FormField, Select } from '@/components/ui/FormField';
+import { Link } from '@/i18n/navigation';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { getErrorMessage } from '@/utils/error';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { SearchToolbar } from '@/components/ui/SearchToolbar';
+import { agentConnectionsOptions } from '@/queries/agents';
+import { connectionsListOptions } from '@/queries/connections';
+import { connectorCatalogOptions } from '@/queries/connectors';
+import { openAgentAccess, splitSkillConnectors } from './skillAccess';
 
 const PAGE_SIZE = 10;
 
@@ -42,6 +51,7 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
   useEffect(() => {
     setPage(0);
     setSelectedSkill(null);
+    setChoice({});
   }, [source]);
 
   const fetchSkills = useCallback(async () => {
@@ -66,6 +76,46 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
     fetchSkills();
   }, [fetchSkills]);
 
+  // Which instance the skill will work with, per external connector it declares.
+  // Reset with the selection: the codes belong to the skill, not to the modal.
+  const [choice, setChoice] = useState<Record<string, string>>({});
+
+  const [{ data: userConnections }, { data: agentConnections }, { data: catalog }] = useQueries({
+    queries: [connectionsListOptions(), agentConnectionsOptions(agentId), connectorCatalogOptions()],
+  });
+
+  const { external, internal } = useMemo(
+    () => splitSkillConnectors(selectedSkill?.connectorCodes ?? [], catalog),
+    [selectedSkill, catalog],
+  );
+  const connectorName = (code: string) => catalog?.find((c) => c.code === code)?.name ?? code;
+  const instancesOf = (code: string) =>
+    (userConnections ?? []).filter((c) => c.connectorCode === code);
+
+  const openIds = useMemo(
+    () => new Set((agentConnections ?? []).map((c) => c.connectionId)),
+    [agentConnections],
+  );
+  const openCodes = useMemo(
+    () => new Set((agentConnections ?? []).map((c) => c.connectorCode)),
+    [agentConnections],
+  );
+
+  const pickSkill = (skill: SkillResponse) => {
+    setSelectedSkill(skill);
+    // One instance of a connector is not a choice — preselect it, so the common
+    // case stays a single click.
+    const codes = splitSkillConnectors(skill.connectorCodes, catalog).external;
+    setChoice(
+      Object.fromEntries(
+        codes.map((code) => {
+          const instances = (userConnections ?? []).filter((c) => c.connectorCode === code);
+          return [code, instances.length === 1 ? instances[0].id : ''];
+        }),
+      ),
+    );
+  };
+
   const { loading, error, handleSubmit } = useAsyncForm<void>({
     onSuccess,
     defaultError: 'Failed to bind skill',
@@ -74,8 +124,24 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, async () => {
       if (!selectedSkill) return;
-      await apiService.bindAgentSkill(agentId, { skillId: selectedSkill.id });
+      // Connections first: a skill may only point at what the agent can reach.
+      await openAgentAccess(agentId, {
+        connectionIds: Object.values(choice),
+        connectorCodes: internal,
+        openConnectionIds: openIds,
+        openConnectorCodes: openCodes,
+      });
+      await apiService.bindAgentSkill(agentId, {
+        skillId: selectedSkill.id,
+        // Internal codes must be left out — their instance is not the caller's
+        // to name, and sending one is a 400.
+        connections: external.length > 0 ? choice : undefined,
+      });
     });
+
+  // Every external connector needs an instance: without one the backend refuses
+  // the binding rather than guessing between two accounts.
+  const incomplete = external.some((code) => !choice[code]);
 
   const skills = pagedData?.content ?? [];
   const totalElements = pagedData?.totalElements ?? 0;
@@ -126,7 +192,7 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
                   <button
                     key={skill.id}
                     type="button"
-                    onClick={() => !isBound && setSelectedSkill(skill)}
+                    onClick={() => !isBound && pickSkill(skill)}
                     disabled={isBound}
                     className={`w-full text-left px-3 py-2.5 rounded-lg border transition-colors ${
                       isBound
@@ -197,6 +263,61 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
           </div>
         )}
 
+        {/* Instance selection — the skill cannot be bound without it, so it sits
+            in the same modal rather than behind a second step. */}
+        {selectedSkill && (external.length > 0 || internal.length > 0) && (
+          <div className="space-y-3 rounded-lg border border-border p-3">
+            <p className="text-sm font-medium text-foreground">
+              {t('skillConnectionsSubtitle', { skill: selectedSkill.title })}
+            </p>
+
+            {external.map((code) => {
+              const instances = instancesOf(code);
+              return (
+                <FormField key={code} label={connectorName(code)} required>
+                  {instances.length === 0 ? (
+                    <Alert variant="warning">
+                      {t('skillConnectorNoInstance', { name: connectorName(code) })}{' '}
+                      <Link href="/dashboard/connections" className="underline">
+                        {t('skillConnectorConnectLink')}
+                      </Link>
+                    </Alert>
+                  ) : (
+                    <Select
+                      value={choice[code] ?? ''}
+                      onChange={(e) => setChoice((prev) => ({ ...prev, [code]: e.target.value }))}
+                    >
+                      <option value="">{t('skillConnectorNotChosen')}</option>
+                      {instances.map((instance) => (
+                        <option key={instance.id} value={instance.id}>
+                          {instance.name || instance.fullCode}
+                          {openIds.has(instance.id) ? '' : ` — ${t('skillConnectorWillOpen')}`}
+                        </option>
+                      ))}
+                    </Select>
+                  )}
+                </FormField>
+              );
+            })}
+
+            {internal.length > 0 && (
+              <div>
+                <p className="text-sm font-medium text-foreground mb-2">
+                  {t('skillConnectorsInternal')}
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {internal.map((code) => (
+                    <Chip key={code} tone={openCodes.has(code) ? 'success' : 'accent'}>
+                      {connectorName(code)}
+                    </Chip>
+                  ))}
+                </div>
+                <p className="text-xs text-muted mt-1.5">{t('skillConnectorsInternalHint')}</p>
+              </div>
+            )}
+          </div>
+        )}
+
         {error && <ErrorAlert>{error}</ErrorAlert>}
 
         {/* Actions */}
@@ -212,7 +333,7 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
           </Button>
           <Button
             type="submit"
-            disabled={loading || !selectedSkill}
+            disabled={loading || !selectedSkill || incomplete}
             loading={loading}
             className="flex-1"
           >

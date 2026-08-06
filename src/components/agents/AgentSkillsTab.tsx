@@ -1,92 +1,152 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
-import { useLocale } from 'next-intl';
+import { useMemo, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
+import { useQueries } from '@tanstack/react-query';
 import { Link } from '@/i18n/navigation';
 import apiService from '@/services/api';
-import { AgentSkillResponse, PagedResponse } from '@/types';
+import { AgentSkillResponse } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
-import { PlusIcon, TrashIcon, ExclamationTriangleIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { Chip } from '@/components/ui/Chip';
+import { RowAction } from '@/components/ui/RowAction';
+import {
+  PlusIcon,
+  TrashIcon,
+  ArrowPathIcon,
+  ExclamationTriangleIcon,
+  LinkIcon,
+} from '@heroicons/react/24/outline';
+import { useAgentCacheActions, useAgentSkillsQuery } from '@/queries/agents';
+import { connectionsListOptions } from '@/queries/connections';
+import { connectorCatalogOptions } from '@/queries/connectors';
 import { formatDate } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
 import AddAgentSkillModal from './AddAgentSkillModal';
 import DeleteAgentSkillModal from './DeleteAgentSkillModal';
+import SkillConnectionsModal from './SkillConnectionsModal';
+import SkillConnectorChip, { connectorFix } from './SkillConnectorChip';
 
 interface AgentSkillsTabProps {
   agentId: string;
-  // CTA for a missing connector: switch the agent page to its Connections tab
-  // and open the bind modal with this connector preselected.
+  // CTA for a connector the user has no instance of: switch the agent page to
+  // its Connections section with this connector preselected.
   onConnectConnector?: (connectorCode: string) => void;
 }
 
 export default function AgentSkillsTab({ agentId, onConnectConnector }: AgentSkillsTabProps) {
   const t = useTranslations('Agents');
   const locale = useLocale();
+  const { invalidateAgentAccess } = useAgentCacheActions();
 
-  const [bindings, setBindings] = useState<AgentSkillResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [page, setPage] = useState(0);
-  const [pageInfo, setPageInfo] = useState<Omit<PagedResponse<AgentSkillResponse>, 'content'> | null>(null);
+  const { data: page, isPending, error: queryError } = useAgentSkillsQuery(agentId);
+  const [{ data: userConnections }, { data: catalog }] = useQueries({
+    queries: [connectionsListOptions(), connectorCatalogOptions()],
+  });
 
   const [showAdd, setShowAdd] = useState(false);
   const [deletingBinding, setDeletingBinding] = useState<AgentSkillResponse | null>(null);
+  const [editingBinding, setEditingBinding] = useState<AgentSkillResponse | null>(null);
+  // Inline fixes are per connector of per binding, so the spinner has to be too.
+  const [pendingFix, setPendingFix] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [actionError, setActionError] = useState('');
 
-  const fetchData = useCallback(async (silent: boolean = false) => {
-    if (!silent) {
-      setLoading(true);
-      setError('');
+  const bindings = page?.content ?? [];
+  const unsatisfied = bindings.filter((b) => !b.satisfied);
+  const needsReinstall = bindings.some((b) => b.needsReinstall);
+
+  const connectorName = (code: string) => catalog?.find((c) => c.code === code)?.name ?? code;
+  const instanceCount = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const c of userConnections ?? []) {
+      counts.set(c.connectorCode, (counts.get(c.connectorCode) ?? 0) + 1);
     }
+    return counts;
+  }, [userConnections]);
+
+  // Opening a connection is the fix for most red skills, and it is a single
+  // request — done from the chip rather than by sending the user elsewhere.
+  const openConnector = async (
+    binding: AgentSkillResponse,
+    code: string,
+    connectionId: string | null,
+    internal: boolean,
+  ) => {
+    setPendingFix(`${binding.id}:${code}`);
+    setActionError('');
     try {
-      const data = await apiService.getAgentSkills({ agentId, page, size: 20 });
-      setBindings(data.content);
-      setPageInfo({
-        totalElements: data.totalElements,
-        totalPages: data.totalPages,
-        size: data.size,
-        number: data.number,
-      });
-      if (silent) setError('');
+      await apiService.bindAgentConnection(
+        agentId,
+        connectionId && !internal ? { connectionId } : { connectorCode: code },
+      );
+      invalidateAgentAccess(agentId);
     } catch (err) {
-      if (!silent) {
-        setError(getErrorMessage(err, 'Failed to load skills'));
-      }
+      setActionError(getErrorMessage(err, t('openConnectionFailed')));
     } finally {
-      if (!silent) setLoading(false);
+      setPendingFix(null);
     }
-  }, [agentId, page]);
+  };
 
-  useEffect(() => {
-    fetchData(false);
-  }, [fetchData]);
+  const refreshSkills = async () => {
+    setRefreshing(true);
+    setActionError('');
+    try {
+      await apiService.refreshAgentSkills(agentId);
+      invalidateAgentAccess(agentId);
+    } catch (err) {
+      setActionError(getErrorMessage(err, t('refreshSkillsFailed')));
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const handleMutationSuccess = () => {
     setShowAdd(false);
     setDeletingBinding(null);
-    fetchData(false);
+    setEditingBinding(null);
+    invalidateAgentAccess(agentId);
   };
 
-  if (error) {
-    return <ErrorAlert>{error}</ErrorAlert>;
+  if (queryError) {
+    return <ErrorAlert>{getErrorMessage(queryError, 'Failed to load skills')}</ErrorAlert>;
   }
 
-  if (loading) {
+  if (isPending) {
     return <div className="text-center py-12 text-muted">{t('loadingSkills')}</div>;
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-muted">
-          {pageInfo ? t('skillsTotal', { count: pageInfo.totalElements }) : ''}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="text-sm text-muted">{t('skillsTotal', { count: page?.totalElements ?? 0 })}</div>
+        <div className="flex items-center gap-2">
+          {needsReinstall && (
+            <RowAction
+              icon={ArrowPathIcon}
+              label={t('refreshSkills')}
+              onClick={refreshSkills}
+              disabled={refreshing}
+              spinning={refreshing}
+            />
+          )}
+          <Button onClick={() => setShowAdd(true)} className="flex items-center gap-2">
+            <PlusIcon className="h-4 w-4" />
+            {t('addSkill')}
+          </Button>
         </div>
-        <Button onClick={() => setShowAdd(true)} className="flex items-center gap-2">
-          <PlusIcon className="h-4 w-4" />
-          {t('addSkill')}
-        </Button>
       </div>
+
+      {/* The gate is live: an unsatisfied skill is not handed to the agent, so
+          this is the headline of the section, not a footnote in a row. */}
+      {unsatisfied.length > 0 && (
+        <Alert variant="warning">
+          {t('skillsUnsatisfiedSummary', { count: unsatisfied.length, total: bindings.length })}
+        </Alert>
+      )}
+
+      {actionError && <ErrorAlert>{actionError}</ErrorAlert>}
 
       {bindings.length === 0 ? (
         <div className="text-center py-12 text-muted">{t('noAgentSkills')}</div>
@@ -103,99 +163,108 @@ export default function AgentSkillsTab({ agentId, onConnectConnector }: AgentSki
                 </tr>
               </thead>
               <tbody>
-                {bindings.map((binding) => (
-                  <tr key={binding.id} className="border-b border-border last:border-b-0 hover:bg-surface-secondary transition-colors">
-                    <td className="py-3 px-4 text-sm">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {binding.skillName ? (
-                          <Link
-                            href={`/dashboard/skills/${binding.skillId}`}
-                            className="text-accent hover:text-accent/80 transition-colors"
-                          >
-                            {binding.skillName}
-                          </Link>
-                        ) : (
-                          <span className="text-muted italic">{t('skillDeleted')}</span>
-                        )}
-                        {binding.needsReinstall && (
-                          <span
-                            className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-warning/10 text-warning"
-                            title={t('needsReinstallHint')}
-                          >
-                            <ArrowPathIcon className="h-3 w-3" />
-                            {t('needsReinstall')}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-sm">
-                      {binding.connectors.length === 0 ? (
-                        <span className="text-muted">—</span>
-                      ) : (
-                        <div className="flex flex-wrap gap-1">
-                          {binding.connectors.map((c) =>
-                            c.connectionId ? (
-                              <span
-                                key={c.connectorCode}
-                                className="text-xs font-medium px-2 py-0.5 rounded-full bg-success/10 text-success"
-                              >
-                                {c.connectorCode}
-                              </span>
-                            ) : (
-                              <button
-                                key={c.connectorCode}
-                                type="button"
-                                onClick={() => onConnectConnector?.(c.connectorCode)}
-                                title={t('connectConnectorHint', { code: c.connectorCode })}
-                                className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-warning/10 text-warning hover:bg-warning/20 transition-colors"
-                              >
-                                <ExclamationTriangleIcon className="h-3 w-3" />
-                                {c.connectorCode}
-                              </button>
-                            ),
+                {bindings.map((binding) => {
+                  const editable = binding.connectors.some((c) => !c.internal);
+                  return (
+                    <tr
+                      key={binding.id}
+                      className="border-b border-border last:border-b-0 hover:bg-surface-secondary transition-colors"
+                    >
+                      <td className="py-3 px-4 text-sm">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {binding.skillName ? (
+                            <Link
+                              href={`/dashboard/skills/${binding.skillId}`}
+                              className="text-accent hover:text-accent/80 transition-colors"
+                            >
+                              {binding.skillName}
+                            </Link>
+                          ) : (
+                            <span className="text-muted italic">{t('skillDeleted')}</span>
+                          )}
+                          {!binding.satisfied && (
+                            <span title={t('skillNotWorkingHint')}>
+                              <Chip tone="error" icon={ExclamationTriangleIcon}>
+                                {t('skillNotWorking')}
+                              </Chip>
+                            </span>
+                          )}
+                          {binding.needsReinstall && (
+                            <span title={t('needsReinstallHint')}>
+                              <Chip tone="warning" icon={ArrowPathIcon}>
+                                {t('needsReinstall')}
+                              </Chip>
+                            </span>
                           )}
                         </div>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-sm text-muted">
-                      {formatDate(binding.createdAt, locale)}
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <button
-                        onClick={() => setDeletingBinding(binding)}
-                        className="p-1.5 rounded-lg text-muted hover:text-error hover:bg-error/10 transition-colors"
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="py-3 px-4 text-sm">
+                        {binding.connectors.length === 0 ? (
+                          <span className="text-muted">—</span>
+                        ) : (
+                          <div className="flex flex-wrap gap-1">
+                            {binding.connectors.map((c) => {
+                              const fix = connectorFix(
+                                c,
+                                (instanceCount.get(c.connectorCode) ?? 0) > 0,
+                              );
+                              return (
+                                <SkillConnectorChip
+                                  key={c.connectorCode}
+                                  connector={c}
+                                  connectorName={connectorName(c.connectorCode)}
+                                  fix={fix}
+                                  pending={pendingFix === `${binding.id}:${c.connectorCode}`}
+                                  onClick={
+                                    fix === 'open'
+                                      ? () => openConnector(binding, c.connectorCode, c.connectionId, c.internal)
+                                      : fix === 'choose'
+                                        ? () => setEditingBinding(binding)
+                                        : fix === 'connect'
+                                          ? () => onConnectConnector?.(c.connectorCode)
+                                          : undefined
+                                  }
+                                />
+                              );
+                            })}
+                          </div>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-sm text-muted">
+                        {formatDate(binding.createdAt, locale)}
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center justify-end gap-1">
+                          {editable && (
+                            <button
+                              onClick={() => setEditingBinding(binding)}
+                              title={t('skillConnectionsTitle')}
+                              className="p-1.5 rounded-lg text-muted hover:text-accent hover:bg-accent/10 transition-colors"
+                            >
+                              <LinkIcon className="h-4 w-4" />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => setDeletingBinding(binding)}
+                            title={t('removeSkill')}
+                            className="p-1.5 rounded-lg text-muted hover:text-error hover:bg-error/10 transition-colors"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
 
-          {pageInfo && pageInfo.totalPages > 1 && (
-            <div className="flex items-center justify-between pt-2">
-              <div className="text-xs text-muted">
-                {t('policyPage')} {page + 1} / {pageInfo.totalPages}
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setPage(p => Math.max(0, p - 1))}
-                  disabled={page === 0}
-                  className="px-3 py-1 text-xs font-medium rounded-lg bg-surface-secondary text-muted hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {t('policyPrevious')}
-                </button>
-                <button
-                  onClick={() => setPage(p => p + 1)}
-                  disabled={page >= pageInfo.totalPages - 1}
-                  className="px-3 py-1 text-xs font-medium rounded-lg bg-surface-secondary text-muted hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {t('policyNext')}
-                </button>
-              </div>
-            </div>
+          {/* One page holds every realistic agent; say so rather than paging. */}
+          {page && page.totalElements > bindings.length && (
+            <p className="text-xs text-muted">
+              {t('skillsTruncated', { shown: bindings.length, total: page.totalElements })}
+            </p>
           )}
         </>
       )}
@@ -203,8 +272,17 @@ export default function AgentSkillsTab({ agentId, onConnectConnector }: AgentSki
       {showAdd && (
         <AddAgentSkillModal
           agentId={agentId}
-          boundSkillIds={new Set(bindings.map(b => b.skillId))}
+          boundSkillIds={new Set(bindings.map((b) => b.skillId))}
           onClose={() => setShowAdd(false)}
+          onSuccess={handleMutationSuccess}
+        />
+      )}
+
+      {editingBinding && (
+        <SkillConnectionsModal
+          agentId={agentId}
+          binding={editingBinding}
+          onClose={() => setEditingBinding(null)}
           onSuccess={handleMutationSuccess}
         />
       )}

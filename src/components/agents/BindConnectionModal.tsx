@@ -10,32 +10,41 @@ import { connectionsListOptions } from '@/queries/connections';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
+import { Chip } from '@/components/ui/Chip';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import { ConnectionAuthBadge } from '@/components/connections/ConnectionAuth';
+import { ConnectionAvatar } from '@/components/connections/ConnectionAvatar';
 
 interface BindConnectionModalProps {
   agentId: string;
-  // Restrict the picker to this connector's connections (e.g. clicking a
-  // "waiting for connection" badge on the skills tab).
+  // Restrict the picker to this connector (e.g. arriving from a skill's
+  // "connect" badge).
   initialConnectorCode?: string;
+  // Already open to the agent — offering them again would only produce an error.
+  boundConnectionIds?: Set<string>;
+  boundConnectorCodes?: Set<string>;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-// Binds an existing *external* connection (telegram/mcp/app instance) to the
-// agent. Internal connectors cannot be bound here — their bindings are synced
-// automatically from the agent's skills.
+// What the agent may reach outwards. Two kinds live in one list: an instance of
+// an external connector, addressed by its id, and an internal capability
+// (memory, board, sheets), addressed by connector code because its single
+// instance may not exist yet — the backend materializes it on binding.
 export default function BindConnectionModal({
   agentId,
   initialConnectorCode,
+  boundConnectionIds,
+  boundConnectorCodes,
   onClose,
   onSuccess,
 }: BindConnectionModalProps) {
   const t = useTranslations('Agents');
   const [search, setSearch] = useState('');
-  const [connectionId, setConnectionId] = useState<string | undefined>(undefined);
+  // `conn:<id>` for an instance, `code:<connectorCode>` for an internal one.
+  const [selected, setSelected] = useState<string>('');
 
   const { data: catalog, isPending: catalogPending } = useQuery(connectorCatalogOptions());
   const { data: connections, isPending: connectionsPending } = useQuery(connectionsListOptions());
@@ -51,20 +60,16 @@ export default function BindConnectionModal({
     [catalog],
   );
 
-  // Only external connections are bindable; internal system rows are hidden.
-  const bindable = useMemo(() => {
+  const query = search.trim().toLowerCase();
+
+  const externalRows = useMemo(() => {
     return (connections ?? []).filter((c) => {
       if (initialConnectorCode && c.connectorCode !== initialConnectorCode) return false;
+      if (boundConnectionIds?.has(c.id)) return false;
       const connector = connectorByCode.get(c.connectorCode);
-      return connector ? !isInternalConnector(connector) : true;
-    });
-  }, [connections, connectorByCode, initialConnectorCode]);
-
-  const filtered = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    if (!query) return bindable;
-    return bindable.filter((c) => {
-      const connectorName = connectorByCode.get(c.connectorCode)?.name ?? c.connectorCode;
+      if (connector && isInternalConnector(connector)) return false;
+      if (!query) return true;
+      const connectorName = connector?.name ?? c.connectorCode;
       return (
         c.name.toLowerCase().includes(query) ||
         c.fullCode.toLowerCase().includes(query) ||
@@ -72,13 +77,34 @@ export default function BindConnectionModal({
         connectorName.toLowerCase().includes(query)
       );
     });
-  }, [bindable, connectorByCode, search]);
+  }, [connections, connectorByCode, initialConnectorCode, boundConnectionIds, query]);
+
+  const internalRows = useMemo(() => {
+    return (catalog ?? []).filter((c) => {
+      if (!isInternalConnector(c)) return false;
+      if (initialConnectorCode && c.code !== initialConnectorCode) return false;
+      if (boundConnectorCodes?.has(c.code)) return false;
+      if (!query) return true;
+      return c.name.toLowerCase().includes(query) || c.code.toLowerCase().includes(query);
+    });
+  }, [catalog, initialConnectorCode, boundConnectorCodes, query]);
+
+  const empty = externalRows.length === 0 && internalRows.length === 0;
 
   const onSubmit = () =>
     handleSubmit({ preventDefault: () => {} } as React.FormEvent, async () => {
-      if (!connectionId) return;
-      await apiService.bindAgentConnection(agentId, { connectionId });
+      if (!selected) return;
+      const [kind, value] = [selected.slice(0, selected.indexOf(':')), selected.slice(selected.indexOf(':') + 1)];
+      await apiService.bindAgentConnection(
+        agentId,
+        kind === 'code' ? { connectorCode: value } : { connectionId: value },
+      );
     });
+
+  const rowClass = (value: string) =>
+    `flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+      selected === value ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/50'
+    }`;
 
   return (
     <Modal isOpen={true} onClose={onClose} title={t('bindConnectionTitle')} size="lg">
@@ -94,54 +120,91 @@ export default function BindConnectionModal({
         <div className="min-h-[160px]">
           {isLoading ? (
             <div className="text-center py-8 text-muted text-sm">{t('loadingInstances')}</div>
-          ) : bindable.length === 0 ? (
+          ) : empty ? (
             <Alert variant="info">{t('noInstances')}</Alert>
-          ) : filtered.length === 0 ? (
-            <div className="text-center py-8 text-muted text-sm">{t('noConnectionsFound')}</div>
           ) : (
-            <div className="space-y-2 max-h-72 overflow-y-auto">
-              {filtered.map((conn) => {
-                const connectorName =
-                  connectorByCode.get(conn.connectorCode)?.name ?? conn.connectorCode;
-                return (
-                  <label
-                    key={conn.id}
-                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                      connectionId === conn.id ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/50'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="connection"
-                      checked={connectionId === conn.id}
-                      onChange={() => setConnectionId(conn.id)}
-                      className="accent-accent"
-                    />
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-foreground truncate">
-                          {conn.name || conn.fullCode}
-                        </span>
-                        <span className="text-xs text-muted font-mono truncate">{conn.fullCode}</span>
-                        {!conn.enabled && (
-                          <span className="shrink-0 inline-block rounded px-1.5 py-0.5 text-[10px] font-medium bg-muted/10 text-muted">
-                            {t('disabled')}
+            <div className="space-y-4 max-h-80 overflow-y-auto">
+              {externalRows.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted">
+                    {t('bindSectionInstances')}
+                  </p>
+                  {externalRows.map((conn) => {
+                    const value = `conn:${conn.id}`;
+                    const connectorName =
+                      connectorByCode.get(conn.connectorCode)?.name ?? conn.connectorCode;
+                    return (
+                      <label key={conn.id} className={rowClass(value)}>
+                        <input
+                          type="radio"
+                          name="connection"
+                          checked={selected === value}
+                          onChange={() => setSelected(value)}
+                          className="accent-accent"
+                        />
+                        <ConnectionAvatar
+                          connectorCode={conn.connectorCode}
+                          connectorName={conn.name}
+                          size="sm"
+                        />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-foreground truncate">
+                              {conn.name || conn.fullCode}
+                            </span>
+                            <span className="text-xs text-muted font-mono truncate">{conn.fullCode}</span>
+                            {!conn.enabled && <Chip>{t('disabled')}</Chip>}
+                            {/* Bindable, but it has no tools until authorized —
+                                better seen here than as an agent that stays silent. */}
+                            <ConnectionAuthBadge status={conn.authStatus} />
+                          </div>
+                          <p className="text-xs text-muted mt-0.5">{connectorName}</p>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+
+              {internalRows.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted">
+                    {t('bindSectionInternal')}
+                  </p>
+                  {internalRows.map((connector) => {
+                    const value = `code:${connector.code}`;
+                    return (
+                      <label key={connector.code} className={rowClass(value)}>
+                        <input
+                          type="radio"
+                          name="connection"
+                          checked={selected === value}
+                          onChange={() => setSelected(value)}
+                          className="accent-accent"
+                        />
+                        <ConnectionAvatar
+                          connectorCode={connector.code}
+                          connectorName={connector.name}
+                          size="sm"
+                        />
+                        <div className="min-w-0">
+                          <span className="text-sm font-medium text-foreground truncate">
+                            {connector.name}
                           </span>
-                        )}
-                        {/* Bindable, but it has no tools until authorized —
-                            better seen here than as an agent that stays silent. */}
-                        <ConnectionAuthBadge status={conn.authStatus} />
-                      </div>
-                      <p className="text-xs text-muted mt-0.5">{connectorName}</p>
-                    </div>
-                  </label>
-                );
-              })}
+                          <p className="text-xs text-muted mt-0.5 line-clamp-1">
+                            {connector.description || connector.code}
+                          </p>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        <p className="text-xs text-muted">{t('internalConnectorsHint')}</p>
+        <p className="text-xs text-muted">{t('bindConnectionHint')}</p>
 
         {error && <ErrorAlert>{error}</ErrorAlert>}
 
@@ -153,7 +216,7 @@ export default function BindConnectionModal({
             type="button"
             onClick={onSubmit}
             loading={loading}
-            disabled={!connectionId}
+            disabled={!selected}
             className="flex-1"
           >
             {t('bind')}
