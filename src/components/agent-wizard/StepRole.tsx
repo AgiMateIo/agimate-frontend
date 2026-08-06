@@ -52,15 +52,20 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
       agentType: preset.agentType,
       webhookUrl: '',
       connections: [],
-      bindFailures: [],
+      failedConnections: [],
+      failedSkills: [],
       name: preset.title,
       description: preset.description,
       instructions: preset.instructions,
+      // Preset skills carry no connector codes, so they cannot be given an
+      // instance here — they ride along inside the create call as before.
       skills: preset.skills.map((s) => ({
         id: s.id,
         title: s.title,
         description: s.description,
+        fromPreset: true,
       })),
+      skillConnections: {},
     });
   };
 
@@ -73,11 +78,13 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
       agentType: null,
       webhookUrl: '',
       connections: [],
-      bindFailures: [],
+      failedConnections: [],
+      failedSkills: [],
       name: '',
       description: '',
       instructions: '',
       skills: [],
+      skillConnections: {},
     });
   };
 

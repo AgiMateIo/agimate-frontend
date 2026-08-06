@@ -19,14 +19,24 @@ export interface WizardSkill {
   title: string;
   description: string | null;
   connectorCodes?: string[];
+  // Came with the preset rather than being picked from the library. Only these
+  // ride along inside the create call — see createAgent.ts.
+  fromPreset?: boolean;
 }
 
-// A connection picked on the external flow's connections step. Bound right
-// after the agent exists — bindings need an agent id.
+// A connection picked on the connections step. Bound right after the agent
+// exists — bindings need an agent id.
 export interface WizardConnection {
   id: string;
   name: string;
   fullCode: string;
+  connectorCode: string;
+}
+
+// Something that could not be attached once the agent already existed.
+export interface WizardFailure {
+  id: string;
+  name: string;
 }
 
 // Shared state accumulated as the user moves through the wizard. A preset is a
@@ -47,11 +57,15 @@ export interface WizardData {
   description: string;
   instructions: string;
   skills: WizardSkill[];
-  // External flow: what the agent may reach outwards, bound after creation.
+  // What the agent may reach outwards, opened right after creation. Chosen
+  // before the skills, since a skill may only point at an open connection.
   connections: WizardConnection[];
-  // Bindings that failed once the agent already existed — the agent is real, so
-  // this is a to-do on its page rather than a failed creation.
-  bindFailures: WizardConnection[];
+  // Per picked skill: which instance serves each external connector it declares.
+  skillConnections: Record<string, Record<string, string>>;
+  // Attachments that failed once the agent already existed — the agent is real,
+  // so these are to-dos on its page rather than a failed creation.
+  failedConnections: WizardFailure[];
+  failedSkills: WizardFailure[];
   // Result of the create call; fullKey is shown once on the final step.
   created: AgentCreatedResponse | null;
 }
@@ -74,7 +88,9 @@ const EMPTY: WizardData = {
   instructions: '',
   skills: [],
   connections: [],
-  bindFailures: [],
+  skillConnections: {},
+  failedConnections: [],
+  failedSkills: [],
   created: null,
 };
 
@@ -123,6 +139,10 @@ export default function AgentWizard({ teamId = null }: AgentWizardProps) {
       ]
     : [
         { key: 'role', label: t('stepRole') },
+        // Connections come first and it is not a preference: binding a skill to
+        // an external connector means naming an instance, and only an instance
+        // already open to the agent can be named.
+        { key: 'connections', label: t('stepConnections') },
         { key: 'skills', label: t('stepSkills') },
         { key: 'done', label: t('stepDone') },
       ];
@@ -202,13 +222,16 @@ export default function AgentWizard({ teamId = null }: AgentWizardProps) {
         {external ? (
           <>
             {current === 1 && <StepDelivery {...stepProps} />}
-            {current === 2 && <StepConnections {...stepProps} />}
+            {/* No skills step here: an external agent's skills come from the
+                preset, so the connections step is where it is created. */}
+            {current === 2 && <StepConnections {...stepProps} final />}
             {current === 3 && <StepExternalDone {...stepProps} onReset={reset} />}
           </>
         ) : (
           <>
-            {current === 1 && <StepSkills {...stepProps} />}
-            {current === 2 && <StepDone {...stepProps} onReset={reset} />}
+            {current === 1 && <StepConnections {...stepProps} />}
+            {current === 2 && <StepSkills {...stepProps} />}
+            {current === 3 && <StepDone {...stepProps} onReset={reset} />}
           </>
         )}
       </div>

@@ -18,6 +18,7 @@ import { Alert } from '@/components/ui/Alert';
 import { useClipboard } from '@/hooks/useClipboard';
 import { getAgentAvatarUrl } from '@/utils/avatar';
 import { WizardStepProps } from './AgentWizard';
+import WizardAttachFailures from './WizardAttachFailures';
 import WizardRenamedNotice from './WizardRenamedNotice';
 
 interface StepDoneProps extends WizardStepProps {
@@ -64,6 +65,8 @@ export default function StepDone({ data, onReset }: StepDoneProps) {
       </div>
 
       <WizardRenamedNotice requested={data.name.trim()} actual={agent.name} />
+
+      <WizardAttachFailures connections={data.failedConnections} skills={data.failedSkills} />
 
       {/* The aha moment: talk to the agent seconds after picking a role.
           A real link (not window.open) so middle-/Ctrl-click and the browser's

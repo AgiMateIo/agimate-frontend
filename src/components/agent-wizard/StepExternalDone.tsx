@@ -13,6 +13,7 @@ import { useClipboard } from '@/hooks/useClipboard';
 import { getAgentAvatarUrl } from '@/utils/avatar';
 import McpConnectPanel from '@/components/agents/McpConnectPanel';
 import { WizardStepProps } from './AgentWizard';
+import WizardAttachFailures from './WizardAttachFailures';
 import WizardRenamedNotice from './WizardRenamedNotice';
 
 interface StepExternalDoneProps extends WizardStepProps {
@@ -32,7 +33,7 @@ export default function StepExternalDone({ data, onReset }: StepExternalDoneProp
   if (!agent) return null;
 
   const bound = data.connections.filter(
-    (c) => !data.bindFailures.some((f) => f.id === c.id),
+    (c) => !data.failedConnections.some((f) => f.id === c.id),
   );
 
   return (
@@ -50,13 +51,7 @@ export default function StepExternalDone({ data, onReset }: StepExternalDoneProp
 
       <WizardRenamedNotice requested={data.name.trim()} actual={agent.name} />
 
-      {/* Bindings happen after the agent exists, so a failure here leaves a real
-          agent with fewer connections — a to-do, not a failed creation. */}
-      {data.bindFailures.length > 0 && (
-        <Alert variant="warning">
-          {t('bindFailed', { names: data.bindFailures.map((c) => c.name || c.fullCode).join(', ') })}
-        </Alert>
-      )}
+      <WizardAttachFailures connections={data.failedConnections} skills={data.failedSkills} />
 
       {fullKey && (
         <div className="space-y-2">

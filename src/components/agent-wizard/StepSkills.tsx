@@ -13,16 +13,16 @@ import { FilterPill, FilterRow } from '@/components/ui/FilterPill';
 import { Button } from '@/components/ui/Button';
 import { Chip, type ChipTone } from '@/components/ui/Chip';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
-import apiService from '@/services/api';
 import { connectorCatalogOptions } from '@/queries/connectors';
-import { connectionsListOptions } from '@/queries/connections';
 import { useSkillPickerQuery, type SkillPickerSource } from '@/queries/skills';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { getErrorMessage } from '@/utils/error';
 import { isIntegrationConnector } from '@/utils/connector';
+import { Select } from '@/components/ui/FormField';
 import type { SkillResponse } from '@/types';
 import { WizardStepProps } from './AgentWizard';
+import { createAgentFromWizard, internalCodesFor } from './createAgent';
 import WizardActions from './WizardActions';
 
 // Rows revealed at once. "Show more" grows the list in place instead of paging,
@@ -65,34 +65,57 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
     debouncedSearch,
   );
 
-  // Connector catalog (names, kind) + existing connections → per-connector status.
-  const [{ data: catalog }, { data: connections }] = useQueries({
-    queries: [connectorCatalogOptions(), connectionsListOptions()],
-  });
+  // Connector catalog (names, kind) → which connectors need an instance named.
+  const [{ data: catalog }] = useQueries({ queries: [connectorCatalogOptions()] });
 
   const catalogByCode = useMemo(
     () => new Map((catalog ?? []).map((c) => [c.code, c])),
     [catalog],
   );
-  const configuredCodes = useMemo(
-    () => new Set((connections ?? []).map((c) => c.connectorCode)),
-    [connections],
-  );
+  // What matters now is not "the user owns a connection of this type" but "this
+  // agent will have one open": the skill gate reads the agent's connections, and
+  // those were chosen on the previous step.
+  const openedByCode = useMemo(() => {
+    const map = new Map<string, typeof data.connections>();
+    for (const c of data.connections) {
+      map.set(c.connectorCode, [...(map.get(c.connectorCode) ?? []), c]);
+    }
+    return map;
+  }, [data.connections]);
 
   const connectorState = (code: string): ConnectorState => {
-    if (configuredCodes.has(code)) return 'connected';
+    if (openedByCode.has(code)) return 'connected';
     const entry = catalogByCode.get(code);
-    // Integrations need a user-created connection; contextual connectors (time,
-    // memory) connect in one click later. An unknown code is assumed to need one.
+    // Integrations need a connection opened on the previous step; internal ones
+    // (time, memory) are opened for the agent automatically at creation. An
+    // unknown code is assumed to need one.
     return !entry || isIntegrationConnector(entry) ? 'needsConnection' : 'builtIn';
   };
 
   const selectedIds = useMemo(() => new Set(data.skills.map((s) => s.id)), [data.skills]);
 
+  // External connectors of a skill, i.e. the ones an instance must be named for.
+  const externalCodesOf = (skill: { connectorCodes?: string[] }) =>
+    (skill.connectorCodes ?? []).filter((code) => {
+      const entry = catalogByCode.get(code);
+      return !entry || isIntegrationConnector(entry);
+    });
+
   const toggleSkill = (skill: SkillResponse) => {
     if (selectedIds.has(skill.id)) {
-      setData({ skills: data.skills.filter((s) => s.id !== skill.id) });
+      const { [skill.id]: _dropped, ...rest } = data.skillConnections;
+      setData({
+        skills: data.skills.filter((s) => s.id !== skill.id),
+        skillConnections: rest,
+      });
       return;
+    }
+    // One opened connection of a type is not a choice — preselect it so the
+    // common case stays a single click.
+    const auto: Record<string, string> = {};
+    for (const code of externalCodesOf(skill)) {
+      const opened = openedByCode.get(code) ?? [];
+      if (opened.length === 1) auto[code] = opened[0].id;
     }
     setData({
       skills: [
@@ -104,27 +127,33 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
           connectorCodes: skill.connectorCodes,
         },
       ],
+      skillConnections: { ...data.skillConnections, [skill.id]: auto },
     });
   };
+
+  const setSkillConnection = (skillId: string, code: string, connectionId: string) =>
+    setData({
+      skillConnections: {
+        ...data.skillConnections,
+        [skillId]: { ...(data.skillConnections[skillId] ?? {}), [code]: connectionId },
+      },
+    });
 
   const { loading, error, handleSubmit } = useAsyncForm({
     defaultError: t('createError'),
   });
 
-  // The one and only server call of the wizard: agent + skill bindings are
-  // created in a single transaction; the preset code rides along for analytics.
+  // Creation is a sequence now, not one call: the agent, then the connections it
+  // may reach, then the skills pointing at them. What fails after the agent
+  // exists is reported on the next step rather than rolled back.
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, async () => {
-      const created = await apiService.createAgent({
-        name: data.name.trim(),
-        description: data.description.trim() || undefined,
-        instructions: data.instructions.trim() || undefined,
-        type: 'GENERIC',
-        agenticTeamId: teamId || null,
-        skillIds: data.skills.map((s) => s.id),
-        presetName: data.presetName ?? undefined,
+      const result = await createAgentFromWizard(data, teamId, internalCodesFor(data, catalog));
+      setData({
+        created: result.created,
+        failedConnections: result.failedConnections,
+        failedSkills: result.failedSkills,
       });
-      setData({ created });
       goNext();
     });
 
@@ -185,9 +214,16 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
             <div className="space-y-1.5">
               {shown.map((skill) => {
                 const isSelected = selectedIds.has(skill.id);
+                // Only asked once the skill is taken, and only where there is a
+                // real choice: two accounts of the same service open to the agent.
+                const ambiguous = isSelected
+                  ? externalCodesOf(skill).filter(
+                      (code) => (openedByCode.get(code) ?? []).length > 1,
+                    )
+                  : [];
                 return (
+                  <div key={skill.id}>
                   <button
-                    key={skill.id}
                     type="button"
                     onClick={() => toggleSkill(skill)}
                     aria-pressed={isSelected}
@@ -234,6 +270,31 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
                       )}
                     </span>
                   </button>
+
+                  {ambiguous.length > 0 && (
+                    <div className="mt-1.5 ml-7 space-y-2 rounded-lg border border-border bg-surface-secondary/50 p-3">
+                      <p className="text-xs text-muted">{t('skillInstanceHint')}</p>
+                      {ambiguous.map((code) => (
+                        <label key={code} className="block">
+                          <span className="mb-1 block text-xs font-medium text-foreground">
+                            {catalogByCode.get(code)?.name ?? code}
+                          </span>
+                          <Select
+                            value={data.skillConnections[skill.id]?.[code] ?? ''}
+                            onChange={(e) => setSkillConnection(skill.id, code, e.target.value)}
+                          >
+                            <option value="">{t('skillInstanceNotChosen')}</option>
+                            {(openedByCode.get(code) ?? []).map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.name || c.fullCode}
+                              </option>
+                            ))}
+                          </Select>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                  </div>
                 );
               })}
 

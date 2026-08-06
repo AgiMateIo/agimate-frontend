@@ -10,12 +10,12 @@ import { Chip } from '@/components/ui/Chip';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { ConnectionAuthBadge } from '@/components/connections/ConnectionAuth';
 import { ConnectionAvatar } from '@/components/connections/ConnectionAvatar';
-import apiService from '@/services/api';
 import { connectorCatalogOptions } from '@/queries/connectors';
 import { connectionsListOptions } from '@/queries/connections';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { isInternalConnector } from '@/utils/connector';
 import type { WizardConnection, WizardStepProps } from './AgentWizard';
+import { createAgentFromWizard, internalCodesFor } from './createAgent';
 import WizardActions from './WizardActions';
 
 // The connector that manages the platform itself — it can create agents and
@@ -29,7 +29,12 @@ export default function StepConnections({
   goNext,
   goBack,
   teamId,
-}: WizardStepProps) {
+  final = false,
+}: WizardStepProps & {
+  // Last step before the finish (the external branch has no skills step), so
+  // this is where the agent gets created.
+  final?: boolean;
+}) {
   const t = useTranslations('AgentWizard');
   const [search, setSearch] = useState('');
 
@@ -82,30 +87,17 @@ export default function StepConnections({
 
   const { loading, error, handleSubmit } = useAsyncForm({ defaultError: t('createError') });
 
-  // Creation and bindings can't be one call: a binding is addressed by agent id.
-  // A binding that fails afterwards therefore leaves a real agent behind — it is
-  // reported on the next step instead of being retried or rolled back.
+  // Creation and attachment can't be one call: both a binding and an instance
+  // choice are addressed by agent id. A failure afterwards therefore leaves a
+  // real agent behind — it is reported on the next step, never retried silently.
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, async () => {
-      const created = await apiService.createAgent({
-        name: data.name.trim(),
-        description: data.description.trim() || undefined,
-        instructions: data.instructions.trim() || undefined,
-        type: data.agentType ?? 'MCP',
-        webhookUrl: data.agentType === 'WEBHOOK' ? data.webhookUrl.trim() : undefined,
-        agenticTeamId: teamId || null,
-        skillIds: data.skills.map((s) => s.id),
-        presetName: data.presetName ?? undefined,
+      const result = await createAgentFromWizard(data, teamId, internalCodesFor(data, catalog));
+      setData({
+        created: result.created,
+        failedConnections: result.failedConnections,
+        failedSkills: result.failedSkills,
       });
-
-      const results = await Promise.allSettled(
-        data.connections.map((c) =>
-          apiService.bindAgentConnection(created.agent.id, { connectionId: c.id }),
-        ),
-      );
-      const bindFailures = data.connections.filter((_, i) => results[i].status === 'rejected');
-
-      setData({ created, bindFailures });
       goNext();
     });
 
@@ -170,7 +162,12 @@ export default function StepConnections({
                     key={conn.id}
                     type="button"
                     onClick={() =>
-                      toggle({ id: conn.id, name: conn.name, fullCode: conn.fullCode })
+                      toggle({
+                        id: conn.id,
+                        name: conn.name,
+                        fullCode: conn.fullCode,
+                        connectorCode: conn.connectorCode,
+                      })
                     }
                     aria-pressed={isSelected}
                     className={`flex w-full items-center gap-2.5 rounded-lg border px-3 py-2.5 text-left transition-colors ${
@@ -226,9 +223,15 @@ export default function StepConnections({
         <span className="hidden text-xs text-muted sm:inline">
           {t('selectedConnections', { count: data.connections.length })}
         </span>
-        <Button type="submit" loading={loading} disabled={loading || !data.name.trim()}>
-          {t('createAgent')}
-        </Button>
+        {final ? (
+          <Button type="submit" loading={loading} disabled={loading || !data.name.trim()}>
+            {t('createAgent')}
+          </Button>
+        ) : (
+          <Button type="button" onClick={goNext}>
+            {t('next')}
+          </Button>
+        )}
       </WizardActions>
     </form>
   );
