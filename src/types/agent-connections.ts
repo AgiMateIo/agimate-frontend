@@ -18,6 +18,13 @@ export interface AgentConnectionResponse {
   fullCode: string;
   name: string;
   enabled: boolean;
+  // Internal connector: exactly one instance per user. Informational only — it
+  // no longer blocks unbinding, since skills stopped creating bindings.
+  managedBySkills: boolean;
+  // How many of *this agent's* skills point at this instance. Zero means the
+  // connection is open but no skill uses it: behind the skill gate its tools
+  // never enter the agent's context — a dead binding, worth a warning.
+  usedBySkills: number;
   createdAt: string;
 }
 
@@ -37,10 +44,12 @@ export interface ConnectionAgentResponse {
   createdAt: string;
 }
 
-export interface BindConnectionRequest {
-  // an existing connection instance of an *external* connector
-  connectionId: string;
-}
+// Exactly one of the two fields — both or neither is a 400. An internal
+// connector is addressed by *code* because its single instance may not exist
+// yet: the backend materializes the row and answers with it.
+export type BindConnectionRequest =
+  | { connectionId: string; connectorCode?: never }
+  | { connectorCode: string; connectionId?: never };
 
 export interface AgentConnectionPolicyResponse {
   id: string;

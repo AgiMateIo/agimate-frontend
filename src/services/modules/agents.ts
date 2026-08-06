@@ -14,6 +14,7 @@ import type {
   UpdatePolicyRequest,
   AgentSkillResponse,
   CreateAgentSkillRequest,
+  UpdateAgentSkillConnectionsRequest,
   AgentLlmResponse,
   AgentLlmPurpose,
   CreateAgentLlmRequest,
@@ -62,6 +63,8 @@ export const agentsApi = {
     return httpClient.post<AgentConnectionResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/connections/`, data);
   },
 
+  // Addressed by the *connection* id (not the binding id), and it now works for
+  // internal connectors too — nothing is "managed by skills" any more.
   async unbindAgentConnection(agentId: string, connectionId: string): Promise<void> {
     return httpClient.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/connections/${connectionId}`);
   },
@@ -94,6 +97,23 @@ export const agentsApi = {
 
   async unbindAgentSkill(agentId: string, skillId: string): Promise<void> {
     return httpClient.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/skills/${skillId}`);
+  },
+
+  // Replaces the binding's whole connector→instance map (a code left out of the
+  // body ends up without an instance).
+  async updateAgentSkillConnections(
+    agentId: string,
+    skillId: string,
+    data: UpdateAgentSkillConnectionsRequest,
+  ): Promise<AgentSkillResponse> {
+    return httpClient.put<AgentSkillResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/skills/${skillId}/connections`, data);
+  },
+
+  // Marks the agent's skills as installed at their current version — the only
+  // way to clear `needsReinstall`. It reconciles nothing else: skills no longer
+  // create connector bindings, so there is nothing to sync.
+  async refreshAgentSkills(agentId: string): Promise<void> {
+    return httpClient.post<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/skills/refresh`, {});
   },
 
   // Agent ↔ LLM bindings — keyed by purpose (one model per purpose per agent).

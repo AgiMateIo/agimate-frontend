@@ -14,8 +14,14 @@ export const agentKeys = {
   list: (teamId?: string) => [...agentKeys.lists(), teamId ?? 'all'] as const,
   detail: (id: string) => [...agentKeys.all, 'detail', id] as const,
   connections: (id: string) => [...agentKeys.detail(id), 'connections'] as const,
+  skills: (id: string) => [...agentKeys.detail(id), 'skills'] as const,
   llms: (id: string) => [...agentKeys.detail(id), 'llms'] as const,
 };
+
+// One page big enough to hold an agent's whole skill list: the same rows back
+// both the skills section and the "N skills are not working" line on the agent
+// card, and a second key would mean a second request for the same truth.
+const SKILLS_PAGE_SIZE = 100;
 
 // Newest first. The sort parameter is what makes it hold across pages; the
 // select is the fallback for a backend that ignores it, so at least the page
@@ -50,6 +56,18 @@ export const agentConnectionsOptions = (agentId: string) =>
     queryKey: agentKeys.connections(agentId),
     queryFn: () => apiService.getAgentConnections(agentId),
   });
+
+// Skill bindings of one agent, each carrying whether it is satisfied — i.e.
+// whether the agent gets it at all.
+export const agentSkillsOptions = (agentId: string) =>
+  queryOptions({
+    queryKey: agentKeys.skills(agentId),
+    queryFn: () => apiService.getAgentSkills({ agentId, size: SKILLS_PAGE_SIZE }),
+  });
+
+export function useAgentSkillsQuery(agentId: string) {
+  return useQuery(agentSkillsOptions(agentId));
+}
 
 // Model bindings of one agent, keyed by purpose. A zero-binding agent gets a
 // single synthetic PLATFORM row back — never a real row, see AgentLlmSource.
@@ -88,6 +106,13 @@ export function useAgentCacheActions() {
       queryClient.invalidateQueries({ queryKey: agentKeys.detail(id) }),
     invalidateAgentLlms: (id: string) =>
       queryClient.invalidateQueries({ queryKey: agentKeys.llms(id) }),
+    // Skills and connections satisfy each other: opening a connection can turn a
+    // red skill green, and binding a skill changes a connection's usage count —
+    // so the two lists are always refreshed together.
+    invalidateAgentAccess: (id: string) => {
+      queryClient.invalidateQueries({ queryKey: agentKeys.skills(id) });
+      queryClient.invalidateQueries({ queryKey: agentKeys.connections(id) });
+    },
     invalidateAll: () =>
       queryClient.invalidateQueries({ queryKey: agentKeys.all }),
   };
