@@ -9,14 +9,29 @@ import { Button } from '@/components/ui/Button';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import WebchatSessionsPane from '@/components/webchat/WebchatSessionsPane';
 import WebchatConversation from '@/components/webchat/WebchatConversation';
+import AgentMcpUnavailable from '@/components/agents/AgentMcpUnavailable';
 import { useAgentDetailSuspenseQuery } from '@/queries/agents';
 import { useWebchatCacheActions, useWebchatSessionsQuery } from '@/queries/webchat';
 import { getErrorMessage } from '@/utils/error';
+import { isMcpAgent } from '@/utils/agent';
+import type { AgentResponse } from '@/types';
 
 export default function AgentChatPage() {
-  const t = useTranslations('Chat');
   const agentId = useParams().id as string;
   const { data: agent } = useAgentDetailSuspenseQuery(agentId);
+
+  // A webchat session would implicitly create a channel, and the backend answers
+  // 400 for an MCP agent — so the split happens before any session request.
+  if (isMcpAgent(agent.type)) {
+    return <AgentMcpUnavailable agentId={agentId} section="chat" />;
+  }
+
+  return <AgentChatView agent={agent} />;
+}
+
+function AgentChatView({ agent }: { agent: AgentResponse }) {
+  const t = useTranslations('Chat');
+  const agentId = agent.id;
 
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);

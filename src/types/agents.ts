@@ -2,7 +2,12 @@
 
 import type { AgentLlmResponse } from './llm-providers';
 
-export type AgentType = 'CENTRIFUGO' | 'WEBHOOK' | 'GENERIC';
+// How events reach the agent — the only thing the type decides now.
+// GENERIC runs on the platform (internal queue, platform or user-bound model);
+// the other three are the same "brain outside", differing only in the door for
+// incoming events: websocket (CENTRIFUGO), HTTP callback (WEBHOOK), or none at
+// all (MCP — the external AI client comes for the tools itself).
+export type AgentType = 'CENTRIFUGO' | 'WEBHOOK' | 'GENERIC' | 'MCP';
 
 export interface AgentSkillSummary {
   id: string;

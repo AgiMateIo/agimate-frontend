@@ -3,8 +3,9 @@
 import { useState, useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useQueries } from '@tanstack/react-query';
-import { AgentLlmPurpose, AgentLlmResponse, LlmProviderType } from '@/types';
+import { AgentLlmPurpose, AgentLlmResponse, AgentType, LlmProviderType } from '@/types';
 import { getErrorMessage } from '@/utils/error';
+import { isExternalAgentType } from '@/utils/agent';
 import { localeMap } from '@/i18n/routing';
 import { agentLlmsOptions, useAgentCacheActions } from '@/queries/agents';
 import {
@@ -29,6 +30,9 @@ import {
 
 interface AgentModelsTabProps {
   agentId: string;
+  // An external agent thinks on its own model, so nothing here is "the agent's
+  // model" — bindings only cover the tool tasks the platform runs itself.
+  agentType?: AgentType;
 }
 
 const providerTypeBadge: Record<LlmProviderType, string> = {
@@ -42,7 +46,7 @@ const providerTypeBadge: Record<LlmProviderType, string> = {
 // fixed list of the five purposes rather than of arbitrary rows. Filling a row
 // creates the binding, editing replaces it, clearing it hands the purpose back to
 // the backend's auto-pick (or, for the last one, to the platform fallback).
-export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
+export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabProps) {
   const t = useTranslations('Agents');
   const tu = useTranslations('LlmUsage');
   // Purpose names and their model requirements are LLM-domain vocabulary shared
@@ -170,7 +174,11 @@ export default function AgentModelsTab({ agentId }: AgentModelsTabProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <p className="text-sm text-muted">{t('purposeHint')}</p>
+        {/* For an external agent the chat model is the client's; what is bound
+            here only drives the tool tasks the platform executes itself. */}
+        <p className="text-sm text-muted">
+          {agentType && isExternalAgentType(agentType) ? t('externalPurposeHint') : t('purposeHint')}
+        </p>
         <Link
           href="/dashboard/llm-providers"
           className="text-sm text-accent hover:text-accent/80 transition-colors whitespace-nowrap"

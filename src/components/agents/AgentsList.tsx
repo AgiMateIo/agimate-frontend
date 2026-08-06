@@ -6,6 +6,7 @@ import {
   BoltIcon,
   ArrowsRightLeftIcon,
   CpuChipIcon,
+  PuzzlePieceIcon,
 } from '@heroicons/react/24/outline';
 import { AgentResponse, AgentType } from '@/types';
 import { Link } from '@/i18n/navigation';
@@ -17,10 +18,11 @@ interface AgentsListProps {
 }
 
 // Glyph + i18n label key per delivery type — realtime, HTTP callback, in-platform.
-const TYPE_META: Record<AgentType, { icon: ComponentType<SVGProps<SVGSVGElement>>; labelKey: 'centrifugo' | 'webhook' | 'generic' }> = {
+const TYPE_META: Record<AgentType, { icon: ComponentType<SVGProps<SVGSVGElement>>; labelKey: 'centrifugo' | 'webhook' | 'generic' | 'mcp' }> = {
   CENTRIFUGO: { icon: BoltIcon, labelKey: 'centrifugo' },
   WEBHOOK: { icon: ArrowsRightLeftIcon, labelKey: 'webhook' },
   GENERIC: { icon: CpuChipIcon, labelKey: 'generic' },
+  MCP: { icon: PuzzlePieceIcon, labelKey: 'mcp' },
 };
 
 // Cap the skill chips so a heavily-bound agent doesn't blow up the card height.
@@ -43,7 +45,13 @@ export default function AgentsList({ agents }: AgentsListProps) {
         return (
           <Link
             key={agent.id}
-            href={`/dashboard/agents/${agent.id}/chat`}
+            // An MCP agent has no chat to open — its card leads to the page that
+            // does carry its point: the connection details.
+            href={
+              agent.type === 'MCP'
+                ? `/dashboard/agents/${agent.id}`
+                : `/dashboard/agents/${agent.id}/chat`
+            }
             className={`group relative flex flex-col items-center text-center bg-surface-secondary rounded-lg border border-border hover:border-accent/50 transition-colors p-5 ${agent.enabled ? '' : 'opacity-60'}`}
           >
             <div className="absolute top-3 left-3">

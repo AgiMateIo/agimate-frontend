@@ -18,6 +18,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useAgentDetailQuery, allAgentsOptions, agentsListOptions } from '@/queries/agents';
 import { getAgentAvatarUrl } from '@/utils/avatar';
+import { isMcpAgent } from '@/utils/agent';
 import ContextNav from './ContextNav';
 
 type SectionLabelKey =
@@ -91,6 +92,13 @@ export default function AgentContextNav({
   // Preserve the open section when switching agents; edit/unknown fall back to general.
   const keepSeg = SECTIONS.find((s) => s.key === currentSection)?.seg ?? '';
 
+  // An MCP agent runs on the client's own model, so there is no binding to make
+  // here. Chat/channels/triggers keep their entry and explain themselves — this
+  // one has nothing to explain, the model simply isn't ours.
+  const sections = isMcpAgent(agent?.type ?? 'GENERIC')
+    ? SECTIONS.filter((s) => s.key !== 'models')
+    : SECTIONS;
+
   return (
     <ContextNav
       collapsed={collapsed}
@@ -108,7 +116,7 @@ export default function AgentContextNav({
       avatarUrl={agent ? getAgentAvatarUrl(agent.name) : undefined}
       fallbackIcon={UserCircleIcon}
       status={agent ? { on: agent.enabled, label: agent.enabled ? t('enabled') : t('disabled') } : undefined}
-      sections={SECTIONS.map(({ key, seg, labelKey, icon }) => ({
+      sections={sections.map(({ key, seg, labelKey, icon }) => ({
         key,
         href: hrefFor(agentId, seg),
         label: t(labelKey),

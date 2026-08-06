@@ -68,8 +68,9 @@ export function useDashboardResources() {
     llmProviders: toCount(providers, (d) => d.length),
     chatSessions: toCount(sessions, (d) => d.length),
     // Target for the "talk to an agent" action — chat is per-agent, there is no
-    // standalone chat route.
-    firstAgentId: agents.data?.content[0]?.id ?? null,
+    // standalone chat route. MCP agents are skipped: they have no chat at all,
+    // and pointing the first-run checklist at one is a dead end.
+    firstAgentId: agents.data?.content.find((a) => a.type !== 'MCP')?.id ?? null,
   };
 }
 

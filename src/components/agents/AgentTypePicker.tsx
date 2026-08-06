@@ -48,6 +48,15 @@ const OPTIONS = [
     selectedTitleClass: 'text-success',
     checkClass: 'bg-success text-white',
   },
+  {
+    value: 'MCP',
+    titleKey: 'mcp',
+    shortKey: 'mcpShort',
+    descKey: 'mcpDesc',
+    selectedClass: 'border-accent bg-accent/10',
+    selectedTitleClass: 'text-accent',
+    checkClass: 'bg-accent text-accent-foreground',
+  },
 ] as const satisfies readonly OptionMeta[];
 
 export default function AgentTypePicker({ value, onChange, error }: AgentTypePickerProps) {
@@ -58,7 +67,7 @@ export default function AgentTypePicker({ value, onChange, error }: AgentTypePic
       <label className="block text-sm font-medium text-foreground mb-2">
         {t('agentType')} <span className="text-error">*</span>
       </label>
-      <div role="radiogroup" aria-label={t('agentType')} className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+      <div role="radiogroup" aria-label={t('agentType')} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
         {OPTIONS.map((option) => {
           const selected = value === option.value;
           return (
