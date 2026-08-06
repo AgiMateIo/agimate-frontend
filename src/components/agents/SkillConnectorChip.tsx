@@ -19,7 +19,7 @@ export function connectorFix(
   connector: AgentSkillConnectorStatus,
   hasInstances: boolean,
 ): ConnectorFix {
-  if (connector.satisfied) return 'ok';
+  if (connector.satisfied !== false) return 'ok';
   // An instance is chosen (or, for an internal connector, implied) — all that is
   // missing is opening it to the agent, which is one request from here.
   if (connector.connectionId || connector.internal) return 'open';

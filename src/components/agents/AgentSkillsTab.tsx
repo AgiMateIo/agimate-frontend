@@ -54,7 +54,9 @@ export default function AgentSkillsTab({ agentId, onCreateConnection }: AgentSki
   const [actionError, setActionError] = useState('');
 
   const bindings = page?.content ?? [];
-  const unsatisfied = bindings.filter((b) => !b.satisfied);
+  // `=== false` is the verdict; a missing field is no verdict at all and must
+  // not paint every skill red while a deployment is halfway out.
+  const unsatisfied = bindings.filter((b) => b.satisfied === false);
   const needsReinstall = bindings.some((b) => b.needsReinstall);
 
   const connectorName = (code: string) => catalog?.find((c) => c.code === code)?.name ?? code;
@@ -182,7 +184,7 @@ export default function AgentSkillsTab({ agentId, onCreateConnection }: AgentSki
                           ) : (
                             <span className="text-muted italic">{t('skillDeleted')}</span>
                           )}
-                          {!binding.satisfied && (
+                          {binding.satisfied === false && (
                             <span title={t('skillNotWorkingHint')}>
                               <Chip tone="error" icon={ExclamationTriangleIcon}>
                                 {t('skillNotWorking')}

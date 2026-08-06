@@ -134,7 +134,9 @@ function UnsatisfiedSkillsNotice({ agentId }: { agentId: string }) {
   const { data } = useAgentSkillsQuery(agentId);
 
   const bindings = data?.content ?? [];
-  const broken = bindings.filter((b) => !b.satisfied).length;
+  // `=== false`, not `!`: a backend that has not shipped the verdict yet must
+  // read as "nothing to report", not as every skill being broken.
+  const broken = bindings.filter((b) => b.satisfied === false).length;
   if (broken === 0) return null;
 
   return (
