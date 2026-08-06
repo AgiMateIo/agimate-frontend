@@ -21,9 +21,10 @@ export function isIntegrationConnector(
 }
 
 // Internal (system-managed) connector: board, persist-memory, time, media,
-// webchat, acp, claude-code. Its single per-user connection row is created by
-// the backend, and agent bindings are synced from skills — the UI must not
-// offer create/delete/bind/unbind for it.
+// webchat, acp, claude-code. It has exactly one connection row per user, which
+// the backend materializes on first use — so the UI never offers to *create*
+// one, but it does open and close it for an agent by connector code, like any
+// other connection.
 export function isInternalConnector(
   c: Pick<ConnectorCatalogEntry, 'integrationMeta' | 'capabilities'>,
 ): boolean {

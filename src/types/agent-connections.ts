@@ -1,9 +1,10 @@
 // Agent ↔ connector bindings and their refinement policies.
 //
 // Binding (agent_connections): the gate — an agent can only see/call a connector instance it is
-// bound to. Bindings are default-allow. Endpoints: /manage/agents/{agentId}/connections/.
-// Bind/unbind is only allowed for *external* connectors (telegram/mcp/app); internal-connector
-// bindings are synced automatically from the agent's skills (the backend answers 400).
+// bound to, and a tool now comes from *that* instance rather than from any connection of its type.
+// Bindings are default-allow. Endpoints: /manage/agents/{agentId}/connections/.
+// Bind/unbind works for every connector, internal ones included: skills stopped creating bindings,
+// so there is no automatic sync left to fight with.
 // Policy (agent_connection_policies): optional refinement over a binding (deny-list / allow-list /
 // param filter). Endpoints: /manage/agent-connections/{agentConnectionId}/policies/.
 
