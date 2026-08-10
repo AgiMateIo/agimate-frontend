@@ -19,12 +19,14 @@ export function Tabs({ tabs, activeTab, onTabChange }: TabsProps) {
     <div className="space-y-4">
       {/* Tab Headers */}
       <div className="border-b border-border">
-        <div className="flex gap-1">
+        {/* Scrolls sideways rather than wrapping: four labels don't fit a phone,
+            and a second row of tabs under the border reads as a broken header. */}
+        <div className="flex gap-1 overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`px-4 py-3 text-sm font-medium transition-colors relative ${
+              className={`shrink-0 whitespace-nowrap px-4 py-3 text-sm font-medium transition-colors relative ${
                 activeTab === tab.id
                   ? 'text-accent'
                   : 'text-muted hover:text-foreground'
