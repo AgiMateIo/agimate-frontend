@@ -1063,7 +1063,9 @@
     "paramsLabel": "Параметры",
     "noParams": "Без параметров",
     "annReadOnly": "Только чтение",
-    "annDestructive": "Изменяет данные"
+    "annDestructive": "Изменяет данные",
+    "enableConnection": "Включить подключение",
+    "disableConnection": "Отключить подключение"
   },
   "ConnectionAuth": {
     "label": "Авторизация",

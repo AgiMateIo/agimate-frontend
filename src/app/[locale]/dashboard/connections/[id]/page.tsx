@@ -11,7 +11,6 @@ import { formatDate } from '@/utils/date';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { Tabs } from '@/components/ui/Tabs';
-import { Toggle } from '@/components/ui/Toggle';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { isInternalConnector } from '@/utils/connector';
 import {
@@ -19,12 +18,13 @@ import {
   useUpdateConnectionMutation,
   useConnectionCacheActions,
 } from '@/queries/connections';
-import EditConnectionModal from '@/components/connections/EditConnectionModal';
 import UpdateCredentialsModal from '@/components/connections/UpdateCredentialsModal';
 import DeleteConnectionModal from '@/components/connections/DeleteConnectionModal';
 import TestConnectionModal from '@/components/connections/TestConnectionModal';
 import { Button } from '@/components/ui/Button';
-import { PencilIcon, KeyIcon, TrashIcon, BeakerIcon } from '@heroicons/react/24/outline';
+import ConnectionTitle from '@/components/connections/ConnectionTitle';
+import { DropdownMenu } from '@/components/ui/DropdownMenu';
+import { KeyIcon, TrashIcon, BeakerIcon, PowerIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
 import {
   ConnectionAuthBadge,
@@ -43,6 +43,7 @@ function ConnectionDetailContent({ id }: { id: string }) {
   const t = useTranslations('ConnectionDetail');
   const tInt = useTranslations('Connections');
   const tAuth = useTranslations('ConnectionAuth');
+  const tCommon = useTranslations('Common');
   const locale = useLocale();
   const bcp47Locale = localeMap[locale];
   const router = useRouter();
@@ -58,18 +59,12 @@ function ConnectionDetailContent({ id }: { id: string }) {
   const { setConnection, invalidateConnection, removeConnection } = useConnectionCacheActions();
 
   const [activeTab, setActiveTab] = useState<Tab>('info');
-  const [editingConnection, setEditingConnection] = useState(false);
   const [updatingCreds, setUpdatingCreds] = useState(false);
   const [deletingConnection, setDeletingConnection] = useState(false);
   const [testingConnection, setTestingConnection] = useState(false);
 
   const handleToggleEnabled = () => {
     updateMutation.mutate({ enabled: !connection.enabled });
-  };
-
-  const handleEditSuccess = (updated: ConnectionResponse) => {
-    setConnection(updated);
-    setEditingConnection(false);
   };
 
   const handleUpdateCredsSuccess = (updated: ConnectionResponse) => {
@@ -84,26 +79,33 @@ function ConnectionDetailContent({ id }: { id: string }) {
 
   return (
     <>
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-foreground">
-              {connection.name || connection.fullCode}
-            </h1>
+      {/* Header. Five equal-weight controls in one row read as a toolbar with no
+          hierarchy, and their combined min-width scrolled the page sideways.
+          Now: the name is edited in place, "test" is the one visible button,
+          and every remaining action (enable/disable, credentials, delete)
+          lives in the overflow menu. */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+        <div className="min-w-0">
+          <ConnectionTitle
+            name={connection.name}
+            fallback={connection.fullCode}
+            onSave={(name) => updateMutation.mutateAsync({ name })}
+          />
+          {/* Identity and state wrap together — a connector name next to two
+              badges never fits one phone row. State is read here and changed
+              from the menu, so nothing in this row is interactive. */}
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-2">
             <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-accent/10 text-accent">
               {connector.name}
             </span>
+            <ConnectionAuthBadge status={connection.authStatus} />
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                connection.enabled
-                  ? 'bg-success/10 text-success'
-                  : 'bg-muted/10 text-muted'
+                connection.enabled ? 'bg-success/10 text-success' : 'bg-muted/10 text-muted'
               }`}
             >
               {connection.enabled ? tInt('enabled') : tInt('disabled')}
             </span>
-            <ConnectionAuthBadge status={connection.authStatus} />
           </div>
           <p className="text-sm text-muted mt-1 font-mono">{connection.fullCode}</p>
           {connection.name && connection.subCode && (
@@ -113,7 +115,7 @@ function ConnectionDetailContent({ id }: { id: string }) {
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <Button
             variant="primary"
             onClick={() => setTestingConnection(true)}
@@ -122,34 +124,38 @@ function ConnectionDetailContent({ id }: { id: string }) {
             <BeakerIcon className="h-4 w-4" />
             {t('testConnection')}
           </Button>
-          <Toggle
-            checked={connection.enabled}
-            onChange={handleToggleEnabled}
-            disabled={updateMutation.isPending}
+          <DropdownMenu
+            items={[
+              {
+                label: connection.enabled ? t('disableConnection') : t('enableConnection'),
+                icon: PowerIcon,
+                onClick: handleToggleEnabled,
+                disabled: updateMutation.isPending,
+              },
+              ...(connector.integrationMeta
+                ? [
+                    {
+                      label: tInt('updateCredentials'),
+                      icon: KeyIcon,
+                      onClick: () => setUpdatingCreds(true),
+                    },
+                  ]
+                : []),
+              // Internal-connector rows are system-managed, so they have no
+              // delete entry at all rather than a disabled one.
+              ...(internal
+                ? []
+                : [
+                    {
+                      label: tCommon('delete'),
+                      icon: TrashIcon,
+                      onClick: () => setDeletingConnection(true),
+                      danger: true,
+                      separated: true,
+                    },
+                  ]),
+            ]}
           />
-          {connector.integrationMeta && (
-            <button
-              onClick={() => setUpdatingCreds(true)}
-              className="p-2 text-muted hover:text-foreground transition-colors rounded-lg"
-              title={tInt('updateCredentials')}
-            >
-              <KeyIcon className="h-5 w-5" />
-            </button>
-          )}
-          <button
-            onClick={() => setEditingConnection(true)}
-            className="p-2 text-muted hover:text-foreground transition-colors rounded-lg"
-          >
-            <PencilIcon className="h-5 w-5" />
-          </button>
-          {!internal && (
-            <button
-              onClick={() => setDeletingConnection(true)}
-              className="p-2 text-muted hover:text-error transition-colors rounded-lg"
-            >
-              <TrashIcon className="h-5 w-5" />
-            </button>
-          )}
         </div>
       </div>
 
@@ -266,15 +272,6 @@ function ConnectionDetailContent({ id }: { id: string }) {
       />
 
       {/* Modals */}
-      {editingConnection && (
-        <EditConnectionModal
-          connection={connection}
-          connectorName={connector.name}
-          onClose={() => setEditingConnection(false)}
-          onSuccess={handleEditSuccess}
-        />
-      )}
-
       {deletingConnection && (
         <DeleteConnectionModal
           connection={connection}

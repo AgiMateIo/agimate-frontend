@@ -1063,7 +1063,9 @@
     "paramsLabel": "Parameters",
     "noParams": "No parameters",
     "annReadOnly": "Read-only",
-    "annDestructive": "Destructive"
+    "annDestructive": "Destructive",
+    "enableConnection": "Enable connection",
+    "disableConnection": "Disable connection"
   },
   "ConnectionAuth": {
     "label": "Authorization",
