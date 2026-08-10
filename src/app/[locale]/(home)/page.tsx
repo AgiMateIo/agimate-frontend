@@ -235,8 +235,9 @@ export default function HomePage() {
           {t('howItWorks.title')}
         </h2>
 
-        {/* Tab buttons */}
-        <div className="mx-auto mb-8 flex max-w-xl justify-center gap-2">
+        {/* Tab buttons. Wrapping because three Russian labels plus their icons
+            and padding come to ~400px of min-content — over a 375px screen. */}
+        <div className="mx-auto mb-8 flex flex-wrap justify-center gap-2">
           {howItWorksTabs.map((tab, i) => {
             const Icon = tabIcons[i];
             return (

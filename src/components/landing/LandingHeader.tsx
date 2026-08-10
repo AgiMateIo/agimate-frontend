@@ -47,14 +47,19 @@ export default function LandingHeader({ navLinks, loginLabel, dashboardLabel }: 
   return (
     <header className="sticky top-0 z-50 border-b border-border/40 backdrop-blur-md bg-background/80">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-6 py-4">
+        {/* Nothing in this row could shrink, so on a narrow phone its parts add
+            up past the viewport and the page picks up a horizontal scroll — with
+            the sticky header ending mid-scroll, which is how it shows up. The
+            wordmark is the one part that may yield: min-w-0 lets it, the nav
+            keeps its buttons intact. */}
         <Link
           href="/"
-          className="group flex items-center gap-2 text-xl font-bold tracking-tight hover:text-accent transition-colors"
+          className="group flex min-w-0 items-center gap-2 text-xl font-bold tracking-tight hover:text-accent transition-colors"
         >
           <Logo className="h-6 w-auto shrink-0 text-accent transition-colors group-hover:text-foreground" />
-          AgiMate
+          <span className="truncate">AgiMate</span>
         </Link>
-        <nav className="flex items-center gap-4 sm:gap-6 text-sm text-muted">
+        <nav className="flex shrink-0 items-center gap-3 sm:gap-6 text-sm text-muted">
           {navLinks.map((link) => (
             <a
               key={link.href}
@@ -68,14 +73,14 @@ export default function LandingHeader({ navLinks, loginLabel, dashboardLabel }: 
           {!loading && user ? (
             <Link
               href="/dashboard"
-              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent/90 transition-colors"
+              className="whitespace-nowrap rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent/90 transition-colors"
             >
               {dashboardLabel}
             </Link>
           ) : (
             <Link
               href="/login"
-              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent/90 transition-colors"
+              className="whitespace-nowrap rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent/90 transition-colors"
             >
               {loginLabel}
             </Link>

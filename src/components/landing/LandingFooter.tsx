@@ -18,7 +18,11 @@ export default function LandingFooter({ copyright, links }: LandingFooterProps) 
     <footer className="border-t border-border/40">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 sm:px-6 py-8 sm:flex-row">
         <span className="text-sm text-muted">{copyright}</span>
-        <div className="flex items-center gap-6 text-sm text-muted">
+        {/* Wraps, and that is the whole point: six labels in a row that cannot
+            break add up to ~600px of min-content, which no phone has. Without
+            the wrap the row pushed the page wider than the viewport, and the
+            sticky header — sized to the viewport — ended mid-scroll. */}
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted">
           {links.map((link) =>
             link.localized ? (
               <Link
