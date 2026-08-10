@@ -76,7 +76,14 @@ export default function DashboardLayout({
           {/* A guest account has access to no dashboard route, so the notice
               replaces the page instead of rendering alongside it. */}
           <main className="flex-1 overflow-y-auto p-4 sm:p-6">
-            {isGuest ? <PendingActivationNotice /> : children}
+            {/* Capped and centred: on a 27" monitor a log table stretched past
+                2000px, and a row that wide is no longer scannable. `h-full`
+                keeps the percentage-height chain unbroken through this extra
+                element — the agent chat measures its canvas through it to put
+                the composer on the viewport floor. */}
+            <div className="mx-auto h-full w-full max-w-[1600px]">
+              {isGuest ? <PendingActivationNotice /> : children}
+            </div>
           </main>
         </div>
       </div>
