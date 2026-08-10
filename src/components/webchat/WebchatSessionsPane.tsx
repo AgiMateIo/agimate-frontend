@@ -58,7 +58,7 @@ export default function WebchatSessionsPane({
             <select
               value={selectedAgentId}
               onChange={(e) => onAgentChange(e.target.value)}
-              className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full px-3 py-2 bg-background border border-border rounded-lg text-base text-foreground focus:outline-none sm:text-sm focus:ring-2 focus:ring-accent"
             >
               <option value="">{t('allAgents')}</option>
               {agents.map((a) => (

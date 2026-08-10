@@ -75,7 +75,7 @@ export default function TriggerLogsTab() {
       <select
         value={connectorFilter}
         onChange={(e) => handleConnectorChange(e.target.value)}
-        className="appearance-none bg-surface-secondary border border-border rounded-lg pl-3 pr-8 py-1.5 text-sm text-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-1 focus:ring-accent"
+        className="appearance-none bg-surface-secondary border border-border rounded-lg pl-3 pr-8 py-1.5 text-base text-foreground hover:text-foreground sm:text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-accent"
       >
         <option value="">{t('allConnectors')}</option>
         {connectorOptions.map((code) => (

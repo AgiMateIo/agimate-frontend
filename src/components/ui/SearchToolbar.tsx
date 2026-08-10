@@ -50,7 +50,9 @@ export function SearchToolbar({
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           disabled={disabled}
-          className={`w-full ${s.input} ${filters ? 'pr-11' : 'pr-4'} bg-surface-secondary border border-border rounded-lg text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/50 disabled:opacity-50`}
+          // 16px below `sm`: iOS Safari zooms the page in when a focused field's
+          // font is smaller, and never zooms back out.
+          className={`w-full ${s.input} ${filters ? 'pr-11' : 'pr-4'} bg-surface-secondary border border-border rounded-lg text-base text-foreground placeholder:text-muted sm:text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 disabled:opacity-50`}
         />
         {filters && (
           <button
