@@ -112,7 +112,7 @@ export default function TaskSlideOver({
               <p className="text-sm text-foreground whitespace-pre-wrap">{task.description}</p>
             )}
 
-            <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
               <div>
                 <span className="text-muted text-xs">{t('createdBy')}</span>
                 <div className="flex items-center gap-1 mt-0.5">
@@ -175,7 +175,7 @@ export default function TaskSlideOver({
                 value={commentAgentId}
                 onChange={(e) => setCommentAgentId(e.target.value)}
                 required
-                className="w-full px-3 py-2 bg-surface-secondary border border-border rounded-lg text-sm text-foreground"
+                className="w-full px-3 py-2 bg-surface-secondary border border-border rounded-lg text-base text-foreground sm:text-sm"
               >
                 <option value="">{t('commentAgent')}</option>
                 {agentEntries.map(([id, name]) => (
@@ -189,7 +189,7 @@ export default function TaskSlideOver({
               onChange={(e) => setNewComment(e.target.value)}
               placeholder={t('addCommentPlaceholder')}
               rows={3}
-              className="w-full px-3 py-2.5 bg-surface-secondary border border-border rounded-lg text-sm text-foreground resize-none"
+              className="w-full px-3 py-2.5 bg-surface-secondary border border-border rounded-lg text-base text-foreground sm:text-sm resize-none"
             />
             <div className="flex justify-end">
               <Button

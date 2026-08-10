@@ -89,7 +89,7 @@ export default function CreateTaskModal({
           />
         </FormField>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label={t('taskType')} required>
             <select
               value={type}
@@ -97,7 +97,7 @@ export default function CreateTaskModal({
                 setType(e.target.value as TaskType);
                 setParentTaskId(''); // Reset parent on type change
               }}
-              className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground text-sm"
+              className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-base text-foreground sm:text-sm"
             >
               {TASK_TYPES.map((tt) => (
                 <option key={tt} value={tt}>
@@ -113,7 +113,7 @@ export default function CreateTaskModal({
                 value={parentTaskId}
                 onChange={(e) => setParentTaskId(e.target.value)}
                 required={parentRequired}
-                className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground text-sm"
+                className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-base text-foreground sm:text-sm"
               >
                 <option value="">{t('noParent')}</option>
                 {parentOptions.map((task) => (
@@ -126,13 +126,13 @@ export default function CreateTaskModal({
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label={t('createdBy')} required>
             <select
               value={createdByAgentId}
               onChange={(e) => setCreatedByAgentId(e.target.value)}
               required
-              className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground text-sm"
+              className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-base text-foreground sm:text-sm"
             >
               <option value="">{t('selectAgent')}</option>
               {agentEntries.map(([id, name]) => (
@@ -145,7 +145,7 @@ export default function CreateTaskModal({
             <select
               value={assigneeAgentId}
               onChange={(e) => setAssigneeAgentId(e.target.value)}
-              className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground text-sm"
+              className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-base text-foreground sm:text-sm"
             >
               <option value="">{t('noAssignee')}</option>
               {agentEntries.map(([id, name]) => (
