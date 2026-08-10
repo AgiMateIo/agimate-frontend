@@ -1,18 +1,27 @@
 'use client';
 
-import { useEffect, useRef, useState, ClipboardEvent, DragEvent, KeyboardEvent } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  ClipboardEvent,
+  DragEvent,
+  KeyboardEvent,
+} from 'react';
 import { useTranslations } from 'next-intl';
 import {
   ArrowLeftIcon,
+  ArrowUpIcon,
   ArrowUpTrayIcon,
   Cog6ToothIcon,
   FolderOpenIcon,
-  PaperAirplaneIcon,
-  PaperClipIcon,
+  PlusIcon,
   StopIcon,
 } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { Button } from '@/components/ui/Button';
+import { DropdownMenu } from '@/components/ui/DropdownMenu';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { getAgentAvatarUrl } from '@/utils/avatar';
 import { formatDateTimeShort } from '@/utils/date';
@@ -41,6 +50,10 @@ interface WebchatConversationProps {
 // Progress lines are a running commentary of one agent turn, not separate
 // messages — they read as a block when packed tighter than real bubbles.
 const isProgressRow = (m: ThreadMessage) => m.direction === 'AGENT' && m.stream === 'progress';
+
+// How far the composer is allowed to grow before it starts scrolling. Past this
+// the input is eating the conversation it belongs to.
+const MAX_COMPOSER_ROWS = 5;
 
 function MessageRow({
   message,
@@ -114,6 +127,7 @@ export default function WebchatConversation({
   const [dragDepth, setDragDepth] = useState(0);
   const [showFilePicker, setShowFilePicker] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const listRef = useRef<HTMLDivElement>(null);
   const stickToBottomRef = useRef(true);
@@ -137,11 +151,36 @@ export default function WebchatConversation({
     stickToBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
   };
 
-  // Follow the tail unless the user scrolled up to read history.
+  // Follow the tail unless the user scrolled up to read history. `draft` belongs
+  // in here: the composer is part of the scrolled content, so text that grew it
+  // just pushed the last message up out of view.
   useEffect(() => {
     const el = listRef.current;
     if (el && stickToBottomRef.current) el.scrollTop = el.scrollHeight;
-  }, [thread.messages, thread.awaitingReply, thread.loading]);
+  }, [thread.messages, thread.awaitingReply, thread.loading, draft, composer.attachments]);
+
+  // The composer grows with the text rather than scrolling inside a fixed two
+  // rows. The height has to be cleared before measuring: scrollHeight never
+  // reports less than the height already set on the element.
+  const resizeComposer = useCallback(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    const styles = getComputedStyle(el);
+    const lineHeight = parseFloat(styles.lineHeight) || 20;
+    const padding = parseFloat(styles.paddingTop) + parseFloat(styles.paddingBottom);
+    const max = lineHeight * MAX_COMPOSER_ROWS + padding;
+    el.style.height = 'auto';
+    el.style.height = `${Math.min(el.scrollHeight, max)}px`;
+    el.style.overflowY = el.scrollHeight > max ? 'auto' : 'hidden';
+  }, []);
+
+  // Also on viewport changes: the same text wraps into a different number of
+  // lines when the pane gets narrower (rotating a phone, opening the sidebar).
+  useEffect(() => {
+    resizeComposer();
+    window.addEventListener('resize', resizeComposer);
+    return () => window.removeEventListener('resize', resizeComposer);
+  }, [draft, resizeComposer]);
 
   const handleLoadOlder = async () => {
     const el = listRef.current;
@@ -240,7 +279,7 @@ export default function WebchatConversation({
     >
       {/* Drop-to-attach overlay */}
       {dragDepth > 0 && !session.closedAt && (
-        <div className="pointer-events-none absolute inset-2 z-10 grid place-items-center rounded-xl border-2 border-dashed border-accent bg-accent/10">
+        <div className="pointer-events-none absolute inset-2 z-20 grid place-items-center rounded-xl border-2 border-dashed border-accent bg-accent/10">
           <div className="text-center">
             <ArrowUpTrayIcon className="mx-auto h-8 w-8 text-accent" />
             <div className="mt-1 text-sm font-medium text-foreground">{t('dropToAttach')}</div>
@@ -285,11 +324,20 @@ export default function WebchatConversation({
         )}
       </div>
 
-      {/* Messages */}
-      <div ref={listRef} onScroll={handleScroll} className="flex-1 overflow-y-auto min-h-0">
+      {/* Messages. `scrollbar-gutter: stable both-edges` keeps the reading
+          column centred against the *pane*, not against the pane minus a
+          scrollbar — otherwise the messages shift half a scrollbar left of the
+          composer floating below them, which are supposed to share one column. */}
+      <div
+        ref={listRef}
+        onScroll={handleScroll}
+        className="flex flex-1 flex-col overflow-y-auto min-h-0 [scrollbar-gutter:stable_both-edges]"
+      >
         {/* Reading column: the pane is as wide as the window allows, but a chat
-            line past ~75 characters stops scanning as a conversation. */}
-        <div className="mx-auto w-full max-w-3xl p-3 space-y-3 sm:p-4">
+            line past ~75 characters stops scanning as a conversation.
+            `shrink-0` because this is now a flex item: without it the column
+            would be squeezed to fit instead of overflowing into a scroll. */}
+        <div className="mx-auto w-full max-w-3xl shrink-0 p-3 space-y-3 sm:p-4">
           {(thread.error || closeError) && <ErrorAlert>{thread.error || closeError}</ErrorAlert>}
 
           {thread.hasOlder && (
@@ -337,27 +385,35 @@ export default function WebchatConversation({
             </div>
           )}
         </div>
-      </div>
+        {/* Composer — same reading column as the messages, so the input lines up
+            with the conversation instead of spanning the whole pane.
 
-      {/* Composer — same reading column as the messages, so the input lines up
-          with the conversation instead of spanning the whole pane. */}
-      <div className="border-t border-border shrink-0">
-        <div className="mx-auto w-full max-w-3xl p-3 sm:p-4">
-          {(thread.sendError || thread.stopError) && (
-            <div className="mb-2">
-              <ErrorAlert>{thread.sendError || thread.stopError}</ErrorAlert>
-            </div>
-          )}
-          {session.closedAt ? (
-            <div className="text-center text-sm text-muted py-2">{t('sessionClosedNotice')}</div>
-          ) : (
-            <>
-              <ComposerAttachments
-                attachments={composer.attachments}
-                onRemove={composer.remove}
-                onRetry={composer.retry}
-              />
-              <div className="flex items-end gap-2">
+            It lives *inside* the scrolling area as a sticky element rather than
+            floating over it. That way its height is real content: the newest
+            message can never come to rest underneath it, with no measuring of
+            the composer and nothing to keep in sync. Older messages still pass
+            behind it while scrolling, which is the whole point of the floating
+            look. `mt-auto` covers the short-conversation case — a sticky element
+            with nothing to scroll would otherwise sit wherever the content ends,
+            halfway up the pane.
+
+            A full-width strip of pane colour under the conversation reads as a
+            slab painted over it, so only the input's own box is opaque —
+            everything around it is transparent and `pointer-events-none`, and
+            scrolling or clicking in that margin reaches the messages behind. */}
+        <div className="pointer-events-none sticky bottom-0 z-10 mt-auto shrink-0">
+          <div className="mx-auto w-full max-w-3xl p-3 sm:p-4">
+            {(thread.sendError || thread.stopError) && (
+              <div className="pointer-events-auto mb-2">
+                <ErrorAlert>{thread.sendError || thread.stopError}</ErrorAlert>
+              </div>
+            )}
+            {session.closedAt ? (
+              <div className="pointer-events-auto rounded-2xl border border-border bg-background/80 py-2 text-center text-sm text-muted backdrop-blur-md">
+                {t('sessionClosedNotice')}
+              </div>
+            ) : (
+              <>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -368,75 +424,102 @@ export default function WebchatConversation({
                     e.target.value = ''; // allow re-picking the same file
                   }}
                 />
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={!composer.canAddMore}
-                  title={composer.canAddMore ? t('attachFiles') : t('maxAttachments', { max: MAX_ATTACHMENTS })}
-                  className="shrink-0 rounded-lg border border-border p-2.5 text-muted transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:text-muted"
-                >
-                  <PaperClipIcon className="h-4 w-4" />
-                  <span className="sr-only">{t('attachFiles')}</span>
-                </button>
-                {/* A file the user already has needs no second upload — and no
-                    second copy counting against the daily limit. */}
-                <button
-                  type="button"
-                  onClick={() => setShowFilePicker(true)}
-                  disabled={!composer.canAddMore}
-                  title={composer.canAddMore ? t('pickFromFiles') : t('maxAttachments', { max: MAX_ATTACHMENTS })}
-                  className="shrink-0 rounded-lg border border-border p-2.5 text-muted transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:text-muted"
-                >
-                  <FolderOpenIcon className="h-4 w-4" />
-                  <span className="sr-only">{t('pickFromFiles')}</span>
-                </button>
-                <textarea
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  onKeyDown={handleComposerKeyDown}
-                  onPaste={handleComposerPaste}
-                  placeholder={t('composerPlaceholder')}
-                  rows={2}
-                  // 16px below `sm`: iOS Safari zooms the page in on a focused
-                  // input with a smaller font, and never zooms back out.
-                  className="flex-1 min-w-0 px-3 py-2 bg-background border border-border rounded-lg text-base text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-accent placeholder:text-muted sm:text-sm"
-                />
-                {/* Sits next to send, only while a run is in flight. Not *instead
-                    of* send: a follow-up message stays legal while the agent
-                    works, and swapping the button under the user's cursor would
-                    turn a second send into a stop. Stopping is a request the run
-                    picks up at its next seam, so the label reads "stopping" and
-                    the turn still ends with the agent's own message about what
-                    it managed to do. */}
-                {thread.awaitingReply && (
-                  <Button
-                    variant="secondary"
-                    onClick={thread.stop}
-                    disabled={thread.stopping}
-                    title={thread.stopping ? t('stopping') : t('stopRun')}
-                    aria-label={thread.stopping ? t('stopping') : t('stopRun')}
-                    className="shrink-0"
-                  >
-                    <StopIcon className="h-4 w-4" />
-                    <span className="hidden sm:inline">
-                      {thread.stopping ? t('stopping') : t('stopRun')}
-                    </span>
-                  </Button>
-                )}
-                <Button
-                  onClick={handleSend}
-                  loading={sending}
-                  disabled={!draft.trim() && composer.attachments.length === 0}
-                  title={t('send')}
-                  aria-label={t('send')}
-                  className="shrink-0"
-                >
-                  <PaperAirplaneIcon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t('send')}</span>
-                </Button>
-              </div>
-            </>
-          )}
+                {/* One field, not a row of controls: the text grows the box
+                    upwards and everything else lines up along its bottom edge.
+                    Translucent + blurred, so a message passing underneath stays
+                    present without being readable through the input. */}
+                <div className="pointer-events-auto rounded-2xl border border-border bg-background/80 backdrop-blur-md transition-colors focus-within:border-accent/60 focus-within:ring-1 focus-within:ring-accent/40">
+                  {/* The field is inset from the corner instead of filling it: past
+                      the row cap its scrollbar is drawn hard against the element's
+                      own edge, and a square scrollbar track in a rounded corner
+                      cuts a notch out of it. Insetting keeps the bar clear of the
+                      curve — and unlike `overflow-hidden` on the box, it doesn't
+                      clip the attach menu, which unfolds upwards out of it. */}
+                  <div className="pl-3.5 pr-2 pt-3">
+                    <textarea
+                      ref={textareaRef}
+                      value={draft}
+                      onChange={(e) => setDraft(e.target.value)}
+                      onKeyDown={handleComposerKeyDown}
+                      onPaste={handleComposerPaste}
+                      placeholder={t('composerPlaceholder')}
+                      rows={1}
+                      // 16px below `sm`: iOS Safari zooms the page in on a focused
+                      // input with a smaller font, and never zooms back out.
+                      // `leading-6` is not decoration — the row cap is measured off it.
+                      className="block w-full resize-none bg-transparent pb-1 pr-1 text-base leading-6 text-foreground placeholder:text-muted focus:outline-none sm:text-sm"
+                    />
+                  </div>
+                  <div className="flex items-end gap-2 px-2 pb-2">
+                    {/* Two ways to attach, one button: uploading from the device,
+                        and referencing a file the user already has — which needs
+                        no second upload and no second copy against the daily quota. */}
+                    <DropdownMenu
+                      icon={PlusIcon}
+                      placement="top"
+                      align="left"
+                      disabled={!composer.canAddMore}
+                      label={
+                        composer.canAddMore
+                          ? t('attachFiles')
+                          : t('maxAttachments', { max: MAX_ATTACHMENTS })
+                      }
+                      triggerClassName="grid h-8 w-8 place-items-center rounded-full border border-border text-muted transition-colors hover:border-accent hover:text-accent"
+                      items={[
+                        {
+                          label: t('uploadFromDevice'),
+                          icon: ArrowUpTrayIcon,
+                          onClick: () => fileInputRef.current?.click(),
+                        },
+                        {
+                          label: t('pickFromFiles'),
+                          icon: FolderOpenIcon,
+                          onClick: () => setShowFilePicker(true),
+                        },
+                      ]}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <ComposerAttachments
+                        attachments={composer.attachments}
+                        onRemove={composer.remove}
+                        onRetry={composer.retry}
+                      />
+                    </div>
+                    {/* Stop appears next to send, never in place of it: a follow-up
+                        message stays legal while the agent works, and a button that
+                        changes meaning under the cursor turns a second send into a
+                        stop. Send therefore keeps the same spot either way. */}
+                    {thread.awaitingReply && (
+                      <button
+                        type="button"
+                        onClick={thread.stop}
+                        disabled={thread.stopping}
+                        title={thread.stopping ? t('stopping') : t('stopRun')}
+                        aria-label={thread.stopping ? t('stopping') : t('stopRun')}
+                        className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-border text-muted transition-colors hover:border-error/50 hover:text-error disabled:cursor-default disabled:opacity-50 disabled:hover:border-border disabled:hover:text-muted"
+                      >
+                        <StopIcon className="h-4 w-4" />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleSend}
+                      disabled={sending || (!draft.trim() && composer.attachments.length === 0)}
+                      title={t('send')}
+                      aria-label={t('send')}
+                      className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-accent text-accent-foreground transition-colors hover:bg-accent/90 disabled:opacity-40 disabled:hover:bg-accent"
+                    >
+                      {sending ? (
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-accent-foreground/40 border-t-accent-foreground" />
+                      ) : (
+                        <ArrowUpIcon className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 

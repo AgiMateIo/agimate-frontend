@@ -169,7 +169,7 @@
     "sessionClosedNotice": "Сессия закрыта. Чтобы продолжить разговор, начните новый чат.",
     "closeSession": "Закрыть сессию",
     "closedAt": "закрыта {date}",
-    "composerPlaceholder": "Напишите сообщение... (Enter — отправить, Shift+Enter — новая строка)",
+    "composerPlaceholder": "Напишите сообщение...",
     "send": "Отправить",
     "imageAttachmentAlt": "Вложение",
     "openFullSize": "Открыть в полном размере",
@@ -186,7 +186,8 @@
     "removeAttachment": "Убрать",
     "dropToAttach": "Отпустите файлы, чтобы прикрепить",
     "dropHint": "До {max} файлов, изображения агент видит",
-    "pickFromFiles": "Выбрать из моих файлов"
+    "pickFromFiles": "Выбрать из моих файлов",
+    "uploadFromDevice": "Загрузить с устройства"
   },
   "Files": {
     "title": "Мои файлы",

@@ -169,7 +169,7 @@
     "sessionClosedNotice": "This session is closed. Start a new chat to continue the conversation.",
     "closeSession": "Close session",
     "closedAt": "closed {date}",
-    "composerPlaceholder": "Write a message... (Enter — send, Shift+Enter — new line)",
+    "composerPlaceholder": "Write a message...",
     "send": "Send",
     "imageAttachmentAlt": "Attachment",
     "openFullSize": "Open full size",
@@ -186,7 +186,8 @@
     "removeAttachment": "Remove",
     "dropToAttach": "Drop files to attach",
     "dropHint": "Up to {max} files, agents can see images",
-    "pickFromFiles": "Pick from my files"
+    "pickFromFiles": "Pick from my files",
+    "uploadFromDevice": "Upload from device"
   },
   "Files": {
     "title": "My files",

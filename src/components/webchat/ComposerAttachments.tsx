@@ -107,7 +107,8 @@ function AttachmentChip({
   );
 }
 
-// The tray of pending attachments rendered above the composer textarea.
+// The tray of pending attachments, rendered along the composer's bottom edge
+// between the attach button and the send/stop actions.
 export function ComposerAttachments({
   attachments,
   onRemove,
@@ -119,7 +120,7 @@ export function ComposerAttachments({
 }) {
   if (attachments.length === 0) return null;
   return (
-    <div className="mb-2 flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       {attachments.map((a) => (
         <AttachmentChip
           key={a.id}

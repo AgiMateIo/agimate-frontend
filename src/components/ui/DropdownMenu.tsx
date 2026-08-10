@@ -22,9 +22,22 @@ export interface DropdownMenuItem {
 export function DropdownMenu({
   items,
   label,
+  icon: Icon = EllipsisVerticalIcon,
+  triggerClassName = 'grid h-9 w-9 place-items-center rounded-lg border border-border text-muted transition-colors hover:border-accent/50 hover:text-foreground',
+  // Where the panel unfolds relative to the trigger. `top` is for triggers that
+  // sit at the bottom of their surface (the chat composer) — a panel dropping
+  // downwards there would land outside the viewport.
+  placement = 'bottom',
+  align = 'right',
+  disabled = false,
 }: {
   items: DropdownMenuItem[];
   label?: string;
+  icon?: ComponentType<SVGProps<SVGSVGElement>>;
+  triggerClassName?: string;
+  placement?: 'bottom' | 'top';
+  align?: 'left' | 'right';
+  disabled?: boolean;
 }) {
   const t = useTranslations('Common');
   const [open, setOpen] = useState(false);
@@ -53,18 +66,21 @@ export function DropdownMenu({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
+        disabled={disabled}
         aria-label={label ?? t('moreActions')}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="grid h-9 w-9 place-items-center rounded-lg border border-border text-muted transition-colors hover:border-accent/50 hover:text-foreground"
+        className={`${triggerClassName} disabled:cursor-not-allowed disabled:opacity-40`}
       >
-        <EllipsisVerticalIcon className="h-5 w-5" />
+        <Icon className="h-5 w-5" />
       </button>
 
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-full z-30 mt-1 min-w-48 rounded-lg border border-border bg-surface py-1 shadow-lg"
+          className={`absolute z-30 min-w-48 rounded-lg border border-border bg-surface py-1 shadow-lg ${
+            placement === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'
+          } ${align === 'left' ? 'left-0' : 'right-0'}`}
         >
           {items.map((item, index) => (
             <div key={item.label}>
