@@ -83,7 +83,7 @@ function SkillDetailContent({ skillId }: { skillId: string }) {
   return (
     <>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2 mb-1">
             {skill.isPublic && (
@@ -125,7 +125,7 @@ function SkillDetailContent({ skillId }: { skillId: string }) {
             content: (
               <div className="bg-surface rounded-xl border border-border p-6 space-y-6">
                 {/* Metadata */}
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
                   <div>
                     <span className="text-muted">{t('createdAt')}</span>
                     <p className="text-foreground">{formatDate(skill.createdAt, locale)}</p>

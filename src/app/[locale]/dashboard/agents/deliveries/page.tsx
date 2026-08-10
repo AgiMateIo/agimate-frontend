@@ -78,11 +78,11 @@ export default function WebhookDeliveriesPage() {
       </div>
 
       {/* Filter + Refresh */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <select
           value={selectedAgent}
           onChange={e => handleAgentChange(e.target.value)}
-          className="px-3 py-2 bg-surface-secondary border border-border rounded-lg text-sm text-foreground"
+          className="px-3 py-2 bg-surface-secondary border border-border rounded-lg text-base text-foreground sm:text-sm"
         >
           <option value="">{t('allAgents')}</option>
           {agents.map(a => (

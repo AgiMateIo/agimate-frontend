@@ -23,7 +23,7 @@ export default function AgentsPage() {
   return (
     <div className="space-y-6">
       {/* Header — action lives here (next to the title), matching the other list pages. */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
           <p className="text-muted mt-1">{t('subtitle')}</p>

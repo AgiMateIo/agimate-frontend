@@ -17,7 +17,7 @@ export default function TeamAgentsPage() {
 
   return (
     <div className="bg-surface rounded-xl border border-border p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-lg font-semibold text-foreground">{t('agents')}</h2>
         <Link
           href={`/dashboard/agentic-teams/${teamId}/agents/create`}

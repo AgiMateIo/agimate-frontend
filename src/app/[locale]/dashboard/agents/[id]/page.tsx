@@ -46,7 +46,7 @@ export default function AgentGeneralPage() {
     <>
       <div className="bg-surface rounded-xl border border-border p-6 space-y-6">
         {/* Status & Key ID + Edit */}
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <span
               className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
