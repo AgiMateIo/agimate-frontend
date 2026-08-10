@@ -9,6 +9,7 @@ import {
   FolderOpenIcon,
   PaperAirplaneIcon,
   PaperClipIcon,
+  StopIcon,
 } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { Button } from '@/components/ui/Button';
@@ -342,9 +343,9 @@ export default function WebchatConversation({
           with the conversation instead of spanning the whole pane. */}
       <div className="border-t border-border shrink-0">
         <div className="mx-auto w-full max-w-3xl p-3 sm:p-4">
-          {thread.sendError && (
+          {(thread.sendError || thread.stopError) && (
             <div className="mb-2">
-              <ErrorAlert>{thread.sendError}</ErrorAlert>
+              <ErrorAlert>{thread.sendError || thread.stopError}</ErrorAlert>
             </div>
           )}
           {session.closedAt ? (
@@ -400,6 +401,28 @@ export default function WebchatConversation({
                   // input with a smaller font, and never zooms back out.
                   className="flex-1 min-w-0 px-3 py-2 bg-background border border-border rounded-lg text-base text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-accent placeholder:text-muted sm:text-sm"
                 />
+                {/* Sits next to send, only while a run is in flight. Not *instead
+                    of* send: a follow-up message stays legal while the agent
+                    works, and swapping the button under the user's cursor would
+                    turn a second send into a stop. Stopping is a request the run
+                    picks up at its next seam, so the label reads "stopping" and
+                    the turn still ends with the agent's own message about what
+                    it managed to do. */}
+                {thread.awaitingReply && (
+                  <Button
+                    variant="secondary"
+                    onClick={thread.stop}
+                    disabled={thread.stopping}
+                    title={thread.stopping ? t('stopping') : t('stopRun')}
+                    aria-label={thread.stopping ? t('stopping') : t('stopRun')}
+                    className="shrink-0"
+                  >
+                    <StopIcon className="h-4 w-4" />
+                    <span className="hidden sm:inline">
+                      {thread.stopping ? t('stopping') : t('stopRun')}
+                    </span>
+                  </Button>
+                )}
                 <Button
                   onClick={handleSend}
                   loading={sending}

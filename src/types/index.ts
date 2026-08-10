@@ -24,4 +24,5 @@ export * from './files';
 export * from './llm-providers';
 export * from './channels';
 export * from './connector-jobs';
+export * from './runs';
 export * from './admin';

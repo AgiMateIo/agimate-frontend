@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
+import { StopIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import type { TriggerRunStatus } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
@@ -16,12 +17,15 @@ import { connectionsListOptions } from '@/queries/connections';
 import { agentConnectionsOptions } from '@/queries/agents';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { formatDateTimeFull, formatDateTimeShort } from '@/utils/date';
+import { getErrorMessage } from '@/utils/error';
 
 type StatusFilter = 'ALL' | TriggerRunStatus;
 
-// CANCELLED is legacy (old rows only) — not offered as a filter, but still
-// rendered with a muted badge when it shows up.
-const STATUS_FILTERS: StatusFilter[] = ['ALL', 'ENQUEUED', 'RUNNING', 'DONE', 'FAILED'];
+const STATUS_FILTERS: StatusFilter[] = ['ALL', 'ENQUEUED', 'RUNNING', 'DONE', 'FAILED', 'CANCELLED'];
+
+// The two statuses a run can still be stopped from. Everything else has already
+// ended — cancelling those isn't an error, just pointless, so no button.
+const STOPPABLE: TriggerRunStatus[] = ['ENQUEUED', 'RUNNING'];
 
 const STATUS_BADGE = {
   ENQUEUED: { className: 'bg-muted/10 text-muted', labelKey: 'runStatusEnqueued' },
@@ -37,6 +41,12 @@ const STATUS_BADGE = {
 export default function AgentTriggerRunsTab({ agentId }: { agentId: string }) {
   const t = useTranslations('Connectors');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  // Runs a stop was asked for. Ids stay in here after the request lands: the
+  // row keeps its RUNNING status until the run reaches its next seam, and the
+  // button has to read "stopping" for that whole stretch. Terminal rows drop
+  // the button entirely, so the set never needs cleaning up.
+  const [stoppingIds, setStoppingIds] = useState<Set<string>>(new Set());
+  const [stopError, setStopError] = useState('');
 
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search.trim(), 300);
@@ -123,6 +133,27 @@ export default function AgentTriggerRunsTab({ agentId }: { agentId: string }) {
     setPage(0);
   };
 
+  // No confirmation: cancelling destroys nothing, it only stops the run from
+  // doing anything new. Whatever it already did (a message sent, a file
+  // written) stays — the run says so itself in its closing message.
+  const handleStop = async (runId: string) => {
+    setStoppingIds((prev) => new Set(prev).add(runId));
+    setStopError('');
+    try {
+      await apiService.cancelRun(runId);
+      // The status won't have changed yet; refresh so a run that was merely
+      // queued (it never starts at all) drops out of the live states quickly.
+      refresh();
+    } catch (err) {
+      setStoppingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(runId);
+        return next;
+      });
+      setStopError(getErrorMessage(err, t('stopRunError')));
+    }
+  };
+
   const toggleExpand = (id: string) => {
     setExpandedIds(prev => {
       const next = new Set(prev);
@@ -207,6 +238,7 @@ export default function AgentTriggerRunsTab({ agentId }: { agentId: string }) {
   return (
     <div className="space-y-4">
       {toolbar}
+      {stopError && <ErrorAlert>{stopError}</ErrorAlert>}
       {loading ? (
         <div className="text-center py-12 text-muted">{t('loadingTriggerLogs')}</div>
       ) : runs.length === 0 ? (
@@ -293,6 +325,17 @@ export default function AgentTriggerRunsTab({ agentId }: { agentId: string }) {
                         <span className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${badge.className}`}>
                           {t(badge.labelKey)}
                         </span>
+                        {STOPPABLE.includes(run.status) && (
+                          <button
+                            type="button"
+                            onClick={() => handleStop(run.id)}
+                            disabled={stoppingIds.has(run.id)}
+                            className="mt-1.5 flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs whitespace-nowrap text-muted transition-colors hover:border-error/50 hover:text-error disabled:cursor-default disabled:opacity-60 disabled:hover:border-border disabled:hover:text-muted"
+                          >
+                            <StopIcon className="h-3.5 w-3.5 shrink-0" />
+                            {stoppingIds.has(run.id) ? t('stoppingRun') : t('stopRun')}
+                          </button>
+                        )}
                       </td>
                       <td className="py-3 px-4">
                         <span

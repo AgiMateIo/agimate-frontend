@@ -64,6 +64,10 @@ export function useWebchatThread(sessionId: string | null) {
   const [error, setError] = useState('');
   const [sendError, setSendError] = useState('');
   const [awaitingReply, setAwaitingReply] = useState(false);
+  // A stop was asked for and the run hasn't reached its next seam yet. The
+  // backend only records the request, so this is "stopping", never "stopped".
+  const [stopping, setStopping] = useState(false);
+  const [stopError, setStopError] = useState('');
 
   // messageIds already merged from history pages — events dedupe against the
   // messages state itself, so updaters stay pure (StrictMode-safe).
@@ -87,6 +91,8 @@ export function useWebchatThread(sessionId: string | null) {
     setError('');
     setSendError('');
     setAwaitingReply(false);
+    setStopping(false);
+    setStopError('');
     if (!sessionId) {
       setLoading(false);
       return;
@@ -171,7 +177,12 @@ export function useWebchatThread(sessionId: string | null) {
       processedEventIdsRef.current.add(p.messageId);
       if (p.direction === 'AGENT') {
         // progress = the agent is working; answer/error ends the wait.
-        setAwaitingReply(p.stream === 'progress');
+        const working = p.stream === 'progress';
+        setAwaitingReply(working);
+        // A stopped run signs off with an ordinary answer (its text lists what
+        // it managed to do) — so the turn ending is also the stop landing, and
+        // no special-casing of that message is needed anywhere.
+        if (!working) setStopping(false);
       }
       setMessages((prev) => {
         const known = prev.findIndex((m) => m.messageId === p.messageId);
@@ -232,6 +243,8 @@ export function useWebchatThread(sessionId: string | null) {
         },
       ]);
       setSendError('');
+      setStopError('');
+      setStopping(false);
       setAwaitingReply(true);
       try {
         const res = await apiService.sendWebchatMessage(sessionId, {
@@ -258,6 +271,24 @@ export function useWebchatThread(sessionId: string | null) {
     [sessionId]
   );
 
+  // Stops the conversation, not a single run: the backend cancels by session,
+  // so the run in flight and anything queued behind it go together. Idempotent
+  // server-side, so a double press is harmless — the button still locks itself
+  // into "stopping" until the turn ends.
+  const stop = useCallback(async () => {
+    if (!sessionId || stopping) return;
+    setStopping(true);
+    setStopError('');
+    try {
+      // `cancelled: 0` needs no branch: it means there was nothing left to
+      // stop, which is exactly the state the disabled button already shows.
+      await apiService.cancelSessionRuns(sessionId);
+    } catch (err) {
+      setStopping(false);
+      setStopError(getErrorMessage(err, 'Failed to stop the agent'));
+    }
+  }, [sessionId, stopping]);
+
   return {
     messages,
     loading,
@@ -267,6 +298,9 @@ export function useWebchatThread(sessionId: string | null) {
     error,
     sendError,
     awaitingReply,
+    stopping,
+    stopError,
+    stop,
     send,
     handleEvent,
     refreshParts,
