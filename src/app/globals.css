@@ -14,6 +14,9 @@
   --surface: #1a1715;
   --surface-secondary: #231f1c;
   --card-shadow: none;
+  /* Landing aurora — peak tint of one gradient layer; they overlap, so this
+     sits well below the opacity the backdrop actually reaches. */
+  --aurora-tint: rgba(164, 119, 100, 0.20);
 }
 
 @media (prefers-color-scheme: light) {
@@ -27,6 +30,7 @@
     --surface: #ffffff;
     --surface-secondary: #F0EEE9;
     --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --aurora-tint: rgba(164, 119, 100, 0.38);
   }
 }
 
@@ -144,9 +148,60 @@ body {
   animation: sidebar-slide-back 200ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
+/* Landing background — an "aurora": three soft elliptical gradients, each
+   rotating continuously at its own rate. Rotation is what sells it as flowing.
+   A rotating ellipse sweeps its own silhouette, and where two layers overlap
+   the shape they form keeps morphing — which drifting circles cannot do at any
+   speed, because a circle that translates and scales stays the same shape. That
+   is why raising the speed never read as water.
+
+   Every cycle ends on the pose it began with (a full 360deg), so the loop is
+   seamless and the timing can stay linear — easing would make the flow pulse
+   instead of run. The middle layer turns the other way, so the overlaps churn
+   rather than orbit together, and the three periods share no common multiple
+   worth noticing, so the composition never visibly repeats.
+
+   Only `transform` is animated. The gradients' own falloff does most of the
+   blending, which keeps the blur radius modest — animating the blur itself
+   would re-render every layer each frame. */
+.aurora-layer {
+  position: absolute;
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, var(--aurora-tint), transparent);
+  filter: blur(40px);
+}
+
+@keyframes aurora-1 {
+  0%   { transform: rotate(0deg)   translate3d(-6%, -3%, 0) scale(1.15, 0.85); }
+  33%  { transform: rotate(120deg) translate3d(5%, 5%, 0)   scale(0.9, 1.2); }
+  66%  { transform: rotate(240deg) translate3d(-3%, 7%, 0)  scale(1.2, 0.95); }
+  100% { transform: rotate(360deg) translate3d(-6%, -3%, 0) scale(1.15, 0.85); }
+}
+
+@keyframes aurora-2 {
+  0%   { transform: rotate(0deg)     translate3d(4%, 2%, 0)   scale(0.9, 1.2); }
+  33%  { transform: rotate(-130deg)  translate3d(-6%, 6%, 0)  scale(1.2, 0.9); }
+  66%  { transform: rotate(-250deg)  translate3d(6%, -5%, 0)  scale(0.95, 1.15); }
+  100% { transform: rotate(-360deg)  translate3d(4%, 2%, 0)   scale(0.9, 1.2); }
+}
+
+@keyframes aurora-3 {
+  0%   { transform: rotate(0deg)   translate3d(-5%, 4%, 0)  scale(1.1, 0.95); }
+  33%  { transform: rotate(115deg) translate3d(7%, -4%, 0)  scale(0.85, 1.25); }
+  66%  { transform: rotate(245deg) translate3d(-6%, -6%, 0) scale(1.25, 0.9); }
+  100% { transform: rotate(360deg) translate3d(-5%, 4%, 0)  scale(1.1, 0.95); }
+}
+
+.animate-aurora-1 { animation: aurora-1 13s linear infinite; }
+.animate-aurora-2 { animation: aurora-2 17s linear infinite; }
+.animate-aurora-3 { animation: aurora-3 21s linear infinite; }
+
 @media (prefers-reduced-motion: reduce) {
   .animate-sidebar-forward,
-  .animate-sidebar-back {
+  .animate-sidebar-back,
+  .animate-aurora-1,
+  .animate-aurora-2,
+  .animate-aurora-3 {
     animation: none;
   }
 }
