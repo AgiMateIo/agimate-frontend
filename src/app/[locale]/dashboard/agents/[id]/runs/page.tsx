@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import AgentTriggerRunsTab from '@/components/agents/AgentTriggerRunsTab';
+import RunsList from '@/components/runs/RunsList';
 import AgentMcpUnavailable from '@/components/agents/AgentMcpUnavailable';
 import { useAgentDetailSuspenseQuery } from '@/queries/agents';
 import { isMcpAgent } from '@/utils/agent';
@@ -18,7 +18,7 @@ export default function AgentTriggersPage() {
 
   return (
     <div className="bg-surface rounded-xl border border-border p-6">
-      <AgentTriggerRunsTab agentId={agentId} />
+      <RunsList agentId={agentId} />
     </div>
   );
 }

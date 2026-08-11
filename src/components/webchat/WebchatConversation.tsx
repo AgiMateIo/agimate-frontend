@@ -17,9 +17,11 @@ import {
   Cog6ToothIcon,
   FolderOpenIcon,
   PlusIcon,
+  QueueListIcon,
   StopIcon,
 } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
+import { Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/Button';
 import { DropdownMenu } from '@/components/ui/DropdownMenu';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
@@ -117,6 +119,7 @@ export default function WebchatConversation({
 }: WebchatConversationProps) {
   const t = useTranslations('Chat');
   const tCommon = useTranslations('Common');
+  const tRuns = useTranslations('Runs');
   const thread = useWebchatThread(session.sessionId);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
@@ -312,16 +315,29 @@ export default function WebchatConversation({
             </div>
           </div>
         </div>
-        {!session.closedAt && (
-          <Button
-            variant="secondary"
-            onClick={handleClose}
-            loading={closing}
-            className="shrink-0 text-sm"
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          {/* The chat shows what was said; the runs behind it show what was
+              done — the tool calls, the reasoning, and the runs that were
+              cancelled or that the agent has no memory of. */}
+          <Link
+            href={`/dashboard/runs?sessionId=${session.sessionId}`}
+            title={tRuns('viewRuns')}
+            aria-label={tRuns('viewRuns')}
+            className="grid h-9 w-9 place-items-center rounded-lg text-muted transition-colors hover:bg-surface-secondary hover:text-foreground"
           >
-            {t('closeSession')}
-          </Button>
-        )}
+            <QueueListIcon className="h-5 w-5" />
+          </Link>
+          {!session.closedAt && (
+            <Button
+              variant="secondary"
+              onClick={handleClose}
+              loading={closing}
+              className="text-sm"
+            >
+              {t('closeSession')}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Messages. `scrollbar-gutter: stable both-edges` keeps the reading

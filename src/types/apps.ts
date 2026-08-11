@@ -98,39 +98,8 @@ export interface TriggerLog {
   createdAt: string;
 }
 
-// Real run status column (unlike tool-call logs, where status is derived from fields).
-export type TriggerRunStatus = 'ENQUEUED' | 'RUNNING' | 'DONE' | 'FAILED' | 'CANCELLED';
-
-// One agent's run of one trigger, returned by GET /control/manage/trigger-logs/agent-runs/
-// (a trigger event fans out to several agents; each row is a single agent's run).
-export interface TriggerLogAgentRunResponse {
-  id: string;
-  // id of the shared incoming event (one per several agents)
-  triggerLogId: string;
-  connectorCode: string;
-  connectionId: string;
-  externalId: string;
-  name: string;
-  occurredAt: string | null;
-  input: Record<string, unknown>;
-  status: TriggerRunStatus;
-  result: string | null;
-  error: string | null;
-  // channel session the run writes to; null — non-channel run (WEBHOOK/CENTRIFUGO)
-  sessionId: string | null;
-  lastActivityAt: string | null;
-  createdAt: string;
-}
-
-export interface TriggerRunFilters {
-  // required by the backend (400 without it)
-  agentId: string;
-  connectorCode?: string;
-  connectionId?: string;
-  // case-insensitive substring match on the trigger name
-  name?: string;
-  status?: TriggerRunStatus;
-}
+// Runs of a trigger live in ./runs — they are addressed by /manage/runs/ now,
+// not by the trigger-logs sub-resource they were born in.
 
 // Trigger discovery probe: a one-off code the user drops into a test event so the
 // frontend can confirm the "external event → connector → trigger_log" chain works.

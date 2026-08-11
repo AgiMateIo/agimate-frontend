@@ -12,7 +12,7 @@ import {
   AcademicCapIcon,
   LinkIcon,
   CommandLineIcon,
-  BoltIcon,
+  QueueListIcon,
   FolderIcon,
   UserCircleIcon,
 } from '@heroicons/react/24/outline';
@@ -30,7 +30,7 @@ type SectionLabelKey =
   | 'tabConnections'
   | 'tabFiles'
   | 'tabToolCalls'
-  | 'tabTriggers';
+  | 'tabRuns';
 
 type Section = {
   key: string;
@@ -48,7 +48,7 @@ const SECTIONS: Section[] = [
   { key: 'connections', seg: 'connections', labelKey: 'tabConnections', icon: LinkIcon },
   { key: 'files', seg: 'files', labelKey: 'tabFiles', icon: FolderIcon },
   { key: 'tool-calls', seg: 'tool-calls', labelKey: 'tabToolCalls', icon: CommandLineIcon },
-  { key: 'triggers', seg: 'triggers', labelKey: 'tabTriggers', icon: BoltIcon },
+  { key: 'runs', seg: 'runs', labelKey: 'tabRuns', icon: QueueListIcon },
 ];
 
 const hrefFor = (agentId: string, seg: string) =>

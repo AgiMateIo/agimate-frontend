@@ -64,6 +64,7 @@ All paths below are under `control/manage/…` unless noted. Representative grou
 - **Connector catalog** (read-only): `/connectors/`, `/connectors/{code}`. `integrationMeta.credentialFields` maps a field code to a declaration — `{label, type, required}`, where `type` is `URL`/`SECRET`/`JSON`/`TEXT` and the list is the backend's to grow. It used to be a bare label string, so masking and optionality were guessed from the field name and the label text; don't reintroduce that. An unrecognised `type` renders masked (`src/components/connections/CredentialFieldsForm.tsx`).
 - **Logs**: tool-use logs, connector jobs (pause/resume/run-now/delete), trigger logs, webhook delivery logs
 - **Webchat** (dashboard chat with agents): sessions `/webchat/sessions` (POST creates, GET lists, DELETE soft-closes), newest-first paged history + send `/webchat/sessions/{id}/messages`, per-session Centrifugo tokens `POST /webchat/sessions/{id}/token`; agent replies arrive as `webchat_message` events (streams: progress/answer/error, at-least-once — dedupe by `messageId`)
+- **Runs** (one agent's handling of one event): list `GET /manage/runs/` — every filter optional and ANDed (`agentId`, `sessionId` = the conversation view, `triggerLogId` = who picked up one event, `connectorCode`, `connectionId`, `name`, `status`), newest first. It replaces `GET /manage/trigger-logs/agent-runs/` (deprecated, `agentId` was required); the row gained `turnsIntact` — `false` means the turn journal is incomplete and, the one consequence worth showing, later runs of the same session won't see this one, so the agent doesn't remember it. Steps `GET /manage/runs/{runId}/turns/` (page/size, default 50) come newest-first too — **reverse a page to read a transcript**; one tool call is two neighbouring turns (`ASSISTANT` with `toolCalls`, then `TOOL` with `toolResults`, joined by `id`), `SYSTEM` never appears, and nothing is truncated server-side (a reasoning block or a tool output runs to tens of KB — keep it collapsed). `argumentsJson`/`outputJson` are raw JSON **strings** that the worker may have cut at 64000 chars, so `JSON.parse` legitimately fails → show as text; `failed` with `{"error":"cancelled by the user"}` means the call never ran at all. One run by id: `GET /manage/runs/{runId}` answers with **the same row as the list**, no separate projection — a deep link to a run needs nothing else. The list still primes its row into the cache before navigating (`primeRunSummary` in `src/queries/runs.ts`), so a click costs no request; a cold-opened link fetches. The row also carries `turnsCount`, `hasPrompt` (no snapshot → don't render the input tab) and `usage` — token spend summed over the run's model calls, where **the cache counters are deliberately outside `totalTokens`** (billed separately; adding them would count the same prompt twice) and there is no money anywhere, since prices at call time aren't recorded. A turn carries the same `usage` minus `calls`, and **`usage: null` means "no model call" or "the report went missing", never zero** — show nothing rather than a 0. Input `GET /manage/runs/{runId}/prompt` is the message list as it went into the first model call — the only place ephemeral blocks (memory notes) are visible, since they are deliberately kept out of the journal; `messages: null` = no snapshot, not an error, and its result field is called `contentJson` where the journal says `outputJson` (historical, both are here to stay).
 - **Runs** (stopping work in flight): `POST /manage/runs/sessions/{sessionId}/cancel` for a chat (the frontend never sees a `runId`, and runs queued behind the working one must stop too — `cancelled: 0` just means there was nothing left to stop), `POST /manage/runs/{runId}/cancel` for a run row. Both only **record a request**: the run notices it at its next seam (between model turns, or when a tool result comes back) and signs off with an ordinary `stream: "answer"` message listing what it managed to do — so nothing special is needed to detect the end, and the UI must say "stopping", never "stopped". Nothing already done is rolled back, no confirmation is asked, and an agent can never cancel a run — only a person. 404 covers both "no such run" and "someone else's".
 - **Files** (everything that passed through the file layer — chat attachments, messenger media, agent-generated images, spreadsheet exports; one entity, one id): paged newest-first list `GET /manage/files/` (`agentId` = *who created it*, not who owns it — every row is the caller's; `name` = case-insensitive substring; no sort parameter), `DELETE /manage/files/{fileId}` (404 = already gone → treat as success and re-read). `name` is legitimately `null` where a name never existed — fall back to type + size, never to the `agf_…` id. `url` is a **relative signed link valid ~15 min** (`resolveControlFileUrl`, usable in `<img src>`, no `Authorization`): never persist it, re-read the list for fresh signatures (403 = expired signature, not an error to show). Retention is 7 days (`expiresAt`) and cannot be extended from the UI — show the remaining time or vanishing files read as data loss. Deleting breaks the file wherever it was referenced (chat, task comments, sheets), so it is always confirmed. Upload (`POST /manage/webchat/files`) now answers with `name`; its 400 (size cap / daily quota) carries a user-ready `error.message` — show it verbatim.
 - **Admin** (ADMIN only, same path-prefix gate as user-api's): per-user token spend `GET /manage/admin/llm-usage/{userId}/` — the shape of the caller's own `/manage/llm-usage`, for an arbitrary user. Never 404s (control-api doesn't own the user directory, so an unknown id answers with the platform row at zero) and an empty array is legal. `source` changes what the numbers mean: `PLATFORM` = that user's own free-tier spend, `USER` = the whole own key across all their agents — do not label them alike.
@@ -163,7 +164,7 @@ messages/
                                    #   AgenticTeams, Connections, ConnectionDetail,
                                    #   ConnectionAuth, Board,
                                    #   Skills, SkillConnectors, SkillAgents, Settings, Channels, Chat,
-                                   #   Files, Admin
+                                   #   Runs, Files, Admin
 ```
 When adding keys: landing/auth → `messages/{locale}.json`; dashboard → `messages/dashboard/{locale}.json`. Shared UI strings (`cancel`, `save`, `delete`, `edit`, `close`, …) live in the base **`Common`** namespace, which is merged into the dashboard bundle too — use `useTranslations('Common')` for them instead of re-defining per dashboard namespace.
 
@@ -177,7 +178,8 @@ src/
 │       ├── dashboard/
 │       │   ├── page.tsx           # home: overview / work mode (see Dashboard Home)
 │       │   ├── admin/users/       # ADMIN only: user directory, roles, per-user spend
-│       │   ├── agents/            # list, create, [id], [id]/edit, [id]/chat, [id]/files, deliveries
+│       │   ├── agents/            # list, create, [id], [id]/edit, [id]/chat, [id]/files,
+│       │   │                      #   [id]/runs (same list as /dashboard/runs, agent-scoped), deliveries
 │       │   ├── agentic-teams/     # list, [id], [id]/agents, [id]/board
 │       │   ├── apps/              # list, [id]
 │       │   ├── channels/
@@ -187,6 +189,8 @@ src/
 │       │   ├── files/             # user files: list, delete (also the chat attachment picker
 │       │   │                      #   and the agent's own /agents/[id]/files section)
 │       │   ├── llm-providers/
+│       │   ├── runs/              # all runs (?sessionId= scopes to one conversation),
+│       │   │                      #   [id] = one run's steps + input snapshot
 │       │   ├── skills/            # list, create, [id], [id]/edit
 │       │   ├── tool-use-logs/     # accepts ?status= / ?access= to seed filters
 │       │   ├── trigger-logs/
@@ -198,7 +202,7 @@ src/
 │   └── connections/oauth/client.json/ # route handler, no locale prefix (see MCP OAuth)
 ├── components/
 │   ├── admin/  agents/  agentic-teams/  boards/  channels/  connectors/
-│   ├── connections/  dashboard/  files/  llm-providers/  skills/  webchat/
+│   ├── connections/  dashboard/  files/  llm-providers/  runs/  skills/  webchat/
 │   ├── landing/  layout/
 │   └── ui/                        # Alert, Button, FormField (+ Select), Modal, ConfirmDeleteModal,
 │                                  #   Toggle, Tabs, Chip, RowAction, Pagination, RefreshControls,

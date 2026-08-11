@@ -2,10 +2,11 @@
 
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { useQuery } from '@tanstack/react-query';
-import { StopIcon } from '@heroicons/react/24/outline';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { ExclamationTriangleIcon, StopIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
-import type { TriggerRunStatus } from '@/types';
+import { Link } from '@/i18n/navigation';
+import type { RunResponse, RunStatus } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { RefreshControls } from '@/components/ui/RefreshControls';
 import { Pagination } from '@/components/ui/Pagination';
@@ -13,33 +14,45 @@ import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import { FilterPill, FilterRow } from '@/components/ui/FilterPill';
 import { Select } from '@/components/ui/FormField';
 import { usePagedLogsQuery } from '@/queries/logs';
+import { primeRunSummary } from '@/queries/runs';
 import { connectionsListOptions } from '@/queries/connections';
-import { agentConnectionsOptions } from '@/queries/agents';
+import { agentConnectionsOptions, allAgentsOptions } from '@/queries/agents';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { formatDateTimeFull, formatDateTimeShort } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
+import { RunStatusBadge, STOPPABLE } from './RunStatusBadge';
+import { formatTokens, useUsageTooltip } from './RunBlocks';
 
-type StatusFilter = 'ALL' | TriggerRunStatus;
+type StatusFilter = 'ALL' | RunStatus;
 
 const STATUS_FILTERS: StatusFilter[] = ['ALL', 'ENQUEUED', 'RUNNING', 'DONE', 'FAILED', 'CANCELLED'];
 
-// The two statuses a run can still be stopped from. Everything else has already
-// ended — cancelling those isn't an error, just pointless, so no button.
-const STOPPABLE: TriggerRunStatus[] = ['ENQUEUED', 'RUNNING'];
+const STATUS_LABEL_KEY = {
+  ENQUEUED: 'statusEnqueued',
+  RUNNING: 'statusRunning',
+  DONE: 'statusDone',
+  FAILED: 'statusFailed',
+  CANCELLED: 'statusCancelled',
+} as const satisfies Record<RunStatus, string>;
 
-const STATUS_BADGE = {
-  ENQUEUED: { className: 'bg-muted/10 text-muted', labelKey: 'runStatusEnqueued' },
-  RUNNING: { className: 'bg-accent/10 text-accent animate-pulse', labelKey: 'runStatusRunning' },
-  DONE: { className: 'bg-success/10 text-success', labelKey: 'runStatusDone' },
-  FAILED: { className: 'bg-error/10 text-error', labelKey: 'runStatusFailed' },
-  CANCELLED: { className: 'bg-muted/10 text-muted', labelKey: 'runStatusCancelled' },
-} as const satisfies Record<TriggerRunStatus, { className: string; labelKey: string }>;
-
-// The agent page's Triggers tab: which triggers this agent received and how
-// each run went. One row = one agent's run of one trigger (the shared event
-// may have fanned out to other agents too).
-export default function AgentTriggerRunsTab({ agentId }: { agentId: string }) {
-  const t = useTranslations('Connectors');
+// Which triggers were received and how each run went. One row = one agent's run
+// of one trigger (the shared event may have fanned out to other agents too).
+//
+// Standalone on /dashboard/runs, where the agent is one more filter; scoped to
+// one agent on the agent's Runs section, where the connector/connection
+// selectors then offer only that agent's bindings. `sessionId` narrows it to one
+// conversation — it comes from the URL and has no control of its own, since the
+// caller owns the notice that says the list is scoped.
+export default function RunsList({
+  agentId,
+  sessionId,
+}: {
+  agentId?: string;
+  sessionId?: string;
+}) {
+  const t = useTranslations('Runs');
+  const usageTooltip = useUsageTooltip();
+  const queryClient = useQueryClient();
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   // Runs a stop was asked for. Ids stay in here after the request lands: the
   // row keeps its RUNNING status until the run reaches its next seam, and the
@@ -51,6 +64,7 @@ export default function AgentTriggerRunsTab({ agentId }: { agentId: string }) {
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search.trim(), 300);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
+  const [agentFilter, setAgentFilter] = useState('ALL');
   const [connectorFilter, setConnectorFilter] = useState('ALL');
   const [connectionFilter, setConnectionFilter] = useState('ALL');
 
@@ -64,22 +78,42 @@ export default function AgentTriggerRunsTab({ agentId }: { agentId: string }) {
     return map;
   }, [connections]);
 
-  // Filter selectors need exact values — the agent's bound connections.
-  const { data: agentConnections } = useQuery(agentConnectionsOptions(agentId));
+  // The agent selector only exists unscoped — inside an agent the answer is
+  // already fixed.
+  const { data: agents } = useQuery({ ...allAgentsOptions(), enabled: !agentId });
+
+  // Filter selectors need exact values: the agent's bound connections when
+  // scoped, otherwise every connection of the user.
+  const { data: agentConnections } = useQuery({
+    ...agentConnectionsOptions(agentId ?? ''),
+    enabled: !!agentId,
+  });
+  const filterSource = useMemo(
+    () =>
+      agentId
+        ? (agentConnections ?? []).map((c) => ({
+            connectionId: c.connectionId,
+            connectorCode: c.connectorCode,
+            label: c.name || c.fullCode || c.connectionId,
+          }))
+        : (connections ?? []).map((c) => ({
+            connectionId: c.id,
+            connectorCode: c.connectorCode,
+            label: c.name || c.fullCode || c.id,
+          })),
+    [agentId, agentConnections, connections],
+  );
   const connectorOptions = useMemo(
-    () => [...new Set((agentConnections ?? []).map((c) => c.connectorCode))].sort(),
-    [agentConnections],
+    () => [...new Set(filterSource.map((c) => c.connectorCode))].sort(),
+    [filterSource],
   );
   const connectionOptions = useMemo(() => {
-    const scoped = (agentConnections ?? []).filter(
-      (c) => connectorFilter === 'ALL' || c.connectorCode === connectorFilter,
-    );
-    return [
-      ...new Map(
-        scoped.map((c) => [c.connectionId, { connectionId: c.connectionId, label: c.name || c.fullCode || c.connectionId }]),
-      ).values(),
-    ];
-  }, [agentConnections, connectorFilter]);
+    const scoped =
+      connectorFilter === 'ALL'
+        ? filterSource
+        : filterSource.filter((c) => c.connectorCode === connectorFilter);
+    return [...new Map(scoped.map((c) => [c.connectionId, c])).values()];
+  }, [filterSource, connectorFilter]);
 
   const {
     content: runs,
@@ -95,22 +129,33 @@ export default function AgentTriggerRunsTab({ agentId }: { agentId: string }) {
     setRefreshInterval,
     refresh,
   } = usePagedLogsQuery(
-    'trigger-runs',
-    [agentId, debouncedSearch, statusFilter, connectorFilter, connectionFilter],
+    'runs',
+    [
+      agentId ?? agentFilter,
+      sessionId ?? 'all',
+      debouncedSearch,
+      statusFilter,
+      connectorFilter,
+      connectionFilter,
+    ],
     (params) =>
-      apiService.getTriggerLogAgentRuns({
+      apiService.getRuns({
         ...params,
-        agentId,
+        agentId: agentId ?? (agentFilter === 'ALL' ? undefined : agentFilter),
+        sessionId,
         name: debouncedSearch || undefined,
         status: statusFilter === 'ALL' ? undefined : statusFilter,
         connectorCode: connectorFilter === 'ALL' ? undefined : connectorFilter,
         connectionId: connectionFilter === 'ALL' ? undefined : connectionFilter,
       }),
-    { defaultError: t('loadTriggerLogsError') },
+    { defaultError: t('loadRunsError') },
   );
 
   const filtersActive =
-    statusFilter !== 'ALL' || connectorFilter !== 'ALL' || connectionFilter !== 'ALL';
+    statusFilter !== 'ALL' ||
+    agentFilter !== 'ALL' ||
+    connectorFilter !== 'ALL' ||
+    connectionFilter !== 'ALL';
   const anyFilterSet = filtersActive || debouncedSearch !== '';
 
   const changeSearch = (value: string) => {
@@ -119,6 +164,10 @@ export default function AgentTriggerRunsTab({ agentId }: { agentId: string }) {
   };
   const changeStatus = (value: StatusFilter) => {
     setStatusFilter(value);
+    setPage(0);
+  };
+  const changeAgent = (value: string) => {
+    setAgentFilter(value);
     setPage(0);
   };
   const changeConnector = (value: string) => {
@@ -155,7 +204,7 @@ export default function AgentTriggerRunsTab({ agentId }: { agentId: string }) {
   };
 
   const toggleExpand = (id: string) => {
-    setExpandedIds(prev => {
+    setExpandedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
         next.delete(id);
@@ -166,30 +215,52 @@ export default function AgentTriggerRunsTab({ agentId }: { agentId: string }) {
     });
   };
 
+  // The detail page has no endpoint of its own for this row — hand it over
+  // before navigating, so it can show the outcome next to the transcript.
+  const openRun = (run: RunResponse) => primeRunSummary(queryClient, run);
+
   const toolbar = (
     <div className="flex items-start gap-3">
       <div className="flex-1 min-w-0">
         <SearchToolbar
           value={search}
           onChange={changeSearch}
-          placeholder={t('searchTriggersPlaceholder')}
+          placeholder={t('searchPlaceholder')}
           size="sm"
           filtersActive={filtersActive}
           filters={
             <div className="space-y-2">
               <FilterRow label={t('status')}>
                 {STATUS_FILTERS.map((value) => (
-                  <FilterPill key={value} active={statusFilter === value} onClick={() => changeStatus(value)}>
-                    {value === 'ALL' ? t('filterAll') : t(STATUS_BADGE[value].labelKey)}
+                  <FilterPill
+                    key={value}
+                    active={statusFilter === value}
+                    onClick={() => changeStatus(value)}
+                  >
+                    {value === 'ALL' ? t('filterAll') : t(STATUS_LABEL_KEY[value])}
                   </FilterPill>
                 ))}
               </FilterRow>
               <div className="flex items-center gap-2 flex-wrap">
+                {!agentId && (
+                  <div className="w-52">
+                    <Select value={agentFilter} onChange={(e) => changeAgent(e.target.value)}>
+                      <option value="ALL">{t('allAgents')}</option>
+                      {(agents?.content ?? []).map((a) => (
+                        <option key={a.id} value={a.id}>
+                          {a.name}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                )}
                 <div className="w-52">
                   <Select value={connectorFilter} onChange={(e) => changeConnector(e.target.value)}>
                     <option value="ALL">{t('allConnectors')}</option>
                     {connectorOptions.map((code) => (
-                      <option key={code} value={code}>{code}</option>
+                      <option key={code} value={code}>
+                        {code}
+                      </option>
                     ))}
                   </Select>
                 </div>
@@ -201,7 +272,9 @@ export default function AgentTriggerRunsTab({ agentId }: { agentId: string }) {
                   >
                     <option value="ALL">{t('allConnections')}</option>
                     {connectionOptions.map((c) => (
-                      <option key={c.connectionId} value={c.connectionId}>{c.label}</option>
+                      <option key={c.connectionId} value={c.connectionId}>
+                        {c.label}
+                      </option>
                     ))}
                   </Select>
                 </div>
@@ -212,18 +285,6 @@ export default function AgentTriggerRunsTab({ agentId }: { agentId: string }) {
       </div>
       <RefreshControls value={refreshInterval} onChange={setRefreshInterval} onRefresh={refresh} />
     </div>
-  );
-
-  const pagination = (
-    <Pagination
-      page={page}
-      pageSize={pageSize}
-      totalElements={totalElements}
-      totalPages={totalPages}
-      onPageChange={setPage}
-      onPageSizeChange={setPageSize}
-      rowsPerPageLabel={t('rowsPerPage')}
-    />
   );
 
   if (error) {
@@ -240,14 +301,14 @@ export default function AgentTriggerRunsTab({ agentId }: { agentId: string }) {
       {toolbar}
       {stopError && <ErrorAlert>{stopError}</ErrorAlert>}
       {loading ? (
-        <div className="text-center py-12 text-muted">{t('loadingTriggerLogs')}</div>
+        <div className="text-center py-12 text-muted">{t('loadingRuns')}</div>
       ) : runs.length === 0 ? (
         <div className="text-center py-12 text-muted">
-          {anyFilterSet ? t('noTriggerRunsFiltered') : t('noTriggerRuns')}
+          {anyFilterSet ? t('noRunsFiltered') : t('noRuns')}
         </div>
       ) : (
         <>
-          <div className="text-sm text-muted">{t('triggerRunsTotal', { count: totalElements })}</div>
+          <div className="text-sm text-muted">{t('runsTotal', { count: totalElements })}</div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -262,7 +323,6 @@ export default function AgentTriggerRunsTab({ agentId }: { agentId: string }) {
               </thead>
               <tbody>
                 {runs.map((run) => {
-                  const badge = STATUS_BADGE[run.status] ?? STATUS_BADGE.CANCELLED;
                   const rowColor =
                     run.status === 'FAILED'
                       ? 'bg-error/5 hover:bg-error/10'
@@ -279,8 +339,16 @@ export default function AgentTriggerRunsTab({ agentId }: { agentId: string }) {
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        <div
-                          className="text-sm font-medium text-foreground font-mono"
+                        {/* The name opens the run: its turns, the tool calls in
+                            them and the message list it started from. */}
+                        <Link
+                          href={
+                            agentId
+                              ? `/dashboard/agents/${agentId}/runs/${run.id}`
+                              : `/dashboard/runs/${run.id}`
+                          }
+                          onClick={() => openRun(run)}
+                          className="text-left text-sm font-medium text-foreground font-mono transition-colors hover:text-accent"
                           title={[
                             run.occurredAt && `${t('occurredAt')}: ${formatDateTimeFull(run.occurredAt)}`,
                             `trigger: ${run.externalId}`,
@@ -288,7 +356,19 @@ export default function AgentTriggerRunsTab({ agentId }: { agentId: string }) {
                           ].filter(Boolean).join('\n')}
                         >
                           {run.name}
-                        </div>
+                        </Link>
+                        {/* The one visible consequence of a broken journal:
+                            later runs of this session don't see this one, so
+                            the agent doesn't remember it. */}
+                        {run.turnsIntact === false && (
+                          <div
+                            className="mt-0.5 flex items-center gap-1 text-xs text-warning"
+                            title={t('turnsNotIntactHint')}
+                          >
+                            <ExclamationTriangleIcon className="h-3.5 w-3.5 shrink-0" />
+                            {t('turnsNotIntact')}
+                          </div>
+                        )}
                         <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted" title={run.connectionId}>
                           <span className="font-mono text-muted/70">{run.connectorCode}</span>
                           {connectionName && (
@@ -322,9 +402,18 @@ export default function AgentTriggerRunsTab({ agentId }: { agentId: string }) {
                         )}
                       </td>
                       <td className="py-3 px-4">
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${badge.className}`}>
-                          {t(badge.labelKey)}
-                        </span>
+                        <RunStatusBadge status={run.status} />
+                        {/* What the run cost, where the eye already goes for its
+                            outcome — this is the column that answers "which run
+                            was expensive" without opening any of them. */}
+                        {run.usage && (
+                          <div
+                            className="mt-1 text-xs whitespace-nowrap text-muted/70"
+                            title={usageTooltip(run.usage)}
+                          >
+                            {t('usageTotal', { value: formatTokens(run.usage.totalTokens) })}
+                          </div>
+                        )}
                         {STOPPABLE.includes(run.status) && (
                           <button
                             type="button"
@@ -354,9 +443,7 @@ export default function AgentTriggerRunsTab({ agentId }: { agentId: string }) {
                               onClick={() => toggleExpand(`result-${run.id}`)}
                               className="flex items-center gap-1 text-xs text-success hover:text-success/80 font-medium transition-colors"
                             >
-                              <span className="max-w-[200px] truncate">
-                                {run.result}
-                              </span>
+                              <span className="max-w-[200px] truncate">{run.result}</span>
                               <span className="shrink-0">{expandedIds.has(`result-${run.id}`) ? '▲' : '▼'}</span>
                             </button>
                             {expandedIds.has(`result-${run.id}`) && (
@@ -375,7 +462,15 @@ export default function AgentTriggerRunsTab({ agentId }: { agentId: string }) {
               </tbody>
             </table>
           </div>
-          {pagination}
+          <Pagination
+            page={page}
+            pageSize={pageSize}
+            totalElements={totalElements}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            rowsPerPageLabel={t('rowsPerPage')}
+          />
         </>
       )}
     </div>

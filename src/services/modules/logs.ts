@@ -3,8 +3,6 @@ import { httpClient, buildPagedQuery, ApiError } from '../httpClient';
 import { API } from '@/config/constants';
 import type {
   TriggerLog,
-  TriggerLogAgentRunResponse,
-  TriggerRunFilters,
   TriggerLogProbeResponse,
   ToolUseLogResponse,
   ToolUseLogFilters,
@@ -66,20 +64,8 @@ export const logsApi = {
     return httpClient.get<PagedResponse<TriggerLog>>(`${API.ENDPOINTS.CONTROL_API}/manage/trigger-logs/${query ? `?${query}` : ''}`);
   },
 
-  // Per-agent trigger runs (paginated; filters combine with AND, sorted createdAt DESC)
-  async getTriggerLogAgentRuns(params: TriggerRunFilters & { page?: number; size?: number }): Promise<PagedResponse<TriggerLogAgentRunResponse>> {
-    const query = buildPagedQuery(
-      {
-        agentId: params.agentId,
-        connectorCode: params.connectorCode,
-        connectionId: params.connectionId,
-        name: params.name,
-        status: params.status,
-      },
-      params,
-    );
-    return httpClient.get<PagedResponse<TriggerLogAgentRunResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/trigger-logs/agent-runs/?${query}`);
-  },
+  // Runs of a trigger moved out of this sub-resource: see `getRuns` in
+  // modules/runs.ts (/manage/runs/, agentId no longer required).
 
   // Trigger discovery probe — issue a one-off code the user drops into a test event.
   // Default `blockDelivery: true` logs the trigger but does NOT deliver it to agents,

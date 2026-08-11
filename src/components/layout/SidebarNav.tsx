@@ -9,6 +9,7 @@ import {
   DevicePhoneMobileIcon,
   UserGroupIcon,
   BoltIcon,
+  QueueListIcon,
   WrenchScrewdriverIcon,
   LinkIcon,
   CpuChipIcon,
@@ -43,7 +44,10 @@ type ContextRoute =
   | { type: 'admin'; section: string };
 
 const matchContextRoute = (pathname: string): ContextRoute | null => {
-  const agent = pathname.match(/^\/dashboard\/agents\/([^/]+)(?:\/([^/]+))?$/);
+  // Deeper agent routes (e.g. runs/<runId>) keep the agent context, with the
+  // first sub-segment as the active section — losing the agent's nav halfway
+  // into one of its sections reads as having left the agent.
+  const agent = pathname.match(/^\/dashboard\/agents\/([^/]+)(?:\/([^/]+))?(?:\/.+)?$/);
   if (agent && !NON_AGENT_SEGMENTS.has(agent[1])) {
     return { type: 'agent', id: agent[1], section: agent[2] ?? 'general' };
   }
@@ -146,6 +150,7 @@ const getNavGroups = (
   {
     label: t('monitoring'),
     items: [
+      { label: t('runs'), icon: QueueListIcon, href: '/dashboard/runs' },
       { label: t('triggerLogs'), icon: BoltIcon, href: '/dashboard/trigger-logs' },
       { label: t('toolUseLogs'), icon: WrenchScrewdriverIcon, href: '/dashboard/tool-use-logs' },
     ],

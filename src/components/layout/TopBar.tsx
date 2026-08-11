@@ -37,6 +37,7 @@ export default function TopBar({
     apps: t('breadcrumbs.apps'),
     agents: t('breadcrumbs.agents'),
     'agentic-teams': t('breadcrumbs.agenticTeams'),
+    runs: t('breadcrumbs.runs'),
     'trigger-logs': t('breadcrumbs.triggerLogs'),
     'tool-use-logs': t('breadcrumbs.toolUseLogs'),
     'connector-jobs': t('breadcrumbs.connectorJobs'),
