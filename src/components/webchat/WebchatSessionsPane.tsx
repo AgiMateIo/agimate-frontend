@@ -49,7 +49,16 @@ export default function WebchatSessionsPane({
     <div
       className={`${className} w-full shrink-0 flex-col min-h-0 overflow-hidden border-border md:flex md:w-72 md:border-r`}
     >
-      <div className="p-4 border-b border-border space-y-3">
+      {/* One 4rem row, the same height as the conversation's header next to it
+          (and as the dashboard's top bar): the two dividers sit on one line, and
+          a step between them reads as a misaligned pane. Only the filterless
+          variant can promise that height — with the agent selector above the
+          button the header is as tall as its contents. */}
+      <div
+        className={`border-b border-border ${
+          hideAgentFilter ? 'flex h-16 shrink-0 items-center px-3 sm:px-4' : 'p-4 space-y-3'
+        }`}
+      >
         {!hideAgentFilter && (
           <div>
             <label className="block text-xs font-medium text-muted mb-1">

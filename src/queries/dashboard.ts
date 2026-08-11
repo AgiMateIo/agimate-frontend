@@ -307,7 +307,9 @@ export function useActivityFeed(refreshSeconds: number | null = null) {
 }
 
 /**
- * The next few scheduled connector runs. Reuses the attention scan, which the
+ * The next few scheduled connector jobs — "run" is the agent's word here (see
+ * /dashboard/runs), so this surface says jobs even where the backend field is
+ * `nextRunAt`. Reuses the attention scan, which the
  * backend already sorts by nextRunAt ascending; paused jobs are dropped because
  * their next run will not happen.
  */

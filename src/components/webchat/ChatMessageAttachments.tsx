@@ -94,12 +94,15 @@ function AttachmentFile({ part }: { part: WebchatPart }) {
       target="_blank"
       rel="noopener noreferrer"
       title={part.fileId}
+      // What this link does goes in `aria-label` rather than a hidden span —
+      // `sr-only` is absolutely positioned, escapes the dashboard shell's
+      // clipping and gives a long page a second scrollbar.
+      aria-label={t('download')}
       className="flex items-center gap-2 rounded-lg border border-border bg-surface-secondary px-3 py-2 text-xs text-foreground transition-colors hover:border-accent"
     >
-      <ArrowDownTrayIcon className="h-4 w-4 shrink-0 text-muted" />
+      <ArrowDownTrayIcon aria-hidden="true" className="h-4 w-4 shrink-0 text-muted" />
       <span className="font-medium">{kind}</span>
       <span className="text-muted">· {formatBytes(part.size)}</span>
-      <span className="sr-only">{t('download')}</span>
     </a>
   );
 }

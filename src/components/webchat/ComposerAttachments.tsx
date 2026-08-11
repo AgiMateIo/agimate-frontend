@@ -98,10 +98,14 @@ function AttachmentChip({
         type="button"
         onClick={onRemove}
         title={t('removeAttachment')}
+        // The name is on the button, not in a hidden span: `sr-only` is
+        // `position: absolute`, and with no positioned ancestor its containing
+        // block is the page — it escapes the shell's clipping and stretches the
+        // document down to itself, which shows up as a second scrollbar.
+        aria-label={t('removeAttachment')}
         className="absolute -right-1.5 -top-1.5 grid h-4.5 w-4.5 place-items-center rounded-full bg-foreground text-background hover:bg-error hover:text-accent-foreground transition-colors"
       >
-        <XMarkIcon className="h-3 w-3" />
-        <span className="sr-only">{t('removeAttachment')}</span>
+        <XMarkIcon aria-hidden="true" className="h-3 w-3" />
       </button>
     </div>
   );

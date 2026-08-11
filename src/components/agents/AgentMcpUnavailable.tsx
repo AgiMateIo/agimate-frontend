@@ -7,12 +7,12 @@ import { Link } from '@/i18n/navigation';
 // Sections an MCP agent cannot have. Three of them need a server → client
 // channel it does not have; the fourth (models) is simply not ours — the client
 // runs on its own model and never comes for our keys.
-export type UndeliverableSection = 'chat' | 'channels' | 'triggers' | 'models';
+export type UndeliverableSection = 'chat' | 'channels' | 'runs' | 'models';
 
 const HINT_KEY = {
   chat: 'mcpUnavailableHint',
   channels: 'mcpUnavailableHint',
-  triggers: 'mcpUnavailableHint',
+  runs: 'mcpUnavailableHint',
   models: 'mcpUnavailableHintModels',
 } as const satisfies Record<UndeliverableSection, string>;
 

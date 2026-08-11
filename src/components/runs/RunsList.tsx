@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ExclamationTriangleIcon, StopIcon } from '@heroicons/react/24/outline';
+import { ExclamationTriangleIcon, StopIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { Link } from '@/i18n/navigation';
 import type { RunResponse, RunStatus } from '@/types';
@@ -41,14 +41,18 @@ const STATUS_LABEL_KEY = {
 // Standalone on /dashboard/runs, where the agent is one more filter; scoped to
 // one agent on the agent's Runs section, where the connector/connection
 // selectors then offer only that agent's bindings. `sessionId` narrows it to one
-// conversation — it comes from the URL and has no control of its own, since the
-// caller owns the notice that says the list is scoped.
+// conversation — it arrives from the URL (the chat links here) and has no
+// control of its own, so it announces itself in a notice with a way out.
 export default function RunsList({
   agentId,
   sessionId,
+  clearSessionHref,
 }: {
   agentId?: string;
   sessionId?: string;
+  // Where "show all runs" leads — the same list without the conversation, on
+  // whichever of the two routes this one is.
+  clearSessionHref?: string;
 }) {
   const t = useTranslations('Runs');
   const usageTooltip = useUsageTooltip();
@@ -298,6 +302,20 @@ export default function RunsList({
 
   return (
     <div className="space-y-4">
+      {sessionId && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg bg-accent/10 px-3 py-2 text-sm text-accent">
+          <span>{t('sessionScopeNotice')}</span>
+          {clearSessionHref && (
+            <Link
+              href={clearSessionHref}
+              className="ml-auto flex items-center gap-1 text-xs transition-opacity hover:opacity-80"
+            >
+              <XMarkIcon className="h-3.5 w-3.5" />
+              {t('showAllRuns')}
+            </Link>
+          )}
+        </div>
+      )}
       {toolbar}
       {stopError && <ErrorAlert>{stopError}</ErrorAlert>}
       {loading ? (

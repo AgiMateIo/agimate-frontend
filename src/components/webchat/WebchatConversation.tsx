@@ -19,10 +19,10 @@ import {
   PlusIcon,
   QueueListIcon,
   StopIcon,
+  XCircleIcon,
 } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
-import { Link } from '@/i18n/navigation';
-import { Button } from '@/components/ui/Button';
+import { useRouter } from '@/i18n/navigation';
 import { DropdownMenu } from '@/components/ui/DropdownMenu';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { getAgentAvatarUrl } from '@/utils/avatar';
@@ -120,6 +120,7 @@ export default function WebchatConversation({
   const t = useTranslations('Chat');
   const tCommon = useTranslations('Common');
   const tRuns = useTranslations('Runs');
+  const router = useRouter();
   const thread = useWebchatThread(session.sessionId);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
@@ -292,7 +293,7 @@ export default function WebchatConversation({
       )}
       {/* Header — carries the agent identity, since the chat section drops the
           page-level agent header to give the conversation the full canvas. */}
-      <div className="flex items-center justify-between gap-2 px-3 py-3 border-b border-border shrink-0 sm:gap-3 sm:px-4">
+      <div className="flex h-16 items-center justify-between gap-2 px-3 border-b border-border shrink-0 sm:gap-3 sm:px-4">
         <div className="flex items-center gap-2.5 min-w-0">
           {onBack && (
             <button
@@ -315,29 +316,40 @@ export default function WebchatConversation({
             </div>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-          {/* The chat shows what was said; the runs behind it show what was
-              done — the tool calls, the reasoning, and the runs that were
-              cancelled or that the agent has no memory of. */}
-          <Link
-            href={`/dashboard/runs?sessionId=${session.sessionId}`}
-            title={tRuns('viewRuns')}
-            aria-label={tRuns('viewRuns')}
-            className="grid h-9 w-9 place-items-center rounded-lg text-muted transition-colors hover:bg-surface-secondary hover:text-foreground"
-          >
-            <QueueListIcon className="h-5 w-5" />
-          </Link>
-          {!session.closedAt && (
-            <Button
-              variant="secondary"
-              onClick={handleClose}
-              loading={closing}
-              className="text-sm"
-            >
-              {t('closeSession')}
-            </Button>
-          )}
-        </div>
+        {/* Both header actions live in the overflow menu: neither is part of
+            writing a message, and a header that keeps them visible spends its
+            width on things used once per conversation. Closing is destructive
+            enough to sit apart, at the bottom and in the error colour. */}
+        <DropdownMenu
+          items={[
+            {
+              // The chat shows what was said; the runs behind it show what was
+              // done — the tool calls, the reasoning, and the runs that were
+              // cancelled or that the agent has no memory of.
+              label: tRuns('viewRuns'),
+              icon: QueueListIcon,
+              onClick: () =>
+                router.push(
+                  `/dashboard/agents/${session.agentId}/runs?sessionId=${session.sessionId}`,
+                ),
+            },
+            ...(session.closedAt
+              ? []
+              : [
+                  {
+                    // The label doesn't change while the request is in flight —
+                    // the item just stops responding; "Loading…" in place of the
+                    // action reads as a different menu entry.
+                    label: t('closeSession'),
+                    icon: XCircleIcon,
+                    onClick: handleClose,
+                    disabled: closing,
+                    danger: true,
+                    separated: true,
+                  },
+                ]),
+          ]}
+        />
       </div>
 
       {/* Messages. `scrollbar-gutter: stable both-edges` keeps the reading

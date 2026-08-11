@@ -15,7 +15,7 @@ import ActivityFeed from './ActivityFeed';
 import AttentionPanel from './AttentionPanel';
 import LlmSpend from './LlmSpend';
 import RecentChats from './RecentChats';
-import UpcomingRuns from './UpcomingRuns';
+import UpcomingJobs from './UpcomingJobs';
 import { RESOURCE_CARDS } from './resources';
 
 /**
@@ -91,7 +91,7 @@ export default function WorkMode({
           <ActivityFeed refreshSeconds={refreshSeconds} />
         </div>
         <div className="space-y-4">
-          <UpcomingRuns refreshSeconds={refreshSeconds} />
+          <UpcomingJobs refreshSeconds={refreshSeconds} />
           <RecentChats />
         </div>
       </div>

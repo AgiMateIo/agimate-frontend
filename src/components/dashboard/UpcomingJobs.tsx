@@ -19,7 +19,7 @@ const TYPE_ICON: Record<ConnectorJobType, React.ComponentType<React.SVGProps<SVG
   ONETIME: ClockIcon,
 };
 
-export default function UpcomingRuns({
+export default function UpcomingJobs({
   refreshSeconds,
 }: {
   refreshSeconds: number | null;
