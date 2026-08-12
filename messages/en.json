@@ -322,7 +322,7 @@
     },
     "cta": {
       "title": "Start from a ready-made role",
-      "subtitle": "Sign in with Google or Yandex — the account is created on the first login.",
+      "subtitle": "Sign in with GitHub, Google or Yandex — the account is created on the first login.",
       "button": "Create an account",
       "docsLink": "Docs on GitHub",
       "finePrint": "Self-hosted · Your own model key · Every call logged"
@@ -413,9 +413,11 @@
   },
   "Login": {
     "title": "Sign in to AgiMate",
-    "subtitle": "Sign in to continue",
-    "google": "Sign in with Google",
-    "yandex": "Sign in with Yandex",
+    "subtitle": "The account is created on the first login.",
+    "signInWith": "Sign in with {provider}",
+    "google": "Google",
+    "yandex": "Yandex",
+    "github": "GitHub",
     "terms": "By continuing, you agree to the",
     "termsLink": "Terms of Service",
     "and": "and",
