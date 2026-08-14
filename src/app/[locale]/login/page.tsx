@@ -7,11 +7,17 @@ import { Link } from '@/i18n/navigation';
 import { API } from '@/config/constants';
 import { getApiBaseUrl } from '@/utils/api-url';
 import { safeNextPath } from '@/utils/next-path';
+import { readReferralCode } from '@/utils/referral';
 import AuthShell from '@/components/landing/AuthShell';
 
 const subscribe = () => () => {};
 const getSnapshot = () => window.location.origin;
 const getServerSnapshot = () => '';
+
+// Same shape for the stored referral code: read on the client only, absent
+// during SSR. Both snapshots are primitives, so re-reading per render is free.
+const getReferralSnapshot = () => readReferralCode();
+const getReferralServerSnapshot = (): string | null => null;
 
 // Provider codes are fixed by the backend and case-sensitive; there is no endpoint
 // listing which ones an installation has configured, so the buttons live here.
@@ -57,11 +63,20 @@ function LoginContent() {
   // OAuth callback carries single-use parameters, so the whole address travels
   // through the round trip instead of being stored anywhere).
   const next = safeNextPath(useSearchParams().get('next'));
-  const redirectParams = useMemo(() => {
-    if (!origin) return '';
-    const loginCheck = `${origin}/login-check${next ? `?next=${encodeURIComponent(next)}` : ''}`;
-    return `?redirect_to=${encodeURIComponent(loginCheck)}`;
-  }, [origin, next]);
+  // Whoever's invite link brought this visitor here, possibly days ago.
+  const referral = useSyncExternalStore(subscribe, getReferralSnapshot, getReferralServerSnapshot);
+  const authParams = useMemo(() => {
+    const params = new URLSearchParams();
+    if (origin) {
+      params.set('redirect_to', `${origin}/login-check${next ? `?next=${encodeURIComponent(next)}` : ''}`);
+    }
+    // The one moment the backend can learn who invited this account: it is
+    // stored against the user only if the sign-in creates one. An unusable code
+    // costs nothing — the backend drops it and the sign-in proceeds.
+    if (referral) params.set('ref', referral);
+    const query = params.toString();
+    return query ? `?${query}` : '';
+  }, [origin, next, referral]);
   // Google is hidden on the .ru domain and offered everywhere else. An unknown origin
   // (SSR, where the host isn't available to a client component) counts as hidden: the
   // button fades in after hydration elsewhere rather than flashing on .ru for a frame.
@@ -89,7 +104,7 @@ function LoginContent() {
             {providers.map((provider) => (
               <a
                 key={provider}
-                href={`${getApiBaseUrl()}${API.ENDPOINTS.USER_API}/oauth2/authorization/${provider}${redirectParams}`}
+                href={`${getApiBaseUrl()}${API.ENDPOINTS.USER_API}/oauth2/authorization/${provider}${authParams}`}
                 onClick={(e) => {
                   if (pendingProvider) { e.preventDefault(); return; }
                   setPendingProvider(provider);

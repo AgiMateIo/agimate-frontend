@@ -14,6 +14,9 @@ export interface AdminUserResponse {
   // May be absent — a user without one only ever matches `search` on email.
   displayName: string | null;
   role: UserRole;
+  // Id of the user whose referral link this account was created with, or null.
+  // Set once, at creation — an existing account is never re-attributed.
+  referredBy: string | null;
   // Backend format "yyyy-MM-dd HH:mm:ss", server time without a zone.
   createdAt: string;
   updatedAt: string;

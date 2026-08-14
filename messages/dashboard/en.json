@@ -1297,6 +1297,14 @@
       "title": "Security",
       "description": "Keep your account secure",
       "lastLogin": "Last login"
+    },
+    "referral": {
+      "title": "Invite",
+      "description": "Your personal link for anyone you want to bring in",
+      "link": "Invite link",
+      "invited": "Signed up with your link",
+      "note": "The link records who invited an account — it does not open access: an invited person joins the same queue for approval. It only works for a brand-new account: someone who has signed in before stays as they are.",
+      "error": "Could not load the invite link"
     }
   },
   "Channels": {

@@ -7,6 +7,7 @@ import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
 import { safeNextPath } from '@/utils/next-path';
+import { clearReferralCode } from '@/utils/referral';
 import { useUser } from '@/contexts/UserContext';
 import AuthShell from '@/components/landing/AuthShell';
 
@@ -39,6 +40,11 @@ function LoginCheckContent() {
     } catch {
       return 'network';
     }
+
+    // The referral code has had its only chance to be applied — it travelled
+    // with the authorization request, and it never affects an account that
+    // already exists. Keeping it would only re-send it on the next sign-in.
+    clearReferralCode();
 
     await fetchUser();
     router.replace(next ?? '/dashboard');
