@@ -33,6 +33,14 @@ function TurnRow({ turn }: { turn: RunTurnResponse }) {
       {/* The order the turn actually happened in: the model reasons, then says
           something, then calls a tool. */}
       <td className="space-y-1.5 py-2.5 pr-3">
+        {/* A run starts from exactly one user message, at index 0. Any user turn
+            past it arrived while the run was already working and was taken over
+            — which is where the answer to "and where did my second question go"
+            lives, so it is labelled rather than left to look like a duplicate. */}
+        {turn.role === 'USER' && turn.turnIndex > 0 && (
+          <div className="text-xs font-medium text-accent">{t('steeredIntoTurn')}</div>
+        )}
+
         {turn.thinkingText && (
           <Collapsible label={t('reasoning')} preview={previewOf(turn.thinkingText)}>
             <TextBlock text={turn.thinkingText} />

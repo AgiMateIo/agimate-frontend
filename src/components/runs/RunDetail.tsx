@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ExclamationTriangleIcon, StopIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
+import { Link } from '@/i18n/navigation';
 import { Chip } from '@/components/ui/Chip';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Tabs } from '@/components/ui/Tabs';
@@ -18,8 +19,12 @@ import { Collapsible, TextBlock, formatTokens, previewOf, useUsageTooltip } from
 // The outcome of the run: status, times, how much work and how many tokens it
 // took, the event payload, the result or the error — and a stop button while it
 // is still alive.
-function RunSummary({ run }: { run: RunResponse }) {
+function RunSummary({ run, runsHref }: { run: RunResponse; runsHref: string }) {
   const t = useTranslations('Runs');
+  // A steered run holds nothing of its own — no steps, no result, zero spend.
+  // The card drops those blocks and keeps the one fact that matters: which run
+  // answered instead, and when it picked the message up.
+  const steered = run.status === 'STEERED';
   const usageTooltip = useUsageTooltip();
   const [stopping, setStopping] = useState(false);
   const [stopError, setStopError] = useState('');
@@ -65,27 +70,48 @@ function RunSummary({ run }: { run: RunResponse }) {
       {/* Steps and spend: the two numbers that say how much work this run was,
           before opening anything. The cache counters sit beside the total, never
           inside it — they are billed separately. */}
-      <div className="flex flex-wrap items-center gap-2 text-xs">
-        <Chip>{t('turnsCount', { count: run.turnsCount })}</Chip>
-        {run.usage && (
-          <>
-            <span title={usageTooltip(run.usage)}>
-              <Chip tone="accent">
-                {t('usageTotal', { value: formatTokens(run.usage.totalTokens) })}
-              </Chip>
-            </span>
-            <Chip>{t('usageCalls', { value: String(run.usage.calls) })}</Chip>
-            {run.usage.cacheReadTokens + run.usage.cacheWriteTokens > 0 && (
-              <Chip>
-                {t('usageCache', {
-                  read: formatTokens(run.usage.cacheReadTokens),
-                  write: formatTokens(run.usage.cacheWriteTokens),
-                })}
-              </Chip>
-            )}
-          </>
-        )}
-      </div>
+      {!steered && (
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <Chip>{t('turnsCount', { count: run.turnsCount })}</Chip>
+          {run.usage && (
+            <>
+              <span title={usageTooltip(run.usage)}>
+                <Chip tone="accent">
+                  {t('usageTotal', { value: formatTokens(run.usage.totalTokens) })}
+                </Chip>
+              </span>
+              <Chip>{t('usageCalls', { value: String(run.usage.calls) })}</Chip>
+              {run.usage.cacheReadTokens + run.usage.cacheWriteTokens > 0 && (
+                <Chip>
+                  {t('usageCache', {
+                    read: formatTokens(run.usage.cacheReadTokens),
+                    write: formatTokens(run.usage.cacheWriteTokens),
+                  })}
+                </Chip>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Where the message actually went. The link is the point of the whole
+          card: everything this run would have shown is on that other one. */}
+      {steered && (
+        <div className="flex flex-wrap items-center gap-1.5 rounded-lg bg-surface-secondary px-2 py-1.5 text-xs text-muted">
+          <span>{t('steeredIntoLead')}</span>
+          {run.mainRunId ? (
+            <Link
+              href={`${runsHref}/${run.mainRunId}`}
+              className="font-mono text-accent transition-colors hover:text-accent/80"
+            >
+              {run.mainRunId.slice(0, 8)}…
+            </Link>
+          ) : (
+            <span>{t('steeredIntoUnknown')}</span>
+          )}
+          {run.steeredAt && <span>{t('steeredAtSuffix', { at: formatDateTimeFull(run.steeredAt) })}</span>}
+        </div>
+      )}
 
       <dl className="grid gap-x-6 gap-y-1 text-xs sm:grid-cols-2">
         <div className="flex gap-2">
@@ -145,6 +171,7 @@ function RunSummary({ run }: { run: RunResponse }) {
 export default function RunDetail({
   runId,
   run,
+  runsHref,
   summaryLoading = false,
   summaryError = '',
 }: {
@@ -152,6 +179,9 @@ export default function RunDetail({
   // The run's row, once it has loaded. A 404 covers both "no such run" and
   // "someone else's" — the steps and the input will answer the same way.
   run: RunResponse | null;
+  // The list this run was opened from — a sibling run's page hangs off it, which
+  // is how a steered run links to the one that answered for it.
+  runsHref: string;
   summaryLoading?: boolean;
   summaryError?: string;
 }) {
@@ -177,7 +207,7 @@ export default function RunDetail({
   return (
     <div className="space-y-4">
       {run ? (
-        <RunSummary run={run} />
+        <RunSummary run={run} runsHref={runsHref} />
       ) : summaryLoading ? (
         <div className="rounded-lg border border-border p-3 text-xs text-muted">
           {t('loadingSummary')}
@@ -186,7 +216,12 @@ export default function RunDetail({
         <ErrorAlert>{summaryError || t('runNotFound')}</ErrorAlert>
       )}
 
-      <Tabs activeTab={activeTab} onTabChange={setTab} tabs={tabs} />
+      {/* A steered run has no steps and no snapshot by construction, so the
+          strip would be two tabs onto two empty states. The card said where the
+          work is; that link is the whole page. */}
+      {run?.status !== 'STEERED' && (
+        <Tabs activeTab={activeTab} onTabChange={setTab} tabs={tabs} />
+      )}
     </div>
   );
 }

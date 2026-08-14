@@ -5,7 +5,13 @@
 // it is scoped to the caller; someone else's run answers 404, never 403.
 
 // Real run status column (unlike tool-call logs, where status is derived from fields).
-export type RunStatus = 'ENQUEUED' | 'RUNNING' | 'DONE' | 'FAILED' | 'CANCELLED';
+//
+// STEERED is terminal and means the run never ran on its own: a run of the same
+// conversation was still working when this message arrived and took it over,
+// answering both at once. So a steered row legitimately has no steps and no
+// spend — that is the state, not a gap in the journal; everything it would have
+// held lives on the run in `mainRunId`.
+export type RunStatus = 'ENQUEUED' | 'RUNNING' | 'DONE' | 'FAILED' | 'CANCELLED' | 'STEERED';
 
 // What a run (or one of its turns) spent on the model.
 //
@@ -60,6 +66,15 @@ export interface RunResponse {
   // never reached the model — "it didn't call the model" is a statement we can
   // make.
   usage: RunUsage | null;
+  // Who took this run's message over, and when that run's model actually saw it.
+  // Both fill in *before* the status becomes STEERED, and both stay filled if
+  // the taking run then fails and this one runs on its own after all. So
+  // "taken over" is `status === 'STEERED'` and nothing else — a filled
+  // `mainRunId` alone only means someone reached for it.
+  mainRunId: string | null;
+  // Its one other use: on an ENQUEUED run it means the message is already being
+  // worked on, instead of waiting its turn.
+  steeredAt: string | null;
   lastActivityAt: string | null;
   createdAt: string;
 }

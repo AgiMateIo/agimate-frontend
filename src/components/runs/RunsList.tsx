@@ -18,14 +18,16 @@ import { primeRunSummary } from '@/queries/runs';
 import { connectionsListOptions } from '@/queries/connections';
 import { agentConnectionsOptions, allAgentsOptions } from '@/queries/agents';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
-import { formatDateTimeFull, formatDateTimeShort } from '@/utils/date';
+import { formatDateTimeFull, formatDateTimeShort, parseBackendDate } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
 import { RunStatusBadge, STOPPABLE } from './RunStatusBadge';
 import { formatTokens, useUsageTooltip } from './RunBlocks';
 
 type StatusFilter = 'ALL' | RunStatus;
 
-const STATUS_FILTERS: StatusFilter[] = ['ALL', 'ENQUEUED', 'RUNNING', 'DONE', 'FAILED', 'CANCELLED'];
+const STATUS_FILTERS: StatusFilter[] = [
+  'ALL', 'ENQUEUED', 'RUNNING', 'DONE', 'FAILED', 'CANCELLED', 'STEERED',
+];
 
 const STATUS_LABEL_KEY = {
   ENQUEUED: 'statusEnqueued',
@@ -33,7 +35,16 @@ const STATUS_LABEL_KEY = {
   DONE: 'statusDone',
   FAILED: 'statusFailed',
   CANCELLED: 'statusCancelled',
+  STEERED: 'statusSteered',
 } as const satisfies Record<RunStatus, string>;
+
+// Seconds between a message arriving and the working run actually taking it in.
+// Rounded, and never negative: the two stamps come from different writers, and a
+// tooltip is not the place to expose a clock skew of a few milliseconds.
+function waitedSeconds(createdAt: string, steeredAt: string) {
+  const ms = parseBackendDate(steeredAt).getTime() - parseBackendDate(createdAt).getTime();
+  return Math.max(0, Math.round(ms / 1000));
+}
 
 // Which triggers were received and how each run went. One row = one agent's run
 // of one trigger (the shared event may have fanned out to other agents too).
@@ -154,6 +165,47 @@ export default function RunsList({
       }),
     { defaultError: t('loadRunsError') },
   );
+
+  const runsById = useMemo(
+    () => new Map(runs.map((run) => [run.id, run])),
+    [runs],
+  );
+
+  // In the conversation view both ends of a steering link land on the same page,
+  // so a taken-over run is drawn under the run that answered for it instead of
+  // at its own spot in the timeline. Client-side only, and deliberately timid:
+  // a run whose main run fell on another page keeps its own place rather than
+  // going looking for it (there is no filter by `mainRunId`, by design).
+  const rows = useMemo(() => {
+    const children = new Map<string, RunResponse[]>();
+    if (sessionId) {
+      for (const run of runs) {
+        if (run.status === 'STEERED' && run.mainRunId && runsById.has(run.mainRunId)) {
+          children.set(run.mainRunId, [...(children.get(run.mainRunId) ?? []), run]);
+        }
+      }
+    }
+    const nested = new Set([...children.values()].flat().map((run) => run.id));
+    return runs.flatMap((run) =>
+      nested.has(run.id)
+        ? []
+        : [
+            { run, nested: false },
+            ...(children.get(run.id) ?? []).map((child) => ({ run: child, nested: true })),
+          ],
+    );
+  }, [runs, runsById, sessionId]);
+
+  const runHref = (id: string) =>
+    agentId ? `/dashboard/agents/${agentId}/runs/${id}` : `/dashboard/runs/${id}`;
+
+  // The run that answered is usually right there on the page, and its time reads
+  // better than an id; when it isn't (another page, a narrower filter), the id
+  // has to do — the link works either way.
+  const mainRunLabel = (mainRunId: string) => {
+    const main = runsById.get(mainRunId);
+    return main ? formatDateTimeShort(main.createdAt) : `${mainRunId.slice(0, 8)}…`;
+  };
 
   const filtersActive =
     statusFilter !== 'ALL' ||
@@ -340,19 +392,37 @@ export default function RunsList({
                 </tr>
               </thead>
               <tbody>
-                {runs.map((run) => {
+                {rows.map(({ run, nested }) => {
+                  // A steered run is not a failure and not work either — it is
+                  // dimmed rather than tinted, the way a visited link is.
                   const rowColor =
-                    run.status === 'FAILED'
-                      ? 'bg-error/5 hover:bg-error/10'
-                      : run.status === 'DONE'
-                        ? 'bg-success/5 hover:bg-success/10'
-                        : 'hover:bg-surface-secondary';
+                    run.status === 'STEERED'
+                      ? 'opacity-60 hover:bg-surface-secondary hover:opacity-100'
+                      : run.status === 'FAILED'
+                        ? 'bg-error/5 hover:bg-error/10'
+                        : run.status === 'DONE'
+                          ? 'bg-success/5 hover:bg-success/10'
+                          : 'hover:bg-surface-secondary';
                   const connectionName = connectionsById.get(run.connectionId);
 
                   return (
                     <tr key={run.id} className={`border-b border-border last:border-b-0 transition-colors ${rowColor}`}>
-                      <td className="py-3 px-4">
-                        <span className="text-sm text-muted" title={formatDateTimeFull(run.createdAt)}>
+                      <td className={`py-3 px-4 ${nested ? 'pl-10' : ''}`}>
+                        <span
+                          className="text-sm text-muted"
+                          title={[
+                            formatDateTimeFull(run.createdAt),
+                            // How long the message waited before the working run
+                            // actually saw it — the whole point of steering, and
+                            // the only place the two timestamps mean something
+                            // together.
+                            run.steeredAt &&
+                              t('steeredAfter', { seconds: waitedSeconds(run.createdAt, run.steeredAt) }),
+                          ]
+                            .filter(Boolean)
+                            .join('\n')}
+                        >
+                          {nested && <span className="mr-1 text-muted/60">↳</span>}
                           {formatDateTimeShort(run.createdAt)}
                         </span>
                       </td>
@@ -360,11 +430,7 @@ export default function RunsList({
                         {/* The name opens the run: its turns, the tool calls in
                             them and the message list it started from. */}
                         <Link
-                          href={
-                            agentId
-                              ? `/dashboard/agents/${agentId}/runs/${run.id}`
-                              : `/dashboard/runs/${run.id}`
-                          }
+                          href={runHref(run.id)}
                           onClick={() => openRun(run)}
                           className="text-left text-sm font-medium text-foreground font-mono transition-colors hover:text-accent"
                           title={[
@@ -421,6 +487,18 @@ export default function RunsList({
                       </td>
                       <td className="py-3 px-4">
                         <RunStatusBadge status={run.status} />
+                        {/* Still queued on paper, but a working run has already
+                            taken the message in — so it isn't waiting for a slot.
+                            Only true until that run finishes (then this one turns
+                            STEERED) or fails (then it runs on its own after all). */}
+                        {run.status === 'ENQUEUED' && run.steeredAt && (
+                          <div
+                            className="mt-1 text-xs whitespace-nowrap text-muted/70"
+                            title={t('steeringPickedUpHint')}
+                          >
+                            {t('steeringPickedUp')}
+                          </div>
+                        )}
                         {/* What the run cost, where the eye already goes for its
                             outcome — this is the column that answers "which run
                             was expensive" without opening any of them. */}
@@ -453,7 +531,26 @@ export default function RunsList({
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        {run.error ? (
+                        {/* A steered run has no result of its own, so the column
+                            carries the link instead: the answer is over there. */}
+                        {run.status === 'STEERED' ? (
+                          run.mainRunId ? (
+                            <Link
+                              href={runHref(run.mainRunId)}
+                              onClick={() => {
+                                const main = runsById.get(run.mainRunId!);
+                                if (main) openRun(main);
+                              }}
+                              className="text-xs font-medium text-accent transition-colors hover:text-accent/80"
+                            >
+                              {t('steeredIntoRow', {
+                                ref: mainRunLabel(run.mainRunId),
+                              })}
+                            </Link>
+                          ) : (
+                            <span className="text-muted text-xs">&mdash;</span>
+                          )
+                        ) : run.error ? (
                           <span className="text-sm text-error">{run.error}</span>
                         ) : run.result !== null ? (
                           <div>

@@ -42,7 +42,15 @@ export default function RunPageContent({
       </div>
 
       <div className="bg-surface rounded-xl border border-border p-6">
-        <RunDetail runId={runId} run={run} summaryLoading={loading} summaryError={error} />
+        {/* `backHref` doubles as the base of every run's page on this route,
+            which is what lets a steered run link to the run that answered. */}
+        <RunDetail
+          runId={runId}
+          run={run}
+          runsHref={backHref}
+          summaryLoading={loading}
+          summaryError={error}
+        />
       </div>
     </div>
   );
