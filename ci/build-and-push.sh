@@ -45,12 +45,16 @@ echo "════════════════════════�
 # which died with `rename …/ingest/…/data → blobs/sha256/…: no such file or directory`.
 # `docker rmi -f <ID>` is the same class of mistake — removing by ID drops every tag
 # pointing at that image, including a neighbour's. Touch only our own tags, by name.
+# The `|| true` is not decoration: grep exits 1 when it selects nothing, and under
+# `set -euo pipefail` that kills the script before the build even starts — which is
+# exactly what happens on the first run after a failure left no local images behind.
 echo "▶ Removing old ${IMAGE} tags..."
-docker images "${IMAGE}" --format '{{.Repository}}:{{.Tag}}' \
-  | grep -v ':<none>$' \
-  | while read -r REF; do
-      docker rmi "$REF" 2>/dev/null || true
-    done
+OLD_TAGS=$(docker images "${IMAGE}" --format '{{.Repository}}:{{.Tag}}' | grep -v ':<none>$' || true)
+if [ -n "$OLD_TAGS" ]; then
+  echo "$OLD_TAGS" | while read -r REF; do
+    docker rmi "$REF" 2>/dev/null || true
+  done
+fi
 
 # ── Docker build ──────────────────────────────────────────
 echo "▶ Building Docker image..."
