@@ -17,6 +17,10 @@ interface WebchatSessionsPaneProps {
   onSelectSession: (sessionId: string) => void;
   onNewSession: () => void;
   creating: boolean;
+  // Sessions arrive one page at a time; older ones load on demand.
+  hasMoreSessions?: boolean;
+  loadingMoreSessions?: boolean;
+  onLoadMoreSessions?: () => void;
   // Agent-scoped chat (an agent's Chat section): the agent is fixed by the route,
   // so hide the agent picker and always allow starting a session.
   hideAgentFilter?: boolean;
@@ -36,10 +40,14 @@ export default function WebchatSessionsPane({
   onSelectSession,
   onNewSession,
   creating,
+  hasMoreSessions = false,
+  loadingMoreSessions = false,
+  onLoadMoreSessions,
   hideAgentFilter = false,
   className = 'flex',
 }: WebchatSessionsPaneProps) {
   const t = useTranslations('Chat');
+  const tCommon = useTranslations('Common');
 
   return (
     // A definite width in both modes — full screen on a phone, a fixed column
@@ -99,36 +107,48 @@ export default function WebchatSessionsPane({
         ) : sessions.length === 0 ? (
           <div className="text-center py-8 px-3 text-muted text-sm">{t('noSessions')}</div>
         ) : (
-          sessions.map((s) => {
-            const isActive = s.sessionId === activeSessionId;
-            const agentName = agentsById[s.agentId]?.name ?? s.agentId.slice(0, 8);
-            return (
-              <button
-                key={s.sessionId}
-                onClick={() => onSelectSession(s.sessionId)}
-                className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors
-                  ${isActive
-                    ? 'bg-accent/10 border border-accent/40'
-                    : 'border border-transparent hover:bg-surface-secondary'
-                  }`}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm font-medium text-foreground truncate">
-                    {s.title || t('untitledSession')}
-                  </span>
-                  {s.closedAt && (
-                    <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-surface-secondary text-muted">
-                      {t('closedBadge')}
+          <>
+            {sessions.map((s) => {
+              const isActive = s.sessionId === activeSessionId;
+              const agentName = agentsById[s.agentId]?.name ?? s.agentId.slice(0, 8);
+              return (
+                <button
+                  key={s.sessionId}
+                  onClick={() => onSelectSession(s.sessionId)}
+                  className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors
+                    ${isActive
+                      ? 'bg-accent/10 border border-accent/40'
+                      : 'border border-transparent hover:bg-surface-secondary'
+                    }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-medium text-foreground truncate">
+                      {s.title || t('untitledSession')}
                     </span>
-                  )}
-                </div>
-                <div className="mt-0.5 flex items-center justify-between gap-2 text-xs text-muted">
-                  <span className="truncate">{agentName}</span>
-                  <span className="shrink-0">{formatDateTimeShort(s.lastMessageAt)}</span>
-                </div>
+                    {s.closedAt && (
+                      <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-surface-secondary text-muted">
+                        {t('closedBadge')}
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-0.5 flex items-center justify-between gap-2 text-xs text-muted">
+                    <span className="truncate">{agentName}</span>
+                    <span className="shrink-0">{formatDateTimeShort(s.lastMessageAt)}</span>
+                  </div>
+                </button>
+              );
+            })}
+            {hasMoreSessions && (
+              <button
+                type="button"
+                onClick={onLoadMoreSessions}
+                disabled={loadingMoreSessions}
+                className="w-full px-3 py-2 text-xs text-accent transition-colors hover:text-accent/80 disabled:opacity-50"
+              >
+                {loadingMoreSessions ? t('loadingSessions') : tCommon('loadMore')}
               </button>
-            );
-          })
+            )}
+          </>
         )}
       </div>
     </div>

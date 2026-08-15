@@ -45,7 +45,7 @@ function AgentChatView({ agent }: { agent: AgentResponse }) {
   const { addSession, patchSession, invalidateSessions } = useWebchatCacheActions();
 
   const agentsById = useMemo(() => ({ [agent.id]: agent }), [agent]);
-  const sessions = sessionsQuery.data ?? [];
+  const sessions = sessionsQuery.sessions;
   // Land straight in the newest conversation rather than an empty frame — the
   // backend sorts by lastMessageAt desc, so sessions[0] is where the user left off.
   // Derived instead of an effect: nothing to sync, and a session that disappears
@@ -94,6 +94,9 @@ function AgentChatView({ agent }: { agent: AgentResponse }) {
           }}
           onNewSession={handleNewSession}
           creating={creating}
+          hasMoreSessions={sessionsQuery.hasNextPage}
+          loadingMoreSessions={sessionsQuery.isFetchingNextPage}
+          onLoadMoreSessions={() => sessionsQuery.fetchNextPage()}
           hideAgentFilter
         />
 

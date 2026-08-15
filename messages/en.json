@@ -452,6 +452,8 @@
     "moreActions": "More actions",
     "back": "Back",
     "retry": "Retry",
+    "loadMore": "Load more",
+    "loadOlder": "Load earlier messages",
     "breadcrumbDashboard": "Dashboard",
     "today": "Today",
     "yesterday": "Yesterday",

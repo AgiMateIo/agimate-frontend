@@ -452,6 +452,8 @@
     "moreActions": "Ещё действия",
     "back": "Назад",
     "retry": "Повторить",
+    "loadMore": "Показать ещё",
+    "loadOlder": "Показать более ранние сообщения",
     "breadcrumbDashboard": "Dashboard",
     "today": "Сегодня",
     "yesterday": "Вчера",

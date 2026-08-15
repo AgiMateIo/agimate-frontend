@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import apiService from '@/services/api';
 import { ChannelSessionResponse } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { useChannelCacheActions, useChannelSessionsQuery } from '@/queries/channels';
 import { formatDate, parseBackendDate } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
 import ChannelChatView from './ChannelChatView';
@@ -23,53 +23,31 @@ function isSessionActive(s: ChannelSessionResponse): boolean {
 
 export default function ChannelSessionsList({ channelId }: ChannelSessionsListProps) {
   const t = useTranslations('Channels');
+  const tCommon = useTranslations('Common');
   const locale = useLocale();
-  const [sessions, setSessions] = useState<ChannelSessionResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const fetchSessions = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const data = await apiService.getChannelSessions(channelId);
-      setSessions(data);
-      if (data.length > 0 && !selectedId) {
-        setSelectedId(data[0].id);
-      }
-    } catch (err) {
-      setError(getErrorMessage(err, 'Failed to load sessions'));
-    } finally {
-      setLoading(false);
-    }
-  }, [channelId, selectedId]);
+  const { sessions, isPending, error, hasNextPage, isFetchingNextPage, fetchNextPage } =
+    useChannelSessionsQuery(channelId);
+  const { patchSession } = useChannelCacheActions();
 
-  useEffect(() => {
-    setSelectedId(null);
-    fetchSessions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [channelId]);
+  if (error) return <ErrorAlert>{getErrorMessage(error, 'Failed to load sessions')}</ErrorAlert>;
 
-  const handleSessionClosed = (updated: ChannelSessionResponse) => {
-    setSessions((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
-  };
-
-  if (error) return <ErrorAlert>{error}</ErrorAlert>;
-
-  const selected = sessions.find((s) => s.id === selectedId) || null;
+  // Derived rather than an effect: switching channels lands on the freshest
+  // session of the new list on its own, and so does a selection that paged away.
+  const selected = sessions.find((s) => s.id === selectedId) ?? sessions[0] ?? null;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 min-h-0 h-[600px]">
       <div className="border border-border rounded-lg overflow-y-auto p-2">
-        {loading ? (
+        {isPending ? (
           <div className="text-center py-8 text-muted text-sm">{t('loadingSessions')}</div>
         ) : sessions.length === 0 ? (
           <div className="text-center py-8 text-muted text-sm">{t('noSessions')}</div>
         ) : (
           <div className="space-y-1">
             {sessions.map((s) => {
-              const active = s.id === selectedId;
+              const active = s.id === selected?.id;
               const live = isSessionActive(s);
               return (
                 <button
@@ -98,13 +76,27 @@ export default function ChannelSessionsList({ channelId }: ChannelSessionsListPr
                 </button>
               );
             })}
+            {hasNextPage && (
+              <button
+                type="button"
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+                className="w-full p-2 text-xs text-accent transition-colors hover:text-accent/80 disabled:opacity-50"
+              >
+                {isFetchingNextPage ? t('loadingSessions') : tCommon('loadMore')}
+              </button>
+            )}
           </div>
         )}
       </div>
 
       <div className="border border-border rounded-lg p-4 overflow-hidden">
         {selected ? (
-          <ChannelChatView session={selected} onClosed={handleSessionClosed} />
+          <ChannelChatView
+            key={selected.id}
+            session={selected}
+            onClosed={(updated) => patchSession(channelId, updated)}
+          />
         ) : (
           <div className="text-center py-12 text-muted text-sm">{t('selectSessionHint')}</div>
         )}

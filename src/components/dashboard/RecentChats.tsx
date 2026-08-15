@@ -22,10 +22,11 @@ export default function RecentChats() {
     return map;
   }, [agents]);
 
-  // Closed sessions are the user's own deletions, so they stay out.
+  // Closed sessions are the user's own deletions, so they stay out. The newest
+  // page is enough for a five-row card — the list is sorted by activity.
   const recent = useMemo(
     () =>
-      (sessions ?? [])
+      (sessions?.content ?? [])
         .filter((s) => s.closedAt === null)
         .sort((a, b) => b.lastMessageAt.localeCompare(a.lastMessageAt))
         .slice(0, RECENT_SIZE),

@@ -164,7 +164,6 @@
     "noSessionsHint": "Start a new chat to talk to this agent right here",
     "loadingMessages": "Loading messages...",
     "noMessages": "No messages yet — say hello!",
-    "loadOlder": "Load earlier messages",
     "agentThinking": "Agent is working...",
     "stopRun": "Stop",
     "stopping": "Stopping...",

@@ -375,7 +375,7 @@ export default function WebchatConversation({
                 disabled={thread.loadingOlder}
                 className="text-xs text-accent hover:text-accent/80 disabled:opacity-50 transition-colors"
               >
-                {thread.loadingOlder ? t('loadingMessages') : t('loadOlder')}
+                {thread.loadingOlder ? t('loadingMessages') : tCommon('loadOlder')}
               </button>
             </div>
           )}

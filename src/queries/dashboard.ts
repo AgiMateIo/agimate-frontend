@@ -66,7 +66,7 @@ export function useDashboardResources() {
     channels: toCount(channels, (d) => d.length),
     teams: toCount(teams, (d) => d.length),
     llmProviders: toCount(providers, (d) => d.length),
-    chatSessions: toCount(sessions, (d) => d.length),
+    chatSessions: toCount(sessions, (d) => d.totalElements),
     // Target for the "talk to an agent" action — chat is per-agent, there is no
     // standalone chat route. MCP agents are skipped: they have no chat at all,
     // and pointing the first-run checklist at one is a dead end.

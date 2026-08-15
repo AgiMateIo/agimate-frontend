@@ -20,13 +20,17 @@ export const webchatApi = {
     );
   },
 
-  // Sorted by lastMessageAt desc on the backend.
-  async getWebchatSessions(params?: { agentId?: string }): Promise<WebchatSessionResponse[]> {
-    const q = new URLSearchParams();
-    if (params?.agentId) q.set('agentId', params.agentId);
-    const qs = q.toString();
-    return httpClient.get<WebchatSessionResponse[]>(
-      `${API.ENDPOINTS.CONTROL_API}/manage/webchat/sessions/${qs ? `?${qs}` : ''}`,
+  // Sorted by lastMessageAt desc on the backend, paged (`size` capped at 100).
+  // The set moves under the paging — an active session jumps back to the top —
+  // so concatenated pages have to be deduped by sessionId.
+  async getWebchatSessions(params?: {
+    agentId?: string;
+    page?: number;
+    size?: number;
+  }): Promise<PagedResponse<WebchatSessionResponse>> {
+    const query = buildPagedQuery({ agentId: params?.agentId }, params);
+    return httpClient.get<PagedResponse<WebchatSessionResponse>>(
+      `${API.ENDPOINTS.CONTROL_API}/manage/webchat/sessions/?${query}`,
     );
   },
 
