@@ -12,6 +12,7 @@ import WebchatConversation from '@/components/webchat/WebchatConversation';
 import AgentMcpUnavailable from '@/components/agents/AgentMcpUnavailable';
 import { useAgentDetailSuspenseQuery } from '@/queries/agents';
 import { useWebchatCacheActions, useWebchatSessionsQuery } from '@/queries/webchat';
+import { useWebchatActivitySubscription } from '@/realtime/useWebchatActivitySubscription';
 import { getErrorMessage } from '@/utils/error';
 import { isMcpAgent } from '@/utils/agent';
 import type { AgentResponse } from '@/types';
@@ -42,7 +43,7 @@ function AgentChatView({ agent }: { agent: AgentResponse }) {
   const [mobilePane, setMobilePane] = useState<'list' | 'conversation'>('conversation');
 
   const sessionsQuery = useWebchatSessionsQuery(agentId);
-  const { addSession, patchSession, invalidateSessions } = useWebchatCacheActions();
+  const { addSession, patchSession, invalidateSessions, applyActivity } = useWebchatCacheActions();
 
   const agentsById = useMemo(() => ({ [agent.id]: agent }), [agent]);
   const sessions = sessionsQuery.sessions;
@@ -52,6 +53,14 @@ function AgentChatView({ agent }: { agent: AgentResponse }) {
   // from the list falls back to the newest on its own.
   const activeSession =
     sessions.find((s) => s.sessionId === activeSessionId) ?? sessions[0] ?? null;
+
+  // Badges for the conversations the user is *not* in. The open one has its own
+  // per-session subscription, renders the message itself and marks it read on
+  // arrival — counting it here would raise a badge for a message on screen.
+  useWebchatActivitySubscription((p) => {
+    if (p.sessionId === activeSession?.sessionId) return;
+    applyActivity(p);
+  });
 
   const error =
     actionError ||

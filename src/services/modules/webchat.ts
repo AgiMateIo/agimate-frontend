@@ -76,6 +76,20 @@ export const webchatApi = {
     );
   },
 
+  // Moves the session's read pointer, clearing its unread badge. Without an id
+  // the session is marked read to its end — which is what opening it means.
+  //
+  // `lastReadMessageId` is a history row's `id`, NOT its `messageId` (that one
+  // is the delivery key for real-time dedup and carries no order) — sending the
+  // wrong one is a 400. The pointer only ever moves forward, so a stale call
+  // from a second device is a no-op rather than an unread badge coming back.
+  async markWebchatSessionRead(sessionId: string, lastReadMessageId?: string): Promise<void> {
+    await httpClient.post<null>(
+      `${API.ENDPOINTS.CONTROL_API}/manage/webchat/sessions/${sessionId}/read`,
+      lastReadMessageId ? { lastReadMessageId } : {},
+    );
+  },
+
   // Soft close: history stays readable, sending returns 400.
   async closeWebchatSession(sessionId: string): Promise<WebchatSessionResponse> {
     return httpClient.delete<WebchatSessionResponse>(

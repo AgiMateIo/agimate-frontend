@@ -5,16 +5,23 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { allAgentsOptions } from '@/queries/agents';
-import { webchatSessionsOptions } from '@/queries/webchat';
+import { useWebchatCacheActions, webchatSessionsOptions } from '@/queries/webchat';
+import { useWebchatActivitySubscription } from '@/realtime/useWebchatActivitySubscription';
 import { formatDateTimeFull, formatDateTimeShort } from '@/utils/date';
 
 const RECENT_SIZE = 5;
 
 export default function RecentChats() {
   const t = useTranslations('DashboardHome');
+  const tChat = useTranslations('Chat');
   // Same key as the dashboard counters — no second request.
   const { data: sessions, isPending } = useQuery(webchatSessionsOptions());
   const { data: agents } = useQuery(allAgentsOptions());
+  const { applyActivity } = useWebchatCacheActions();
+
+  // No conversation is open here, so every delivered agent message counts —
+  // this card is exactly the case the personal-channel event exists for.
+  useWebchatActivitySubscription(applyActivity);
 
   const agentNames = useMemo(() => {
     const map = new Map<string, string>();
@@ -54,13 +61,30 @@ export default function RecentChats() {
                 className="flex items-center gap-3 px-1 py-2 transition-colors hover:bg-surface-secondary"
               >
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm text-foreground">
+                  <span
+                    className={`block truncate text-sm text-foreground ${
+                      session.unreadCount > 0 ? 'font-semibold' : ''
+                    }`}
+                  >
                     {session.title || t('chatUntitled')}
                   </span>
                   <span className="block truncate text-xs text-muted">
                     {agentNames.get(session.agentId) ?? session.agentId}
+                    {/* Whether the agent is still working is the one thing worth
+                        knowing before opening a chat from here. */}
+                    {session.isRunning && (
+                      <span className="text-accent"> · {tChat('working')}</span>
+                    )}
                   </span>
                 </span>
+                {session.unreadCount > 0 && (
+                  <span
+                    aria-label={tChat('unreadCount', { count: session.unreadCount })}
+                    className="min-w-[1.25rem] shrink-0 rounded-full bg-accent px-1.5 py-0.5 text-center text-[10px] font-semibold leading-none tabular-nums text-accent-foreground"
+                  >
+                    {session.unreadCount > 99 ? '99+' : session.unreadCount}
+                  </span>
+                )}
                 <span
                   className="shrink-0 whitespace-nowrap text-xs tabular-nums text-muted"
                   title={formatDateTimeFull(session.lastMessageAt)}

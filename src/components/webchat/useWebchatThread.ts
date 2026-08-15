@@ -56,7 +56,11 @@ const fromEvent = (p: WebchatMessagePayload): ThreadMessage => ({
 // at-least-once) and reconciles optimistic sends with their USER echo.
 // Deliberately local state, not React Query: live events + optimistic writes
 // dominate, and the thread dies with the session selection.
-export function useWebchatThread(sessionId: string | null) {
+//
+// `running` is the session row's `isRunning`, read once per session: an agent
+// that was already working when the conversation opened has no event left to
+// send, so without it a reply in flight looks like a conversation gone quiet.
+export function useWebchatThread(sessionId: string | null, running = false) {
   const [messages, setMessages] = useState<ThreadMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
@@ -81,6 +85,24 @@ export function useWebchatThread(sessionId: string | null) {
   // session selection (the echo swap to signed URLs happens inside a state
   // updater, which must stay pure) and revoked when the thread resets.
   const localPreviewUrlsRef = useRef<string[]>([]);
+  // Read inside the reset effect instead of as a dependency: `isRunning` flips
+  // on every sessions refetch, and re-running that effect would re-fetch the
+  // whole history behind it.
+  const runningRef = useRef(running);
+  // Whether the indicator currently showing came from that seed and not from
+  // anything this thread saw itself.
+  const seededRunningRef = useRef(false);
+  useEffect(() => {
+    runningRef.current = running;
+    // A row cached a minute ago can seed the indicator for a run that has since
+    // finished — and a finished run has no event left to switch it off. The
+    // first listing that reports the session idle does it instead. Local
+    // evidence (a send, a progress line) drops the seed and wins over this.
+    if (!running && seededRunningRef.current) {
+      seededRunningRef.current = false;
+      setAwaitingReply(false);
+    }
+  }, [running]);
 
   useEffect(() => {
     seenHistoryIdsRef.current = new Set();
@@ -90,7 +112,8 @@ export function useWebchatThread(sessionId: string | null) {
     setHasOlder(false);
     setError('');
     setSendError('');
-    setAwaitingReply(false);
+    setAwaitingReply(runningRef.current);
+    seededRunningRef.current = runningRef.current;
     setStopping(false);
     setStopError('');
     if (!sessionId) {
@@ -179,6 +202,7 @@ export function useWebchatThread(sessionId: string | null) {
         // progress = the agent is working; answer/error ends the wait.
         const working = p.stream === 'progress';
         setAwaitingReply(working);
+        seededRunningRef.current = false;
         // A stopped run signs off with an ordinary answer (its text lists what
         // it managed to do) — so the turn ending is also the stop landing, and
         // no special-casing of that message is needed anywhere.
@@ -246,6 +270,7 @@ export function useWebchatThread(sessionId: string | null) {
       setStopError('');
       setStopping(false);
       setAwaitingReply(true);
+      seededRunningRef.current = false;
       try {
         const res = await apiService.sendWebchatMessage(sessionId, {
           text: trimmed || undefined,

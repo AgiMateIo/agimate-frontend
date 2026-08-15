@@ -1,5 +1,6 @@
 import { Centrifuge } from 'centrifuge';
 import apiService from '@/services/api';
+import { resetPersonalChannel } from './personalChannel';
 import type { CentrifugoTokenResponse } from '@/types';
 
 const TOKEN_REFRESH_MARGIN_MS = 60_000;
@@ -74,6 +75,9 @@ export function disconnectCentrifuge(): void {
     centrifuge.disconnect();
     centrifuge = null;
   }
+  // The shared personal-channel subscription lived on that client and belongs
+  // to the user who just signed out.
+  resetPersonalChannel();
   cachedToken = null;
   cachedAt = 0;
   inFlight = null;

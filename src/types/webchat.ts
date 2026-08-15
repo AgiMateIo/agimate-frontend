@@ -31,6 +31,16 @@ export interface WebchatFileUploadResponse {
   expiresAt: string;
 }
 
+// Preview of a session's newest message, for a list row. `text` is cut to 160
+// characters server-side, and is null on an attachment-only message — render
+// "attachment" from `hasAttachments` rather than an empty line.
+export interface WebchatLastMessage {
+  text: string | null;
+  direction: WebchatDirection;
+  hasAttachments: boolean;
+  createdAt: string;
+}
+
 export interface WebchatSessionResponse {
   sessionId: string;
   channelId: string;
@@ -39,6 +49,16 @@ export interface WebchatSessionResponse {
   lastMessageAt: string;
   closedAt: string | null;
   createdAt: string;
+  // AGENT messages with stream answer/error past this session's read pointer —
+  // `progress` never counts (one reply would read as a dozen), own messages
+  // never count. Closing a session marks it read, so a closed row shows 0.
+  unreadCount: number;
+  // Null until the session has a message.
+  lastMessage: WebchatLastMessage | null;
+  // An agent run for this session is executing or queued — "working…". Only for
+  // restoring the state when a screen opens: it goes out live with the
+  // answer/error event, and a run stuck in the queue stops counting after 15 min.
+  isRunning: boolean;
 }
 
 // History item from GET /manage/webchat/sessions/{id}/messages/
@@ -58,6 +78,21 @@ export interface WebchatMessageResponse {
 export interface WebchatSendMessageResponse {
   sessionId: string;
   messageId: string;
+}
+
+// Payload of the `webchat_activity` event published to the personal
+// user:{userId} channel — the thin twin of `webchat_message` that keeps unread
+// badges alive while no conversation is open. Published for `answer` and
+// `error` only, never for `progress` or for an echo of the user's own message.
+// Best-effort: a failed publish is simply lost and the next listing fixes the
+// count, so it must never be the only source of truth for a badge.
+export interface WebchatActivityPayload {
+  agentId: string;
+  sessionId: string;
+  messageId: string;
+  stream: Extract<WebchatStream, 'answer' | 'error'>;
+  preview: string | null;
+  createdAt: string;
 }
 
 // Payload of the `webchat_message` event published to webchat:{sessionId}.

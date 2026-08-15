@@ -29,6 +29,7 @@ import { getAgentAvatarUrl } from '@/utils/avatar';
 import { formatDateTimeShort } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
 import { useWebchatSubscription } from '@/realtime/useWebchatSubscription';
+import { useMarkWebchatSessionRead } from '@/queries/webchat';
 import { useWebchatThread, ThreadMessage } from './useWebchatThread';
 import { ChatMessageText } from './ChatMessageText';
 import { ChatMessageAttachments } from './ChatMessageAttachments';
@@ -121,7 +122,8 @@ export default function WebchatConversation({
   const tCommon = useTranslations('Common');
   const tRuns = useTranslations('Runs');
   const router = useRouter();
-  const thread = useWebchatThread(session.sessionId);
+  const thread = useWebchatThread(session.sessionId, session.isRunning);
+  const markRead = useMarkWebchatSessionRead();
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [closing, setClosing] = useState(false);
@@ -142,10 +144,25 @@ export default function WebchatConversation({
     onActivityRef.current = onActivity;
   }, [onActivity]);
 
+  // Opening a conversation is reading it — the pointer goes to the end, with no
+  // body, and the badge on the row behind it drops to zero. Sending a message
+  // and closing the session clear it server-side, so neither needs a call.
+  const hasMessages = session.lastMessage !== null;
+  useEffect(() => {
+    // A session that never had a message has nothing to mark — that is every
+    // freshly created chat, and it opens straight into this component.
+    if (hasMessages) markRead(session.sessionId);
+  }, [markRead, session.sessionId, hasMessages]);
+
   useWebchatSubscription(session.sessionId, {
     onMessage: (p: WebchatMessagePayload) => {
       handleEvent(p);
-      if (p.stream !== 'progress') onActivityRef.current();
+      if (p.stream === 'progress') return;
+      onActivityRef.current();
+      // A reply that lands while the user is looking at it is read on arrival:
+      // otherwise leaving the chat would leave a badge for a message they
+      // watched being written.
+      if (p.direction === 'AGENT') markRead(session.sessionId);
     },
   });
 
