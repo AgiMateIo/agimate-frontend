@@ -9,8 +9,8 @@ export function getConnectorKind(
 ): ConnectorKind {
   // anything you connect to with credentials is an integration (telegram, mcp)
   if (c.integrationMeta) return 'INTEGRATION';
-  // DEVICE execution = a user device/app connects to us
-  if (c.capabilities?.executionKind === 'DEVICE') return 'APP';
+  // APP execution = a user device/app connects to us
+  if (c.capabilities?.executionKind === 'APP') return 'APP';
   return 'SERVICE';
 }
 

@@ -325,7 +325,7 @@
     "capabilities": {
       "executionKind": {
         "BACKEND": "Backend",
-        "DEVICE": "Device",
+        "APP": "User app",
         "LOOPBACK": "Loopback"
       },
       "definitionBinding": {

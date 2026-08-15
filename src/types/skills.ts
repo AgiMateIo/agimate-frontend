@@ -69,9 +69,10 @@ export interface IntegrationMeta {
 }
 
 // who executes a tool call: BACKEND = our backend (or an external platform through it);
-// DEVICE = the user's device, the call is delivered by push; LOOPBACK = the calling
-// agent itself (e.g. claude-code).
-export type ExecutionKind = 'BACKEND' | 'DEVICE' | 'LOOPBACK';
+// APP = the user's app/device, the call is delivered by push; LOOPBACK = the calling
+// agent itself (e.g. claude-code). The backend owns this list and grows it, so render
+// an unknown value as itself instead of assuming a label exists.
+export type ExecutionKind = 'BACKEND' | 'APP' | 'LOOPBACK';
 // fixed set (STATIC) vs per-instance discovered (DYNAMIC) tool/trigger definitions
 export type DefinitionBinding = 'STATIC' | 'DYNAMIC';
 

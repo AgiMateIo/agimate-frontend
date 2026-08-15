@@ -325,7 +325,7 @@
     "capabilities": {
       "executionKind": {
         "BACKEND": "Бэкенд",
-        "DEVICE": "Устройство",
+        "APP": "Приложение пользователя",
         "LOOPBACK": "Сам агент"
       },
       "definitionBinding": {

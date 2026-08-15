@@ -2,7 +2,7 @@
 
 import { useState, Suspense } from 'react';
 import { useTranslations } from 'next-intl';
-import { ConnectorCatalogEntry } from '@/types';
+import { ConnectorCatalogEntry, DefinitionBinding, ExecutionKind } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
@@ -10,6 +10,10 @@ import { ConnectionAvatar } from '@/components/connections/ConnectionAvatar';
 import { useConnectorSearchQuery } from '@/queries/connectors';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { getConnectorKind, ConnectorKind } from '@/utils/connector';
+
+type CapabilityKey =
+  | `capabilities.executionKind.${ExecutionKind}`
+  | `capabilities.definitionBinding.${DefinitionBinding}`;
 
 const KIND_BADGE: Record<ConnectorKind, string> = {
   INTEGRATION: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30',
@@ -74,6 +78,13 @@ function ConnectorCard({ connector }: { connector: ConnectorCatalogEntry }) {
   const caps = connector.capabilities;
   const kind = getConnectorKind(connector);
 
+  // The backend owns the capability enums and grows them (executionKind gained APP),
+  // so an unlabelled value shows raw rather than throwing MISSING_MESSAGE.
+  const capabilityLabel = (group: 'executionKind' | 'definitionBinding', value: string) => {
+    const key = `capabilities.${group}.${value}` as CapabilityKey;
+    return t.has(key) ? t(key) : value;
+  };
+
   return (
     <div className="bg-surface rounded-xl border border-border p-5 flex flex-col gap-3">
       <div className="flex items-start justify-between gap-3">
@@ -95,8 +106,8 @@ function ConnectorCard({ connector }: { connector: ConnectorCatalogEntry }) {
       </p>
       {caps && (
         <div className="flex flex-wrap gap-1.5 mt-auto pt-1">
-          <CapabilityBadge label={t(`capabilities.executionKind.${caps.executionKind}`)} />
-          <CapabilityBadge label={t(`capabilities.definitionBinding.${caps.definitionBinding}`)} />
+          <CapabilityBadge label={capabilityLabel('executionKind', caps.executionKind)} />
+          <CapabilityBadge label={capabilityLabel('definitionBinding', caps.definitionBinding)} />
         </div>
       )}
     </div>
