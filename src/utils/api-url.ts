@@ -21,10 +21,22 @@ export function getApiBaseUrl(): string {
   return DEV_FALLBACK;
 }
 
-// Resolves a signed file link (webchat attachment `part.url`) to an absolute
-// URL. `part.url` is relative to the control context path, e.g.
-// "/files/agf_…?exp=…&sig=…" → "<gateway>/control/files/agf_…?exp=…&sig=…".
-// Auth is baked into exp+sig, so the result is usable directly in <img src>.
-export function resolveControlFileUrl(relativeUrl: string): string {
-  return `${getApiBaseUrl()}${API.ENDPOINTS.CONTROL_API}${relativeUrl}`;
+// Resolves a signed file link — a listing row's `url`, a webchat attachment's
+// `part.url`, an upload response — to something usable in <img src>/<a href>.
+//
+// The backend returns one of two shapes, per file and unpredictably from here:
+// an absolute storage link ("https://s3…/…?X-Amz-Signature=…", used verbatim)
+// or a path relative to the control context path ("/files/agf_…?exp=…&sig=…" →
+// "<gateway>/control/files/agf_…?exp=…&sig=…", the fallback whenever presigning
+// is off or unavailable). Auth is inside the URL either way — SigV4 there,
+// exp+sig here — so no headers, and no way to cache it past its ~15 min TTL.
+//
+// Frontend-local links (a blob: preview of a fresh upload) pass through for the
+// same reason. The pass-through is an allowlist rather than "has a scheme":
+// the result is fed to <a href>, where a javascript:/data: URL would run on
+// click, so an unexpected scheme is prefixed into an inert link instead.
+export function resolveControlFileUrl(url: string): string {
+  return /^(blob:|https?:)/i.test(url)
+    ? url
+    : `${getApiBaseUrl()}${API.ENDPOINTS.CONTROL_API}${url}`;
 }

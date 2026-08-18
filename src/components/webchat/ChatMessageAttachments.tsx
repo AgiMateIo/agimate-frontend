@@ -7,14 +7,6 @@ import { resolveControlFileUrl } from '@/utils/api-url';
 import { formatBytes } from '@/utils/files';
 import type { WebchatPart } from '@/types';
 
-// Server parts carry control-relative signed URLs. Optimistic USER parts carry
-// a ready-to-use URL instead — a local blob: preview for a fresh upload, an
-// already-resolved signed URL for a file picked from storage — so anything
-// absolute is used verbatim.
-function resolvePartUrl(url: string): string {
-  return /^(blob:|https?:)/.test(url) ? url : resolveControlFileUrl(url);
-}
-
 // Every image occupies the same tile regardless of its own dimensions, so a
 // thread mixing screenshots, portrait photos and tiny icons keeps one rhythm
 // instead of a ragged column. `object-contain` inside the tile letterboxes
@@ -46,7 +38,7 @@ function AttachmentImage({
     );
   }
 
-  const src = resolvePartUrl(part.url);
+  const src = resolveControlFileUrl(part.url);
   return (
     <a
       href={src}
@@ -86,7 +78,7 @@ const MIME_LABELS: Record<string, string> = {
 // Content-Disposition: attachment, so a plain anchor downloads on click.
 function AttachmentFile({ part }: { part: WebchatPart }) {
   const t = useTranslations('Chat');
-  const href = resolvePartUrl(part.url);
+  const href = resolveControlFileUrl(part.url);
   const kind = MIME_LABELS[part.mime] ?? part.mime.split('/')[1]?.toUpperCase() ?? part.type.toUpperCase();
   return (
     <a
