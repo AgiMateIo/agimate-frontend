@@ -62,21 +62,84 @@ jobs:
       - name: Check i18n key parity
         run: pnpm check:i18n
 
-  build:
+  # The image tag for this run, resolved once and handed to every job that needs
+  # it. Both ci/ scripts default to their own `git describe`, and on one runner
+  # at one commit those agreed — but two independent resolutions of the same
+  # thing is a coin flip waiting to land wrong, and the checkout below is the
+  # only one that can afford full history.
+  version:
     needs: [validate-config, quality]
+    runs-on: self-hosted
+    outputs:
+      tag: ${{ steps.describe.outputs.tag }}
+    steps:
+      # fetch-depth: 0 is the whole point — the default shallow checkout carries
+      # no tags, so `git describe` silently degrades to a bare commit sha.
+      # fetch-tags on a depth-1 clone is not enough either: describe also counts
+      # the distance to the tag, and there is no history to count.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve image tag
+        id: describe
+        run: |
+          # --match keeps non-release tags out: a tag like `backup/before-x`
+          # would produce `backup/before-x-5-gabc1234`, and a slash makes that
+          # an invalid docker tag — parsed as a repository path, failing far
+          # from here. --first-parent ignores a tag that arrives sideways when a
+          # task branch is merged, rather than sitting on main's own line.
+          TAG=$(git describe --tags --always --first-parent --match 'v[0-9]*')
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Image tag: $TAG"
+
+          # A tagged commit is a release: the sidebar reads package.json, the
+          # image carries the tag, and the two disagreeing means the deployed
+          # app misreports its own version. Only checked on an exact tag —
+          # an untagged main commit legitimately describes as v1.3.0-2-gabc1234.
+          # sed, not node: this job has no setup-node step, and the runner is
+          # self-hosted — nothing guarantees a node on PATH here.
+          PKG="v$(sed -n 's/.*"version": *"\([^"]*\)".*/\1/p' package.json | head -1)"
+          if echo "$TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            if [ "$TAG" != "$PKG" ]; then
+              echo "❌ Tag $TAG does not match package.json ($PKG)"
+              exit 1
+            fi
+            echo "✅ Release $TAG matches package.json"
+            exit 0
+          fi
+
+          echo "⚠️ Untagged commit on main — building as $TAG (package.json: $PKG)"
+
+          # Every commit on main deploys whether or not it is a release, so
+          # nothing here can force a version bump — and a build that works
+          # fine untagged is exactly how a release number quietly freezes for
+          # 263 commits. This log line is the reminder. BRE, not \+, so it
+          # behaves the same under busybox sed as under GNU.
+          DIST=$(echo "$TAG" | sed -n 's/.*-\([0-9][0-9]*\)-g[0-9a-f][0-9a-f]*$/\1/p')
+          if [ -n "$DIST" ] && [ "$DIST" -ge 20 ]; then
+            echo "⚠️ $DIST commits since the last release tag — time to bump ${PKG#v} and tag?"
+          fi
+
+  build:
+    needs: [validate-config, quality, version]
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
 
+      # `latest` is pushed unconditionally by the script. That is safe only
+      # while main is the only branch that builds — if any other branch ever
+      # builds, gate it there or its image will overwrite production's `latest`.
       - name: Build and push
         run: ./ci/build-and-push.sh frontend
         env:
+          TAG: ${{ needs.version.outputs.tag }}
           REGISTRY: ${{ vars.REGISTRY }}
           CR_USERNAME: ${{ secrets.CR_USERNAME }}
           CR_PASSWORD: ${{ secrets.CR_PASSWORD }}
 
   update-infra:
-    needs: build
+    needs: [build, version]
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
@@ -84,6 +147,7 @@ jobs:
       - name: Update infra
         run: ./ci/update-infra.sh frontend
         env:
+          TAG: ${{ needs.version.outputs.tag }}
           REGISTRY: ${{ vars.REGISTRY }}
           INFRA_REPO_SSH: ${{ vars.INFRA_REPO_SSH }}
           INFRA_DEPLOY_KEY: ${{ secrets.INFRA_DEPLOY_KEY }}
