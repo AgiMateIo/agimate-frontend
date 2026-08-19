@@ -24,7 +24,7 @@
     "collapse": "Collapse menu",
     "expand": "Expand menu",
     "createTeam": "Create team",
-    "administration": "Administration",
+    "administration": "Admin panel",
     "users": "Users",
     "runs": "Runs"
   },
@@ -55,12 +55,13 @@
       "models": "Models",
       "channels": "Channels",
       "toolCalls": "Tool Calls",
-      "admin": "Administration",
+      "admin": "Admin panel",
       "users": "Users",
       "runs": "Runs"
     },
     "openMenu": "Open menu",
     "settings": "Settings",
+    "administration": "Admin panel",
     "logOut": "Log out"
   },
   "AgentWizard": {

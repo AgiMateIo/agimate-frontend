@@ -19,7 +19,6 @@ import {
   ClockIcon,
   FolderIcon,
   UserCircleIcon,
-  ShieldCheckIcon,
   PlusIcon,
   ChevronDoubleLeftIcon,
   XMarkIcon,
@@ -110,10 +109,7 @@ const matchedLength = (pathname: string, href: string): number => {
   return -1;
 };
 
-const getNavGroups = (
-  t: ReturnType<typeof useTranslations>,
-  isAdmin: boolean,
-): NavGroup[] => [
+const getNavGroups = (t: ReturnType<typeof useTranslations>): NavGroup[] => [
   {
     label: t('workspace'),
     items: [
@@ -155,21 +151,6 @@ const getNavGroups = (
       { label: t('toolUseLogs'), icon: WrenchScrewdriverIcon, href: '/dashboard/tool-use-logs' },
     ],
   },
-  // Own unlabelled group so it reads as a separate area — and disappears whole
-  // for everyone but an admin. The link goes straight to the only section there is.
-  ...(isAdmin
-    ? [
-        {
-          items: [
-            {
-              label: t('administration'),
-              icon: ShieldCheckIcon,
-              href: '/dashboard/admin/users',
-            },
-          ],
-        },
-      ]
-    : []),
 ];
 
 // `disabled` renders the whole nav read-only: no links, no create actions, no
@@ -224,7 +205,7 @@ export default function SidebarNav({
     setNavSlide({ mode: navMode, id: navId, slide: slideClass });
   }
 
-  const groups = getNavGroups(t, isAdmin);
+  const groups = getNavGroups(t);
 
   // Resolve the single most-specific active leaf across every group.
   let activeHref: string | null = null;

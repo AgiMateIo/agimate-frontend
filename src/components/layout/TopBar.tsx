@@ -5,8 +5,9 @@ import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useUser } from '@/contexts/UserContext';
 import { useBreadcrumbOverrides } from '@/contexts/BreadcrumbContext';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
 import LocaleSwitcher from '@/components/ui/LocaleSwitcher';
-import { Bars3Icon, ChevronRightIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, ChevronRightIcon, Cog6ToothIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
 // `disabled` drops every in-app link (breadcrumbs, settings) and leaves only the
@@ -22,6 +23,7 @@ export default function TopBar({
   const pathname = usePathname();
   const { user, logout } = useUser();
   const t = useTranslations('TopBar');
+  const isAdmin = useIsAdmin();
 
   const [showUserMenu, setShowUserMenu] = useState(false);
   const breadcrumbOverrides = useBreadcrumbOverrides();
@@ -146,11 +148,25 @@ export default function TopBar({
             <Link
               href="/dashboard/settings"
               onClick={() => setShowUserMenu(false)}
-              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-foreground hover:bg-surface-secondary transition-colors"
+              className="flex items-center gap-3 w-full px-4 py-2 text-sm text-foreground hover:bg-surface-secondary transition-colors"
             >
-              <Cog6ToothIcon className="h-4 w-4 text-muted" />
+              <Cog6ToothIcon className="h-5 w-5 text-muted" />
               {t('settings')}
             </Link>
+            {/* The admin area lives here rather than in the sidebar: it is about
+                the person signed in, not about the workspace being navigated. A
+                pending account is never an admin, but `disabled` still gates it
+                along with every other in-app link. */}
+            {isAdmin && !disabled && (
+              <Link
+                href="/dashboard/admin/users"
+                onClick={() => setShowUserMenu(false)}
+                className="flex items-center gap-3 w-full px-4 py-2 text-sm text-foreground hover:bg-surface-secondary transition-colors"
+              >
+                <ShieldCheckIcon className="h-5 w-5 text-muted" />
+                {t('administration')}
+              </Link>
+            )}
             <button
               onClick={() => {
                 setShowUserMenu(false);
