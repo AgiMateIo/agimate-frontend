@@ -3,6 +3,7 @@
 import { API } from '@/config/constants';
 import { getApiBaseUrl } from '@/utils/api-url';
 import { routing } from '@/i18n/routing';
+import { clearCurrentSessionId, setCurrentSessionId } from './currentSession';
 
 const SERVICE_UNAVAILABLE_MESSAGE = 'SERVICE_UNAVAILABLE';
 const ACCESS_DENIED_MESSAGE = 'ACCESS_DENIED';
@@ -39,6 +40,7 @@ const getRefreshTokenId = (): string | null => typeof window !== 'undefined' ? l
 const clearTokens = () => {
   sessionStorage.removeItem('access_token');
   localStorage.removeItem('refresh_token_id');
+  clearCurrentSessionId();
 };
 
 // Hard-redirects to the login page, preserving the current locale prefix
@@ -87,9 +89,13 @@ export const handleErrorResponse = async (response: Response): Promise<never> =>
 };
 
 // Helper function to store tokens in storage
-const storeTokens = (accessToken: string, newRefreshTokenId: string) => {
+const storeTokens = (accessToken: string, newRefreshTokenId: string, sessionId?: string) => {
   sessionStorage.setItem('access_token', accessToken);
   localStorage.setItem('refresh_token_id', newRefreshTokenId);
+  // Comes with every refresh and does not change until the sign-in ends. Kept
+  // because the sessions screen has no other way to tell which row is this
+  // device; an older backend that omits it leaves the row unmarked.
+  setCurrentSessionId(sessionId);
 };
 
 // Builds a query string from optional filters plus paging (defaults page=0, size=20).
@@ -159,10 +165,10 @@ class HttpClient {
     }
 
     const jsonData = await response.json();
-    const data = extractResponseData<{accessToken: string, refreshTokenId: string}>(jsonData);
+    const data = extractResponseData<{accessToken: string, refreshTokenId: string, sessionId?: string}>(jsonData);
 
     // Store tokens using the helper function
-    storeTokens(data.accessToken, data.refreshTokenId);
+    storeTokens(data.accessToken, data.refreshTokenId, data.sessionId);
 
     return true;
   }

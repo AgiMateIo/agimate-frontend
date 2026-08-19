@@ -5,6 +5,7 @@ import { localeMap } from '@/i18n/routing';
 import { useUser } from '@/contexts/UserContext';
 import { ShieldCheckIcon, UserIcon } from '@heroicons/react/24/outline';
 import ReferralCard from '@/components/referral/ReferralCard';
+import SessionsCard from '@/components/settings/SessionsCard';
 
 export default function SettingsPage() {
   const locale = useLocale();
@@ -78,6 +79,8 @@ export default function SettingsPage() {
             </div>
           </div>
         ))}
+
+        <SessionsCard />
 
         <ReferralCard />
       </div>

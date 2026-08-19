@@ -127,29 +127,30 @@ export default function TopBar({
                 <div className="text-xs text-muted truncate">{user?.email}</div>
               </div>
             ) : (
-              <>
-                <Link
-                  href="/dashboard/settings"
-                  onClick={() => setShowUserMenu(false)}
-                  className="block px-4 py-2 border-b border-border hover:bg-surface-secondary transition-colors"
-                >
-                  <div className="font-medium text-sm text-foreground truncate">
-                    {user?.displayName || 'User'}
-                  </div>
-                  <div className="text-xs text-muted truncate">
-                    {user?.email}
-                  </div>
-                </Link>
-                <Link
-                  href="/dashboard/settings"
-                  onClick={() => setShowUserMenu(false)}
-                  className="flex items-center gap-2 w-full px-4 py-2 text-sm text-foreground hover:bg-surface-secondary transition-colors"
-                >
-                  <Cog6ToothIcon className="h-4 w-4 text-muted" />
-                  {t('settings')}
-                </Link>
-              </>
+              <Link
+                href="/dashboard/settings"
+                onClick={() => setShowUserMenu(false)}
+                className="block px-4 py-2 border-b border-border hover:bg-surface-secondary transition-colors"
+              >
+                <div className="font-medium text-sm text-foreground truncate">
+                  {user?.displayName || 'User'}
+                </div>
+                <div className="text-xs text-muted truncate">
+                  {user?.email}
+                </div>
+              </Link>
             )}
+            {/* Kept for a guest too, unlike every other in-app link: settings is
+                the route a pending account may open, and the device list is on
+                it — the way out of a lost phone must not need approval. */}
+            <Link
+              href="/dashboard/settings"
+              onClick={() => setShowUserMenu(false)}
+              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-foreground hover:bg-surface-secondary transition-colors"
+            >
+              <Cog6ToothIcon className="h-4 w-4 text-muted" />
+              {t('settings')}
+            </Link>
             <button
               onClick={() => {
                 setShowUserMenu(false);

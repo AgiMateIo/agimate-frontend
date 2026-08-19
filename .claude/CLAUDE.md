@@ -49,6 +49,7 @@ The frontend reaches the backend through the API gateway using two service prefi
 ### User API (`user/`)
 - **OAuth2**: `POST /oauth2/refresh`, `POST /oauth2/logout`
 - **User**: `GET /user/me` (the `/user/user/me` double segment is a wart of that controller, not the convention — the admin area below sits at `user/admin/…`)
+- **Sessions** (active sign-ins, one row per device): `GET /user/sessions/` (**trailing slash significant**, one `user` segment — these sit next to `user/oauth2/…`), revoke `DELETE /user/sessions/{id}`. Sorted by `lastSeenAt`, freshest first — **do not re-sort**; revoked and expired sign-ins are absent rather than listed, so there is no status. Timestamps are ISO-8601 with microseconds, not the control API's `yyyy-MM-dd HH:mm:ss`. `deviceLabel` is legitimately `null` (a model for `client: NATIVE`, the raw User-Agent for `WEB` — `describeUserAgent` in `src/utils/user-agent.ts` turns the latter into "Chrome · macOS"). `push` is empty for **every** `WEB` row (web push doesn't exist yet), so notification state is only meaningful for `NATIVE`, and two entries for one device is normal during a token rotation — `maskedToken` is a prefix, never a token, goes nowhere back to the API. Revoking kills token refresh at once but the issued access token lives out its term (a day for web, an hour for the app) — promise "will be signed out", never instant; push stops immediately. `404` = already revoked → treat as success and re-read. There is no "sign out everywhere" endpoint. **The screen is open to a `GUEST`** (a lost phone must not wait for approval), which is why the dashboard layout lets that one route through (`GUEST_ALLOWED_ROUTES`).
 - **Admin** (ADMIN only): paged directory `GET /admin/users/` (`search` = substring of email *or* display name, `role` = exact, order fixed newest-first with no sort parameter, `size` capped at 100), role change `PATCH /admin/users/{id}/role` (returns the updated user; 400 on your own row so the platform can't end up with no admin; setting the role a user already has is a no-op success). The gate is the `/admin` path prefix, not the individual handler — 403 for a non-ADMIN, 401 without a token, and any endpoint added under it inherits that. **A role change is not platform-wide at once**: user-api applies it immediately, the rest of the API reads the role from the user's access token, so it lands there only after their session refreshes (up to a day) — never promise "access revoked".
 
 ### Control API (`control/`)
@@ -78,6 +79,7 @@ Sophisticated OAuth2 flow with JWT tokens and automatic refresh.
 - **Access Token**: JWT in `sessionStorage`, ~24h, used for API authorization
 - **Refresh Token**: JWT in an HTTP-only cookie (browser-managed), ~7 days
 - **Refresh Token ID**: identifier in `localStorage`, prevents token replay
+- **Session ID**: `sessionId` from every `/oauth2/refresh` response, in `localStorage` next to the refresh token id (`src/services/currentSession.ts`, read via `useCurrentSessionId`). Stable for the life of the sign-in and the **only** way to tell which row of the device list is this browser — the list carries no such flag. Absent until the first refresh that returns it, and then no row is marked rather than the wrong one.
 
 ### Authentication Flow
 1. `/login` sends the user to backend `/oauth2/authorization/{provider}?redirect_to=<login_check_url>`
@@ -196,7 +198,8 @@ src/
 │       │   ├── skills/            # list, create, [id], [id]/edit
 │       │   ├── tool-use-logs/     # accepts ?status= / ?access= to seed filters
 │       │   ├── trigger-logs/
-│       │   └── settings/
+│       │   └── settings/       # profile, devices (sessions), invite link;
+│       │                      #   the one dashboard route a GUEST may open
 │       ├── connections/             # public deep links: new/ (→ dashboard),
 │       │                            #   oauth/callback/ (MCP OAuth return address)
 │       ├── login/  login-check/  logout/
@@ -204,7 +207,8 @@ src/
 │   └── connections/oauth/client.json/ # route handler, no locale prefix (see MCP OAuth)
 ├── components/
 │   ├── admin/  agents/  agentic-teams/  boards/  channels/  connectors/
-│   ├── connections/  dashboard/  files/  llm-providers/  runs/  skills/  webchat/
+│   ├── connections/  dashboard/  files/  llm-providers/  runs/  settings/  skills/
+│   ├── webchat/
 │   ├── landing/  layout/
 │   └── ui/                        # Alert, Button, FormField (+ Select), Modal, ConfirmDeleteModal,
 │                                  #   Toggle, Tabs, Chip, RowAction, Pagination, RefreshControls,

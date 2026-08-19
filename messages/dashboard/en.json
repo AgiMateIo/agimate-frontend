@@ -1312,6 +1312,33 @@
       "description": "Keep your account secure",
       "lastLogin": "Last login"
     },
+    "sessions": {
+      "title": "Devices",
+      "description": "Where the account is signed in",
+      "current": "This device",
+      "browser": "Browser",
+      "mobileApp": "Mobile app",
+      "lastSeen": "Active: {value}",
+      "signedIn": "Signed in: {value}",
+      "pushOn": "Notifications on",
+      "pushOff": "No notifications",
+      "details": "Details",
+      "hideDetails": "Hide",
+      "deviceLabel": "How the device introduced itself",
+      "pushTitle": "Notification subscriptions",
+      "sessionId": "Sign-in id",
+      "revoke": "Revoke",
+      "empty": "No active sign-ins",
+      "error": "Could not load the device list",
+      "revokeTitle": "Revoke this sign-in?",
+      "revokeConfirm": "Revoke",
+      "revokeBody": "“{device}” will be signed out of the account.",
+      "revokeNote": "Not instantly: the device can no longer refresh its sign-in, but the access it already holds runs out its term — up to a day. Notifications to it stop right away.",
+      "revokeCurrentTitle": "Sign out on this device?",
+      "revokeCurrentConfirm": "Sign out",
+      "revokeCurrentBody": "This is the device you are using right now. Revoking it signs you out: you will land on the home page and have to sign in again.",
+      "revokeError": "Could not revoke the sign-in"
+    },
     "referral": {
       "title": "Invite",
       "description": "Your personal link for anyone you want to bring in",
@@ -1473,6 +1500,7 @@
     "description": "You are signed in, but access to the workspace has not been granted yet. We will email you once the account is activated — the sections on the left will unlock then.",
     "signedInAs": "Signed in as",
     "checkAgain": "Check again",
+    "myDevices": "My devices",
     "logOut": "Log out"
   },
   "Admin": {

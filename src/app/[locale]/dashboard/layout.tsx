@@ -9,6 +9,11 @@ import PendingActivationNotice from '@/components/dashboard/PendingActivationNot
 import { BreadcrumbProvider } from '@/contexts/BreadcrumbContext';
 import { useIsGuest } from '@/hooks/useIsGuest';
 
+// The one dashboard route a guest account may open: it holds the device list,
+// and someone who has just lost a phone must not wait for account approval to
+// revoke a sign-in. Everything else is replaced by the pending notice.
+const GUEST_ALLOWED_ROUTES = ['/dashboard/settings'];
+
 export default function DashboardLayout({
   children,
 }: {
@@ -29,6 +34,7 @@ export default function DashboardLayout({
     setNav({ open: false, pathname });
   }
   const navOpen = nav.open;
+  const guestBlocked = isGuest && !GUEST_ALLOWED_ROUTES.includes(pathname);
   const setNavOpen = (open: boolean) => setNav({ open, pathname });
 
   useEffect(() => {
@@ -73,8 +79,9 @@ export default function DashboardLayout({
         <SidebarNav disabled={isGuest} open={navOpen} onClose={() => setNavOpen(false)} />
         <div className="flex flex-1 flex-col overflow-hidden">
           <TopBar disabled={isGuest} onMenuClick={() => setNavOpen(true)} />
-          {/* A guest account has access to no dashboard route, so the notice
-              replaces the page instead of rendering alongside it. */}
+          {/* A guest account has access to almost no dashboard route, so the
+              notice replaces the page instead of rendering alongside it —
+              except on the routes it is explicitly allowed to open. */}
           <main className="flex-1 overflow-y-auto p-4 sm:p-6">
             {/* Capped and centred: on a 27" monitor a log table stretched past
                 2000px, and a row that wide is no longer scannable. `h-full`
@@ -82,7 +89,7 @@ export default function DashboardLayout({
                 element — the agent chat measures its canvas through it to put
                 the composer on the viewport floor. */}
             <div className="mx-auto h-full w-full max-w-[1600px]">
-              {isGuest ? <PendingActivationNotice /> : children}
+              {guestBlocked ? <PendingActivationNotice /> : children}
             </div>
           </main>
         </div>
