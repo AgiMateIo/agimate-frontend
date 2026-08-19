@@ -422,7 +422,10 @@
     "termsLink": "Условиями использования",
     "and": "и",
     "privacyLink": "Политикой конфиденциальности",
-    "redirecting": "Перенаправление..."
+    "redirecting": "Перенаправление...",
+    "checkingSession": "Проверяем, выполнен ли вход…",
+    "alreadySignedIn": "Вы уже вошли — переходим в дашборд",
+    "signInAsAnother": "Войти в другой аккаунт"
   },
   "LoginCheck": {
     "authorizing": "Авторизация...",

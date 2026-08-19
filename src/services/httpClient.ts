@@ -37,6 +37,13 @@ export const safeFetch = async (url: string, options?: RequestInit): Promise<Res
 // Helper functions to handle storage
 const getAccessToken = (): string | null => typeof window !== 'undefined' ? sessionStorage.getItem('access_token') : null;
 const getRefreshTokenId = (): string | null => typeof window !== 'undefined' ? localStorage.getItem('refresh_token_id') : null;
+// Whether this browser holds a sign-in that can be restored. The id alone is not
+// the credential — the refresh token itself lives in an HTTP-only cookie — but its
+// presence is what makes /user/me worth attempting, and what tells the login page
+// that a sign-in may already exist.
+export const hasStoredSession = (): boolean =>
+  typeof window !== 'undefined' && localStorage.getItem('refresh_token_id') !== null;
+
 const clearTokens = () => {
   sessionStorage.removeItem('access_token');
   localStorage.removeItem('refresh_token_id');

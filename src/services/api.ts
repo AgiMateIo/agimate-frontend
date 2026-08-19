@@ -3,7 +3,7 @@
 // The public surface is intentionally identical to the former ApiService class:
 // `import apiService from '@/services/api'` exposes every method, and
 // `import { ApiError } from '@/services/api'` keeps working.
-import { httpClient, ApiError } from './httpClient';
+import { httpClient, ApiError, hasStoredSession } from './httpClient';
 import { adminApi } from './modules/admin';
 import { agentsApi } from './modules/agents';
 import { agentPresetsApi } from './modules/agentPresets';
@@ -55,4 +55,4 @@ const apiService = {
 };
 
 export default apiService;
-export { ApiError };
+export { ApiError, hasStoredSession };

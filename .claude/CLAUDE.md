@@ -88,6 +88,8 @@ Sophisticated OAuth2 flow with JWT tokens and automatic refresh.
 4. Backend validates the refresh-token cookie + ID, returns a new access token and refresh token ID
 5. Tokens stored locally, user redirected to the dashboard
 
+`/login` offers a provider only when nobody is signed in: with a stored refresh token id it waits for `UserContext`, and a live user is redirected to `?next=` or `/dashboard` instead. Signing in on top of a live sign-in is not idempotent — the backend opens a **second session**, which the device list then shows as a stray row (`hasStoredSession()` from the transport is what keeps SSR rendering the buttons as before).
+
 The two pages are split on purpose: `/login` only offers the providers, `/login-check` owns the callback. Nothing on `/login` reads the fragment, so a backend that ignores `redirect_to` and lands the user on `/login#rti-…` produces a dead page with no request in the network tab — check the callback-side `redirect_to` allowlist before suspecting the frontend.
 
 ### Multi-Domain OAuth2 Redirect

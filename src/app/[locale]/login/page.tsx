@@ -1,9 +1,11 @@
 'use client';
 
-import { Suspense, useMemo, useState, useSyncExternalStore } from 'react';
+import { Suspense, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
+import { useUser } from '@/contexts/UserContext';
+import { hasStoredSession } from '@/services/api';
 import { API } from '@/config/constants';
 import { getApiBaseUrl } from '@/utils/api-url';
 import { safeNextPath } from '@/utils/next-path';
@@ -18,6 +20,12 @@ const getServerSnapshot = () => '';
 // during SSR. Both snapshots are primitives, so re-reading per render is free.
 const getReferralSnapshot = () => readReferralCode();
 const getReferralServerSnapshot = (): string | null => null;
+
+// Whether a sign-in might already be restorable. The server knows nothing about
+// this browser, so SSR renders the provider buttons as before — the spinner only
+// appears where there is actually something to restore.
+const getStoredSessionSnapshot = () => hasStoredSession();
+const getStoredSessionServerSnapshot = () => false;
 
 // Provider codes are fixed by the backend and case-sensitive; there is no endpoint
 // listing which ones an installation has configured, so the buttons live here.
@@ -90,8 +98,47 @@ function LoginContent() {
     }
   }, [origin]);
   const [pendingProvider, setPendingProvider] = useState<Provider | null>(null);
+  // Signing in again on top of a live sign-in is not a no-op: the backend opens a
+  // second session, and the account collects a device row nobody asked for. So
+  // this page never offers a provider to someone who is already signed in.
+  const { user, loading } = useUser();
+  const router = useRouter();
+  const storedSession = useSyncExternalStore(
+    subscribe,
+    getStoredSessionSnapshot,
+    getStoredSessionServerSnapshot,
+  );
+  // Only while there is a sign-in to restore: without one, `loading` is briefly
+  // true on every visit and would flash a spinner over the buttons for nothing.
+  const restoring = storedSession && loading;
+
+  useEffect(() => {
+    // `next` is where the interrupted flow wanted to go; it survives the check
+    // exactly as it would have survived the sign-in.
+    if (user) router.replace(next ?? '/dashboard');
+  }, [user, next, router]);
 
   const providers = PROVIDERS.filter((p) => p !== 'google' || showGoogle);
+
+  if (restoring || user) {
+    return (
+      <div className="bg-surface/80 backdrop-blur-sm border border-border/50 rounded-xl shadow-sm p-8 max-w-md w-full">
+        <div className="flex items-center justify-center text-sm text-foreground">
+          <Spinner />
+          {user ? t('alreadySignedIn') : t('checkingSession')}
+        </div>
+        {/* Nothing to do here for someone who wants a different account: the
+            way to one is signing out, not signing in twice. */}
+        {user && (
+          <div className="mt-6 pt-5 border-t border-border/50 text-center">
+            <Link href="/logout" className="text-xs text-muted hover:text-foreground hover:underline">
+              {t('signInAsAnother')}
+            </Link>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
       <div className="bg-surface/80 backdrop-blur-sm border border-border/50 rounded-xl shadow-sm p-8 max-w-md w-full">

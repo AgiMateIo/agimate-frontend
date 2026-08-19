@@ -422,7 +422,10 @@
     "termsLink": "Terms of Service",
     "and": "and",
     "privacyLink": "Privacy Policy",
-    "redirecting": "Redirecting..."
+    "redirecting": "Redirecting...",
+    "checkingSession": "Checking whether you are signed in…",
+    "alreadySignedIn": "You are already signed in — opening the dashboard",
+    "signInAsAnother": "Sign in with another account"
   },
   "LoginCheck": {
     "authorizing": "Authorizing...",
