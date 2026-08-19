@@ -120,10 +120,6 @@ export default function SessionRow({ session, isCurrent, onRevoke }: SessionRowP
                   </dd>
                 </div>
               )}
-              <div>
-                <dt className="text-muted">{t('sessions.sessionId')}</dt>
-                <dd className="mt-0.5 break-all font-mono text-foreground">{session.id}</dd>
-              </div>
             </dl>
           )}
         </div>

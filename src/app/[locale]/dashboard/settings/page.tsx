@@ -3,7 +3,7 @@
 import { useLocale, useTranslations } from 'next-intl';
 import { localeMap } from '@/i18n/routing';
 import { useUser } from '@/contexts/UserContext';
-import { ShieldCheckIcon, UserIcon } from '@heroicons/react/24/outline';
+import { UserIcon } from '@heroicons/react/24/outline';
 import ReferralCard from '@/components/referral/ReferralCard';
 import SessionsCard from '@/components/settings/SessionsCard';
 
@@ -26,20 +26,6 @@ export default function SettingsPage() {
           label: t('profile.memberSince'),
           value: user?.createdAt
             ? new Date(user.createdAt).toLocaleDateString(bcp47Locale)
-            : t('profile.unknown'),
-        },
-      ],
-    },
-    {
-      id: 'security',
-      title: t('security.title'),
-      description: t('security.description'),
-      icon: ShieldCheckIcon,
-      items: [
-        {
-          label: t('security.lastLogin'),
-          value: user?.lastLoginAt
-            ? new Date(user.lastLoginAt).toLocaleString(bcp47Locale)
             : t('profile.unknown'),
         },
       ],

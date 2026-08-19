@@ -1307,13 +1307,8 @@
       "notSet": "Not set",
       "unknown": "Unknown"
     },
-    "security": {
-      "title": "Security",
-      "description": "Keep your account secure",
-      "lastLogin": "Last login"
-    },
     "sessions": {
-      "title": "Devices",
+      "title": "User sessions",
       "description": "Where the account is signed in",
       "current": "This device",
       "browser": "Browser",
@@ -1326,10 +1321,9 @@
       "hideDetails": "Hide",
       "deviceLabel": "How the device introduced itself",
       "pushTitle": "Notification subscriptions",
-      "sessionId": "Sign-in id",
       "revoke": "Revoke",
       "empty": "No active sign-ins",
-      "error": "Could not load the device list",
+      "error": "Could not load the session list",
       "revokeTitle": "Revoke this sign-in?",
       "revokeConfirm": "Revoke",
       "revokeBody": "“{device}” will be signed out of the account.",
