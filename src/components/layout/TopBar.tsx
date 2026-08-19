@@ -8,7 +8,7 @@ import { useBreadcrumbOverrides } from '@/contexts/BreadcrumbContext';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import LocaleSwitcher from '@/components/ui/LocaleSwitcher';
 import { Bars3Icon, ChevronRightIcon, Cog6ToothIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // `disabled` drops every in-app link (breadcrumbs, settings) and leaves only the
 // locale switcher and sign-out — used while the account is awaiting activation.
@@ -26,7 +26,27 @@ export default function TopBar({
   const isAdmin = useIsAdmin();
 
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const breadcrumbOverrides = useBreadcrumbOverrides();
+
+  // Same dismissal contract as `DropdownMenu`: outside pointerdown and Escape.
+  // pointerdown rather than click, so the menu is gone before the control under
+  // the pointer takes focus — a click elsewhere both closes this and lands.
+  useEffect(() => {
+    if (!showUserMenu) return;
+    const handlePointerDown = (e: PointerEvent) => {
+      if (!userMenuRef.current?.contains(e.target as Node)) setShowUserMenu(false);
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowUserMenu(false);
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showUserMenu]);
 
   // Build breadcrumbs from pathname
   const segments = pathname.split('/').filter(Boolean);
@@ -106,9 +126,12 @@ export default function TopBar({
       {/* Right: Language + User Avatar */}
       <div className="flex shrink-0 items-center gap-2 sm:gap-3">
         <LocaleSwitcher />
-      <div className="relative">
+      <div ref={userMenuRef} className="relative">
         <button
+          type="button"
           onClick={() => setShowUserMenu(!showUserMenu)}
+          aria-haspopup="menu"
+          aria-expanded={showUserMenu}
           className="flex items-center gap-3 hover:bg-surface-secondary rounded-lg px-1.5 py-2 transition-colors sm:px-3"
         >
           <span className="text-sm text-muted hidden sm:block truncate max-w-[180px]">
@@ -120,7 +143,7 @@ export default function TopBar({
         </button>
 
         {showUserMenu && (
-          <div className="absolute right-0 top-full mt-2 w-48 bg-surface border border-border rounded-lg shadow-lg py-1 z-50">
+          <div role="menu" className="absolute right-0 top-full mt-2 w-48 bg-surface border border-border rounded-lg shadow-lg py-1 z-50">
             {disabled ? (
               <div className="block px-4 py-2 border-b border-border">
                 <div className="font-medium text-sm text-foreground truncate">
