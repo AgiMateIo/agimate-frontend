@@ -155,7 +155,7 @@ const { user, loading, error, fetchUser, logout } = useUser();
 
 ## Internationalization (i18n)
 
-Routing is **locale-prefixed** (`localePrefix: 'always'`). Locales: `ru` (default) and `en` — see `src/i18n/routing.ts`. The middleware (`src/middleware.ts`) is `next-intl`'s `createMiddleware(routing)`.
+Routing is **locale-prefixed** (`localePrefix: 'always'`). Locales: `ru` (default) and `en` — see `src/i18n/routing.ts`. The proxy (`src/proxy.ts` — Next 16 renamed the `middleware` file convention to `proxy`; the `next-intl/middleware` import path is unchanged) is `next-intl`'s `createMiddleware(routing)`.
 
 Translation files are split into two layers, merged at runtime in `src/i18n/request.ts` (base + dashboard):
 ```
@@ -230,7 +230,7 @@ src/
 │                                  #   centrifugo, tool-use-logs, connectors via skills.ts) + index.ts
 ├── utils/                         # date, error, clipboard, api-url, avatar, animateCardMove,
 │                                  #   next-path (post-sign-in return path)
-└── middleware.ts
+└── proxy.ts                     # next-intl locale routing (was middleware.ts)
 ```
 Note: keep this tree approximate — verify against `src/` before relying on a specific path.
 
