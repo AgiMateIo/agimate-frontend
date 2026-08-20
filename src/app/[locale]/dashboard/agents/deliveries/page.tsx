@@ -8,6 +8,7 @@ import { Link } from '@/i18n/navigation';
 import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { Select } from '@/components/ui/FormField';
 import { RefreshControls } from '@/components/ui/RefreshControls';
 import { usePagedLogsQuery } from '@/queries/logs';
 import { allAgentsOptions } from '@/queries/agents';
@@ -79,16 +80,17 @@ export default function WebhookDeliveriesPage() {
 
       {/* Filter + Refresh */}
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <select
+        <Select
+          size="sm"
+          fullWidth={false}
           value={selectedAgent}
           onChange={e => handleAgentChange(e.target.value)}
-          className="px-3 py-2 bg-surface-secondary border border-border rounded-lg text-base text-foreground sm:text-sm"
         >
           <option value="">{t('allAgents')}</option>
           {agents.map(a => (
             <option key={a.id} value={a.id}>{a.name}</option>
           ))}
-        </select>
+        </Select>
         <RefreshControls
           value={refreshInterval}
           onChange={setRefreshInterval}

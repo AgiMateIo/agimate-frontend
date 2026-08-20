@@ -70,6 +70,10 @@ export default function TriggerLogsTab() {
     });
   };
 
+  // Deliberately not the Select primitive: this one hides the native arrow
+  // (appearance-none + pr-8) to place its own ChevronDownIcon, which is a
+  // different control rather than another size of the same one. Worth promoting
+  // into ui/ the moment a second one appears — not before.
   const filter = (
     <div className="relative">
       <select

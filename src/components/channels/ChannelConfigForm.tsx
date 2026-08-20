@@ -10,7 +10,7 @@ import {
 } from '@/types';
 import { getConnectorKind } from '@/utils/connector';
 import { Button } from '@/components/ui/Button';
-import { FormField, Input } from '@/components/ui/FormField';
+import { FormField, Input, Select } from '@/components/ui/FormField';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
@@ -186,27 +186,22 @@ export default function ChannelConfigForm({
         ) : (
           <>
             <FormField label={t('fieldHandler')} required layout="inline">
-              <select
-                value={channelHandler}
-                onChange={(e) => setChannelHandler(e.target.value)}
-                className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground"
-              >
+              <Select value={channelHandler} onChange={(e) => setChannelHandler(e.target.value)}>
                 <option value="">{t('selectHandler')}</option>
                 {handlers.map((h) => (
                   <option key={h.name} value={h.name}>{h.name}</option>
                 ))}
-              </select>
+              </Select>
             </FormField>
 
             <FormField label={t('fieldConnector')} required layout="inline">
-              <select
+              <Select
                 value={connectorCode}
                 onChange={(e) => {
                   const code = e.target.value;
                   setConnectorCode(code);
                   setConnectionId('');
                 }}
-                className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground"
               >
                 <option value="">{t('selectConnector')}</option>
                 {connectors.map((c) => (
@@ -214,15 +209,15 @@ export default function ChannelConfigForm({
                     {c.name} ({c.code} - {getConnectorKind(c)})
                   </option>
                 ))}
-              </select>
+              </Select>
             </FormField>
 
             <FormField label={t('fieldConnection')} required layout="inline">
-              <select
+              <Select
                 value={connectionId}
                 onChange={(e) => setConnectionId(e.target.value)}
                 disabled={!connectorCode}
-                className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground disabled:opacity-50"
+                className="disabled:opacity-50"
               >
                 <option value="">{t('selectConnection')}</option>
                 {connectionId && !connections.some((o) => o.value === connectionId) && (
@@ -233,7 +228,7 @@ export default function ChannelConfigForm({
                     {o.label}{o.hint ? ` (${o.hint})` : ''}
                   </option>
                 ))}
-              </select>
+              </Select>
             </FormField>
 
             <div className="flex items-center justify-between gap-3 pt-1">

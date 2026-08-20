@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { FormField, Input, TextArea } from '@/components/ui/FormField';
+import { FormField, Input, Select, TextArea } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import apiService from '@/services/api';
@@ -91,29 +91,27 @@ export default function CreateTaskModal({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label={t('taskType')} required>
-            <select
+            <Select
               value={type}
               onChange={(e) => {
                 setType(e.target.value as TaskType);
                 setParentTaskId(''); // Reset parent on type change
               }}
-              className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-base text-foreground sm:text-sm"
             >
               {TASK_TYPES.map((tt) => (
                 <option key={tt} value={tt}>
                   {t(`type.${tt}`)}
                 </option>
               ))}
-            </select>
+            </Select>
           </FormField>
 
           {type !== 'EPIC' && (
             <FormField label={t('parentTask')} required={parentRequired}>
-              <select
+              <Select
                 value={parentTaskId}
                 onChange={(e) => setParentTaskId(e.target.value)}
                 required={parentRequired}
-                className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-base text-foreground sm:text-sm"
               >
                 <option value="">{t('noParent')}</option>
                 {parentOptions.map((task) => (
@@ -121,37 +119,35 @@ export default function CreateTaskModal({
                     {task.title}
                   </option>
                 ))}
-              </select>
+              </Select>
             </FormField>
           )}
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label={t('createdBy')} required>
-            <select
+            <Select
               value={createdByAgentId}
               onChange={(e) => setCreatedByAgentId(e.target.value)}
               required
-              className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-base text-foreground sm:text-sm"
             >
               <option value="">{t('selectAgent')}</option>
               {agentEntries.map(([id, name]) => (
                 <option key={id} value={id}>{name}</option>
               ))}
-            </select>
+            </Select>
           </FormField>
 
           <FormField label={t('assignee')}>
-            <select
+            <Select
               value={assigneeAgentId}
               onChange={(e) => setAssigneeAgentId(e.target.value)}
-              className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-base text-foreground sm:text-sm"
             >
               <option value="">{t('noAssignee')}</option>
               {agentEntries.map(([id, name]) => (
                 <option key={id} value={id}>{name}</option>
               ))}
-            </select>
+            </Select>
           </FormField>
         </div>
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { Select } from './FormField';
 
 const DEFAULT_PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
@@ -31,15 +32,16 @@ export function Pagination({
     <div className="flex items-center justify-between pt-2">
       <div className="flex items-center gap-2 text-xs text-muted">
         <span>{rowsPerPageLabel}:</span>
-        <select
+        <Select
+          size="xs"
+          fullWidth={false}
           value={pageSize}
           onChange={(e) => onPageSizeChange(Number(e.target.value))}
-          className="bg-surface-secondary border border-border rounded px-1.5 py-0.5 text-xs text-foreground"
         >
           {pageSizeOptions.map((s) => (
             <option key={s} value={s}>{s}</option>
           ))}
-        </select>
+        </Select>
       </div>
       <div className="flex items-center gap-3 text-xs text-muted">
         <span>

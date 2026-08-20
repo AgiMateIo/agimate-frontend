@@ -65,13 +65,41 @@ export function TextArea({ className = '', ...props }: TextAreaProps) {
   );
 }
 
-type SelectProps = React.SelectHTMLAttributes<HTMLSelectElement>;
+// md — a form field, matching Input; sm — a filter sitting next to one; xs — a
+// dense row (pagination, the log toolbars). Padding and radius live here rather
+// than in the base string because they cannot be passed in through className:
+// Tailwind resolves conflicting utilities by their order in the built stylesheet,
+// not by their order in the attribute, so px-4 beats px-3 whatever the caller
+// writes.
+//
+// `text-base … sm:text-sm` on sm is 16px on mobile — iOS Safari zooms the page
+// when a focused control's font is smaller — and 14px from the breakpoint up. md
+// deliberately sets no size: it inherits the body's 16px and is already safe.
+const SELECT_SIZES = {
+  md: 'px-4 py-2.5 rounded-lg',
+  sm: 'px-3 py-2 rounded-lg text-base sm:text-sm',
+  xs: 'px-2 py-1 rounded-md text-xs',
+} as const;
+
+export type SelectSize = keyof typeof SELECT_SIZES;
+
+// The native `size` of a <select> is its number of visible rows, which nothing
+// here wants; the name goes to the kit's scale instead, as on Modal and SearchToolbar.
+type SelectProps = Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'size'> & {
+  size?: SelectSize;
+  fullWidth?: boolean;
+};
 
 // Native <select> sharing Input's styling — the single dropdown primitive.
-export function Select({ className = '', ...props }: SelectProps) {
+export function Select({
+  size = 'md',
+  fullWidth = true,
+  className = '',
+  ...props
+}: SelectProps) {
   return (
     <select
-      className={`w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground ${className}`}
+      className={`${fullWidth ? 'w-full ' : ''}${SELECT_SIZES[size]} bg-surface-secondary border border-border text-foreground ${className}`}
       {...props}
     />
   );

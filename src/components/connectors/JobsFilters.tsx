@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { ConnectorJobKind } from '@/types';
+import { Select } from '@/components/ui/FormField';
 
 const KIND_OPTIONS: ConnectorJobKind[] = ['SYSTEM', 'AGENT', 'USER'];
 
@@ -27,18 +28,19 @@ export function JobsFilters({
         value={codeFilter}
         onChange={(e) => onCodeFilterChange(e.target.value)}
         placeholder={t('filterByConnector')}
-        className="bg-surface-secondary border border-border rounded-lg px-2 py-1 text-xs text-foreground placeholder:text-muted w-40"
+        className="bg-surface-secondary border border-border rounded-md px-2 py-1 text-xs text-foreground placeholder:text-muted w-40"
       />
-      <select
+      <Select
+        size="xs"
+        fullWidth={false}
         value={kindFilter}
         onChange={(e) => onKindFilterChange(e.target.value as ConnectorJobKind | '')}
-        className="bg-surface-secondary border border-border rounded-lg px-2 py-1 text-xs text-foreground"
       >
         <option value="">{t('allKinds')}</option>
         {KIND_OPTIONS.map((k) => (
           <option key={k} value={k}>{t(`kind.${k}`)}</option>
         ))}
-      </select>
+      </Select>
     </div>
   );
 }

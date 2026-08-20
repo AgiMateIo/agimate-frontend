@@ -1,7 +1,7 @@
 'use client';
 
 import { ToolJsonSchema } from '@/types';
-import { FormField, Input } from '@/components/ui/FormField';
+import { FormField, Input, Select } from '@/components/ui/FormField';
 import { Toggle } from '@/components/ui/Toggle';
 
 interface ConfigFieldRendererProps {
@@ -94,16 +94,12 @@ export function ConfigFieldRenderer({
   if (schema.enum && schema.enum.length > 0) {
     return (
       <FormField label={label} required={required} hint={hint} layout="inline">
-        <select
-          value={String(value ?? '')}
-          onChange={(e) => onValueChange(e.target.value)}
-          className="w-full px-4 py-2.5 bg-surface-secondary border border-border rounded-lg text-foreground"
-        >
+        <Select value={String(value ?? '')} onChange={(e) => onValueChange(e.target.value)}>
           <option value=""></option>
           {schema.enum.map((opt) => (
             <option key={String(opt)} value={String(opt)}>{String(opt)}</option>
           ))}
-        </select>
+        </Select>
       </FormField>
     );
   }

@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';
+import { Select } from '@/components/ui/FormField';
 import { formatDateTimeShort } from '@/utils/date';
 import type { AgentResponse, WebchatSessionResponse } from '@/types';
 
@@ -84,10 +85,11 @@ export default function WebchatSessionsPane({
             <label className="block text-xs font-medium text-muted mb-1">
               {t('agentFilterLabel')}
             </label>
-            <select
+            <Select
+              size="sm"
               value={selectedAgentId}
               onChange={(e) => onAgentChange(e.target.value)}
-              className="w-full px-3 py-2 bg-background border border-border rounded-lg text-base text-foreground focus:outline-none sm:text-sm focus:ring-2 focus:ring-accent"
+              className="focus:outline-none focus:ring-2 focus:ring-accent"
             >
               <option value="">{t('allAgents')}</option>
               {agents.map((a) => (
@@ -95,7 +97,7 @@ export default function WebchatSessionsPane({
                   {a.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         )}
         <Button

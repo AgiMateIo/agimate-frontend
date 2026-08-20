@@ -8,6 +8,7 @@ import {
   ChatBubbleLeftIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';
+import { Select } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import apiService from '@/services/api';
@@ -171,17 +172,17 @@ export default function TaskSlideOver({
             {commentError && <ErrorAlert>{commentError}</ErrorAlert>}
 
             {agentEntries.length > 0 && (
-              <select
+              <Select
+                size="sm"
                 value={commentAgentId}
                 onChange={(e) => setCommentAgentId(e.target.value)}
                 required
-                className="w-full px-3 py-2 bg-surface-secondary border border-border rounded-lg text-base text-foreground sm:text-sm"
               >
                 <option value="">{t('commentAgent')}</option>
                 {agentEntries.map(([id, name]) => (
                   <option key={id} value={id}>{name}</option>
                 ))}
-              </select>
+              </Select>
             )}
 
             <textarea
