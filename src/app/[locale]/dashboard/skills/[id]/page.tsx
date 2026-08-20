@@ -2,6 +2,7 @@
 
 import { useMemo, useState, Suspense } from 'react';
 import { useParams } from 'next/navigation';
+import { Chip } from '@/components/ui/Chip';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
@@ -87,9 +88,7 @@ function SkillDetailContent({ skillId }: { skillId: string }) {
         <div>
           <div className="flex items-center gap-2 mb-1">
             {skill.isPublic && (
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-success/10 text-success">
-                {t('public')}
-              </span>
+              <Chip strong tone="success">{t('public')}</Chip>
             )}
             <span className="text-xs text-muted">
               {t('version', { version: skill.version })}
@@ -103,13 +102,9 @@ function SkillDetailContent({ skillId }: { skillId: string }) {
             <div className="flex flex-wrap items-center gap-1.5 mt-2">
               <span className="text-xs text-muted">{t('connectorsLabel')}:</span>
               {skill.connectorCodes.map((code) => (
-                <span
-                  key={code}
-                  className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent"
-                  title={code}
-                >
+                <Chip key={code} strong tone="accent" title={code}>
                   {connectorNameByCode.get(code) ?? code}
-                </span>
+                </Chip>
               ))}
             </div>
           )}

@@ -2,6 +2,7 @@
 
 import { useTranslations, useLocale } from 'next-intl';
 import { AcademicCapIcon } from '@heroicons/react/24/outline';
+import { Chip } from '@/components/ui/Chip';
 import { SkillResponse } from '@/types';
 import { Link } from '@/i18n/navigation';
 import { formatDate } from '@/utils/date';
@@ -44,9 +45,7 @@ export default function SkillCard({
             {t('version', { version: skill.version })}
           </span>
           {skill.isPublic && (
-            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-success/10 text-success">
-              {t('public')}
-            </span>
+            <Chip strong tone="success">{t('public')}</Chip>
           )}
         </div>
 
@@ -59,12 +58,7 @@ export default function SkillCard({
         {showConnectorCodes && skill.connectorCodes.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
             {skill.connectorCodes.map((code) => (
-              <span
-                key={code}
-                className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent"
-              >
-                {code}
-              </span>
+              <Chip key={code} strong tone="accent">{code}</Chip>
             ))}
           </div>
         )}

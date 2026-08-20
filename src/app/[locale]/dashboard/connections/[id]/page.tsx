@@ -2,6 +2,7 @@
 
 import { useState, Suspense } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
+import { Chip } from '@/components/ui/Chip';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
@@ -95,17 +96,11 @@ function ConnectionDetailContent({ id }: { id: string }) {
               badges never fits one phone row. State is read here and changed
               from the menu, so nothing in this row is interactive. */}
           <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-2">
-            <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-accent/10 text-accent">
-              {connector.name}
-            </span>
+            <Chip strong tone="accent">{connector.name}</Chip>
             <ConnectionAuthBadge status={connection.authStatus} />
-            <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                connection.enabled ? 'bg-success/10 text-success' : 'bg-muted/10 text-muted'
-              }`}
-            >
+            <Chip strong tone={connection.enabled ? 'success' : 'muted'}>
               {connection.enabled ? tInt('enabled') : tInt('disabled')}
-            </span>
+            </Chip>
           </div>
           <p className="text-sm text-muted mt-1 font-mono">{connection.fullCode}</p>
           {connection.name && connection.subCode && (
@@ -203,15 +198,9 @@ function ConnectionDetailContent({ id }: { id: string }) {
                   <div>
                     <dt className="text-sm text-muted">{t('status')}</dt>
                     <dd className="mt-0.5">
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                          connection.enabled
-                            ? 'bg-success/10 text-success'
-                            : 'bg-muted/10 text-muted'
-                        }`}
-                      >
+                      <Chip strong tone={connection.enabled ? 'success' : 'muted'}>
                         {connection.enabled ? tInt('enabled') : tInt('disabled')}
-                      </span>
+                      </Chip>
                     </dd>
                   </div>
                   {needsAuthorization(connection.authStatus) && (

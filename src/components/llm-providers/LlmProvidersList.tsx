@@ -93,9 +93,7 @@ export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersLi
                   {displayName}
                 </h3>
                 {isPlatform && (
-                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-success/10 text-success">
-                    {tu('platformBadge')}
-                  </span>
+                  <Chip strong tone="success">{tu('platformBadge')}</Chip>
                 )}
               </div>
               <p className="text-xs text-muted mt-0.5">{typeLabel}</p>

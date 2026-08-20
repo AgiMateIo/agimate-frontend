@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { Chip } from '@/components/ui/Chip';
 import { useLocale, useTranslations } from 'next-intl';
 import { useSuspenseQueries } from '@tanstack/react-query';
 import {
@@ -131,18 +132,14 @@ function ProviderDetailContent({ id }: { id: string }) {
           <div className="min-w-0">
             <h1 className="text-2xl font-bold text-foreground truncate">{displayName}</h1>
             <div className="flex items-center gap-2 flex-wrap mt-1">
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent">
-                {t(PROVIDER_TYPE_LABEL_KEY[provider.providerType])}
-              </span>
+              <Chip strong tone="accent">{t(PROVIDER_TYPE_LABEL_KEY[provider.providerType])}</Chip>
               {provider.platform && (
-                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-success/10 text-success">
-                  {tu('platformBadge')}
-                </span>
+                <Chip strong tone="success">{tu('platformBadge')}</Chip>
               )}
               {!provider.enabled && (
-                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-muted/10 text-muted">
+                <Chip strong tone="muted">
                   {provider.platform ? tu('freeTierOff') : t('disabled')}
-                </span>
+                </Chip>
               )}
             </div>
           </div>

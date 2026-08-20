@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { Chip } from '@/components/ui/Chip';
 import { PaperClipIcon } from '@heroicons/react/24/outline';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useRunPromptQuery } from '@/queries/runs';
@@ -54,9 +55,7 @@ function MessageRow({ message, index }: { message: RunPromptMessage; index: numb
       </td>
       <td className="space-y-1.5 py-2.5 pr-3">
         {message.thinking && (
-          <span className="inline-block rounded-full bg-muted/10 px-2 py-0.5 text-xs text-muted">
-            {t('thinkingBlock')}
-          </span>
+          <Chip tone="muted">{t('thinkingBlock')}</Chip>
         )}
 
         {message.text &&

@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { ConnectorJobResponse, ConnectorJobKind } from '@/types';
 import { formatDateTimeFull, formatDateTimeShort } from '@/utils/date';
+import { Chip } from '@/components/ui/Chip';
 import {
   BoltIcon,
   PauseIcon,
@@ -172,17 +173,14 @@ export function JobRow({
             {t(`status.${job.status}`)}
           </span>
           {job.pausedAt && (
-            <span
-              className="text-xs font-medium px-2 py-0.5 rounded-full bg-warning/10 text-warning"
-              title={formatDateTimeFull(job.pausedAt)}
-            >
+            <Chip strong tone="warning" title={formatDateTimeFull(job.pausedAt)}>
               {t('paused')}
-            </span>
+            </Chip>
           )}
           {job.lastError && (
-            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-error/10 text-error" title={job.lastError}>
+            <Chip strong tone="error" title={job.lastError}>
               {t('error')}
-            </span>
+            </Chip>
           )}
         </div>
       </td>

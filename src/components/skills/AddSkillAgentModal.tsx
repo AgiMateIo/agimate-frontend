@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { Chip } from '@/components/ui/Chip';
 import apiService from '@/services/api';
 import { useAgentsPickerQuery } from '@/queries/agents';
 import { AgentResponse } from '@/types';
@@ -98,9 +99,7 @@ export default function AddSkillAgentModal({ skillId, onClose, onSuccess }: AddS
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-medium text-foreground">{agent.name}</span>
                       {!agent.enabled && (
-                        <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-muted/10 text-muted">
-                          {t('disabled')}
-                        </span>
+                        <Chip strong tone="muted">{t('disabled')}</Chip>
                       )}
                       {isBound && (
                         <span className="text-xs text-muted">({t('alreadyBound')})</span>

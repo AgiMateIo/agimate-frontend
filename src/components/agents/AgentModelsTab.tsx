@@ -244,12 +244,9 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
                     <div className="flex items-center gap-2 flex-wrap">
                       {platform ? (
                         <>
-                          <span
-                            title={t('platformModelHint')}
-                            className="text-xs font-medium px-2 py-0.5 rounded-full bg-success/10 text-success"
-                          >
+                          <Chip strong tone="success" title={t('platformModelHint')}>
                             {t('platformModel')}
-                          </span>
+                          </Chip>
                           {platformDay && platformDay.limitTokens !== null && (
                             <span className="text-xs text-muted">
                               {tu('remainingToday', {
@@ -261,18 +258,12 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
                         </>
                       ) : binding ? (
                         <>
-                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent">
-                            {providerTypeBadge[binding.providerType]}
-                          </span>
+                          <Chip strong tone="accent">{providerTypeBadge[binding.providerType]}</Chip>
                           <span className="text-foreground">{binding.llmProviderName}</span>
                           {provider && !provider.enabled && (
-                            <span
-                              title={t('providerDisabledHint')}
-                              className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning"
-                            >
-                              <ExclamationTriangleIcon className="h-3 w-3" />
+                            <Chip icon={ExclamationTriangleIcon} tone="warning" title={t('providerDisabledHint')}>
                               {t('providerDisabled')}
-                            </span>
+                            </Chip>
                           )}
                         </>
                       ) : inherited ? (
@@ -280,13 +271,9 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
                           {t('inheritedFromProvider', { provider: chatProvider!.name })}
                         </span>
                       ) : inheritedState === 'off' ? (
-                        <span
-                          title={t('purposeOffHint', { provider: chatProvider!.name })}
-                          className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning"
-                        >
-                          <ExclamationTriangleIcon className="h-3 w-3" />
+                        <Chip icon={ExclamationTriangleIcon} tone="warning" title={t('purposeOffHint', { provider: chatProvider!.name })}>
                           {t('purposeOff')}
-                        </span>
+                        </Chip>
                       ) : (
                         <span className="text-muted" title={t('unsetModelHint')}>
                           {t('unsetModel')}
@@ -302,22 +289,14 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
                           : <span className="text-muted font-sans">—</span>
                       )}
                       {binding && isModelUnfit(binding) && (
-                        <span
-                          title={tp(purposeRequirementLabelKey[binding.purpose])}
-                          className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning font-sans"
-                        >
-                          <ExclamationTriangleIcon className="h-3 w-3" />
+                        <Chip icon={ExclamationTriangleIcon} tone="warning" title={tp(purposeRequirementLabelKey[binding.purpose])}>
                           {t('modelUnfit')}
-                        </span>
+                        </Chip>
                       )}
                       {binding && isModelUnlisted(binding) && (
-                        <span
-                          title={t('modelUnlistedHint')}
-                          className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning font-sans"
-                        >
-                          <ExclamationTriangleIcon className="h-3 w-3" />
+                        <Chip icon={ExclamationTriangleIcon} tone="warning" title={t('modelUnlistedHint')}>
                           {t('modelUnlisted')}
-                        </span>
+                        </Chip>
                       )}
                     </div>
                   </td>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { Chip } from '@/components/ui/Chip';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import type { ConnectionAuthStatus } from '@/types';
@@ -20,15 +21,9 @@ export function ConnectionAuthBadge({ status }: { status: ConnectionAuthStatus }
   if (status === 'AUTHORIZED') return null;
 
   return (
-    <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-        status === 'AUTH_EXPIRED'
-          ? 'bg-error/10 text-error'
-          : 'bg-warning/10 text-warning'
-      }`}
-    >
+    <Chip strong tone={status === 'AUTH_EXPIRED' ? 'error' : 'warning'}>
       {status === 'AUTH_EXPIRED' ? t('badgeExpired') : t('badgePending')}
-    </span>
+    </Chip>
   );
 }
 

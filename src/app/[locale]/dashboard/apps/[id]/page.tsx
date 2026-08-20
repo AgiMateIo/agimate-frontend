@@ -2,6 +2,7 @@
 
 import { useState, Suspense } from 'react';
 import { useParams } from 'next/navigation';
+import { Chip } from '@/components/ui/Chip';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
@@ -24,15 +25,9 @@ function ConnectorContent({ id }: { id: string }) {
       {/* Header */}
       <div className="flex items-center gap-3">
         <h1 className="text-2xl font-bold text-foreground">{connector.appName}</h1>
-        <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            connector.connected
-              ? 'bg-success/10 text-success'
-              : 'bg-muted/10 text-muted'
-          }`}
-        >
+        <Chip strong tone={connector.connected ? 'success' : 'muted'}>
           {connector.connected ? t('connected') : t('disconnected')}
-        </span>
+        </Chip>
       </div>
 
       {/* Connector Info */}

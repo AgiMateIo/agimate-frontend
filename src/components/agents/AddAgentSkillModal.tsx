@@ -202,9 +202,7 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
                       <span className="text-sm font-medium text-foreground">{skill.title}</span>
                       <span className="text-xs text-muted">v{skill.version}</span>
                       {skill.isPublic && (
-                        <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-success/10 text-success">
-                          public
-                        </span>
+                        <Chip strong tone="success">public</Chip>
                       )}
                       {isBound && (
                         <span className="text-xs text-muted">({t('alreadyBound')})</span>
@@ -216,12 +214,7 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
                     {skill.connectorCodes.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-1">
                         {skill.connectorCodes.map((code) => (
-                          <span
-                            key={code}
-                            className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-accent/10 text-accent"
-                          >
-                            {code}
-                          </span>
+                          <Chip key={code} strong tone="accent">{code}</Chip>
                         ))}
                       </div>
                     )}
