@@ -1,10 +1,10 @@
 'use client';
 
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQueries } from '@tanstack/react-query';
 import apiService from '@/services/api';
-import { SkillResponse, PagedResponse } from '@/types';
+import { SkillResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
@@ -20,6 +20,7 @@ import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import { agentConnectionsOptions } from '@/queries/agents';
 import { connectionsListOptions } from '@/queries/connections';
 import { connectorCatalogOptions } from '@/queries/connectors';
+import { useSkillsListQuery } from '@/queries/skills';
 import { openAgentAccess, splitSkillConnectors } from './skillAccess';
 
 const PAGE_SIZE = 10;
@@ -38,47 +39,32 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, 300);
   const [page, setPage] = useState(0);
-  const [pagedData, setPagedData] = useState<PagedResponse<SkillResponse> | null>(null);
-  const [skillsLoading, setSkillsLoading] = useState(true);
-  const [skillsError, setSkillsError] = useState('');
   const [selectedSkill, setSelectedSkill] = useState<SkillResponse | null>(null);
-
-  // Reset to the first page when the debounced search changes
-  useEffect(() => {
-    setPage(0);
-  }, [debouncedSearch]);
-
-  useEffect(() => {
-    setPage(0);
-    setSelectedSkill(null);
-    setChoice({});
-  }, [source]);
-
-  const fetchSkills = useCallback(async () => {
-    setSkillsLoading(true);
-    setSkillsError('');
-    try {
-      const data = await apiService.getSkills({
-        search: debouncedSearch || undefined,
-        scope: source === 'my' ? 'MINE' : 'PUBLIC',
-        page,
-        size: PAGE_SIZE,
-      });
-      setPagedData(data);
-    } catch (err) {
-      setSkillsError(getErrorMessage(err, 'Failed to load skills'));
-    } finally {
-      setSkillsLoading(false);
-    }
-  }, [source, debouncedSearch, page]);
-
-  useEffect(() => {
-    fetchSkills();
-  }, [fetchSkills]);
 
   // Which instance the skill will work with, per external connector it declares.
   // Reset with the selection: the codes belong to the skill, not to the modal.
   const [choice, setChoice] = useState<Record<string, string>>({});
+
+  const {
+    data: pagedData,
+    isPending: skillsLoading,
+    error: skillsError,
+  } = useSkillsListQuery(source, debouncedSearch, page, PAGE_SIZE);
+
+  // Paging and the selection are reset where the change happens rather than in
+  // an effect watching `source`/`search` — the selected skill and its connector
+  // choices belong to one source, so they die with the switch that caused it.
+  const changeSource = (next: 'my' | 'public') => {
+    setSource(next);
+    setPage(0);
+    setSelectedSkill(null);
+    setChoice({});
+  };
+
+  const changeSearch = (value: string) => {
+    setSearch(value);
+    setPage(0);
+  };
 
   const [
     { data: userConnections },
@@ -166,7 +152,7 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
             <button
               key={key}
               type="button"
-              onClick={() => setSource(key)}
+              onClick={() => changeSource(key)}
               className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
                 source === key
                   ? 'bg-background text-foreground shadow-sm'
@@ -181,7 +167,7 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
         {/* Search */}
         <SearchToolbar
           value={search}
-          onChange={setSearch}
+          onChange={changeSearch}
           placeholder={t('searchSkills')}
           size="sm"
         />
@@ -191,7 +177,7 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
           {skillsLoading ? (
             <div className="text-center py-12 text-muted text-sm">{t('loadingSkills')}</div>
           ) : skillsError ? (
-            <ErrorAlert>{skillsError}</ErrorAlert>
+            <ErrorAlert>{getErrorMessage(skillsError, 'Failed to load skills')}</ErrorAlert>
           ) : skills.length === 0 ? (
             <div className="text-center py-12 text-muted text-sm">{t('noSkillsFound')}</div>
           ) : (

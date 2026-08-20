@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
 import {
@@ -90,15 +90,18 @@ export default function ChannelConfigForm({
   );
   const configSchema = selectedHandler?.configFields;
 
-  // Once handlers are loaded, (re)seed the config form for the active handler.
-  // On create this fires when the user picks a handler; on edit it seeds from channel.config.
-  useEffect(() => {
-    if (!selectedHandler) return;
+  // (Re)seed the config form for the active handler. Not an effect: on edit the
+  // trigger is the handler list arriving, so there is no event to hang it on,
+  // and seeding after the commit would paint one frame of empty fields first.
+  // This is the adjust-state-during-render form — React discards the render and
+  // redoes it with the new state before anything reaches the DOM.
+  const [seededFor, setSeededFor] = useState<string | null>(null);
+  if (selectedHandler && seededFor !== selectedHandler.name) {
     const { values, jsonText } = seedConfigState(selectedHandler.configFields, channel?.config ?? {});
+    setSeededFor(selectedHandler.name);
     setConfigValues(values);
     setConfigJsonText(jsonText);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedHandler?.name]);
+  }
 
   const filterValidation = useMemo(() => tryParseJsonObject(inputFilterText), [inputFilterText]);
 
@@ -247,9 +250,8 @@ export default function ChannelConfigForm({
         )}
       </div>
 
-      {!isEdit && (
+      {!isEdit && probeOpen && (
         <TriggerProbeModal
-          isOpen={probeOpen}
           onClose={() => setProbeOpen(false)}
           onCaptured={handleProbeCaptured}
         />

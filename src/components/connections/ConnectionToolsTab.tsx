@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { WrenchScrewdriverIcon } from '@heroicons/react/24/outline';
-import apiService from '@/services/api';
+import { useConnectionToolsQuery } from '@/queries/connections';
 import { ConnectorToolSpec } from '@/types';
 import { getErrorMessage } from '@/utils/error';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
@@ -26,32 +25,13 @@ function toolParams(tool: ConnectorToolSpec): DefinitionParam[] {
 
 export default function ConnectionToolsTab({ connectionId }: ConnectionToolsTabProps) {
   const t = useTranslations('ConnectionDetail');
-  const [loading, setLoading] = useState(true);
-  const [tools, setTools] = useState<ConnectorToolSpec[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const { data: tools, isPending, error } = useConnectionToolsQuery(connectionId);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await apiService.getConnectionTools(connectionId);
-      setTools(res);
-    } catch (err) {
-      setError(getErrorMessage(err, t('toolsError')));
-    } finally {
-      setLoading(false);
-    }
-  }, [connectionId, t]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  if (loading) {
+  if (isPending) {
     return <div className="text-center py-12 text-muted">{t('toolsLoading')}</div>;
   }
   if (error) {
-    return <ErrorAlert>{error}</ErrorAlert>;
+    return <ErrorAlert>{getErrorMessage(error, t('toolsError'))}</ErrorAlert>;
   }
   if (tools.length === 0) {
     return <div className="text-center py-12 text-muted">{t('toolsEmpty')}</div>;

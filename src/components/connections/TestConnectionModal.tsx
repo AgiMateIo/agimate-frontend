@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   XCircleIcon,
 } from '@heroicons/react/24/outline';
-import apiService from '@/services/api';
+import { useConnectionTestQuery } from '@/queries/connections';
 import { ConnectionTestResponse } from '@/types';
 import { getErrorMessage } from '@/utils/error';
 import { Modal } from '@/components/ui/Modal';
@@ -26,29 +25,14 @@ export default function TestConnectionModal({
   onClose,
 }: TestConnectionModalProps) {
   const t = useTranslations('ConnectionDetail');
-  const [loading, setLoading] = useState(true);
-  const [result, setResult] = useState<ConnectionTestResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const runTest = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    setResult(null);
-    try {
-      const res = await apiService.testConnection(connectionId);
-      setResult(res);
-    } catch (err) {
-      setError(getErrorMessage(err, t('testError')));
-    } finally {
-      setLoading(false);
-    }
-  }, [connectionId, t]);
-
-  useEffect(() => {
-    runTest();
-    // run once on open
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // The dialog is mounted only while open, so the test runs on mount and the
+  // retry button is a refetch of the same query.
+  const {
+    data: result,
+    isFetching: loading,
+    error,
+    refetch: runTest,
+  } = useConnectionTestQuery(connectionId);
 
   return (
     <Modal isOpen={true} onClose={onClose} title={t('testConnection')} size="md">
@@ -64,12 +48,17 @@ export default function TestConnectionModal({
             <XCircleIcon className="h-6 w-6 text-error shrink-0" />
             <div className="min-w-0">
               <p className="font-medium text-error">{t('testFailed')}</p>
-              <p className="text-sm text-foreground mt-1 break-words">{error}</p>
+              <p className="text-sm text-foreground mt-1 break-words">
+                {getErrorMessage(error, t('testError'))}
+              </p>
             </div>
           </div>
         )}
 
-        {!loading && result && (
+        {/* `!error` matters: a retry that fails keeps the previous success in
+            `data`, and without this the dialog shows "failed" and "connected"
+            side by side. */}
+        {!loading && !error && result && (
           <TestResultView result={result} connectionId={connectionId} />
         )}
 
@@ -77,7 +66,7 @@ export default function TestConnectionModal({
           <Button
             type="button"
             variant="secondary"
-            onClick={runTest}
+            onClick={() => runTest()}
             loading={loading}
             disabled={loading}
           >

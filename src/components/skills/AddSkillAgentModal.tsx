@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { AgentResponse, PagedResponse } from '@/types';
+import { useAgentsPickerQuery } from '@/queries/agents';
+import { AgentResponse } from '@/types';
 import { getErrorMessage } from '@/utils/error';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
@@ -28,35 +29,19 @@ export default function AddSkillAgentModal({ skillId, onClose, onSuccess }: AddS
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, 300);
   const [page, setPage] = useState(0);
-  const [pagedData, setPagedData] = useState<PagedResponse<AgentResponse> | null>(null);
-  const [agentsLoading, setAgentsLoading] = useState(true);
-  const [agentsError, setAgentsError] = useState('');
   const [selectedAgent, setSelectedAgent] = useState<AgentResponse | null>(null);
 
-  useEffect(() => {
+  const {
+    data: pagedData,
+    isPending: agentsLoading,
+    error: agentsError,
+  } = useAgentsPickerQuery(debouncedSearch, page, PAGE_SIZE);
+
+  // Paging resets where the search changes, not in an effect watching it.
+  const changeSearch = (value: string) => {
+    setSearch(value);
     setPage(0);
-  }, [debouncedSearch]);
-
-  const fetchAgents = useCallback(async () => {
-    setAgentsLoading(true);
-    setAgentsError('');
-    try {
-      const data = await apiService.getAgentsList({
-        search: debouncedSearch || undefined,
-        page,
-        size: PAGE_SIZE,
-      });
-      setPagedData(data);
-    } catch (err) {
-      setAgentsError(getErrorMessage(err, 'Failed to load agents'));
-    } finally {
-      setAgentsLoading(false);
-    }
-  }, [debouncedSearch, page]);
-
-  useEffect(() => {
-    fetchAgents();
-  }, [fetchAgents]);
+  };
 
   const { loading, error, handleSubmit } = useAsyncForm<void>({
     onSuccess,
@@ -79,7 +64,7 @@ export default function AddSkillAgentModal({ skillId, onClose, onSuccess }: AddS
         {/* Search */}
         <SearchToolbar
           value={search}
-          onChange={setSearch}
+          onChange={changeSearch}
           placeholder={t('searchAgents')}
           size="sm"
         />
@@ -89,7 +74,7 @@ export default function AddSkillAgentModal({ skillId, onClose, onSuccess }: AddS
           {agentsLoading ? (
             <div className="text-center py-12 text-muted text-sm">{t('loading')}</div>
           ) : agentsError ? (
-            <ErrorAlert>{agentsError}</ErrorAlert>
+            <ErrorAlert>{getErrorMessage(agentsError, 'Failed to load agents')}</ErrorAlert>
           ) : agents.length === 0 ? (
             <div className="text-center py-12 text-muted text-sm">{t('noAgentsFound')}</div>
           ) : (

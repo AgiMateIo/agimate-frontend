@@ -145,7 +145,7 @@ Everything addressed to the **user** rather than to one entity shares the person
 
 ## Contexts
 
-- **`UserContext`** (`src/contexts/UserContext.tsx`): global auth state — auto-fetches the user on mount when a refresh token ID exists, deduplicates fetches, exposes `{ user, loading, error, fetchUser, logout }`.
+- **`UserContext`** (`src/contexts/UserContext.tsx`): global auth state over a React Query query (`userKeys.me()`) — resolves to `null` without a stored refresh token ID instead of being disabled, so `loading` stays true until the answer is known and a protected page never bounces to `/login` on the first render. Exposes `{ user, loading, error, fetchUser, logout }`; `logout` writes `null` into the cache.
 - **`BreadcrumbContext`** (`src/contexts/BreadcrumbContext.tsx`): lets pages override breadcrumb labels for dynamic route segments via `useSetBreadcrumb(segment, label)` / `useBreadcrumbOverrides()`.
 
 ```typescript

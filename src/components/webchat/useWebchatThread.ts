@@ -60,14 +60,19 @@ const fromEvent = (p: WebchatMessagePayload): ThreadMessage => ({
 // `running` is the session row's `isRunning`, read once per session: an agent
 // that was already working when the conversation opened has no event left to
 // send, so without it a reply in flight looks like a conversation gone quiet.
+//
+// Switching sessions is a remount, not a reset: WebchatConversation is rendered
+// with `key={session.sessionId}`, so `sessionId` is fixed for the life of this
+// hook and every "start over" below is plain initial state. Rendering the
+// consumer without that key would leave a new session showing the old thread.
 export function useWebchatThread(sessionId: string | null, running = false) {
   const [messages, setMessages] = useState<ThreadMessage[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!!sessionId);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [hasOlder, setHasOlder] = useState(false);
   const [error, setError] = useState('');
   const [sendError, setSendError] = useState('');
-  const [awaitingReply, setAwaitingReply] = useState(false);
+  const [awaitingReply, setAwaitingReply] = useState(running);
   // A stop was asked for and the run hasn't reached its next seam yet. The
   // backend only records the request, so this is "stopping", never "stopped".
   const [stopping, setStopping] = useState(false);
@@ -91,7 +96,7 @@ export function useWebchatThread(sessionId: string | null, running = false) {
   const runningRef = useRef(running);
   // Whether the indicator currently showing came from that seed and not from
   // anything this thread saw itself.
-  const seededRunningRef = useRef(false);
+  const seededRunningRef = useRef(running);
   useEffect(() => {
     runningRef.current = running;
     // A row cached a minute ago can seed the indicator for a run that has since
@@ -104,25 +109,11 @@ export function useWebchatThread(sessionId: string | null, running = false) {
     }
   }, [running]);
 
+  // Seed the thread from history, once per mount.
   useEffect(() => {
-    seenHistoryIdsRef.current = new Set();
-    processedEventIdsRef.current = new Set();
-    pagesLoadedRef.current = 0;
-    setMessages([]);
-    setHasOlder(false);
-    setError('');
-    setSendError('');
-    setAwaitingReply(runningRef.current);
-    seededRunningRef.current = runningRef.current;
-    setStopping(false);
-    setStopError('');
-    if (!sessionId) {
-      setLoading(false);
-      return;
-    }
+    if (!sessionId) return;
 
     let cancelled = false;
-    setLoading(true);
     apiService
       .getWebchatMessages(sessionId, { page: 0, size: PAGE_SIZE })
       .then((page) => {
@@ -145,8 +136,8 @@ export function useWebchatThread(sessionId: string | null, running = false) {
       });
     return () => {
       cancelled = true;
-      // The thread is resetting (session switch) or unmounting — the messages
-      // referencing these previews are gone either way.
+      // The thread is unmounting — the messages referencing these previews are
+      // gone with it.
       localPreviewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
       localPreviewUrlsRef.current = [];
     };

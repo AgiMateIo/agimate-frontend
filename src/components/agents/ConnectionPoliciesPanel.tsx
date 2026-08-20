@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
+import { useAgentConnectionPoliciesQuery } from '@/queries/agents';
 import { AgentConnectionResponse, AgentConnectionPolicyResponse } from '@/types';
 import { getErrorMessage } from '@/utils/error';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
@@ -17,35 +18,17 @@ interface ConnectionPoliciesPanelProps {
 
 export default function ConnectionPoliciesPanel({ connection }: ConnectionPoliciesPanelProps) {
   const t = useTranslations('Agents');
-  const [policies, setPolicies] = useState<AgentConnectionPolicyResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { data: policies, isPending: loading, error, refetch } =
+    useAgentConnectionPoliciesQuery(connection.id);
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState<AgentConnectionPolicyResponse | null>(null);
   const [deleting, setDeleting] = useState<AgentConnectionPolicyResponse | null>(null);
-
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const data = await apiService.getAgentConnectionPolicies(connection.id);
-      setPolicies(data);
-    } catch (err) {
-      setError(getErrorMessage(err, 'Failed to load policies'));
-    } finally {
-      setLoading(false);
-    }
-  }, [connection.id]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
 
   const handleSuccess = () => {
     setShowAdd(false);
     setEditing(null);
     setDeleting(null);
-    fetchData();
+    refetch();
   };
 
   return (
@@ -59,7 +42,7 @@ export default function ConnectionPoliciesPanel({ connection }: ConnectionPolici
       </div>
 
       {error ? (
-        <ErrorAlert>{error}</ErrorAlert>
+        <ErrorAlert>{getErrorMessage(error, 'Failed to load policies')}</ErrorAlert>
       ) : loading ? (
         <div className="text-center py-4 text-muted text-sm">{t('loadingPolicies')}</div>
       ) : policies.length === 0 ? (

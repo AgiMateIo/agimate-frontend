@@ -208,7 +208,11 @@ function SkillDetailContent({ skillId }: { skillId: string }) {
             label: t('tabAgents'),
             content: (
               <div className="bg-surface rounded-xl border border-border p-6">
-                <SkillAgentsTab skillId={skill.id} skillName={skill.title} />
+                {/* Keyed: navigating between two skills re-renders this page
+                    rather than remounting it, and the tab keeps the previous
+                    page of rows while the next loads — without the key that is
+                    the *other* skill's agents, under a live remove button. */}
+                <SkillAgentsTab key={skill.id} skillId={skill.id} skillName={skill.title} />
               </div>
             ),
           },

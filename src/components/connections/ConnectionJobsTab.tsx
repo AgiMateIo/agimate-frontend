@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
+import { useConnectionJobsQuery } from '@/queries/connections';
 import { ConnectorJobResponse } from '@/types';
 import { getErrorMessage } from '@/utils/error';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
@@ -21,30 +22,12 @@ interface ConnectionJobsTabProps {
 // connection columns carried is this page's own context.
 export default function ConnectionJobsTab({ connectionId }: ConnectionJobsTabProps) {
   const t = useTranslations('ConnectorJobs');
-  const [loading, setLoading] = useState(true);
-  const [jobs, setJobs] = useState<ConnectorJobResponse[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const { data: jobs, isPending, error, refetch } = useConnectionJobsQuery(connectionId);
   const [actionError, setActionError] = useState('');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [actingIds, setActingIds] = useState<Set<string>>(new Set());
   const [deleteTarget, setDeleteTarget] = useState<ConnectorJobResponse | null>(null);
   const [deleting, setDeleting] = useState(false);
-
-  const load = useCallback(async () => {
-    setError(null);
-    try {
-      const res = await apiService.getConnectionJobs(connectionId);
-      setJobs(res);
-    } catch (err) {
-      setError(getErrorMessage(err, t('actionFailed')));
-    } finally {
-      setLoading(false);
-    }
-  }, [connectionId, t]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
 
   const toggleExpand = (id: string) => {
     setExpandedIds((prev) => {
@@ -74,7 +57,7 @@ export default function ConnectionJobsTab({ connectionId }: ConnectionJobsTabPro
   const runAction = (id: string, action: () => Promise<void>) =>
     withActing(id, async () => {
       await action();
-      await load();
+      await refetch();
     });
 
   const handleRunNow = (id: string) =>
@@ -82,8 +65,8 @@ export default function ConnectionJobsTab({ connectionId }: ConnectionJobsTabPro
       // Fire-and-forget: 200 means "queued". Refetch now, then again shortly so
       // the user sees the status transition (PENDING → RUNNING → …).
       await apiService.runConnectorJobNow(id);
-      await load();
-      setTimeout(() => { load(); }, 1500);
+      await refetch();
+      setTimeout(() => { refetch(); }, 1500);
     });
 
   const handleDelete = async () => {
@@ -93,7 +76,7 @@ export default function ConnectionJobsTab({ connectionId }: ConnectionJobsTabPro
     try {
       await apiService.deleteConnectorJob(deleteTarget.id);
       setDeleteTarget(null);
-      await load();
+      await refetch();
     } catch (err) {
       setActionError(getErrorMessage(err, t('actionFailed')));
       setDeleteTarget(null);
@@ -102,11 +85,11 @@ export default function ConnectionJobsTab({ connectionId }: ConnectionJobsTabPro
     }
   };
 
-  if (loading) {
+  if (isPending) {
     return <div className="text-center py-12 text-muted">{t('loading')}</div>;
   }
   if (error) {
-    return <ErrorAlert>{error}</ErrorAlert>;
+    return <ErrorAlert>{getErrorMessage(error, t('actionFailed'))}</ErrorAlert>;
   }
   if (jobs.length === 0) {
     return <div className="text-center py-12 text-muted">{t('noJobs')}</div>;

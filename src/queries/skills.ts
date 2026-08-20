@@ -1,4 +1,5 @@
 import {
+  keepPreviousData,
   queryOptions,
   useQueries,
   useQuery,
@@ -14,14 +15,35 @@ export type SkillListTab = 'my' | 'public';
 export const skillKeys = {
   all: ['skills'] as const,
   lists: () => [...skillKeys.all, 'list'] as const,
-  list: (tab: SkillListTab, search: string, page: number) =>
-    [...skillKeys.lists(), tab, search, page] as const,
+  list: (tab: SkillListTab, search: string, page: number, size: number) =>
+    [...skillKeys.lists(), tab, search, page, size] as const,
   byConnector: (connectorCode: string, scope: SkillScope) =>
     [...skillKeys.lists(), 'by-connector', connectorCode, scope] as const,
   picker: (scope: SkillScope, search: string) =>
     [...skillKeys.lists(), 'picker', scope, search] as const,
   detail: (id: string) => [...skillKeys.all, 'detail', id] as const,
+  agents: (id: string, search: string, page: number) =>
+    [...skillKeys.detail(id), 'agents', search, page] as const,
 };
+
+// Agents this skill is bound to. Search and page are part of the key so a
+// back-and-forth between pages is served from the cache; `placeholderData`
+// keeps the previous page on screen while the next one loads.
+export const skillAgentsOptions = (skillId: string, search = '', page = 0) =>
+  queryOptions({
+    queryKey: skillKeys.agents(skillId, search, page),
+    queryFn: () =>
+      apiService.getSkillAgents(skillId, {
+        search: search || undefined,
+        page,
+        size: 20,
+      }),
+    placeholderData: keepPreviousData,
+  });
+
+export function useSkillAgentsQuery(skillId: string, search = '', page = 0) {
+  return useQuery(skillAgentsOptions(skillId, search, page));
+}
 
 export const skillDetailOptions = (id: string) =>
   queryOptions({
@@ -40,21 +62,34 @@ export function useSkillDetailQuery(id: string) {
   return useQuery(skillDetailOptions(id));
 }
 
+// `size` is part of the key: the Skills page and the add-skill modal show the
+// same list at different page sizes, and sharing one key would serve each the
+// other's page.
 export const skillsListOptions = (
   tab: SkillListTab,
   search = '',
   page = 0,
+  size = 20,
 ) =>
   queryOptions({
-    queryKey: skillKeys.list(tab, search, page),
+    queryKey: skillKeys.list(tab, search, page, size),
     queryFn: () =>
       apiService.getSkills({
         search: search || undefined,
         scope: tab === 'my' ? 'MINE' : 'PUBLIC',
         page,
-        size: 20,
+        size,
       }),
   });
+
+export function useSkillsListQuery(
+  tab: SkillListTab,
+  search = '',
+  page = 0,
+  size = 20,
+) {
+  return useQuery(skillsListOptions(tab, search, page, size));
+}
 
 // The skill picker (agent wizard, Skills page): one searchable list over both
 // scopes, since "where does this skill come from" is a filter there, not the

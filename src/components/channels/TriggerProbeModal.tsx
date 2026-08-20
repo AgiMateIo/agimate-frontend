@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ClipboardIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { Modal } from '@/components/ui/Modal';
@@ -8,11 +8,12 @@ import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { useClipboard } from '@/hooks/useClipboard';
 import { formatDateTimeFull } from '@/utils/date';
+import { getErrorMessage } from '@/utils/error';
 import apiService from '@/services/api';
-import type { TriggerLog, TriggerLogProbeResponse } from '@/types';
+import { useTriggerProbeQuery } from '@/queries/logs';
+import type { TriggerLog } from '@/types';
 
 interface TriggerProbeModalProps {
-  isOpen: boolean;
   onClose: () => void;
   // Called when the user confirms the captured trigger; the form uses it to
   // pre-fill the connector/connection binding and offer the payload for filters.
@@ -24,69 +25,63 @@ type Phase = 'issuing' | 'waiting' | 'success' | 'expired' | 'error';
 const POLL_INTERVAL_MS = 2500;
 const TIMEOUT_MS = 90 * 1000;
 
-export function TriggerProbeModal({ isOpen, onClose, onCaptured }: TriggerProbeModalProps) {
+// Mounted only while open (see ChannelConfigForm), so mount is the opening: the
+// probe query issues one code per opening and unmounting discards it.
+export function TriggerProbeModal({ onClose, onCaptured }: TriggerProbeModalProps) {
   const t = useTranslations('Channels');
   const { copied, copy } = useClipboard();
 
-  const [phase, setPhase] = useState<Phase>('issuing');
-  const [probe, setProbe] = useState<TriggerLogProbeResponse | null>(null);
+  const {
+    data: probe,
+    isFetching: issuing,
+    error: issueError,
+    refetch: reissue,
+  } = useTriggerProbeQuery();
+
   const [match, setMatch] = useState<TriggerLog | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [expired, setExpired] = useState(false);
+  const [matchError, setMatchError] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
 
-  const startedAtRef = useRef<number>(0);
-  const probeRef = useRef<TriggerLogProbeResponse | null>(null);
-  probeRef.current = probe;
+  // Derived, not stored: every phase is a fact already held by the query and the
+  // three flags below, so there is no second copy to keep in step with them.
+  const error = matchError ?? (issueError ? getErrorMessage(issueError, t('probeErrorIssue')) : null);
+  // `issuing` comes first: while a replacement code is in flight, `probe` still
+  // holds the spent one, and any later branch would show it as live — offering
+  // copy on a dead code and polling for an event that can no longer match.
+  const phase: Phase = issuing
+    ? 'issuing'
+    : error
+      ? 'error'
+      : match
+        ? 'success'
+        : expired
+          ? 'expired'
+          : probe
+            ? 'waiting'
+            : 'issuing';
 
-  const issueProbe = useCallback(async () => {
-    setPhase('issuing');
-    setError(null);
-    setProbe(null);
-    setMatch(null);
+  const runMatch = useCallback(async () => {
+    if (!probe) return;
     try {
-      // Always block delivery: the test event is logged but never wakes an agent.
-      const result = await apiService.issueTriggerLogProbe(true);
-      setProbe(result);
-      startedAtRef.current = Date.now();
-      setPhase('waiting');
+      const log = await apiService.matchTriggerLogProbe(probe.code, probe.issuedAt);
+      if (log) setMatch(log);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('probeErrorIssue'));
-      setPhase('error');
+      setMatchError(err instanceof Error ? err.message : t('probeErrorMatch'));
     }
-  }, [t]);
+  }, [probe, t]);
 
-  const runMatch = useCallback(async (): Promise<boolean> => {
-    const current = probeRef.current;
-    if (!current) return false;
-    try {
-      const log = await apiService.matchTriggerLogProbe(current.code, current.issuedAt);
-      if (log) {
-        setMatch(log);
-        setPhase('success');
-        return true;
-      }
-      return false;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t('probeErrorMatch'));
-      setPhase('error');
-      return true; // stop polling
-    }
-  }, [t]);
-
-  // Issue a fresh probe each time the modal opens.
+  // Poll for a match while waiting; give up after the timeout. The window starts
+  // when this browser received the code rather than at the server's `issuedAt`,
+  // so a clock skew cannot shorten it.
   useEffect(() => {
-    if (!isOpen) return;
-    issueProbe();
-  }, [isOpen, issueProbe]);
-
-  // Poll for a match while waiting; give up after the timeout.
-  useEffect(() => {
-    if (!isOpen || phase !== 'waiting') return;
+    if (phase !== 'waiting') return;
+    const startedAt = Date.now();
     let cancelled = false;
     const id = setInterval(async () => {
       if (cancelled) return;
-      if (Date.now() - startedAtRef.current >= TIMEOUT_MS) {
-        setPhase('expired');
+      if (Date.now() - startedAt >= TIMEOUT_MS) {
+        setExpired(true);
         return;
       }
       await runMatch();
@@ -95,7 +90,7 @@ export function TriggerProbeModal({ isOpen, onClose, onCaptured }: TriggerProbeM
       cancelled = true;
       clearInterval(id);
     };
-  }, [isOpen, phase, runMatch]);
+  }, [phase, runMatch]);
 
   const handleCheckNow = async () => {
     if (checking || phase !== 'waiting') return;
@@ -107,26 +102,22 @@ export function TriggerProbeModal({ isOpen, onClose, onCaptured }: TriggerProbeM
     }
   };
 
-  const reset = () => {
-    setProbe(null);
+  // Regenerate clears the spent attempt before asking for a new code.
+  const handleRegenerate = () => {
     setMatch(null);
-    setError(null);
-    setPhase('issuing');
+    setExpired(false);
+    setMatchError(null);
+    reissue();
   };
 
-  const handleClose = () => {
-    reset();
-    onClose();
-  };
-
+  // Closing and capturing both unmount the dialog, which is what discards the
+  // spent probe — no explicit reset to keep in step with the state above.
   const handleUse = () => {
-    if (!match) return;
-    onCaptured(match);
-    reset();
+    if (match) onCaptured(match);
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title={t('probeTitle')} size="md">
+    <Modal isOpen={true} onClose={onClose} title={t('probeTitle')} size="md">
       <div className="space-y-4">
         <p className="text-sm text-muted">{t('probeIntro')}</p>
 
@@ -190,17 +181,17 @@ export function TriggerProbeModal({ isOpen, onClose, onCaptured }: TriggerProbeM
         {phase === 'error' && error && <Alert variant="error">{error}</Alert>}
 
         <div className="flex justify-end gap-2 pt-2">
-          <Button type="button" variant="secondary" onClick={handleClose}>
+          <Button type="button" variant="secondary" onClick={onClose}>
             {t('probeClose')}
           </Button>
           {(phase === 'expired' || phase === 'error') && (
-            <Button type="button" onClick={issueProbe}>
+            <Button type="button" onClick={handleRegenerate}>
               {t('probeRegenerate')}
             </Button>
           )}
           {phase === 'success' && (
             <>
-              <Button type="button" variant="secondary" onClick={issueProbe}>
+              <Button type="button" variant="secondary" onClick={handleRegenerate}>
                 {t('probeRetry')}
               </Button>
               <Button type="button" onClick={handleUse}>

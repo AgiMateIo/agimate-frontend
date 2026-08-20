@@ -3,26 +3,35 @@ import {
   infiniteQueryOptions,
   queryOptions,
   useInfiniteQuery,
+  useQuery,
   useQueryClient,
   type InfiniteData,
 } from '@tanstack/react-query';
 import apiService from '@/services/api';
 import { dedupeById, nextPageParam } from '@/utils/paging';
-import type { ChannelSessionResponse, PagedResponse } from '@/types';
+import type { ChannelResponse, ChannelSessionResponse, PagedResponse } from '@/types';
 
 export const channelKeys = {
   all: ['channels'] as const,
-  list: () => [...channelKeys.all, 'list'] as const,
+  lists: () => [...channelKeys.all, 'list'] as const,
+  list: (agentId?: string) => [...channelKeys.lists(), agentId ?? 'all'] as const,
   sessions: (channelId: string) => [...channelKeys.all, 'sessions', channelId] as const,
   sessionMessages: (sessionId: string) =>
     [...channelKeys.all, 'session-messages', sessionId] as const,
 };
 
-export const channelsListOptions = () =>
+// Without an agentId this is every channel the user owns (the Channels page);
+// with one it is that agent's own channels tab, which is a different list from
+// the backend and so a key of its own.
+export const channelsListOptions = (agentId?: string) =>
   queryOptions({
-    queryKey: channelKeys.list(),
-    queryFn: () => apiService.getChannels(),
+    queryKey: channelKeys.list(agentId),
+    queryFn: () => apiService.getChannels(agentId ? { agentId } : undefined),
   });
+
+export function useAgentChannelsQuery(agentId: string) {
+  return useQuery(channelsListOptions(agentId));
+}
 
 // A busy channel accumulates sessions without limit, so the pane loads one page
 // and grows on demand rather than pretending the first page is the whole list.
@@ -73,6 +82,26 @@ export function useChannelSessionMessagesQuery(sessionId: string) {
 export function useChannelCacheActions() {
   const queryClient = useQueryClient();
   return {
+    // Save/delete in the agent tab patches that agent's list for instant
+    // feedback, then invalidates every list so the all-channels page (a
+    // separate key) converges too.
+    upsertChannel: (agentId: string, saved: ChannelResponse) => {
+      queryClient.setQueryData<ChannelResponse[]>(channelKeys.list(agentId), (old) => {
+        if (!old) return old;
+        const idx = old.findIndex((c) => c.id === saved.id);
+        if (idx < 0) return [saved, ...old];
+        const next = [...old];
+        next[idx] = saved;
+        return next;
+      });
+      queryClient.invalidateQueries({ queryKey: channelKeys.lists() });
+    },
+    removeChannel: (agentId: string, id: string) => {
+      queryClient.setQueryData<ChannelResponse[]>(channelKeys.list(agentId), (old) =>
+        old?.filter((c) => c.id !== id),
+      );
+      queryClient.invalidateQueries({ queryKey: channelKeys.lists() });
+    },
     // Replace a session in place across the loaded pages (e.g. after closing it),
     // instead of refetching pages the user has already scrolled past.
     patchSession: (channelId: string, session: ChannelSessionResponse) => {

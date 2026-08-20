@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { SearchToolbar } from '@/components/ui/SearchToolbar';
-import apiService from '@/services/api';
-import { AgentSummaryResponse, PagedResponse } from '@/types';
+import { useSkillAgentsQuery } from '@/queries/skills';
+import { AgentSummaryResponse } from '@/types';
 import { getErrorMessage } from '@/utils/error';
 import { Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/Button';
@@ -22,10 +22,6 @@ interface SkillAgentsTabProps {
 export default function SkillAgentsTab({ skillId, skillName }: SkillAgentsTabProps) {
   const t = useTranslations('SkillAgents');
 
-  const [data, setData] = useState<PagedResponse<AgentSummaryResponse> | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const debouncedSearch = useDebouncedValue(search, 300);
@@ -33,26 +29,11 @@ export default function SkillAgentsTab({ skillId, skillName }: SkillAgentsTabPro
   const [deletingAgent, setDeletingAgent] = useState<AgentSummaryResponse | null>(null);
   const [showAdd, setShowAdd] = useState(false);
 
-  const fetchAgents = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await apiService.getSkillAgents(skillId, {
-        search: debouncedSearch || undefined,
-        page,
-        size: 20,
-      });
-      setData(result);
-    } catch (err) {
-      setError(getErrorMessage(err, 'Failed to load agents'));
-    } finally {
-      setLoading(false);
-    }
-  }, [skillId, debouncedSearch, page]);
-
-  useEffect(() => {
-    fetchAgents();
-  }, [fetchAgents]);
+  const { data, isFetching: loading, error, refetch } = useSkillAgentsQuery(
+    skillId,
+    debouncedSearch,
+    page,
+  );
 
   return (
     <div className="space-y-4">
@@ -77,7 +58,7 @@ export default function SkillAgentsTab({ skillId, skillName }: SkillAgentsTabPro
         placeholder={t('searchPlaceholder')}
       />
 
-      {error && <ErrorAlert>{error}</ErrorAlert>}
+      {error && <ErrorAlert>{getErrorMessage(error, 'Failed to load agents')}</ErrorAlert>}
 
       {loading && !data && (
         <div className="text-center py-12 text-muted text-sm">{t('loading')}</div>
@@ -187,7 +168,7 @@ export default function SkillAgentsTab({ skillId, skillName }: SkillAgentsTabPro
           onClose={() => setDeletingAgent(null)}
           onSuccess={() => {
             setDeletingAgent(null);
-            fetchAgents();
+            refetch();
           }}
         />
       )}
@@ -198,7 +179,7 @@ export default function SkillAgentsTab({ skillId, skillName }: SkillAgentsTabPro
           onClose={() => setShowAdd(false)}
           onSuccess={() => {
             setShowAdd(false);
-            fetchAgents();
+            refetch();
           }}
         />
       )}

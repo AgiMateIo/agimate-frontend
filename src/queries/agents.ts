@@ -12,10 +12,16 @@ export const agentKeys = {
   all: ['agents'] as const,
   lists: () => [...agentKeys.all, 'list'] as const,
   list: (teamId?: string) => [...agentKeys.lists(), teamId ?? 'all'] as const,
+  picker: (search: string, page: number, size: number) =>
+    [...agentKeys.lists(), 'picker', search, page, size] as const,
   detail: (id: string) => [...agentKeys.all, 'detail', id] as const,
   connections: (id: string) => [...agentKeys.detail(id), 'connections'] as const,
   skills: (id: string) => [...agentKeys.detail(id), 'skills'] as const,
   llms: (id: string) => [...agentKeys.detail(id), 'llms'] as const,
+  // Keyed by the agent-connection binding id, not the agent id: policies refine
+  // one binding, and the panel only ever has that id to hand.
+  connectionPolicies: (agentConnectionId: string) =>
+    [...agentKeys.all, 'connection-policies', agentConnectionId] as const,
 };
 
 // One page big enough to hold an agent's whole skill list: the same rows back
@@ -44,6 +50,19 @@ export const agentsListOptions = (teamId?: string) =>
     select: byCreatedAtDesc,
   });
 
+// The agent picker (add-agent modal): searchable and paged, so page and search
+// are part of the key rather than component state feeding a manual fetch.
+export const agentsPickerOptions = (search = '', page = 0, size = 10) =>
+  queryOptions({
+    queryKey: agentKeys.picker(search, page, size),
+    queryFn: () =>
+      apiService.getAgentsList({ search: search || undefined, page, size }),
+  });
+
+export function useAgentsPickerQuery(search = '', page = 0, size = 10) {
+  return useQuery(agentsPickerOptions(search, page, size));
+}
+
 export const agentDetailOptions = (id: string) =>
   queryOptions({
     queryKey: agentKeys.detail(id),
@@ -56,6 +75,17 @@ export const agentConnectionsOptions = (agentId: string) =>
     queryKey: agentKeys.connections(agentId),
     queryFn: () => apiService.getAgentConnections(agentId),
   });
+
+// TOOL/TRIGGER allow-deny refinements of one connector binding.
+export const agentConnectionPoliciesOptions = (agentConnectionId: string) =>
+  queryOptions({
+    queryKey: agentKeys.connectionPolicies(agentConnectionId),
+    queryFn: () => apiService.getAgentConnectionPolicies(agentConnectionId),
+  });
+
+export function useAgentConnectionPoliciesQuery(agentConnectionId: string) {
+  return useQuery(agentConnectionPoliciesOptions(agentConnectionId));
+}
 
 // Skill bindings of one agent, each carrying whether it is satisfied — i.e.
 // whether the agent gets it at all.
