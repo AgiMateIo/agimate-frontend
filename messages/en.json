@@ -455,6 +455,8 @@
     "moreActions": "More actions",
     "back": "Back",
     "retry": "Retry",
+    "unexpectedErrorTitle": "Something went wrong",
+    "unexpectedErrorHint": "The page could not be rendered. Retrying usually helps; if it does not, the section is temporarily unavailable.",
     "loadMore": "Load more",
     "loadOlder": "Load earlier messages",
     "breadcrumbDashboard": "Dashboard",
