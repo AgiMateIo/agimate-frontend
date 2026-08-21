@@ -647,7 +647,11 @@
       "ACCESS_DENIED": "Access denied",
       "SERVER_ERROR": "Server error, please try again later"
     },
-    "filters": "Filters"
+    "filters": "Filters",
+    "theme": "Theme",
+    "theme_system": "System",
+    "theme_light": "Light",
+    "theme_dark": "Dark"
   },
   "LocaleSwitcher": {
     "ru": "RU",

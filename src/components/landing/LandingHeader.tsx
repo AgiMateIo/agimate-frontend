@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from '@/i18n/navigation';
 import { useUser } from '@/contexts/UserContext';
 import LocaleSwitcher from '@/components/ui/LocaleSwitcher';
+import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
 import Logo from '@/components/ui/Logo';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 
@@ -69,6 +70,7 @@ export default function LandingHeader({ navLinks, loginLabel, dashboardLabel }: 
               {link.label}
             </a>
           ))}
+          <ThemeSwitcher />
           <LocaleSwitcher />
           {!loading && user ? (
             <Link

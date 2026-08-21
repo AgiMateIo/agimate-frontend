@@ -8,6 +8,7 @@ import { YandexMetrika } from '@/components/analytics/YandexMetrika';
 import ReferralCapture from '@/components/referral/ReferralCapture';
 import { getSiteOrigin, YANDEX_VERIFICATION } from '@/utils/seo';
 import { Geist, Geist_Mono } from 'next/font/google';
+import { THEME_BOOT_SCRIPT } from '@/utils/theme';
 import '../globals.css';
 
 const geistSans = Geist({
@@ -67,6 +68,10 @@ export default async function LocaleLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* First thing in the body so the stored theme is on <html> before the
+            first paint. A React effect would run after it, and the page would
+            flash the OS theme on every load for anyone who overrode it. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <NextIntlClientProvider locale={locale} messages={messages}>
           <QueryProvider>
             <UserProvider>{children}</UserProvider>

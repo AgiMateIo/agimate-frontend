@@ -18,11 +18,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-3.54 -0.68 87.08 78.75" role="img" aria-label="AgiMate">
   <style>
     /* dark is the default; light shifts both inks a step darker (globals.css) */
-    .agimate-ink       { fill: #6366f1; }  /* indigo-500 */
-    .agimate-ink-light { fill: #a5b4fc; }  /* indigo-300 */
+    .agimate-ink       { fill: #228391; }  /* teal-500 */
+    .agimate-ink-light { fill: #3cc8de; }  /* teal-300 */
     @media (prefers-color-scheme: light) {
-      .agimate-ink       { fill: #4f46e5; }  /* indigo-600 */
-      .agimate-ink-light { fill: #818cf8; }  /* indigo-400 */
+      .agimate-ink       { fill: #1c6975; }  /* teal-600 */
+      .agimate-ink-light { fill: #1fa4b8; }  /* teal-400 */
     }
   </style>
   <path class="agimate-ink-light" d="M36.46 0.79 A5.0 5.0 0 0 1 43.54 0.79 L50.96 8.21 A5.0 5.0 0 0 1 50.96 15.29 L43.54 22.71 A5.0 5.0 0 0 1 36.46 22.71 L29.04 15.29 A5.0 5.0 0 0 1 29.04 8.21 Z" />

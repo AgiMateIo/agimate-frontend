@@ -14,7 +14,7 @@ design/tokens/           ──pnpm tokens──┬──▶ src/app/tokens.css 
 
 CSS custom properties are readable only by a browser, and the mobile app is a
 separate native repository. Keeping the values in `globals.css` and copying them
-by hand is how a product ends up with two slightly different indigos. So the
+by hand is how a product ends up with two slightly different brand colours. So the
 source lives in a format neither platform owns — [W3C DTCG][dtcg], built by
 [Style Dictionary][sd] — and every platform reads a generated file.
 
@@ -27,9 +27,9 @@ source lives in a format neither platform owns — [W3C DTCG][dtcg], built by
   `pnpm tokens` silently overwrites it. `pnpm tokens:check` fails CI when a
   generated file has drifted from the source.
 - **Two tiers, and the boundary matters.** `palette.*` is named paint —
-  `indigo-500`, `warm-950`. `theme.<mode>.*` is roles — `accent`, `surface` —
+  `teal-500`, `warm-950`. `theme.<mode>.*` is roles — `accent`, `surface` —
   and only these may be used by product code. A component that reaches for
-  `indigo-500` has lost the ability to be re-themed.
+  `teal-500` has lost the ability to be re-themed.
 - **A new colour is a new primitive plus a new role**, not a hex in a component.
 
 ## Adding a token

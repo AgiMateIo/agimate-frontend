@@ -647,7 +647,11 @@
       "ACCESS_DENIED": "Доступ запрещён",
       "SERVER_ERROR": "Ошибка сервера, попробуйте позже"
     },
-    "filters": "Фильтры"
+    "filters": "Фильтры",
+    "theme": "Тема",
+    "theme_system": "Системная",
+    "theme_light": "Светлая",
+    "theme_dark": "Тёмная"
   },
   "LocaleSwitcher": {
     "ru": "RU",

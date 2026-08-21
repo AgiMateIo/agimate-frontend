@@ -46,10 +46,18 @@ StyleDictionary.registerFormat({
       .filter(isColour)
       .map((t) => `  --color-${roleName(t)}: var(--${roleName(t)});`)
       .join('\n');
+    // Three states, not two. An explicit choice stamps data-theme on <html>; with
+    // nothing stamped the page follows the OS, which is what it did before the
+    // switcher existed. Hence the :not() guard — an explicit dark must survive a
+    // light OS. The two overrides carry equal specificity (0,2,0), so the
+    // data-theme block has to come last for it to win.
     return (
       HEADER({ open: '/*', line: ' *', close: ' */' }) +
-      `\n/* Dark is the product's default theme. */\n:root {\n${dark}\n\n${scale}\n}\n` +
-      `\n@media (prefers-color-scheme: light) {\n  :root {\n${light.replace(/^/gm, '  ')}\n  }\n}\n` +
+      `\n/* Dark is the default: it applies when nothing else does. */\n:root {\n${dark}\n\n${scale}\n}\n` +
+      `\n/* Light OS, unless the reader explicitly asked for dark. */\n` +
+      `@media (prefers-color-scheme: light) {\n  :root:not([data-theme="dark"]) {\n${light.replace(/^/gm, '  ')}\n  }\n}\n` +
+      `\n/* Explicit light: must also beat a dark OS, so it is stated separately. */\n` +
+      `:root[data-theme="light"] {\n${light}\n}\n` +
       `\n@theme inline {\n${theme}\n  --shadow-card: var(--card-shadow);\n` +
       `  /* Not tokens: next/font sets these at runtime. */\n` +
       `  --font-sans: var(--font-geist-sans);\n  --font-mono: var(--font-geist-mono);\n}\n`

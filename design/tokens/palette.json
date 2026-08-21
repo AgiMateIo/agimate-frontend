@@ -1,12 +1,13 @@
 {
-  "$description": "Primitives: named paint, no roles. Nothing outside design/tokens/theme.json should reference these directly — a component that wants 'indigo' wants 'accent'.",
+  "$description": "Primitives: named paint, no roles. Nothing outside design/tokens/theme.json should reference these directly — a component that wants 'teal' wants 'accent'.",
   "palette": {
     "$type": "color",
-    "indigo": {
-      "300": { "$value": "#a5b4fc" },
-      "400": { "$value": "#818cf8" },
-      "500": { "$value": "#6366f1" },
-      "600": { "$value": "#4f46e5" }
+    "teal": {
+      "$description": "The brand hue. Hue 188, chosen over the Tailwind indigo it replaced: that hex is the default accent of half this category, and teal is nearly absent from it. Cool against the warm Mocha Mousse neutrals, which is the point — complementary temperature rather than the usual cool-on-cool. Lightness was solved per step to land on the contrasts the old accent held, so nothing downstream shifted. Watch the one weak spot: at 46 degrees this is the closest the accent has ever sat to the success green, so an accent chip beside a success chip needs deliberate spacing or a different shape.",
+      "300": { "$value": "#3cc8de" },
+      "400": { "$value": "#1fa4b8" },
+      "500": { "$value": "#228391" },
+      "600": { "$value": "#1c6975" }
     },
     "mocha": {
       "$description": "Mocha Mousse — the warm hue the neutrals are tinted with, and the landing aurora.",

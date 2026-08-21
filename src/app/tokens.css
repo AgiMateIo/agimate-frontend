@@ -3,7 +3,7 @@
  * Source: design/tokens/*.json — regenerate with `pnpm tokens`.
  */
 
-/* Dark is the product's default theme. */
+/* Dark is the default: it applies when nothing else does. */
 :root {
   --background: #0f0e0d;
   --surface: #1a1715;
@@ -11,17 +11,20 @@
   --border: #2e2a27;
   --foreground: #f8fafc;
   --muted: #94a3b8;
-  --accent: #6366f1;
+  --accent: #228391;
   --accent-foreground: #ffffff;
+  /* Landing backdrop gradient. Not surface: the backdrop is its own plane, and tying it to a surface role would move it whenever cards change. */
+  --backdrop-start: #1a1715;
+  --backdrop-end: #0f0e0d;
   --success: #22c55e;
   --warning: #f59e0b;
   --error: #ef4444;
   /* Logo, the band that carries the accent. */
-  --mark-ink: #6366f1;
+  --mark-ink: #228391;
   /* Logo, the alternating band. */
-  --mark-ink-light: #a5b4fc;
+  --mark-ink-light: #3cc8de;
   /* Accent at 30% — the agent-activate halo. Alpha is baked in; there is no alpha channel in the CSS var otherwise. */
-  --accent-glow: #6366f14d;
+  --accent-glow: #2283914d;
   /* Mocha at 20% — peak tint of one landing gradient layer. They overlap, so the backdrop reaches higher. */
   --aurora-tint: #a4776433;
   /* The dark theme separates surfaces with border and tone, not shadow. */
@@ -49,27 +52,54 @@
   --motion-easing-arrive: cubic-bezier(0.2, 0, 0, 1);
 }
 
+/* Light OS, unless the reader explicitly asked for dark. */
 @media (prefers-color-scheme: light) {
-  :root {
+  :root:not([data-theme="dark"]) {
     --background: #f8f7f5;
     --surface: #ffffff;
     --surface-secondary: #f0eee9;
     --border: #d8d3cc;
     --foreground: #1e293b;
     --muted: #64748b;
-    --accent: #4f46e5;
+    --accent: #1c6975;
     --accent-foreground: #ffffff;
+    --backdrop-start: #f0eee9;
+    --backdrop-end: #f8f7f5;
     --success: #22c55e;
     --warning: #f59e0b;
     --error: #ef4444;
-    --mark-ink: #4f46e5;
+    --mark-ink: #1c6975;
     /* 2.79 against the light ground — under the 3.0 non-text bar, which exempts logotypes. Do not reuse for controls. */
-    --mark-ink-light: #818cf8;
-    --accent-glow: #4f46e54d;
+    --mark-ink-light: #1fa4b8;
+    --accent-glow: #1c69754d;
     /* Mocha at 38% — the light ground needs more tint to show the same bloom. */
     --aurora-tint: #a4776461;
     --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   }
+}
+
+/* Explicit light: must also beat a dark OS, so it is stated separately. */
+:root[data-theme="light"] {
+  --background: #f8f7f5;
+  --surface: #ffffff;
+  --surface-secondary: #f0eee9;
+  --border: #d8d3cc;
+  --foreground: #1e293b;
+  --muted: #64748b;
+  --accent: #1c6975;
+  --accent-foreground: #ffffff;
+  --backdrop-start: #f0eee9;
+  --backdrop-end: #f8f7f5;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --mark-ink: #1c6975;
+  /* 2.79 against the light ground — under the 3.0 non-text bar, which exempts logotypes. Do not reuse for controls. */
+  --mark-ink-light: #1fa4b8;
+  --accent-glow: #1c69754d;
+  /* Mocha at 38% — the light ground needs more tint to show the same bloom. */
+  --aurora-tint: #a4776461;
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
 }
 
 @theme inline {
@@ -81,6 +111,8 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-backdrop-start: var(--backdrop-start);
+  --color-backdrop-end: var(--backdrop-end);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-error: var(--error);

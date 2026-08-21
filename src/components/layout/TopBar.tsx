@@ -7,6 +7,7 @@ import { useUser } from '@/contexts/UserContext';
 import { useBreadcrumbOverrides } from '@/contexts/BreadcrumbContext';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import LocaleSwitcher from '@/components/ui/LocaleSwitcher';
+import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
 import { Bars3Icon, ChevronRightIcon, Cog6ToothIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 import { useEffect, useRef, useState } from 'react';
 
@@ -123,8 +124,9 @@ export default function TopBar({
         </nav>
       </div>
 
-      {/* Right: Language + User Avatar */}
+      {/* Right: Theme + Language + User Avatar */}
       <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+        <ThemeSwitcher />
         <LocaleSwitcher />
       <div ref={userMenuRef} className="relative">
         <button

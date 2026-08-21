@@ -5,6 +5,16 @@
    the aurora, view-transition tuning — is hand-written and stays here. */
 @import "./tokens.css";
 
+/* Tailwind's built-in `dark:` keys off prefers-color-scheme alone, which the
+   theme switcher can contradict. Redefined to mirror the token cascade exactly:
+   the OS decides unless an explicit choice is stamped on <html>. */
+@custom-variant dark {
+  @media (prefers-color-scheme: dark) {
+    &:where(:not([data-theme="light"], [data-theme="light"] *)) { @slot; }
+  }
+  &:where([data-theme="dark"], [data-theme="dark"] *) { @slot; }
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -118,6 +128,13 @@ body {
    Only `transform` is animated. The gradients' own falloff does most of the
    blending, which keeps the blur radius modest — animating the blur itself
    would re-render every layer each frame. */
+/* Landing backdrop. Token-driven rather than a `dark:` utility pair: those
+   follow prefers-color-scheme, so with the theme switcher set against the OS
+   the tokens went dark while this plane stayed light — the page came apart. */
+.landing-backdrop {
+  background-image: linear-gradient(to bottom right, var(--backdrop-start), var(--backdrop-end));
+}
+
 .aurora-layer {
   position: absolute;
   border-radius: 9999px;

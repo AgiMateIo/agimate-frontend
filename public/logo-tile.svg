@@ -10,10 +10,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="AgiMate">
   <style>
     /* globals.css: dark is the default, light comes from prefers-color-scheme */
-    .agimate-tile { fill: #6366f1; }
+    .agimate-tile { fill: #228391; }
     .agimate-mark { fill: #ffffff; }
     @media (prefers-color-scheme: light) {
-      .agimate-tile { fill: #4f46e5; }
+      .agimate-tile { fill: #1c6975; }
     }
   </style>
   <rect class="agimate-tile" width="128" height="128" />

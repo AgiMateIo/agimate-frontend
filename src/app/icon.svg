@@ -14,8 +14,8 @@
      carry a media query — it is the same mark in the single dark-theme ink. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-3.54 -4.85 87.08 87.08" role="img" aria-label="AgiMate">
   <style>
-    .agimate-mark { fill: #6366f1; }
-    @media (prefers-color-scheme: light) { .agimate-mark { fill: #4f46e5; } }
+    .agimate-mark { fill: #228391; }
+    @media (prefers-color-scheme: light) { .agimate-mark { fill: #1c6975; } }
   </style>
   <path class="agimate-mark" d="M36.46 0.79 A5.0 5.0 0 0 1 43.54 0.79 L50.96 8.21 A5.0 5.0 0 0 1 50.96 15.29 L43.54 22.71 A5.0 5.0 0 0 1 36.46 22.71 L29.04 15.29 A5.0 5.0 0 0 1 29.04 8.21 Z
            M10.27 20.02 A5.0 5.0 0 0 1 10.27 16.48 L13.98 12.77 A5.0 5.0 0 0 1 17.52 12.77 L38.23 33.48 A5.0 5.0 0 0 0 41.77 33.48 L62.48 12.77 A5.0 5.0 0 0 1 66.02 12.77 L69.73 16.48 A5.0 5.0 0 0 1 69.73 20.02 L41.77 47.98 A5.0 5.0 0 0 1 38.23 47.98 Z
