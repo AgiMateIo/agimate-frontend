@@ -10,35 +10,25 @@
 // sits next to in localStorage, and stored there for the same reason: it belongs
 // to the sign-in, which outlives the tab that sessionStorage is scoped to.
 
-const STORAGE_KEY = 'session_id';
-const CHANGE_EVENT = 'auth:session-id-change';
+import { createPersistentValue } from '@/utils/persistentValue';
+
+// External store shape, so a component can read it without a setState-in-effect
+// and without a hydration mismatch (the server knows no session).
+export const currentSessionIdStore = createPersistentValue<string | null>({
+  key: 'session_id',
+  event: 'auth:session-id-change',
+  fallback: null,
+  // Whatever the backend sent is the id; there is no shape to validate against.
+  parse: (raw) => raw,
+  // `null` clears it — the sign-in ended.
+  serialize: (id) => id,
+});
 
 // Absent until this browser has refreshed its tokens at least once since the
 // backend started sending the field — a session signed in before that goes
 // unmarked in the list rather than marking the wrong row.
 export const setCurrentSessionId = (sessionId: string | null | undefined) => {
-  if (typeof window === 'undefined') return;
-  if (sessionId) {
-    localStorage.setItem(STORAGE_KEY, sessionId);
-  } else {
-    localStorage.removeItem(STORAGE_KEY);
-  }
-  window.dispatchEvent(new Event(CHANGE_EVENT));
+  currentSessionIdStore.set(sessionId ?? null);
 };
 
 export const clearCurrentSessionId = () => setCurrentSessionId(null);
-
-// External store shape, so a component can read it without a setState-in-effect
-// and without a hydration mismatch (the server knows no session).
-export const currentSessionIdStore = {
-  subscribe(callback: () => void) {
-    window.addEventListener(CHANGE_EVENT, callback);
-    window.addEventListener('storage', callback);
-    return () => {
-      window.removeEventListener(CHANGE_EVENT, callback);
-      window.removeEventListener('storage', callback);
-    };
-  },
-  getSnapshot: (): string | null => localStorage.getItem(STORAGE_KEY),
-  getServerSnapshot: (): string | null => null,
-};

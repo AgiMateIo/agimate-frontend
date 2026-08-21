@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useSyncExternalStore } from 'react';
+import { useState } from 'react';
 import { Link, usePathname } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { APP_VERSION } from '@/config/constants';
@@ -26,6 +26,8 @@ import {
 import Logo from '@/components/ui/Logo';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useIsDesktop } from '@/hooks/useMediaQuery';
+import { usePersistentValue } from '@/hooks/usePersistentValue';
+import { createPersistentValue } from '@/utils/persistentValue';
 import AdminContextNav from './AdminContextNav';
 import AgentContextNav from './AgentContextNav';
 import TeamContextNav from './TeamContextNav';
@@ -77,27 +79,15 @@ type NavGroup = {
   items: NavItem[];
 };
 
-const COLLAPSE_KEY = 'sidebar:collapsed';
-const COLLAPSE_EVENT = 'sidebar:collapsed-change';
-
-// Persisted collapse flag as an external store so we read localStorage without a
-// setState-in-effect, stay SSR-safe (server renders expanded), and sync across tabs.
-const collapseStore = {
-  subscribe(callback: () => void) {
-    window.addEventListener(COLLAPSE_EVENT, callback);
-    window.addEventListener('storage', callback);
-    return () => {
-      window.removeEventListener(COLLAPSE_EVENT, callback);
-      window.removeEventListener('storage', callback);
-    };
-  },
-  getSnapshot: () => localStorage.getItem(COLLAPSE_KEY) === '1',
-  getServerSnapshot: () => false,
-  toggle(current: boolean) {
-    localStorage.setItem(COLLAPSE_KEY, current ? '0' : '1');
-    window.dispatchEvent(new Event(COLLAPSE_EVENT));
-  },
-};
+// Persisted collapse flag: read without a setState-in-effect, SSR-safe (the
+// server renders the sidebar expanded), and in step across tabs.
+const collapseStore = createPersistentValue<boolean>({
+  key: 'sidebar:collapsed',
+  event: 'sidebar:collapsed-change',
+  fallback: false,
+  parse: (raw) => raw === '1',
+  serialize: (collapsed) => (collapsed ? '1' : '0'),
+});
 
 // Length of the longest prefix of `pathname` that `href` matches (exact match or
 // a nested route under it), or -1 when it doesn't match at all. Dashboard only
@@ -172,12 +162,8 @@ export default function SidebarNav({
   const isAdmin = useIsAdmin();
   const isDesktop = useIsDesktop();
 
-  const collapsed = useSyncExternalStore(
-    collapseStore.subscribe,
-    collapseStore.getSnapshot,
-    collapseStore.getServerSnapshot,
-  );
-  const toggleCollapsed = () => collapseStore.toggle(collapsed);
+  const collapsed = usePersistentValue(collapseStore);
+  const toggleCollapsed = () => collapseStore.set(!collapsed);
   // The drawer is always full width, so the persisted collapse flag applies to
   // the desktop sidebar only — otherwise a user who collapsed on desktop would
   // get a 256px-wide icons-only drawer on their phone.

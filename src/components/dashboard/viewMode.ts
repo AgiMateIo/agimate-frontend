@@ -1,40 +1,27 @@
 'use client';
 
-import { useCallback, useSyncExternalStore } from 'react';
+import { useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { usePathname, useRouter } from '@/i18n/navigation';
+import { usePersistentValue } from '@/hooks/usePersistentValue';
+import { createPersistentValue } from '@/utils/persistentValue';
 
 // 'overview' — the friendly counters/onboarding home.
 // 'pro'      — the dense working home (logs, schedules, problems).
 export type DashboardViewMode = 'overview' | 'pro';
 
-const STORAGE_KEY = 'dashboard:view-mode';
-const CHANGE_EVENT = 'dashboard:view-mode-change';
 const VIEW_PARAM = 'view';
 
 const parseMode = (value: string | null): DashboardViewMode | null =>
   value === 'pro' || value === 'overview' ? value : null;
 
-// Persisted mode as an external store, mirroring the sidebar collapse flag: no
-// setState-in-effect, SSR-safe (the server always renders the overview), and
-// synced across tabs.
-const modeStore = {
-  subscribe(callback: () => void) {
-    window.addEventListener(CHANGE_EVENT, callback);
-    window.addEventListener('storage', callback);
-    return () => {
-      window.removeEventListener(CHANGE_EVENT, callback);
-      window.removeEventListener('storage', callback);
-    };
-  },
-  getSnapshot: (): DashboardViewMode =>
-    parseMode(localStorage.getItem(STORAGE_KEY)) ?? 'overview',
-  getServerSnapshot: (): DashboardViewMode => 'overview',
-  set(mode: DashboardViewMode) {
-    localStorage.setItem(STORAGE_KEY, mode);
-    window.dispatchEvent(new Event(CHANGE_EVENT));
-  },
-};
+const modeStore = createPersistentValue<DashboardViewMode>({
+  key: 'dashboard:view-mode',
+  event: 'dashboard:view-mode-change',
+  fallback: 'overview',
+  parse: parseMode,
+  serialize: (mode) => mode,
+});
 
 /**
  * Dashboard view mode, persisted per browser.
@@ -44,11 +31,7 @@ const modeStore = {
  * keep overriding every click. Without the param the URL stays clean.
  */
 export function useDashboardViewMode() {
-  const stored = useSyncExternalStore(
-    modeStore.subscribe,
-    modeStore.getSnapshot,
-    modeStore.getServerSnapshot,
-  );
+  const stored = usePersistentValue(modeStore);
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
