@@ -19,9 +19,12 @@ const FONT_DIR = join(process.cwd(), 'public', 'fonts');
 const regular = readFile(join(FONT_DIR, 'Geist-Regular.ttf'));
 const semiBold = readFile(join(FONT_DIR, 'Geist-SemiBold.ttf'));
 
-// public/logo-mark.svg with the fill inlined — satori resolves neither external
+// public/logo-mark.svg with both fills inlined — satori resolves neither external
 // files nor the stylesheet's prefers-color-scheme, and a card is always dark here.
-const MARK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 75"><path fill="#6366f1" d="M38.23 1.77 A2.5 2.5 0 0 1 41.77 1.77 L52.73 12.73 A2.5 2.5 0 0 1 52.73 16.27 L41.77 27.23 A2.5 2.5 0 0 1 38.23 27.23 L27.27 16.27 A2.5 2.5 0 0 1 27.27 12.73 Z M19.6 32.75 A2.5 2.5 0 0 1 19.44 29.06 L23.79 24.71 A2.5 2.5 0 0 1 27.16 24.55 L38.4 33.92 A2.5 2.5 0 0 0 41.6 33.92 L52.84 24.55 A2.5 2.5 0 0 1 56.21 24.71 L60.56 29.06 A2.5 2.5 0 0 1 60.4 32.75 L41.6 48.42 A2.5 2.5 0 0 1 38.4 48.42 Z M10.6 48.75 A2.5 2.5 0 0 1 10.44 45.06 L14.79 40.71 A2.5 2.5 0 0 1 18.16 40.55 L38.4 57.42 A2.5 2.5 0 0 0 41.6 57.42 L61.84 40.55 A2.5 2.5 0 0 1 65.21 40.71 L69.56 45.06 A2.5 2.5 0 0 1 69.4 48.75 L41.6 71.92 A2.5 2.5 0 0 1 38.4 71.92 Z M9.16 56.55 A2.5 2.5 0 0 0 5.79 56.71 L0.73 61.77 A2.5 2.5 0 0 0 0 63.54 L0 72.5 A2.5 2.5 0 0 0 2.5 75 L24.39 75 A2.5 2.5 0 0 0 26 70.58 Z M70.84 56.55 A2.5 2.5 0 0 1 74.21 56.71 L79.27 61.77 A2.5 2.5 0 0 1 80 63.54 L80 72.5 A2.5 2.5 0 0 1 77.5 75 L55.61 75 A2.5 2.5 0 0 1 54 70.58 Z"/></svg>`;
+// Because the ground is known, this is the one place that can carry the file's
+// exact dark pair (indigo-500 with indigo-300) instead of deriving the second
+// ink from the first the way Logo.tsx has to.
+const MARK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4.57 -1.71 89.15 80.82"><path fill="#6366f1" d="M10.27 20.02 A2.5 2.5 0 0 1 10.27 16.48 L13.98 12.77 A2.5 2.5 0 0 1 17.52 12.77 L38.23 33.48 A2.5 2.5 0 0 0 41.77 33.48 L62.48 12.77 A2.5 2.5 0 0 1 66.02 12.77 L69.73 16.48 A2.5 2.5 0 0 1 69.73 20.02 L41.77 47.98 A2.5 2.5 0 0 1 38.23 47.98 Z M7.12 52.91 A2.5 2.5 0 0 1 10.66 52.91 L21.62 63.87 A2.5 2.5 0 0 1 21.62 67.41 L10.66 78.37 A2.5 2.5 0 0 1 7.12 78.37 L-3.84 67.41 A2.5 2.5 0 0 1 -3.84 63.87 Z M69.34 52.91 A2.5 2.5 0 0 1 72.88 52.91 L83.84 63.87 A2.5 2.5 0 0 1 83.84 67.41 L72.88 78.37 A2.5 2.5 0 0 1 69.34 78.37 L58.38 67.41 A2.5 2.5 0 0 1 58.38 63.87 Z"/><path fill="#a5b4fc" d="M38.23 -0.98 A2.5 2.5 0 0 1 41.77 -0.98 L52.73 9.98 A2.5 2.5 0 0 1 52.73 13.52 L41.77 24.48 A2.5 2.5 0 0 1 38.23 24.48 L27.27 13.52 A2.5 2.5 0 0 1 27.27 9.98 Z M10.27 43.52 A2.5 2.5 0 0 1 10.27 39.98 L13.98 36.27 A2.5 2.5 0 0 1 17.52 36.27 L38.23 56.98 A2.5 2.5 0 0 0 41.77 56.98 L62.48 36.27 A2.5 2.5 0 0 1 66.02 36.27 L69.73 39.98 A2.5 2.5 0 0 1 69.73 43.52 L41.77 71.48 A2.5 2.5 0 0 1 38.23 71.48 Z"/></svg>`;
 const MARK_DATA_URI = `data:image/svg+xml;base64,${Buffer.from(MARK_SVG).toString('base64')}`;
 
 /**
@@ -50,7 +53,7 @@ export async function renderOgImage({ title, description }: { title: string; des
             >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                     {/* eslint-disable-next-line @next/next/no-img-element -- satori renders plain <img> only */}
-                    <img src={MARK_DATA_URI} width={52} height={49} alt="" />
+                    <img src={MARK_DATA_URI} width={54} height={49} alt="" />
                     <div style={{ fontSize: 34, fontWeight: 600, color: '#f8fafc', letterSpacing: -0.5 }}>
                         AgiMate
                     </div>
