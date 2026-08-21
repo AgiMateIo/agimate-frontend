@@ -322,9 +322,6 @@
     "noDescription": "Описание отсутствует",
     "empty": "Коннекторы не найдены",
     "loading": "Загрузка коннекторов…",
-    "page": "Страница {current} из {total}",
-    "previous": "Назад",
-    "next": "Вперёд",
     "capabilities": {
       "executionKind": {
         "BACKEND": "Бэкенд",
@@ -473,10 +470,7 @@
     "appId": "ID приложения",
     "connectorId": "ID коннектора",
     "triggerParams": "Параметры",
-    "pending": "Ожидание",
-    "page": "Страница",
-    "previous": "Назад",
-    "next": "Вперёд"
+    "pending": "Ожидание"
   },
   "Runs": {
     "runDetailTitle": "Прогон",
@@ -683,9 +677,6 @@
     "deliveredAt": "Доставлено",
     "success": "Успешно",
     "failed": "Ошибка",
-    "page": "Страница {current} из {total}",
-    "previous": "Назад",
-    "next": "Далее",
     "tabGeneral": "Общая информация",
     "backTeamAgents": "Агенты {team}",
     "tabChat": "Чат",
@@ -1255,9 +1246,6 @@
     "disabled": "Отключён",
     "empty": "Ни один агент пока не использует этот навык",
     "emptySearch": "Нет агентов, подходящих под запрос",
-    "page": "Страница {current} из {total}",
-    "previous": "Назад",
-    "next": "Вперёд",
     "removeSkill": "Удалить навык у агента",
     "addAgent": "Добавить агента",
     "noAgentsFound": "Агенты не найдены",

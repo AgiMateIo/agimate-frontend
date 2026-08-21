@@ -454,6 +454,8 @@
     "close": "Close",
     "moreActions": "More actions",
     "back": "Back",
+    "previous": "Previous",
+    "next": "Next",
     "retry": "Retry",
     "refresh": "Refresh",
     "autoRefresh": "Auto",

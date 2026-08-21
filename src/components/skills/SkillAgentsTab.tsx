@@ -14,6 +14,7 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import DeleteAgentSkillModal from '@/components/agents/DeleteAgentSkillModal';
 import AddSkillAgentModal from './AddSkillAgentModal';
 import { Placeholder } from '@/components/ui/Placeholder';
+import { Pagination } from '@/components/ui/Pagination';
 
 interface SkillAgentsTabProps {
   skillId: string;
@@ -135,29 +136,13 @@ export default function SkillAgentsTab({ skillId, skillName }: SkillAgentsTabPro
           </div>
 
           {/* Pagination */}
-          {data.totalPages > 1 && (
-            <div className="flex items-center justify-between pt-2">
-              <span className="text-sm text-muted">
-                {t('page', { current: page + 1, total: data.totalPages })}
-              </span>
-              <div className="flex gap-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => setPage((p) => p - 1)}
-                  disabled={page === 0 || loading}
-                >
-                  {t('previous')}
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => setPage((p) => p + 1)}
-                  disabled={page >= data.totalPages - 1 || loading}
-                >
-                  {t('next')}
-                </Button>
-              </div>
-            </div>
-          )}
+          <Pagination
+            page={page}
+            pageSize={data.size}
+            totalElements={data.totalElements}
+            totalPages={data.totalPages}
+            onPageChange={setPage}
+          />
         </>
       )}
 

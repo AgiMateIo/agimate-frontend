@@ -322,9 +322,6 @@
     "noDescription": "No description",
     "empty": "No connectors found",
     "loading": "Loading connectors…",
-    "page": "Page {current} of {total}",
-    "previous": "Previous",
-    "next": "Next",
     "capabilities": {
       "executionKind": {
         "BACKEND": "Backend",
@@ -473,10 +470,7 @@
     "appId": "App ID",
     "connectorId": "Connector ID",
     "triggerParams": "Parameters",
-    "pending": "Pending",
-    "page": "Page",
-    "previous": "Previous",
-    "next": "Next"
+    "pending": "Pending"
   },
   "Runs": {
     "runDetailTitle": "Run",
@@ -683,9 +677,6 @@
     "deliveredAt": "Delivered At",
     "success": "Success",
     "failed": "Failed",
-    "page": "Page {current} of {total}",
-    "previous": "Previous",
-    "next": "Next",
     "tabGeneral": "General",
     "backTeamAgents": "{team} agents",
     "tabChat": "Chat",
@@ -1255,9 +1246,6 @@
     "disabled": "Disabled",
     "empty": "No agents use this skill yet",
     "emptySearch": "No agents match your search",
-    "page": "Page {current} of {total}",
-    "previous": "Previous",
-    "next": "Next",
     "removeSkill": "Remove skill from agent",
     "addAgent": "Add Agent",
     "noAgentsFound": "No agents found",

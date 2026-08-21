@@ -454,6 +454,8 @@
     "close": "Закрыть",
     "moreActions": "Ещё действия",
     "back": "Назад",
+    "previous": "Назад",
+    "next": "Вперёд",
     "retry": "Повторить",
     "refresh": "Обновить",
     "autoRefresh": "Авто",

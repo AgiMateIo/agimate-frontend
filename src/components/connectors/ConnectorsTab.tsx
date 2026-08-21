@@ -16,6 +16,7 @@ import EditConnectorModal from './EditConnectorModal';
 import DeleteConnectorModal from './DeleteConnectorModal';
 import { Placeholder } from '@/components/ui/Placeholder';
 import { useIdSet } from '@/hooks/useIdSet';
+import { Pagination } from '@/components/ui/Pagination';
 
 function ConnectorsListView({
   page,
@@ -137,29 +138,13 @@ function ConnectorsListView({
           </div>
         )}
 
-        {pageInfo.totalPages > 1 && (
-          <div className="flex items-center justify-between pt-2">
-            <div className="text-xs text-muted">
-              {t('page')} {page + 1} / {pageInfo.totalPages}
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => onPageChange(page - 1)}
-                disabled={page === 0}
-                className="px-3 py-1 text-xs font-medium rounded-lg bg-surface-secondary text-muted hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {t('previous')}
-              </button>
-              <button
-                onClick={() => onPageChange(page + 1)}
-                disabled={page >= pageInfo.totalPages - 1}
-                className="px-3 py-1 text-xs font-medium rounded-lg bg-surface-secondary text-muted hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {t('next')}
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination
+          page={page}
+          pageSize={pageInfo.size}
+          totalElements={pageInfo.totalElements}
+          totalPages={pageInfo.totalPages}
+          onPageChange={onPageChange}
+        />
       </div>
 
       {showAddModal && (

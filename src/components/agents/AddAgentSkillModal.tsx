@@ -15,7 +15,6 @@ import { Link } from '@/i18n/navigation';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { getErrorMessage } from '@/utils/error';
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import { agentConnectionsOptions } from '@/queries/agents';
 import { connectionsListOptions } from '@/queries/connections';
@@ -23,6 +22,7 @@ import { connectorCatalogOptions } from '@/queries/connectors';
 import { useSkillsListQuery } from '@/queries/skills';
 import { openAgentAccess, splitSkillConnectors } from './skillAccess';
 import { Placeholder } from '@/components/ui/Placeholder';
+import { Pagination } from '@/components/ui/Pagination';
 
 const PAGE_SIZE = 10;
 
@@ -228,32 +228,13 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
           )}
         </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-end gap-3 text-xs text-muted">
-            <span>
-              {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, totalElements)} / {totalElements}
-            </span>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => setPage((p) => p - 1)}
-                disabled={page === 0}
-                className="p-1 rounded hover:bg-surface-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <ChevronLeftIcon className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setPage((p) => p + 1)}
-                disabled={page >= totalPages - 1}
-                className="p-1 rounded hover:bg-surface-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <ChevronRightIcon className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination
+          page={page}
+          pageSize={PAGE_SIZE}
+          totalElements={totalElements}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
 
         {/* Instance selection — the skill cannot be bound without it, so it sits
             in the same modal rather than behind a second step. */}

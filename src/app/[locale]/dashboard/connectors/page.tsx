@@ -3,7 +3,6 @@
 import { useState, Suspense } from 'react';
 import { useTranslations } from 'next-intl';
 import { ConnectorCatalogEntry, DefinitionBinding, ExecutionKind } from '@/types';
-import { Button } from '@/components/ui/Button';
 import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { ConnectionAvatar } from '@/components/connections/ConnectionAvatar';
@@ -11,6 +10,7 @@ import { useConnectorSearchQuery } from '@/queries/connectors';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { getConnectorKind, ConnectorKind } from '@/utils/connector';
 import { Placeholder } from '@/components/ui/Placeholder';
+import { Pagination } from '@/components/ui/Pagination';
 
 type CapabilityKey =
   | `capabilities.executionKind.${ExecutionKind}`
@@ -51,25 +51,13 @@ function ConnectorsContent({
       </div>
 
       {/* Pagination */}
-      {data.totalPages > 1 && (
-        <div className="flex items-center justify-between pt-2">
-          <span className="text-sm text-muted">
-            {t('page', { current: page + 1, total: data.totalPages })}
-          </span>
-          <div className="flex gap-2">
-            <Button variant="secondary" onClick={() => onPageChange(page - 1)} disabled={page === 0}>
-              {t('previous')}
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => onPageChange(page + 1)}
-              disabled={page >= data.totalPages - 1}
-            >
-              {t('next')}
-            </Button>
-          </div>
-        </div>
-      )}
+      <Pagination
+        page={page}
+        pageSize={data.size}
+        totalElements={data.totalElements}
+        totalPages={data.totalPages}
+        onPageChange={onPageChange}
+      />
     </div>
   );
 }

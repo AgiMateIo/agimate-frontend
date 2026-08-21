@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { localeMap } from '@/i18n/routing';
 import { Link } from '@/i18n/navigation';
-import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Select } from '@/components/ui/FormField';
@@ -14,6 +14,7 @@ import { usePagedLogsQuery } from '@/queries/logs';
 import { allAgentsOptions } from '@/queries/agents';
 import { parseBackendDate } from '@/utils/date';
 import { Placeholder } from '@/components/ui/Placeholder';
+import { Pagination } from '@/components/ui/Pagination';
 
 export default function WebhookDeliveriesPage() {
   const t = useTranslations('Agents');
@@ -26,7 +27,9 @@ export default function WebhookDeliveriesPage() {
 
   const {
     content: deliveries,
+    totalElements,
     totalPages,
+    pageSize,
     loading,
     error,
     page,
@@ -157,24 +160,15 @@ export default function WebhookDeliveriesPage() {
             </table>
           </div>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-4 border-t border-border">
-              <p className="text-sm text-muted">
-                {t('page', { current: page + 1, total: totalPages })}
-              </p>
-              <div className="flex gap-2">
-                <button onClick={() => setPage(Math.max(0, page - 1))} disabled={page === 0}
-                  className="flex items-center gap-1 px-3 py-2 rounded-lg bg-surface-secondary text-foreground hover:bg-surface disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm">
-                  <ChevronLeftIcon className="h-4 w-4" /> {t('previous')}
-                </button>
-                <button onClick={() => setPage(Math.min(totalPages - 1, page + 1))} disabled={page >= totalPages - 1}
-                  className="flex items-center gap-1 px-3 py-2 rounded-lg bg-surface-secondary text-foreground hover:bg-surface disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm">
-                  {t('next')} <ChevronRightIcon className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          )}
+          <div className="px-4 pb-4">
+            <Pagination
+              page={page}
+              pageSize={pageSize}
+              totalElements={totalElements}
+              totalPages={totalPages}
+              onPageChange={setPage}
+            />
+          </div>
         </div>
       )}
     </div>
