@@ -42,6 +42,15 @@ export function formatDateTimeFull(dateStr: string): string {
  * Format a compact timestamp: "HH:mm" when the date is today, otherwise "dd.MM HH:mm".
  * Returns the input unchanged if it cannot be parsed.
  */
+/**
+ * Newest first, for a list the backend hands over in its own order. Lives here
+ * because the comparison is the part that can quietly go wrong: the backend's
+ * `yyyy-MM-dd HH:mm:ss` only sorts correctly as plain text while that format
+ * holds, so it goes through `parseBackendDate` every time.
+ */
+export const newestFirst = <T extends { createdAt: string }>(a: T, b: T): number =>
+  parseBackendDate(b.createdAt).getTime() - parseBackendDate(a.createdAt).getTime();
+
 export function formatDateTimeShort(dateStr: string): string {
   const d = parseBackendDate(dateStr);
   if (Number.isNaN(d.getTime())) return dateStr;

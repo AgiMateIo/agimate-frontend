@@ -1,7 +1,7 @@
 'use client';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'warning';
+  variant?: 'primary' | 'secondary' | 'danger' | 'warning' | 'outline';
   loading?: boolean;
   children: React.ReactNode;
 }
@@ -19,6 +19,9 @@ export function Button({
     secondary: 'bg-surface-secondary text-foreground hover:bg-border',
     danger: 'bg-error text-white hover:bg-error/90',
     warning: 'bg-warning text-white hover:bg-warning/90',
+    // Tertiary weight: an action offered rather than urged — retrying a failed
+    // section, rotating a key. Same outline RowAction uses, at button size.
+    outline: 'border border-border text-foreground hover:bg-surface-secondary',
   };
 
   return (

@@ -5,7 +5,7 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query';
 import apiService from '@/services/api';
-import { parseBackendDate } from '@/utils/date';
+import { newestFirst } from '@/utils/date';
 import type { AgentResponse, PagedResponse } from '@/types';
 
 export const agentKeys = {
@@ -36,10 +36,7 @@ const NEWEST_FIRST = 'createdAt,desc';
 
 const byCreatedAtDesc = (page: PagedResponse<AgentResponse>) => ({
   ...page,
-  content: [...page.content].sort(
-    (a, b) =>
-      parseBackendDate(b.createdAt).getTime() - parseBackendDate(a.createdAt).getTime(),
-  ),
+  content: [...page.content].sort(newestFirst),
 });
 
 export const agentsListOptions = (teamId?: string) =>

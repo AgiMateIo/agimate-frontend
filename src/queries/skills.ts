@@ -212,7 +212,7 @@ export function useConnectorSkillsQuery(connectorCode: string) {
   };
 }
 
-export function useSkillsCacheActions() {
+export function useSkillCacheActions() {
   const queryClient = useQueryClient();
   return {
     // Optimistically drop the skill from every cached list page, then refetch

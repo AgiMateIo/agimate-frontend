@@ -19,10 +19,10 @@ export const runKeys = {
   prompt: (runId: string) => [...runKeys.detail(runId), 'prompt'] as const,
 };
 
-// There is no `GET /manage/runs/{id}`: the row exists only inside a page of the
-// list. So a list hands the row it already has to the detail page before
-// navigating, and the page reads it back from here — a deep link then costs no
-// request at all.
+// A run's row can be had two ways: the list already holds it, and
+// `GET /manage/runs/{id}` answers with the same projection. So a list hands the
+// row it has to the detail page before navigating and a click costs no request;
+// a cold-opened deep link falls through to the fetch in `useRunSummary`.
 export function primeRunSummary(queryClient: QueryClient, run: RunResponse) {
   queryClient.setQueryData(runKeys.summary(run.id), run);
 }

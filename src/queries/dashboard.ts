@@ -135,7 +135,6 @@ export interface AttentionSignal {
 const jobScanOptions = (refreshSeconds: number | null) => ({
   queryKey: dashboardKeys.jobScan(),
   queryFn: () => apiService.getConnectorJobs({ size: JOB_SCAN_SIZE }),
-  staleTime: 30_000,
   refetchInterval: toInterval(refreshSeconds),
 });
 
@@ -157,13 +156,11 @@ export function useAttentionSignals(refreshSeconds: number | null = null) {
       {
         queryKey: dashboardKeys.toolLogs('errors'),
         queryFn: () => apiService.getToolUseLogs({ status: 'ERROR', size: SAMPLE_SIZE }),
-        staleTime: 30_000,
         refetchInterval: toInterval(refreshSeconds),
       },
       {
         queryKey: dashboardKeys.toolLogs('denied'),
         queryFn: () => apiService.getToolUseLogs({ accessEffect: 'DENY', size: SAMPLE_SIZE }),
-        staleTime: 30_000,
         refetchInterval: toInterval(refreshSeconds),
       },
       // Same key as the connections count — one request serves both.
@@ -171,7 +168,6 @@ export function useAttentionSignals(refreshSeconds: number | null = null) {
       {
         queryKey: dashboardKeys.webhookScan(),
         queryFn: () => apiService.getWebhookDeliveryLogs({ size: WEBHOOK_SCAN_SIZE }),
-        staleTime: 30_000,
         refetchInterval: toInterval(refreshSeconds),
       },
     ],

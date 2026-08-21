@@ -63,7 +63,6 @@ export function useLlmUsageQuery() {
   return useQuery({
     queryKey: llmProviderKeys.usage(),
     queryFn: () => apiService.getLlmUsage(),
-    staleTime: 30_000,
   });
 }
 

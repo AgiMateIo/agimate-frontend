@@ -13,6 +13,10 @@ import { useIsGuest } from '@/hooks/useIsGuest';
 // The one dashboard route a guest account may open: it holds the device list,
 // and someone who has just lost a phone must not wait for account approval to
 // revoke a sign-in. Everything else is replaced by the pending notice.
+// Matched exactly, not by prefix: an allow-list decides who gets in, so a route
+// added under /dashboard/settings later has to be listed here on purpose rather
+// than inherit access from its parent. The cost is remembering to add it — which
+// is the direction to fail in.
 const GUEST_ALLOWED_ROUTES = ['/dashboard/settings'];
 
 export default function DashboardLayout({

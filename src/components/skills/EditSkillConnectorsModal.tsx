@@ -8,7 +8,7 @@ import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import apiService from '@/services/api';
 import { SkillResponse } from '@/types';
 import { connectorCatalogOptions } from '@/queries/connectors';
-import { useSkillsCacheActions } from '@/queries/skills';
+import { useSkillCacheActions } from '@/queries/skills';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
@@ -26,7 +26,7 @@ export default function EditSkillConnectorsModal({
 }: EditSkillConnectorsModalProps) {
   const t = useTranslations('Skills');
   const tc = useTranslations('Common');
-  const { invalidateSkill, invalidateLists } = useSkillsCacheActions();
+  const { invalidateSkill, invalidateLists } = useSkillCacheActions();
 
   const { data: catalog = [], isLoading: catalogLoading } = useQuery(
     connectorCatalogOptions(),

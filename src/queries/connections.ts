@@ -6,7 +6,7 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query';
 import apiService from '@/services/api';
-import { parseBackendDate } from '@/utils/date';
+import { newestFirst } from '@/utils/date';
 import type {
   ConnectionResponse,
   ConnectorCatalogEntry,
@@ -36,11 +36,7 @@ export interface ConnectionWithConnector {
 
 // Newest first. The endpoint returns the whole list rather than a page, so
 // sorting here covers every connection, not just what one page happened to hold.
-const byCreatedAtDesc = (connections: ConnectionResponse[]) =>
-  [...connections].sort(
-    (a, b) =>
-      parseBackendDate(b.createdAt).getTime() - parseBackendDate(a.createdAt).getTime(),
-  );
+const byCreatedAtDesc = (connections: ConnectionResponse[]) => [...connections].sort(newestFirst);
 
 export const connectionsListOptions = (connectorCode?: string) =>
   queryOptions({

@@ -10,6 +10,7 @@ import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { useAppDetailQuery } from '@/queries/apps';
 import RegenerateConnectorKeyModal from '@/components/connectors/RegenerateConnectorKeyModal';
 import { Placeholder } from '@/components/ui/Placeholder';
+import { Button } from '@/components/ui/Button';
 
 function ConnectorContent({ id }: { id: string }) {
   const t = useTranslations('Connectors');
@@ -53,12 +54,9 @@ function ConnectorContent({ id }: { id: string }) {
 
         {/* Action Buttons */}
         <div className="flex gap-3 mt-6 pt-4 border-t border-border">
-          <button
-            onClick={() => setShowRegenerate(true)}
-            className="px-4 py-2 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-surface-secondary transition-colors"
-          >
+          <Button variant="outline" onClick={() => setShowRegenerate(true)}>
             {t('regenerateKey')}
-          </button>
+          </Button>
         </div>
       </div>
 

@@ -10,7 +10,7 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { SkillDetailResponse } from '@/types';
-import { useSkillDetailSuspenseQuery, useSkillsCacheActions } from '@/queries/skills';
+import { useSkillDetailSuspenseQuery, useSkillCacheActions } from '@/queries/skills';
 import { connectorCatalogOptions } from '@/queries/connectors';
 import { Button } from '@/components/ui/Button';
 import { FormField, TextArea } from '@/components/ui/FormField';
@@ -38,7 +38,7 @@ function SkillDetailContent({ skillId }: { skillId: string }) {
   const { user } = useUser();
 
   const { data: skill } = useSkillDetailSuspenseQuery(skillId);
-  const { invalidateSkill } = useSkillsCacheActions();
+  const { invalidateSkill } = useSkillCacheActions();
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 

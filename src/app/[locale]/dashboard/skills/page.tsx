@@ -8,7 +8,7 @@ import { FilterPill, FilterRow } from '@/components/ui/FilterPill';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import {
   useSkillPickerSuspenseQuery,
-  useSkillsCacheActions,
+  useSkillCacheActions,
   type SkillPickerSource,
 } from '@/queries/skills';
 import { Link } from '@/i18n/navigation';
@@ -36,7 +36,7 @@ function SkillsContent({
 }) {
   const t = useTranslations('Skills');
   const { skills, truncated } = useSkillPickerSuspenseQuery(source, search);
-  const { removeSkillFromLists } = useSkillsCacheActions();
+  const { removeSkillFromLists } = useSkillCacheActions();
   // Remounted by the caller's key whenever the source or search changes, which
   // collapses the list back to one chunk.
   const [visible, setVisible] = useState(CHUNK);

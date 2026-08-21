@@ -52,7 +52,6 @@ export function useAdminUserUsageQuery(userId: string) {
   return useQuery({
     queryKey: adminKeys.usage(userId),
     queryFn: () => apiService.getAdminUserLlmUsage(userId),
-    staleTime: 30_000,
   });
 }
 

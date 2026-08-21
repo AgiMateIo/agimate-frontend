@@ -7,7 +7,7 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { SkillResponse } from '@/types';
-import { useSkillDetailQuery, useSkillsCacheActions } from '@/queries/skills';
+import { useSkillDetailQuery, useSkillCacheActions } from '@/queries/skills';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
@@ -26,7 +26,7 @@ export default function EditSkillPage() {
 
   const { user } = useUser();
   const { data: skill, isPending: pageLoading, error: queryError } = useSkillDetailQuery(skillId);
-  const { invalidateSkill, invalidateLists } = useSkillsCacheActions();
+  const { invalidateSkill, invalidateLists } = useSkillCacheActions();
   const pageError = queryError ? getErrorMessage(queryError, 'Failed to load skill') : null;
 
   useSetBreadcrumb(skillId, skill?.title);

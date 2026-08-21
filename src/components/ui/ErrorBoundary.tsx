@@ -4,6 +4,7 @@ import { Component, type ReactNode } from 'react';
 import { QueryErrorResetBoundary } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { Button } from '@/components/ui/Button';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -31,13 +32,7 @@ function DefaultErrorFallback({ error, reset }: { error: Error; reset: () => voi
   return (
     <div className="space-y-3">
       <ErrorAlert>{error.message}</ErrorAlert>
-      <button
-        type="button"
-        onClick={reset}
-        className="px-4 py-2 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-surface-secondary transition-colors"
-      >
-        {t('retry')}
-      </button>
+      <Button variant="outline" onClick={reset}>{t('retry')}</Button>
     </div>
   );
 }
