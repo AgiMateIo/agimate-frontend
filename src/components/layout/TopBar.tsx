@@ -8,7 +8,13 @@ import { useBreadcrumbOverrides } from '@/contexts/BreadcrumbContext';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import LocaleSwitcher from '@/components/ui/LocaleSwitcher';
 import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
-import { Bars3Icon, ChevronRightIcon, Cog6ToothIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import {
+  ArrowRightStartOnRectangleIcon,
+  Bars3Icon,
+  ChevronRightIcon,
+  Cog6ToothIcon,
+  ShieldCheckIcon,
+} from '@heroicons/react/24/outline';
 import { useEffect, useRef, useState } from 'react';
 
 // `disabled` drops every in-app link (breadcrumbs, settings) and leaves only the
@@ -197,8 +203,12 @@ export default function TopBar({
                 setShowUserMenu(false);
                 logout();
               }}
-              className="w-full text-left px-4 py-2 text-sm text-error hover:bg-surface-secondary transition-colors"
+              className="flex items-center gap-3 w-full text-left px-4 py-2 text-sm text-error hover:bg-surface-secondary transition-colors"
             >
+              {/* The icon inherits the row's error colour instead of the muted
+                  grey the links above use — signing out is the one item here
+                  that is not navigation. */}
+              <ArrowRightStartOnRectangleIcon className="h-5 w-5" />
               {t('logOut')}
             </button>
           </div>
