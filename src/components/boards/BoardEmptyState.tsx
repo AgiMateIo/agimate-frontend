@@ -18,7 +18,12 @@ export default function BoardEmptyState({ teamId, onCreated }: BoardEmptyStatePr
 
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
-      <ClipboardDocumentListIcon className="h-16 w-16 text-muted mb-4" />
+      {/* Warm rather than muted grey: an empty screen is the one moment the product
+          has nothing to show and every reason to look welcoming, and `warm` is the
+          only ink in the palette that answers the cool accent. */}
+      <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-warm/10">
+        <ClipboardDocumentListIcon className="h-10 w-10 text-warm" />
+      </div>
       <h2 className="text-xl font-semibold text-foreground mb-2">{t('noBoard')}</h2>
       <p className="text-muted text-sm mb-6 max-w-sm">{t('noBoardDescription')}</p>
       <Button onClick={() => setShowModal(true)}>

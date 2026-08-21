@@ -2,8 +2,8 @@ import type { ComponentType, ReactNode, SVGProps } from 'react';
 
 // Compact pill for a card's secondary row (host, model, timestamp, count) and for
 // the status labels that sit beside a title. `default` is an outlined neutral pill;
-// the tinted tones carry light semantic weight.
-export type ChipTone = 'default' | 'accent' | 'warning' | 'success' | 'error' | 'muted';
+// the tinted tones carry light semantic weight, except `warm`, which is decorative.
+export type ChipTone = 'default' | 'accent' | 'warning' | 'success' | 'error' | 'muted' | 'warm';
 
 const TONES: Record<ChipTone, string> = {
   default: 'border border-border text-muted',
@@ -12,6 +12,10 @@ const TONES: Record<ChipTone, string> = {
   success: 'bg-success/10 text-success',
   error: 'bg-error/10 text-error',
   muted: 'bg-muted/10 text-muted',
+  // Decorative, never semantic. It sits 20 degrees from `warning` in hue and is
+  // told apart by saturation alone — 26% against 92% — so do not put the two
+  // side by side on the same row and expect them to be read as different states.
+  warm: 'bg-warm/10 text-warm',
 };
 
 interface ChipProps {

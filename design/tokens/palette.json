@@ -10,8 +10,9 @@
       "600": { "$value": "#1c6975" }
     },
     "mocha": {
-      "$description": "Mocha Mousse — the warm hue the neutrals are tinted with, and the landing aurora.",
-      "500": { "$value": "#a47764" }
+      "$description": "Mocha Mousse — the warm hue the neutrals are tinted with, the landing aurora, and the one warm ink the interface is allowed. It reads as earth rather than as a signal because of its saturation, 26% against the warning amber's 92%, not because of its hue, which sits only 20 degrees away.",
+      "500": { "$value": "#a47764" },
+      "600": { "$value": "#8a6250", "$description": "Mocha deep enough to be an ink on the light ground — 4.97 against it, where the 500 manages only 3.63." }
     },
     "warm": {
       "$description": "Neutrals, warm rather than grey. 950-800 carry the dark theme, 300-100 the light one.",

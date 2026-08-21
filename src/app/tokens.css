@@ -19,6 +19,8 @@
   --success: #22c55e;
   --warning: #f59e0b;
   --error: #ef4444;
+  /* The warm counterweight. Everything the eye lands on is otherwise cool, and the warmth of the palette lives only in the ground; this is the one ink allowed to answer it — empty states, illustration, decorative marks. Deliberately not interactive: the accent owns actions, and a warm control would compete with the warning tone. */
+  --warm: #a47764;
   /* Logo, the band that carries the accent. */
   --mark-ink: #228391;
   /* Logo, the alternating band. */
@@ -68,6 +70,7 @@
     --success: #22c55e;
     --warning: #f59e0b;
     --error: #ef4444;
+    --warm: #8a6250;
     --mark-ink: #1c6975;
     /* 2.79 against the light ground — under the 3.0 non-text bar, which exempts logotypes. Do not reuse for controls. */
     --mark-ink-light: #1fa4b8;
@@ -93,6 +96,7 @@
   --success: #22c55e;
   --warning: #f59e0b;
   --error: #ef4444;
+  --warm: #8a6250;
   --mark-ink: #1c6975;
   /* 2.79 against the light ground — under the 3.0 non-text bar, which exempts logotypes. Do not reuse for controls. */
   --mark-ink-light: #1fa4b8;
@@ -116,6 +120,7 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-error: var(--error);
+  --color-warm: var(--warm);
   --color-mark-ink: var(--mark-ink);
   --color-mark-ink-light: var(--mark-ink-light);
   --color-accent-glow: var(--accent-glow);

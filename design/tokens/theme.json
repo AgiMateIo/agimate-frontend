@@ -3,126 +3,55 @@
   "theme": {
     "$type": "color",
     "dark": {
-      "background": {
-        "$value": "{palette.warm.950}"
-      },
-      "surface": {
-        "$value": "{palette.warm.900}"
-      },
-      "surface-secondary": {
-        "$value": "{palette.warm.850}"
-      },
-      "border": {
-        "$value": "{palette.warm.800}"
-      },
-      "foreground": {
-        "$value": "{palette.slate.50}"
-      },
-      "muted": {
-        "$value": "{palette.slate.400}"
-      },
-      "accent": {
-        "$value": "{palette.teal.500}"
-      },
-      "accent-foreground": {
-        "$value": "{palette.white}"
-      },
+      "background":        { "$value": "{palette.warm.950}" },
+      "surface":           { "$value": "{palette.warm.900}" },
+      "surface-secondary": { "$value": "{palette.warm.850}" },
+      "border":            { "$value": "{palette.warm.800}" },
+      "foreground":        { "$value": "{palette.slate.50}" },
+      "muted":             { "$value": "{palette.slate.400}" },
+      "accent":            { "$value": "{palette.teal.500}" },
+      "accent-foreground": { "$value": "{palette.white}" },
       "backdrop-start": {
         "$value": "{palette.warm.900}",
         "$description": "Landing backdrop gradient. Not surface: the backdrop is its own plane, and tying it to a surface role would move it whenever cards change."
       },
-      "backdrop-end": {
-        "$value": "{palette.warm.950}"
+      "backdrop-end":      { "$value": "{palette.warm.950}" },
+      "success":           { "$value": "{palette.signal.green}" },
+      "warning":           { "$value": "{palette.signal.amber}" },
+      "error":             { "$value": "{palette.signal.red}" },
+      "warm": {
+        "$value": "{palette.mocha.500}",
+        "$description": "The warm counterweight. Everything the eye lands on is otherwise cool, and the warmth of the palette lives only in the ground; this is the one ink allowed to answer it — empty states, illustration, decorative marks. Deliberately not interactive: the accent owns actions, and a warm control would compete with the warning tone."
       },
-      "success": {
-        "$value": "{palette.signal.green}"
-      },
-      "warning": {
-        "$value": "{palette.signal.amber}"
-      },
-      "error": {
-        "$value": "{palette.signal.red}"
-      },
-      "mark-ink": {
-        "$value": "{palette.teal.500}",
-        "$description": "Logo, the band that carries the accent."
-      },
-      "mark-ink-light": {
-        "$value": "{palette.teal.300}",
-        "$description": "Logo, the alternating band."
-      },
-      "accent-glow": {
-        "$value": "#2283914d",
-        "$description": "Accent at 30% — the agent-activate halo. Alpha is baked in; there is no alpha channel in the CSS var otherwise."
-      },
-      "aurora-tint": {
-        "$value": "#a4776433",
-        "$description": "Mocha at 20% — peak tint of one landing gradient layer. They overlap, so the backdrop reaches higher."
-      },
-      "card-shadow": {
-        "$type": "shadow",
-        "$value": "none",
-        "$description": "The dark theme separates surfaces with border and tone, not shadow."
-      }
+      "mark-ink": { "$value": "{palette.teal.500}", "$description": "Logo, the band that carries the accent." },
+      "mark-ink-light": { "$value": "{palette.teal.300}", "$description": "Logo, the alternating band." },
+      "accent-glow": { "$value": "#2283914d", "$description": "Accent at 30% — the agent-activate halo. Alpha is baked in; there is no alpha channel in the CSS var otherwise." },
+      "aurora-tint": { "$value": "#a4776433", "$description": "Mocha at 20% — peak tint of one landing gradient layer. They overlap, so the backdrop reaches higher." },
+      "card-shadow": { "$type": "shadow", "$value": "none", "$description": "The dark theme separates surfaces with border and tone, not shadow." }
     },
     "light": {
-      "background": {
-        "$value": "{palette.warm.100}"
-      },
-      "surface": {
-        "$value": "{palette.white}"
-      },
-      "surface-secondary": {
-        "$value": "{palette.warm.200}"
-      },
-      "border": {
-        "$value": "{palette.warm.300}"
-      },
-      "foreground": {
-        "$value": "{palette.slate.800}"
-      },
-      "muted": {
-        "$value": "{palette.slate.500}"
-      },
-      "accent": {
-        "$value": "{palette.teal.600}"
-      },
-      "accent-foreground": {
-        "$value": "{palette.white}"
-      },
-      "backdrop-start": {
-        "$value": "{palette.warm.200}"
-      },
-      "backdrop-end": {
-        "$value": "{palette.warm.100}"
-      },
-      "success": {
-        "$value": "{palette.signal.green}"
-      },
-      "warning": {
-        "$value": "{palette.signal.amber}"
-      },
-      "error": {
-        "$value": "{palette.signal.red}"
-      },
-      "mark-ink": {
-        "$value": "{palette.teal.600}"
-      },
+      "background":        { "$value": "{palette.warm.100}" },
+      "surface":           { "$value": "{palette.white}" },
+      "surface-secondary": { "$value": "{palette.warm.200}" },
+      "border":            { "$value": "{palette.warm.300}" },
+      "foreground":        { "$value": "{palette.slate.800}" },
+      "muted":             { "$value": "{palette.slate.500}" },
+      "accent":            { "$value": "{palette.teal.600}" },
+      "accent-foreground": { "$value": "{palette.white}" },
+      "backdrop-start":    { "$value": "{palette.warm.200}" },
+      "backdrop-end":      { "$value": "{palette.warm.100}" },
+      "success":           { "$value": "{palette.signal.green}" },
+      "warning":           { "$value": "{palette.signal.amber}" },
+      "error":             { "$value": "{palette.signal.red}" },
+      "warm":              { "$value": "{palette.mocha.600}" },
+      "mark-ink":          { "$value": "{palette.teal.600}" },
       "mark-ink-light": {
         "$value": "{palette.teal.400}",
         "$description": "2.79 against the light ground — under the 3.0 non-text bar, which exempts logotypes. Do not reuse for controls."
       },
-      "accent-glow": {
-        "$value": "#1c69754d"
-      },
-      "aurora-tint": {
-        "$value": "#a4776461",
-        "$description": "Mocha at 38% — the light ground needs more tint to show the same bloom."
-      },
-      "card-shadow": {
-        "$type": "shadow",
-        "$value": "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)"
-      }
+      "accent-glow":       { "$value": "#1c69754d" },
+      "aurora-tint": { "$value": "#a4776461", "$description": "Mocha at 38% — the light ground needs more tint to show the same bloom." },
+      "card-shadow": { "$type": "shadow", "$value": "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)" }
     }
   }
 }
