@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
 import { AgentResponse } from '@/types';
 import { Alert } from '@/components/ui/Alert';
@@ -12,24 +13,23 @@ interface DeleteAgentModalProps {
 }
 
 export default function DeleteAgentModal({ agent, onClose, onSuccess }: DeleteAgentModalProps) {
+  const t = useTranslations('Agents');
+  const tCommon = useTranslations('Common');
+
   return (
     <ConfirmDeleteModal
-      title="Delete Agent Configuration"
-      confirmLabel="Delete"
-      cancelLabel="Cancel"
+      title={t('deleteAgentTitle')}
+      confirmLabel={tCommon('delete')}
+      cancelLabel={tCommon('cancel')}
       defaultError="Failed to delete agent configuration"
       fullWidthButtons
       onConfirm={() => apiService.deleteAgent(agent.id)}
       onClose={onClose}
       onSuccess={() => onSuccess(agent.id)}
     >
-      <p className="text-foreground">
-        Are you sure you want to delete the agent <strong>{agent.name}</strong>?
-      </p>
+      <p className="text-foreground">{t('deleteAgentConfirm', { name: agent.name })}</p>
 
-      <Alert variant="warning">
-        This action cannot be undone. The agent will stop processing triggers immediately.
-      </Alert>
+      <Alert variant="warning">{t('deleteAgentWarning')}</Alert>
     </ConfirmDeleteModal>
   );
 }

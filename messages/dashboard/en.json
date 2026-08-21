@@ -433,8 +433,6 @@
     "agentCount": "Agents",
     "rowsPerPage": "Rows",
     "triggerInput": "Input",
-    "autoRefresh": "Auto-refresh",
-    "autoRefreshOff": "Off",
     "refresh": "Refresh",
     "gettingStartedTitle": "How to connect an app",
     "gettingStartedStep1": "Create an app key in the \"Apps\" tab",
@@ -632,7 +630,7 @@
     "addAgentTitle": "Create Agent",
     "editAgentTitle": "Edit Agent",
     "deleteAgentTitle": "Delete Agent",
-    "deleteAgentConfirm": "Are you sure you want to delete this agent configuration?",
+    "deleteAgentConfirm": "Are you sure you want to delete the agent \"{name}\"?",
     "selectApp": "Select App",
     "noAppsAvailable": "No apps available (all apps already have agents)",
     "prompt": "Agent Prompt",
@@ -858,7 +856,8 @@
     "unbindConnectionBreaksSkills": "This breaks {count} skills — without this connection they stop reaching the agent.",
     "bindSectionInstances": "My connections",
     "bindSectionInternal": "Built-in capabilities",
-    "bindConnectionHint": "Built-in capabilities (memory, board, sheets) are opened like any integration — and removed the same way."
+    "bindConnectionHint": "Built-in capabilities (memory, board, sheets) are opened like any integration — and removed the same way.",
+    "deleteAgentWarning": "This action cannot be undone. The agent will stop processing triggers immediately."
   },
   "LlmProviders": {
     "title": "LLM Providers",

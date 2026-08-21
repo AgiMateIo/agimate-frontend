@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { ToolJsonSchema } from '@/types';
 import { FormField, Input, Select } from '@/components/ui/FormField';
 import { Toggle } from '@/components/ui/Toggle';
@@ -25,6 +26,7 @@ export function ConfigFieldRenderer({
   onValueChange,
   onJsonChange,
 }: ConfigFieldRendererProps) {
+  const tCommon = useTranslations('Common');
   const label = schema.title || name;
   const hint = schema.description;
 
@@ -58,7 +60,7 @@ export function ConfigFieldRenderer({
                 type="button"
                 onClick={() => update(items.filter((_, idx) => idx !== i))}
                 className="shrink-0 px-2 py-1 rounded-lg text-muted hover:text-error hover:bg-error/10 transition-colors"
-                aria-label="remove"
+                aria-label={tCommon('remove')}
               >
                 ✕
               </button>

@@ -9,6 +9,7 @@ import ConnectorsTab from '@/components/connectors/ConnectorsTab';
 
 export default function ConnectorsPage() {
   const t = useTranslations('Connectors');
+  const tCommon = useTranslations('Common');
   const { copied, copy } = useClipboard();
   const apiBaseUrl = getApiBaseUrl();
 
@@ -40,7 +41,7 @@ export default function ConnectorsPage() {
           <button
             onClick={() => copy(apiBaseUrl)}
             className="shrink-0 p-2.5 rounded-lg border border-border/50 hover:bg-surface-secondary transition-colors text-muted hover:text-foreground"
-            title="Copy API URL"
+            title={tCommon('copy')}
           >
             {copied ? (
               <ClipboardDocumentCheckIcon className="w-5 h-5 text-success" />

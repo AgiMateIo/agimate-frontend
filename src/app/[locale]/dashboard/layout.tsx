@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useUser } from '@/contexts/UserContext';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { useEffect, useState } from 'react';
@@ -19,6 +20,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const t = useTranslations('Common');
   const { user, loading } = useUser();
   const isGuest = useIsGuest();
   const router = useRouter();
@@ -57,7 +59,7 @@ export default function DashboardLayout({
   if (loading && !user) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
-        <div className="text-muted">Loading...</div>
+        <div className="text-muted">{t('loading')}</div>
       </div>
     );
   }

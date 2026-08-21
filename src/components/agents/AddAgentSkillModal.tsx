@@ -34,6 +34,7 @@ interface AddAgentSkillModalProps {
 
 export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, onSuccess }: AddAgentSkillModalProps) {
   const t = useTranslations('Agents');
+  const tSkills = useTranslations('Skills');
 
   const [source, setSource] = useState<'my' | 'public'>('my');
   const [search, setSearch] = useState('');
@@ -202,7 +203,7 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
                       <span className="text-sm font-medium text-foreground">{skill.title}</span>
                       <span className="text-xs text-muted">v{skill.version}</span>
                       {skill.isPublic && (
-                        <Chip strong tone="success">public</Chip>
+                        <Chip strong tone="success">{tSkills('public')}</Chip>
                       )}
                       {isBound && (
                         <span className="text-xs text-muted">({t('alreadyBound')})</span>

@@ -418,8 +418,6 @@
     "agentCount": "Агенты",
     "rowsPerPage": "Строк",
     "triggerInput": "Входные данные",
-    "autoRefresh": "Автообновление",
-    "autoRefreshOff": "Выкл",
     "refresh": "Обновить",
     "gettingStartedTitle": "Как подключить приложение",
     "gettingStartedStep1": "Создайте ключ приложения во вкладке \"Приложения\"",
@@ -632,11 +630,11 @@
     "addAgentTitle": "Создать агента",
     "editAgentTitle": "Редактировать агента",
     "deleteAgentTitle": "Удалить агента",
-    "deleteAgentConfirm": "Вы уверены, что хотите удалить настройки этого агента?",
+    "deleteAgentConfirm": "Вы уверены, что хотите удалить агента «{name}»?",
     "selectApp": "Выберите приложение",
     "noAppsAvailable": "Нет доступных приложений (у всех уже есть агенты)",
     "prompt": "Промпт агента",
-    "promptPlaceholder": "Введите инструкции для агента...",
+    "promptPlaceholder": "Инструкции для агента...",
     "agentType": "Тип агента",
     "centrifugo": "Centrifugo",
     "centrifugoShort": "Реальное время",
@@ -858,7 +856,8 @@
     "unbindConnectionBreaksSkills": "Сломает навыков: {count}. Без этого подключения они перестанут отдаваться агенту.",
     "bindSectionInstances": "Мои подключения",
     "bindSectionInternal": "Внутренние возможности",
-    "bindConnectionHint": "Внутренние возможности (память, доска, таблицы) открываются так же, как интеграции, и так же снимаются."
+    "bindConnectionHint": "Внутренние возможности (память, доска, таблицы) открываются так же, как интеграции, и так же снимаются.",
+    "deleteAgentWarning": "Это действие необратимо. Агент немедленно перестанет обрабатывать триггеры."
   },
   "LlmProviders": {
     "title": "LLM-провайдеры",

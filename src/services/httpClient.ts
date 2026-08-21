@@ -6,6 +6,11 @@ import { routing } from '@/i18n/routing';
 import { clearCurrentSessionId, setCurrentSessionId } from './currentSession';
 
 const SERVICE_UNAVAILABLE_MESSAGE = 'SERVICE_UNAVAILABLE';
+// A backend failure that carried no message of its own: a gateway HTML page, an
+// empty body, a shape we don't know. Thrown as a code rather than "HTTP 502: Bad
+// Gateway" so ErrorAlert can translate it — the status is still on the error and
+// in the console for whoever is debugging.
+const SERVER_ERROR_MESSAGE = 'SERVER_ERROR';
 const ACCESS_DENIED_MESSAGE = 'ACCESS_DENIED';
 
 export class ApiError extends Error {
@@ -78,7 +83,7 @@ export const handleErrorResponse = async (response: Response): Promise<never> =>
   } catch {
     // If response is not JSON, throw with status text
     console.warn(`Non-JSON error response: HTTP ${response.status}: ${response.statusText}`);
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    throw new ApiError(SERVER_ERROR_MESSAGE, null, response.status);
   }
 
   // Handle nested error structure with "error.message"
@@ -92,7 +97,8 @@ export const handleErrorResponse = async (response: Response): Promise<never> =>
     throw new ApiError(errorObj.message, errorObj.details ?? null, response.status);
   }
 
-  throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  console.warn(`Error response without a message: HTTP ${response.status}: ${response.statusText}`);
+  throw new ApiError(SERVER_ERROR_MESSAGE, null, response.status);
 };
 
 // Helper function to store tokens in storage

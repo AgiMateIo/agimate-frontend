@@ -455,6 +455,10 @@
     "moreActions": "Ещё действия",
     "back": "Назад",
     "retry": "Повторить",
+    "refresh": "Обновить",
+    "autoRefresh": "Авто",
+    "autoRefreshOff": "Выкл",
+    "remove": "Убрать",
     "unexpectedErrorTitle": "Что-то пошло не так",
     "unexpectedErrorHint": "Страницу не удалось отрисовать. Обычно помогает повтор; если нет — раздел временно недоступен.",
     "loadMore": "Показать ещё",
@@ -465,7 +469,8 @@
     "daysAgo": "{count, plural, one {# день назад} few {# дня назад} other {# дней назад}}",
     "errors": {
       "SERVICE_UNAVAILABLE": "Сервис временно недоступен",
-      "ACCESS_DENIED": "Доступ запрещён"
+      "ACCESS_DENIED": "Доступ запрещён",
+      "SERVER_ERROR": "Ошибка сервера, попробуйте позже"
     },
     "filters": "Фильтры"
   },

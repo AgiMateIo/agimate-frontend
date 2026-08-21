@@ -87,7 +87,7 @@ export default function AgentForm({
         <TextArea
           value={prompt}
           onChange={(e) => onPromptChange(e.target.value)}
-          placeholder="Enter instructions for the agent..."
+          placeholder={t('promptPlaceholder')}
           rows={6}
         />
       </FormField>
