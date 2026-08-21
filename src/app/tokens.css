@@ -1,0 +1,95 @@
+/*
+ * GENERATED FILE — do not edit.
+ * Source: design/tokens/*.json — regenerate with `pnpm tokens`.
+ */
+
+/* Dark is the product's default theme. */
+:root {
+  --background: #0f0e0d;
+  --surface: #1a1715;
+  --surface-secondary: #231f1c;
+  --border: #2e2a27;
+  --foreground: #f8fafc;
+  --muted: #94a3b8;
+  --accent: #6366f1;
+  --accent-foreground: #ffffff;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  /* Logo, the band that carries the accent. */
+  --mark-ink: #6366f1;
+  /* Logo, the alternating band. */
+  --mark-ink-light: #a5b4fc;
+  /* Accent at 30% — the agent-activate halo. Alpha is baked in; there is no alpha channel in the CSS var otherwise. */
+  --accent-glow: #6366f14d;
+  /* Mocha at 20% — peak tint of one landing gradient layer. They overlap, so the backdrop reaches higher. */
+  --aurora-tint: #a4776433;
+  /* The dark theme separates surfaces with border and tone, not shadow. */
+  --card-shadow: none;
+
+  /* Buttons, inputs, rows. Tailwind rounded-lg — 271 of 541 uses, the default. */
+  --radius-control: 8px;
+  /* Cards and modals. Tailwind rounded-xl. */
+  --radius-card: 12px;
+  /* Large panels. Tailwind rounded-2xl. */
+  --radius-panel: 16px;
+  /* Chips, avatars, badges. */
+  --radius-pill: 9999px;
+  /* View-transition old/new fade — brief, so a moving card reads as one element. */
+  --motion-duration-crossfade: 120ms;
+  /* Sidebar drill slide. */
+  --motion-duration-nav: 200ms;
+  /* Kanban card travelling between columns. */
+  --motion-duration-flight: 520ms;
+  /* Card arriving from a realtime event. */
+  --motion-duration-arrive: 900ms;
+  /* Everything that moves under a person's hand. */
+  --motion-easing-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* Something appearing on its own. */
+  --motion-easing-arrive: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --background: #f8f7f5;
+    --surface: #ffffff;
+    --surface-secondary: #f0eee9;
+    --border: #d8d3cc;
+    --foreground: #1e293b;
+    --muted: #64748b;
+    --accent: #4f46e5;
+    --accent-foreground: #ffffff;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --mark-ink: #4f46e5;
+    /* 2.79 against the light ground — under the 3.0 non-text bar, which exempts logotypes. Do not reuse for controls. */
+    --mark-ink-light: #818cf8;
+    --accent-glow: #4f46e54d;
+    /* Mocha at 38% — the light ground needs more tint to show the same bloom. */
+    --aurora-tint: #a4776461;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-secondary: var(--surface-secondary);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-mark-ink: var(--mark-ink);
+  --color-mark-ink-light: var(--mark-ink-light);
+  --color-accent-glow: var(--accent-glow);
+  --color-aurora-tint: var(--aurora-tint);
+  --shadow-card: var(--card-shadow);
+  /* Not tokens: next/font sets these at runtime. */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}

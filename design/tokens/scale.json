@@ -1,0 +1,24 @@
+{
+  "$description": "Theme-independent scales. Named by role, not by Tailwind's t-shirt sizes, so the mobile app can map them to its own idiom.",
+  "radius": {
+    "$type": "dimension",
+    "control": { "$value": "8px",    "$description": "Buttons, inputs, rows. Tailwind rounded-lg — 271 of 541 uses, the default." },
+    "card":    { "$value": "12px",   "$description": "Cards and modals. Tailwind rounded-xl." },
+    "panel":   { "$value": "16px",   "$description": "Large panels. Tailwind rounded-2xl." },
+    "pill":    { "$value": "9999px", "$description": "Chips, avatars, badges." }
+  },
+  "motion": {
+    "duration": {
+      "$type": "duration",
+      "crossfade": { "$value": "120ms", "$description": "View-transition old/new fade — brief, so a moving card reads as one element." },
+      "nav":       { "$value": "200ms", "$description": "Sidebar drill slide." },
+      "flight":    { "$value": "520ms", "$description": "Kanban card travelling between columns." },
+      "arrive":    { "$value": "900ms", "$description": "Card arriving from a realtime event." }
+    },
+    "easing": {
+      "$type": "cubicBezier",
+      "standard": { "$value": [0.2, 0.8, 0.2, 1], "$description": "Everything that moves under a person's hand." },
+      "arrive":   { "$value": [0.2, 0, 0, 1],     "$description": "Something appearing on its own." }
+    }
+  }
+}

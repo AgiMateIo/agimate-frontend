@@ -1,0 +1,40 @@
+{
+  "$description": "Primitives: named paint, no roles. Nothing outside design/tokens/theme.json should reference these directly — a component that wants 'indigo' wants 'accent'.",
+  "palette": {
+    "$type": "color",
+    "indigo": {
+      "300": { "$value": "#a5b4fc" },
+      "400": { "$value": "#818cf8" },
+      "500": { "$value": "#6366f1" },
+      "600": { "$value": "#4f46e5" }
+    },
+    "mocha": {
+      "$description": "Mocha Mousse — the warm hue the neutrals are tinted with, and the landing aurora.",
+      "500": { "$value": "#a47764" }
+    },
+    "warm": {
+      "$description": "Neutrals, warm rather than grey. 950-800 carry the dark theme, 300-100 the light one.",
+      "950": { "$value": "#0f0e0d" },
+      "900": { "$value": "#1a1715" },
+      "850": { "$value": "#231f1c" },
+      "800": { "$value": "#2e2a27" },
+      "300": { "$value": "#d8d3cc" },
+      "200": { "$value": "#f0eee9" },
+      "100": { "$value": "#f8f7f5" }
+    },
+    "slate": {
+      "$description": "Cool text greys. Deliberately not warm: body copy stays neutral against the warm ground.",
+      "50":  { "$value": "#f8fafc" },
+      "400": { "$value": "#94a3b8" },
+      "500": { "$value": "#64748b" },
+      "800": { "$value": "#1e293b" }
+    },
+    "signal": {
+      "$description": "State, not brand. Identical in both themes on purpose.",
+      "green": { "$value": "#22c55e" },
+      "amber": { "$value": "#f59e0b" },
+      "red":   { "$value": "#ef4444" }
+    },
+    "white": { "$value": "#ffffff" }
+  }
+}

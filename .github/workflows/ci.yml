@@ -28,3 +28,5 @@ jobs:
 
       - name: Check i18n key parity
         run: pnpm check:i18n
+      - name: Check design tokens are in sync
+        run: pnpm tokens:check

@@ -1,26 +1,25 @@
-<!-- Favicon: the same mark as public/logo-tile.svg, cropped tighter — a browser
-     tab renders this at 16-32px, where the tile's full padding eats the detail.
-     The crop keeps 10 of plate around the ink on every side; the ink itself sits
-     at x 24..104, y 27.74..100.26 in tile coordinates.
-     At 16px the two bands are no longer separable — that is expected and is why
-     the alternation is never the only thing carrying the mark. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="14 17.74 100 92.52" role="img" aria-label="AgiMate">
+<!-- Favicon: the mark alone, one ink, on transparency — no plate.
+     One ink rather than two because a tab renders this at 16-20px, and that is
+     below the 24px floor the two-tone mark needs: at 16px the light band drops
+     out entirely against a light tab strip and the mark reads as fragments.
+     This is the same rule the brand guidelines state; the plated version used to
+     hide it, because the plate carried the recognition instead of the bands.
+     Square viewBox with the mark edge to edge horizontally and centred
+     vertically — a favicon wants every pixel it can get.
+     Theme-aware: indigo-600 on a light tab (5.87 against it), indigo-500 on a
+     dark one (4.32). Firefox and Chrome honour prefers-color-scheme inside an
+     SVG favicon; anything that does not falls back to the dark value, which
+     still holds 4.17 against a light strip.
+     src/app/favicon.ico is the fallback for Safari and older browsers and cannot
+     carry a media query — it is the same mark in the single dark-theme ink. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-3.54 -4.85 87.08 87.08" role="img" aria-label="AgiMate">
   <style>
-    /* globals.css: dark is the default, light comes from prefers-color-scheme */
-    .agimate-tile { fill: #6366f1; }
-    .agimate-mark { fill: #ffffff; }
-    @media (prefers-color-scheme: light) {
-      .agimate-tile { fill: #4f46e5; }
-    }
+    .agimate-mark { fill: #6366f1; }
+    @media (prefers-color-scheme: light) { .agimate-mark { fill: #4f46e5; } }
   </style>
-  <rect class="agimate-tile" x="14" y="17.74" width="100" height="92.52" />
-  <g transform="translate(28.10 29.27) scale(0.89736)">
-    <!-- top diamond + lower chevron: the brighter band, as in the standalone mark -->
-    <path class="agimate-mark" d="M38.23 -0.98 A2.5 2.5 0 0 1 41.77 -0.98 L52.73 9.98 A2.5 2.5 0 0 1 52.73 13.52 L41.77 24.48 A2.5 2.5 0 0 1 38.23 24.48 L27.27 13.52 A2.5 2.5 0 0 1 27.27 9.98 Z
-         M10.27 43.52 A2.5 2.5 0 0 1 10.27 39.98 L13.98 36.27 A2.5 2.5 0 0 1 17.52 36.27 L38.23 56.98 A2.5 2.5 0 0 0 41.77 56.98 L62.48 36.27 A2.5 2.5 0 0 1 66.02 36.27 L69.73 39.98 A2.5 2.5 0 0 1 69.73 43.52 L41.77 71.48 A2.5 2.5 0 0 1 38.23 71.48 Z" />
-    <!-- upper chevron + the two bottom diamonds -->
-    <path class="agimate-mark" fill-opacity="0.62" d="M10.27 20.02 A2.5 2.5 0 0 1 10.27 16.48 L13.98 12.77 A2.5 2.5 0 0 1 17.52 12.77 L38.23 33.48 A2.5 2.5 0 0 0 41.77 33.48 L62.48 12.77 A2.5 2.5 0 0 1 66.02 12.77 L69.73 16.48 A2.5 2.5 0 0 1 69.73 20.02 L41.77 47.98 A2.5 2.5 0 0 1 38.23 47.98 Z
-         M7.12 52.91 A2.5 2.5 0 0 1 10.66 52.91 L21.62 63.87 A2.5 2.5 0 0 1 21.62 67.41 L10.66 78.37 A2.5 2.5 0 0 1 7.12 78.37 L-3.84 67.41 A2.5 2.5 0 0 1 -3.84 63.87 Z
-           M69.34 52.91 A2.5 2.5 0 0 1 72.88 52.91 L83.84 63.87 A2.5 2.5 0 0 1 83.84 67.41 L72.88 78.37 A2.5 2.5 0 0 1 69.34 78.37 L58.38 67.41 A2.5 2.5 0 0 1 58.38 63.87 Z" />
-  </g>
+  <path class="agimate-mark" d="M36.46 0.79 A5.0 5.0 0 0 1 43.54 0.79 L50.96 8.21 A5.0 5.0 0 0 1 50.96 15.29 L43.54 22.71 A5.0 5.0 0 0 1 36.46 22.71 L29.04 15.29 A5.0 5.0 0 0 1 29.04 8.21 Z
+           M10.27 20.02 A5.0 5.0 0 0 1 10.27 16.48 L13.98 12.77 A5.0 5.0 0 0 1 17.52 12.77 L38.23 33.48 A5.0 5.0 0 0 0 41.77 33.48 L62.48 12.77 A5.0 5.0 0 0 1 66.02 12.77 L69.73 16.48 A5.0 5.0 0 0 1 69.73 20.02 L41.77 47.98 A5.0 5.0 0 0 1 38.23 47.98 Z
+           M10.27 43.52 A5.0 5.0 0 0 1 10.27 39.98 L13.98 36.27 A5.0 5.0 0 0 1 17.52 36.27 L38.23 56.98 A5.0 5.0 0 0 0 41.77 56.98 L62.48 36.27 A5.0 5.0 0 0 1 66.02 36.27 L69.73 39.98 A5.0 5.0 0 0 1 69.73 43.52 L41.77 71.48 A5.0 5.0 0 0 1 38.23 71.48 Z
+           M5.35 54.68 A5.0 5.0 0 0 1 12.43 54.68 L19.85 62.1 A5.0 5.0 0 0 1 19.85 69.18 L12.43 76.6 A5.0 5.0 0 0 1 5.35 76.6 L-2.07 69.18 A5.0 5.0 0 0 1 -2.07 62.1 Z
+           M67.57 54.68 A5.0 5.0 0 0 1 74.65 54.68 L82.07 62.1 A5.0 5.0 0 0 1 82.07 69.18 L74.65 76.6 A5.0 5.0 0 0 1 67.57 76.6 L60.15 69.18 A5.0 5.0 0 0 1 60.15 62.1 Z" />
 </svg>

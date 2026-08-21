@@ -1,55 +1,9 @@
 @import "tailwindcss";
 
-:root {
-  /* Dark theme (default) — warm Mocha Mousse palette */
-  --background: #0f0e0d;
-  --foreground: #f8fafc;
-  --muted: #94a3b8;
-  --border: #2e2a27;
-  --accent: #6366f1;
-  --accent-foreground: #ffffff;
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --error: #ef4444;
-  --surface: #1a1715;
-  --surface-secondary: #231f1c;
-  --card-shadow: none;
-  /* Landing aurora — peak tint of one gradient layer; they overlap, so this
-     sits well below the opacity the backdrop actually reaches. */
-  --aurora-tint: rgba(164, 119, 100, 0.20);
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    --background: #F8F7F5;
-    --foreground: #1e293b;
-    --muted: #64748b;
-    --border: #d8d3cc;
-    --accent: #4f46e5;
-    --accent-foreground: #ffffff;
-    --surface: #ffffff;
-    --surface-secondary: #F0EEE9;
-    --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-    --aurora-tint: rgba(164, 119, 100, 0.38);
-  }
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-border: var(--border);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-success: var(--success);
-  --color-warning: var(--warning);
-  --color-error: var(--error);
-  --color-surface: var(--surface);
-  --color-surface-secondary: var(--surface-secondary);
-  --shadow-card: var(--card-shadow);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/* Colour, radius and motion tokens live in design/tokens/*.json and are generated
+   into tokens.css by `pnpm tokens`. Everything below this import — keyframes,
+   the aurora, view-transition tuning — is hand-written and stays here. */
+@import "./tokens.css";
 
 html {
   scroll-behavior: smooth;
@@ -80,8 +34,8 @@ body {
 }
 
 @keyframes agent-activate {
-  0%, 100% { opacity: 0.5; box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
-  50% { opacity: 1; box-shadow: 0 0 12px 2px rgba(99, 102, 241, 0.3); }
+  0%, 100% { opacity: 0.5; box-shadow: 0 0 0 0 transparent; }
+  50% { opacity: 1; box-shadow: 0 0 12px 2px var(--accent-glow); }
 }
 
 @keyframes fade-in-up {

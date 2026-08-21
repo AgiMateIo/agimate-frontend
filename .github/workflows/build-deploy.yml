@@ -61,6 +61,8 @@ jobs:
 
       - name: Check i18n key parity
         run: pnpm check:i18n
+      - name: Check design tokens are in sync
+        run: pnpm tokens:check
 
   # The image tag for this run, resolved once and handed to every job that needs
   # it. Both ci/ scripts default to their own `git describe`, and on one runner
