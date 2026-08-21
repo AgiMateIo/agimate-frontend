@@ -7,18 +7,26 @@ import { QueryProvider } from '@/contexts/QueryProvider';
 import { YandexMetrika } from '@/components/analytics/YandexMetrika';
 import ReferralCapture from '@/components/referral/ReferralCapture';
 import { getSiteOrigin, YANDEX_VERIFICATION } from '@/utils/seo';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google';
 import { THEME_BOOT_SCRIPT } from '@/utils/theme';
 import '../globals.css';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
+// `cyrillic` is not optional here: ru is the default locale and carries ~2000
+// strings, so without it the primary language falls back to a system face.
+// IBM Plex is not variable on Google Fonts, hence the explicit weight list —
+// only the four the interface actually uses. Italic is real rather than
+// synthesised: markdown `em` in chat renders it, and a slanted roman looks it.
+const brandSans = IBM_Plex_Sans({
+  variable: '--font-brand-sans',
+  subsets: ['latin', 'cyrillic'],
+  weight: ['400', '500', '600', '700'],
+  style: ['normal', 'italic'],
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
+const brandMono = IBM_Plex_Mono({
+  variable: '--font-brand-mono',
+  subsets: ['latin', 'cyrillic'],
+  weight: ['400', '500'],
 });
 
 export async function generateMetadata({
@@ -64,13 +72,35 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale}>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    // `suppressHydrationWarning` belongs on <html> and only on <html>: the theme
+    // boot script stamps data-theme here before React hydrates, so the attribute
+    // is legitimately present in the DOM and absent from the server markup. This
+    // silences that one comparison, not the subtree below it.
+    // The font variables belong on <html>, not on <body>. Tailwind declares
+    // `--font-sans` and `--default-font-family` on `:root` — that is <html> — so a
+    // variable defined one level lower on <body> is not in scope there: both
+    // resolve to the guaranteed-invalid value and preflight quietly falls back to
+    // the system stack. That is exactly what used to happen, which is why the
+    // typeface never actually applied.
+    // `data-scroll-behavior` tells the router that the smooth scrolling declared
+    // in globals.css is deliberate, so it can disable it during route changes.
+    <html
+      lang={locale}
+      className={`${brandSans.variable} ${brandMono.variable}`}
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
+      <body className="antialiased">
         {/* First thing in the body so the stored theme is on <html> before the
             first paint. A React effect would run after it, and the page would
-            flash the OS theme on every load for anyone who overrode it. */}
+            flash the OS theme on every load for anyone who overrode it.
+            React logs a warning here about scripts inside components — it is
+            accurate and harmless: this one only has work to do on a full page
+            load, which is exactly when it runs. `next/script` with
+            `beforeInteractive` silences the warning but does not emit an
+            executable tag at all; it queues the source into `self.__next_s` for
+            Next's runtime to eval later, which is after the first paint and
+            brings the flash back. Measured, not assumed. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <NextIntlClientProvider locale={locale} messages={messages}>
           <QueryProvider>

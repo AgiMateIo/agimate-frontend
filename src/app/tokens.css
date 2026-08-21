@@ -127,6 +127,6 @@
   --color-aurora-tint: var(--aurora-tint);
   --shadow-card: var(--card-shadow);
   /* Not tokens: next/font sets these at runtime. */
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-brand-sans);
+  --font-mono: var(--font-brand-mono);
 }

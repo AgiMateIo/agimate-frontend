@@ -17,18 +17,19 @@ function withAlpha(hex: string, alpha: number): string {
 export const OG_IMAGE_SIZE = { width: 1200, height: 630 };
 export const OG_IMAGE_CONTENT_TYPE = 'image/png';
 
-// Geist with a Cyrillic subset, checked into the repo rather than pulled from a
-// CDN: rendering happens on the server on every crawler request, and a font fetch
-// that fails would silently produce a card of tofu boxes. satori reads TTF/OTF,
-// never woff2, so this cannot be the same file next/font serves to the browser.
+// IBM Plex Sans, full unsubsetted TTFs checked into the repo rather than pulled
+// from a CDN: rendering happens on the server on every crawler request, and a
+// font fetch that fails would silently produce a card of tofu boxes. satori reads
+// TTF/OTF, never woff2, so this cannot be the same file next/font serves to the
+// browser — these two must be replaced by hand whenever the typeface changes.
 //
 // They live in public/ because that is the one directory the Dockerfile copies
 // into the standalone image; bundling them next to this file would resolve to a
 // /_next/static/media URL that no server-side read can follow. Read once and
 // memoised — the cards are generated per request.
 const FONT_DIR = join(process.cwd(), 'public', 'fonts');
-const regular = readFile(join(FONT_DIR, 'Geist-Regular.ttf'));
-const semiBold = readFile(join(FONT_DIR, 'Geist-SemiBold.ttf'));
+const regular = readFile(join(FONT_DIR, 'IBMPlexSans-Regular.ttf'));
+const semiBold = readFile(join(FONT_DIR, 'IBMPlexSans-SemiBold.ttf'));
 
 // public/logo-mark.svg with both fills inlined — satori resolves neither external
 // files nor the stylesheet's prefers-color-scheme, and a card is always dark here.
@@ -93,8 +94,8 @@ export async function renderOgImage({ title, description }: { title: string; des
         {
             ...OG_IMAGE_SIZE,
             fonts: [
-                { name: 'Geist', data: await regular, weight: 400, style: 'normal' },
-                { name: 'Geist', data: await semiBold, weight: 600, style: 'normal' },
+                { name: 'IBM Plex Sans', data: await regular, weight: 400, style: 'normal' },
+                { name: 'IBM Plex Sans', data: await semiBold, weight: 600, style: 'normal' },
             ],
         },
     );

@@ -60,7 +60,7 @@ StyleDictionary.registerFormat({
       `:root[data-theme="light"] {\n${light}\n}\n` +
       `\n@theme inline {\n${theme}\n  --shadow-card: var(--card-shadow);\n` +
       `  /* Not tokens: next/font sets these at runtime. */\n` +
-      `  --font-sans: var(--font-geist-sans);\n  --font-mono: var(--font-geist-mono);\n}\n`
+      `  --font-sans: var(--font-brand-sans);\n  --font-mono: var(--font-brand-mono);\n}\n`
     );
   },
 });
