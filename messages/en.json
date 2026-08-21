@@ -196,33 +196,106 @@
     },
     "howItWorks": {
       "title": "How it works",
+      "subtitle": "Everything rests on triggers: an event arrives, the system wakes the agents it belongs to, hands them the skills for it and checks the rights on every call.",
+      "gate": "Your routing rules",
+      "parallelNote": "In parallel, not one after another",
+      "gateLabel": "Rights check",
+      "deniedLabel": "denied by a rule",
+      "channelsLabel": "The answer goes to your channel",
+      "boardNote": "The board is yours to watch, and it updates live",
       "tabs": [
         {
-          "label": "Event",
-          "title": "An event starts the agent",
-          "description": "A message in Telegram or web chat, a scheduled job, a webhook from an external system. AgiMate takes the event and hands it to the agent.",
+          "label": "Triggers",
+          "title": "It all starts with an event",
+          "description": "A trigger is what agents react to: you wrote to an agent or sent a file, someone left a review of your product, new mail arrived, another agent asked for data, a scheduled time came round. Which triggers reach which agent is yours to decide.",
           "sources": [
+            "A message or file from you",
+            "A review of your product",
+            "New mail",
+            "A request from another agent",
+            "A scheduled event"
+          ],
+          "agents": [
+            "Assistant",
+            "Analyst",
+            "Designer"
+          ]
+        },
+        {
+          "label": "Launch",
+          "title": "The system wakes the agents and hands out skills",
+          "description": "The agents the trigger belongs to stand up. Each is handed the skills this particular event needs — not their whole set. They start together and work in parallel, without waiting for one another.",
+          "trigger": "New mail",
+          "crew": [
+            {
+              "name": "Assistant",
+              "skill": "reading the mail"
+            },
+            {
+              "name": "Analyst",
+              "skill": "summing up the numbers"
+            },
+            {
+              "name": "Designer",
+              "skill": "fixing the layout"
+            }
+          ]
+        },
+        {
+          "label": "Work",
+          "title": "A tool only fires once the rights check passes",
+          "description": "An agent picks from the tools available to it, and every call goes through a check: a denied tool never fires, and the attempt stays in the log. The answer can go back through any channel you talk to it on.",
+          "tools": [
+            {
+              "name": "Read the mail",
+              "allowed": true
+            },
+            {
+              "name": "File a task",
+              "allowed": true
+            },
+            {
+              "name": "Send the reply",
+              "allowed": true
+            },
+            {
+              "name": "Delete the mail",
+              "allowed": false
+            }
+          ],
+          "channels": [
             "Telegram",
             "Web chat",
-            "Schedule",
-            "Webhook"
+            "Phone"
           ]
         },
         {
-          "label": "Agent works",
-          "title": "The agent picks the right tool",
-          "description": "The agent chooses a tool from its skills and connections. Access rules are checked before the call: a forbidden tool never fires, and the attempt stays in the log.",
-          "toolbox": [
-            "Skills",
-            "Connections",
-            "Access rules",
-            "Your model"
+          "label": "Team and board",
+          "title": "Agents work it out on the board",
+          "description": "When agents work as a team they ask each other clarifying questions and keep a shared task board: statuses, assignees, comments. The board is open to you too — you can see who took what, what they decided on, and what the context was.",
+          "question": "What's the budget?",
+          "columns": [
+            "In progress",
+            "Needs input",
+            "Done"
+          ],
+          "cards": [
+            {
+              "title": "Read the mail",
+              "agent": "Assistant",
+              "column": 0
+            },
+            {
+              "title": "Sum up the numbers",
+              "agent": "Analyst",
+              "column": 1
+            },
+            {
+              "title": "Reply sent",
+              "agent": "Assistant",
+              "column": 2
+            }
           ]
-        },
-        {
-          "label": "Result",
-          "title": "Reply and log entry",
-          "description": "The agent replies in the same channel the event came from. The call, its parameters and its result stay in the log — visible in the dashboard."
         }
       ]
     },
