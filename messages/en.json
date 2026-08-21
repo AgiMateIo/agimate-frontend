@@ -1,42 +1,154 @@
 {
   "Metadata": {
-    "title": "AgiMate — an AI agent from a ready-made role in a couple of taps",
-    "description": "Pick a ready-made role: skills and instructions are already written. Three steps and the agent answers in chat. Then tune access, channels, your own model, a team, and work with your devices.",
-    "ogTitle": "AgiMate — a working AI agent in a couple of taps",
-    "ogDescription": "Role presets instead of setup from scratch, with tuning when you need it: skills, access rules, channels, your own model, a team of agents, your phone and computer."
+    "title": "AgiMate — a multiagent harness",
+    "description": "Not one assistant but a system of agents: each with its own model, its own instructions, its own access and its own skills. Shared between them: the rules, a log of every call, and a board to work on together. Keys and passwords stay in the platform and never reach the model.",
+    "ogTitle": "AgiMate — a multiagent harness",
+    "ogDescription": "The harness around any language model: tools, keys to your systems, rules checked before the call, and a log of every action. As many agents as you need, each with its own settings."
   },
   "HomePage": {
     "nav": {
+      "harness": "The harness",
+      "agents": "Agents",
       "howItWorks": "How it works",
       "useCases": "Use cases",
-      "security": "Security",
-      "models": "Models",
       "connections": "Connections",
       "dashboard": "Dashboard",
       "login": "Sign in"
     },
     "hero": {
-      "title": "A working AI agent —",
-      "titleHighlight": "in a couple of taps.",
-      "subtitle": "Pick a ready-made role: skills and instructions are already written. Three steps and the agent answers in chat. Then tune it as far as you like — access, channels, your own model, a team of agents.",
-      "cta": "Start free",
-      "secondaryCta": "See how it works"
+      "title": "A multiagent",
+      "titleHighlight": "harness.",
+      "subtitle": "Not an assistant — a system of agents. The harness around any language model gives them tools, keys to your systems, rules and a log. As many agents as you need, each one its own: its own model, its own instructions, its own access, its own skills — and none of them ever sees a key.",
+      "cta": "Build your system free",
+      "secondaryCta": "What a harness is"
     },
     "heroScheme": {
       "steps": [
         {
-          "label": "A ready-made role",
-          "sub": "instructions already written"
+          "label": "Event",
+          "sub": "message, schedule, webhook"
         },
         {
-          "label": "Skills",
-          "sub": "already ticked for you"
+          "label": "The harness",
+          "sub": "agents with their own models, rights and skills"
         },
         {
-          "label": "The agent answers",
-          "sub": "in the dashboard chat"
+          "label": "Action",
+          "sub": "in your system, not advice in a chat"
         }
       ]
+    },
+    "harness": {
+      "title": "What a harness is",
+      "subtitle": "A language model does one thing — write text. Everything that turns text into work sits around it. One harness for the whole system; the settings belong to each agent.",
+      "plainLabel": "In plain words:",
+      "items": [
+        {
+          "title": "Hands — the tools",
+          "tech": "The concrete calls that connections bring in: MCP servers, your own API behind a key, connectors to Telegram, your phone and your computer. A tool appears for an agent together with the binding.",
+          "plain": "What the agent can do at all: send a message, file a task, read a spreadsheet. The toolbox."
+        },
+        {
+          "title": "Craft — the skills",
+          "tech": "A skill is written know-how for using tools: the order of steps, the rules, and the connectors it needs. It is versioned, reused across agents, and picked from a shared catalogue.",
+          "plain": "Tools are what an agent can do. A skill is how well it handles them: which one to reach for, in what order, when to stop and ask. Without it the agent holds the hammer without knowing what for."
+        },
+        {
+          "title": "Keys — held by the harness, not the agent",
+          "tech": "A connection's credentials stay on the platform side. The agent only ever gets tool descriptions and calls them by name — no key, no token, no password reaches the model.",
+          "plain": "The agent doesn't know your passwords. It never sees them: it says \"send the email\", and the harness supplies the key, outside the model."
+        },
+        {
+          "title": "Rails — rules checked before the call",
+          "tech": "Allow or deny an individual tool and its parameters, up to closing a connection entirely.",
+          "plain": "\"Reading is fine, deleting isn't.\" Checked before the agent touches the service, not after."
+        },
+        {
+          "title": "Trail — the log of every action",
+          "tech": "The run, its steps, every call with parameters and result, token spend per model.",
+          "plain": "You can see what the agent actually did and why. Not \"it seems to have broken something\", but a line with the parameters and the answer."
+        },
+        {
+          "title": "Team — agents in one harness",
+          "tech": "An agentic team over a shared task board, updating live in the dashboard.",
+          "plain": "One agent isn't enough for the job — put a second one beside it. You can see who took what and where it stands."
+        }
+      ],
+      "callout": "An agent can be talked into things — it is a language model, after all. But it cannot hand over a key: it doesn't have one. The most it can do is try to call a tool, and that runs into the rules and stays in the log."
+    },
+    "agents": {
+      "title": "Every agent its own",
+      "subtitle": "One agent holding every key and every tool is exactly the all-or-nothing problem. A system of narrow agents is safer, more accurate and cheaper.",
+      "plainLabel": "In plain words:",
+      "axes": [
+        {
+          "title": "Its own model",
+          "tech": "The provider and the priority list of models are set on the agent, separately for chat, vision and image generation.",
+          "plain": "An expensive model where thinking is needed, a cheap one where it's shuffling data. You pay per job, not one flat rate for everything."
+        },
+        {
+          "title": "Its own instructions",
+          "tech": "Each agent carries its own instruction text — from a ready-made role or from scratch.",
+          "plain": "Each has its own manner and its own ground rules. One answers a customer briefly and politely, another works through the numbers in detail."
+        },
+        {
+          "title": "Its own access",
+          "tech": "Connections are bound to a specific agent, and inside a binding there are rules for individual tools and their parameters.",
+          "plain": "Like clearances for staff. One holds the keys to email, another to the spreadsheets, and nobody holds keys to everything."
+        },
+        {
+          "title": "Its own skills",
+          "tech": "The skill set is assembled on the agent; another agent's tools never show up in it.",
+          "plain": "An agent can do exactly what its role needs. Less lying around means less chance of reaching for the wrong tool."
+        }
+      ],
+      "table": {
+        "columns": [
+          "Agent",
+          "Model",
+          "Instructions",
+          "Access",
+          "Skills"
+        ],
+        "rows": [
+          [
+            "Analyst",
+            "strong",
+            "“go deep, show your working”",
+            "data and reports — read only",
+            "summaries, charts"
+          ],
+          [
+            "Assistant",
+            "cheap, fast",
+            "“remember what matters, remind me early”",
+            "calendar over MCP, push to the phone",
+            "fact notes, reminders"
+          ],
+          [
+            "Designer",
+            "vision and image generation",
+            "“show three options, then refine one”",
+            "files: read and write",
+            "image editing, generation"
+          ],
+          [
+            "Language tutor",
+            "mid-range",
+            "“correct gently, praise a streak”",
+            "Telegram, a vocabulary file",
+            "vocabulary, error review, motivation"
+          ],
+          [
+            "Home accountant",
+            "mid-range, careful with numbers",
+            "“count from receipts, ask when they don't add up”",
+            "the expenses sheet in files",
+            "expense tracking, monthly summary"
+          ]
+        ]
+      },
+      "tableNote": "Five agents, five token bills and five separate sets of keys. What they share is the harness: one set of rules, one log, one board."
     },
     "quickStart": {
       "title": "Three steps to a working agent",
@@ -79,23 +191,6 @@
         {
           "title": "Someone else's model, someone else's bill",
           "description": "The model was chosen for you, spend is invisible, tokens are resold at a markup. Switching providers isn't an option."
-        }
-      ]
-    },
-    "solution": {
-      "title": "An agent you assemble, under rules you set",
-      "columns": [
-        {
-          "title": "Starts from a ready-made role",
-          "description": "The preset brings instructions and a set of skills — three steps and the agent answers in chat. None of it is locked: edit before creation and after."
-        },
-        {
-          "title": "You grant the access",
-          "description": "The agent only sees the connections you bind to it. Inside a connection there are rules: this tool is allowed, this one isn't, this one only with these parameters."
-        },
-        {
-          "title": "Every call in the log",
-          "description": "Who called what, when, with what result. Denials are logged too — so you can see exactly what the agent tried to do."
         }
       ]
     },
@@ -244,8 +339,8 @@
     },
     "connections": {
       "channels": {
-        "title": "Where your agent lives",
-        "subtitle": "Talk to your agent wherever suits you",
+        "title": "Where your agents live",
+        "subtitle": "Talk to your agents wherever suits you",
         "soonLabel": "Coming soon",
         "items": [
           {
@@ -254,6 +349,11 @@
           },
           {
             "name": "Web chat",
+            "soon": false
+          },
+          {
+            "name": "Mobile phone",
+            "note": "Android app with a chat",
             "soon": false
           },
           {

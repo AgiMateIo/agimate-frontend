@@ -12,7 +12,6 @@ import {
   ShieldExclamationIcon,
   EyeSlashIcon,
   BanknotesIcon,
-  Squares2X2Icon,
   ShieldCheckIcon,
   ClipboardDocumentListIcon,
   BoltIcon,
@@ -24,6 +23,8 @@ import {
   SparklesIcon,
   ChartBarIcon,
   UserGroupIcon,
+  DocumentTextIcon,
+  AcademicCapIcon,
   DevicePhoneMobileIcon,
   ComputerDesktopIcon,
   ChatBubbleLeftRightIcon,
@@ -31,7 +32,22 @@ import {
 } from '@heroicons/react/24/outline';
 
 const problemIcons = [ShieldExclamationIcon, EyeSlashIcon, BanknotesIcon];
-const solutionIcons = [Squares2X2Icon, ShieldCheckIcon, ClipboardDocumentListIcon];
+// Order mirrors harness.items: tools → skills → keys → rails → trail → team.
+// The log card is deliberately not called "memory": agents have memory of their
+// own (the notes mixed into a run's first model call), and it is the opposite of
+// this — what the agent recalls versus what you can check afterwards.
+// Tools and skills are two cards, not one: a tool is what the agent can do at
+// all, a skill is the written know-how for handling it.
+const harnessIcons = [
+  WrenchScrewdriverIcon,
+  AcademicCapIcon,
+  KeyIcon,
+  ShieldCheckIcon,
+  ClipboardDocumentListIcon,
+  UserGroupIcon,
+];
+// Order mirrors agents.axes: model → instructions → access → skills.
+const agentAxisIcons = [SparklesIcon, DocumentTextIcon, KeyIcon, AcademicCapIcon];
 const tabIcons = [BoltIcon, WrenchScrewdriverIcon, CheckCircleIcon];
 // Order mirrors security.items: binding gate → pre-call rules → log.
 const securityIcons = [ShieldCheckIcon, AdjustmentsHorizontalIcon, ClipboardDocumentListIcon];
@@ -43,7 +59,9 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState(0);
 
   const problemItems = t.raw('problems.items') as Array<{ title: string; description: string }>;
-  const solutionColumns = t.raw('solution.columns') as Array<{ title: string; description: string }>;
+  const harnessItems = t.raw('harness.items') as PlainItem[];
+  const agentAxes = t.raw('agents.axes') as PlainItem[];
+  const agentTable = t.raw('agents.table') as { columns: string[]; rows: string[][] };
   const howItWorksTabs = t.raw('howItWorks.tabs') as Array<{
     label: string;
     title: string;
@@ -65,6 +83,7 @@ export default function HomePage() {
   const modelItems = t.raw('models.items') as Array<{ title: string; description: string }>;
   const channelItems = t.raw('connections.channels.items') as Array<{
     name: string;
+    note?: string;
     soon: boolean;
   }>;
   const integrationItems = t.raw('connections.integrations.items') as string[];
@@ -75,7 +94,12 @@ export default function HomePage() {
     button: string;
   }>;
 
-  const channelIcons = [ChatBubbleLeftRightIcon, GlobeAltIcon, ChatBubbleLeftRightIcon];
+  const channelIcons = [
+    ChatBubbleLeftRightIcon,
+    GlobeAltIcon,
+    DevicePhoneMobileIcon,
+    ChatBubbleLeftRightIcon,
+  ];
   const installIcons = [DevicePhoneMobileIcon, ComputerDesktopIcon, BoltIcon];
   const installHrefs = ['/android', '/desktop', '/n8n'];
 
@@ -86,10 +110,10 @@ export default function HomePage() {
       {/* Header */}
       <LandingHeader
         navLinks={[
+          { href: '#harness', label: t('nav.harness') },
+          { href: '#agents', label: t('nav.agents') },
           { href: '#how-it-works', label: t('nav.howItWorks') },
           { href: '#use-cases', label: t('nav.useCases') },
-          { href: '#security', label: t('nav.security') },
-          { href: '#models', label: t('nav.models') },
           { href: '#connections', label: t('nav.connections') },
         ]}
         loginLabel={t('nav.login')}
@@ -126,7 +150,7 @@ export default function HomePage() {
             </Link>
           )}
           <a
-            href="#how-it-works"
+            href="#harness"
             className="w-full sm:w-auto justify-center inline-flex items-center gap-2 rounded-lg border border-border px-7 py-3.5 font-medium text-foreground hover:bg-surface-secondary transition-colors"
           >
             {t('hero.secondaryCta')}
@@ -139,6 +163,111 @@ export default function HomePage() {
             steps={t.raw('heroScheme.steps') as HeroStep[]}
           />
         </div>
+      </section>
+
+      {/* Harness — the position itself: the model only talks, everything around it
+          does the work. Every card carries the technical line and a plain-language
+          one under it; the callout is the claim the rest of the page leans on —
+          credentials stay in the platform, so there is nothing in the model to leak. */}
+      <section id="harness" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">
+          {t('harness.title')}
+        </h2>
+        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-2xl text-center text-muted">
+          {t('harness.subtitle')}
+        </p>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {harnessItems.map((item, i) => {
+            const Icon = harnessIcons[i];
+            return (
+              <div
+                key={item.title}
+                className="rounded-2xl border border-accent/20 bg-surface shadow-card p-6"
+              >
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                  <Icon className="h-6 w-6" />
+                </div>
+                <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
+                <p className="text-sm leading-relaxed text-muted">{item.tech}</p>
+                <p className="mt-3 border-t border-border/50 pt-3 text-sm leading-relaxed text-foreground/80">
+                  <span className="font-medium text-accent">{t('harness.plainLabel')} </span>
+                  {item.plain}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+        <p className="mx-auto mt-8 max-w-3xl rounded-2xl border border-accent/20 bg-accent/5 p-6 text-center text-sm leading-relaxed sm:text-base">
+          {t('harness.callout')}
+        </p>
+      </section>
+
+      {/* Agents — the multi-agent half of the position. The table is the proof:
+          "every agent its own" stays a buzzword until three of them sit side by side
+          with different models, rights and bills. */}
+      <section id="agents" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">
+          {t('agents.title')}
+        </h2>
+        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-2xl text-center text-muted">
+          {t('agents.subtitle')}
+        </p>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {agentAxes.map((item, i) => {
+            const Icon = agentAxisIcons[i];
+            return (
+              <div
+                key={item.title}
+                className="rounded-2xl border border-border/50 bg-surface shadow-card p-6"
+              >
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                  <Icon className="h-6 w-6" />
+                </div>
+                <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
+                <p className="text-sm leading-relaxed text-muted">{item.tech}</p>
+                <p className="mt-3 border-t border-border/50 pt-3 text-sm leading-relaxed text-foreground/80">
+                  <span className="font-medium text-accent">{t('agents.plainLabel')} </span>
+                  {item.plain}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Three agents side by side. Narrower than the table's min width the row
+            scrolls inside its own box rather than dragging the page sideways. */}
+        <div className="mt-8 overflow-x-auto rounded-2xl border border-border/50 bg-surface shadow-card">
+          <table className="w-full min-w-[760px] border-collapse text-left text-sm">
+            <thead>
+              <tr className="border-b border-border/50 text-xs uppercase tracking-wide text-muted">
+                {agentTable.columns.map((col) => (
+                  <th key={col} className="px-4 py-3 font-medium">
+                    {col}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {agentTable.rows.map((row) => (
+                <tr key={row[0]} className="border-b border-border/30 last:border-0">
+                  {row.map((cell, i) => (
+                    <td
+                      key={`${row[0]}-${i}`}
+                      className={`px-4 py-3 align-top ${
+                        i === 0 ? 'font-medium text-foreground' : 'text-muted'
+                      }`}
+                    >
+                      {cell}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mx-auto mt-4 max-w-2xl text-center text-sm text-muted">
+          {t('agents.tableNote')}
+        </p>
       </section>
 
       {/* Quick start — backs the hero's promise before the page argues anything else */}
@@ -199,30 +328,6 @@ export default function HomePage() {
                 </div>
                 <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
                 <p className="text-sm leading-relaxed text-muted">{item.description}</p>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Solution */}
-      <section className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
-        <h2 className="mb-8 sm:mb-10 md:mb-14 text-center text-2xl sm:text-3xl font-bold tracking-tight">
-          {t('solution.title')}
-        </h2>
-        <div className="grid gap-6 sm:grid-cols-3">
-          {solutionColumns.map((col, i) => {
-            const Icon = solutionIcons[i];
-            return (
-              <div
-                key={col.title}
-                className="rounded-2xl border border-accent/20 bg-surface shadow-card p-6 text-center"
-              >
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent">
-                  <Icon className="h-6 w-6" />
-                </div>
-                <h3 className="mb-2 text-lg font-semibold">{col.title}</h3>
-                <p className="text-sm leading-relaxed text-muted">{col.description}</p>
               </div>
             );
           })}
@@ -360,11 +465,11 @@ export default function HomePage() {
             {t('connections.channels.title')}
           </h2>
           <p className="mx-auto mb-8 max-w-md text-muted">{t('connections.channels.subtitle')}</p>
-          <div className="mx-auto flex max-w-sm justify-center gap-8">
+          <div className="mx-auto flex max-w-xl flex-wrap justify-center gap-x-8 gap-y-6">
             {channelItems.map((ch, i) => {
               const Icon = channelIcons[i];
               return (
-                <div key={ch.name} className="flex flex-col items-center gap-2">
+                <div key={ch.name} className="flex w-24 flex-col items-center gap-2">
                   <div
                     className={`flex h-14 w-14 items-center justify-center rounded-xl ${
                       ch.soon ? 'bg-surface-secondary text-muted' : 'bg-accent/10 text-accent'
@@ -372,9 +477,14 @@ export default function HomePage() {
                   >
                     <Icon className="h-7 w-7" />
                   </div>
-                  <span className={`text-sm font-medium ${ch.soon ? 'text-muted' : ''}`}>
+                  <span
+                    className={`text-center text-sm font-medium ${ch.soon ? 'text-muted' : ''}`}
+                  >
                     {ch.name}
                   </span>
+                  {ch.note && (
+                    <span className="text-center text-xs leading-snug text-muted">{ch.note}</span>
+                  )}
                   {ch.soon && (
                     <span className="rounded-full border border-border/50 px-2 py-0.5 text-[11px] font-medium text-muted">
                       {t('connections.channels.soonLabel')}
@@ -564,6 +674,12 @@ export default function HomePage() {
    the agent answering. The three `agent-activate` delays (0s/2s/4s of one 6s cycle)
    light the steps in order, so the animation reads as "three taps" rather than
    decoration. The section below the fold carries the same three steps in prose. */
+interface PlainItem {
+  title: string;
+  tech: string;
+  plain: string;
+}
+
 interface HeroStep {
   label: string;
   sub: string;
