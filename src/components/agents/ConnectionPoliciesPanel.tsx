@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import AddConnectionPolicyModal from './AddConnectionPolicyModal';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 interface ConnectionPoliciesPanelProps {
   connection: AgentConnectionResponse;
@@ -44,7 +45,7 @@ export default function ConnectionPoliciesPanel({ connection }: ConnectionPolici
       {error ? (
         <ErrorAlert>{getErrorMessage(error, 'Failed to load policies')}</ErrorAlert>
       ) : loading ? (
-        <div className="text-center py-4 text-muted text-sm">{t('loadingPolicies')}</div>
+        <Placeholder size="xs">{t('loadingPolicies')}</Placeholder>
       ) : policies.length === 0 ? (
         <div className="text-sm text-muted py-2">{t('noPoliciesDefaultAllow')}</div>
       ) : (

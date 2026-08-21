@@ -11,6 +11,7 @@ import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { integrationPlatformsOptions } from '@/queries/connectors';
 import { useConnectionCacheActions } from '@/queries/connections';
 import ConnectionSetupForm from '@/components/connections/ConnectionSetupForm';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 // Target of the `/connections/new` deep link: the connector is preselected from
 // the query, so the platform-picker step is skipped entirely.
@@ -73,7 +74,7 @@ export default function CreateConnectionPage() {
       </div>
 
       <ErrorBoundary>
-        <Suspense fallback={<div className="text-center py-12 text-muted">{t('loading')}</div>}>
+        <Suspense fallback={<Placeholder>{t('loading')}</Placeholder>}>
           <CreateConnectionContent />
         </Suspense>
       </ErrorBoundary>

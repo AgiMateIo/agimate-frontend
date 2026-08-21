@@ -12,6 +12,7 @@ import { getErrorMessage } from '@/utils/error';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { AuthorizeConnectionButton } from './ConnectionAuth';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 interface TestConnectionModalProps {
   connectionId: string;
@@ -41,7 +42,7 @@ export default function TestConnectionModal({
         <p className="text-sm text-muted">{connectionName}</p>
 
         {loading && (
-          <div className="text-center py-8 text-muted">{t('testRunning')}</div>
+          <Placeholder size="sm">{t('testRunning')}</Placeholder>
         )}
 
         {!loading && error && (

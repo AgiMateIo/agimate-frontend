@@ -9,6 +9,7 @@ import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { formatDate } from '@/utils/date';
 import { channelsListOptions } from '@/queries/channels';
 import { allAgentsOptions } from '@/queries/agents';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 function ChannelsContent() {
   const t = useTranslations('Channels');
@@ -28,7 +29,7 @@ function ChannelsContent() {
   return (
     <div className="bg-surface rounded-xl border border-border p-6">
       {rows.length === 0 ? (
-        <div className="text-center py-12 text-muted text-sm">{t('noChannels')}</div>
+        <Placeholder>{t('noChannels')}</Placeholder>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -98,7 +99,7 @@ export default function ChannelsPage() {
         <Suspense
           fallback={
             <div className="bg-surface rounded-xl border border-border p-6">
-              <div className="text-center py-12 text-muted text-sm">{t('loading')}</div>
+              <Placeholder>{t('loading')}</Placeholder>
             </div>
           }
         >

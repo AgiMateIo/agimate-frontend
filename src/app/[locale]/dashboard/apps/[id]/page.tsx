@@ -9,6 +9,7 @@ import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { useAppDetailQuery } from '@/queries/apps';
 import RegenerateConnectorKeyModal from '@/components/connectors/RegenerateConnectorKeyModal';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 function ConnectorContent({ id }: { id: string }) {
   const t = useTranslations('Connectors');
@@ -187,7 +188,7 @@ export default function ConnectorDetailPage() {
       </Link>
 
       <ErrorBoundary resetKeys={[id]}>
-        <Suspense fallback={<div className="text-center py-12 text-muted">{t('loadingApp')}</div>}>
+        <Suspense fallback={<Placeholder>{t('loadingApp')}</Placeholder>}>
           <ConnectorContent id={id} />
         </Suspense>
       </ErrorBoundary>

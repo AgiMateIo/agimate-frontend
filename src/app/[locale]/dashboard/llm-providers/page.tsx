@@ -9,6 +9,7 @@ import { useLlmProvidersQuery, useLlmProviderCacheActions } from '@/queries/llm-
 import LlmProvidersList from '@/components/llm-providers/LlmProvidersList';
 import AddLlmProviderModal from '@/components/llm-providers/AddLlmProviderModal';
 import AddPlatformProviderModal from '@/components/llm-providers/AddPlatformProviderModal';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 function LlmProvidersContent() {
   const t = useTranslations('LlmProviders');
@@ -87,7 +88,7 @@ export default function LlmProvidersPage() {
               <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
               <p className="text-muted mt-1">{t('subtitle')}</p>
             </div>
-            <div className="text-center py-12 text-muted">{t('loading')}</div>
+            <Placeholder>{t('loading')}</Placeholder>
           </>
         }>
           <LlmProvidersContent />

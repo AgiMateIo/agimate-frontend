@@ -15,6 +15,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { LlmProviderModelResponse } from '@/types';
 import { SearchToolbar } from '@/components/ui/SearchToolbar';
+import { Placeholder } from '@/components/ui/Placeholder';
 import {
   CapabilityAxis,
   CapabilityFilter,
@@ -306,9 +307,9 @@ export function ModelPickerList({ models, value, onChange, disabled, requirement
         {unknown.map(renderRow)}
 
         {matched.length === 0 && unknown.length === 0 && (
-          <div className="px-3 py-6 text-center text-sm text-muted">
+          <Placeholder size="sm">
             {unfit.length > 0 ? t('noFittingModels') : t('noModelsMatch')}
-          </div>
+          </Placeholder>
         )}
 
         {unfit.length > 0 && (

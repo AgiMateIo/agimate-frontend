@@ -8,6 +8,7 @@ import { getErrorMessage } from '@/utils/error';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Chip } from '@/components/ui/Chip';
 import { ConnectionDefinitionCard, type DefinitionParam } from './ConnectionDefinitionCard';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 interface ConnectionToolsTabProps {
   connectionId: string;
@@ -28,13 +29,13 @@ export default function ConnectionToolsTab({ connectionId }: ConnectionToolsTabP
   const { data: tools, isPending, error } = useConnectionToolsQuery(connectionId);
 
   if (isPending) {
-    return <div className="text-center py-12 text-muted">{t('toolsLoading')}</div>;
+    return <Placeholder>{t('toolsLoading')}</Placeholder>;
   }
   if (error) {
     return <ErrorAlert>{getErrorMessage(error, t('toolsError'))}</ErrorAlert>;
   }
   if (tools.length === 0) {
-    return <div className="text-center py-12 text-muted">{t('toolsEmpty')}</div>;
+    return <Placeholder>{t('toolsEmpty')}</Placeholder>;
   }
 
   return (

@@ -26,6 +26,7 @@ import { buildSkillMd } from '@/utils/skill';
 import SkillAgentsTab from '@/components/skills/SkillAgentsTab';
 import SkillConnectorsTab from '@/components/skills/SkillConnectorsTab';
 import DeleteSkillModal from '@/components/skills/DeleteSkillModal';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 type Tab = 'overview' | 'connectors' | 'agents';
 
@@ -246,7 +247,7 @@ export default function SkillDetailPage() {
       </button>
 
       <ErrorBoundary resetKeys={[skillId]}>
-        <Suspense fallback={<div className="text-center py-12 text-muted">{t('loadingSkill')}</div>}>
+        <Suspense fallback={<Placeholder>{t('loadingSkill')}</Placeholder>}>
           <SkillDetailContent skillId={skillId} />
         </Suspense>
       </ErrorBoundary>

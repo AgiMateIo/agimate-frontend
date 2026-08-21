@@ -12,6 +12,7 @@ import { AgentResponse, AgentType } from '@/types';
 import { Link } from '@/i18n/navigation';
 import { getAgentAvatarUrl } from '@/utils/avatar';
 import { Chip } from '@/components/ui/Chip';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 interface AgentsListProps {
   agents: AgentResponse[];
@@ -32,7 +33,7 @@ export default function AgentsList({ agents }: AgentsListProps) {
   const t = useTranslations('Agents');
 
   if (agents.length === 0) {
-    return <div className="text-center py-8 text-muted">{t('noAgents')}</div>;
+    return <Placeholder size="sm">{t('noAgents')}</Placeholder>;
   }
 
   return (

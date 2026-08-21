@@ -10,6 +10,7 @@ import { formatDate } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Chip } from '@/components/ui/Chip';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 interface ConnectionAgentsTabProps {
   connectionId: string;
@@ -29,7 +30,7 @@ export default function ConnectionAgentsTab({ connectionId, canBind }: Connectio
   const { data: agents, isPending, error } = useConnectionAgentsQuery(connectionId);
 
   if (isPending) {
-    return <div className="text-center py-12 text-muted">{t('agentsLoading')}</div>;
+    return <Placeholder>{t('agentsLoading')}</Placeholder>;
   }
 
   if (error) {

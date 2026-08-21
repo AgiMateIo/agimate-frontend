@@ -41,6 +41,7 @@ import { PROVIDER_PURPOSES, purposeLabelKey, purposeState } from '@/components/l
 import EditLlmProviderModal from '@/components/llm-providers/EditLlmProviderModal';
 import RotateLlmProviderKeyModal from '@/components/llm-providers/RotateLlmProviderKeyModal';
 import DeleteLlmProviderModal from '@/components/llm-providers/DeleteLlmProviderModal';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 function ProviderDetailContent({ id }: { id: string }) {
   const t = useTranslations('LlmProviders');
@@ -69,14 +70,14 @@ function ProviderDetailContent({ id }: { id: string }) {
 
   if (!provider) {
     return (
-      <div className="text-center py-12 text-muted">
+      <Placeholder>
         {t('noProviders')}
         <div className="mt-4">
           <Link href="/dashboard/llm-providers" className="text-accent hover:text-accent/80">
             ← {t('title')}
           </Link>
         </div>
-      </div>
+      </Placeholder>
     );
   }
 
@@ -356,7 +357,7 @@ export default function LlmProviderDetailPage() {
 
   return (
     <ErrorBoundary resetKeys={[id]}>
-      <Suspense fallback={<div className="text-center py-12 text-muted">{t('loading')}</div>}>
+      <Suspense fallback={<Placeholder>{t('loading')}</Placeholder>}>
         <ProviderDetailContent id={id} />
       </Suspense>
     </ErrorBoundary>

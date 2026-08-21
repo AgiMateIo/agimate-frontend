@@ -17,6 +17,7 @@ import { isInternalConnector } from '@/utils/connector';
 import type { WizardConnection, WizardStepProps } from './AgentWizard';
 import { createAgentFromWizard } from './createAgent';
 import WizardActions from './WizardActions';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 // The connector that manages the platform itself — it can create agents and
 // keys. An external agent's key lives in someone else's config file, so this one
@@ -149,9 +150,9 @@ export default function StepConnections({
               ))}
             </div>
           ) : bindable.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted">{t('noConnectionsYet')}</p>
+            <Placeholder size="sm">{t('noConnectionsYet')}</Placeholder>
           ) : filtered.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted">{t('noConnectionsFound')}</p>
+            <Placeholder size="sm">{t('noConnectionsFound')}</Placeholder>
           ) : (
             <div className="space-y-1.5">
               {filtered.map((conn) => {

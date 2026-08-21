@@ -13,6 +13,7 @@ import { getErrorMessage } from '@/utils/error';
 import { JobRow } from './JobRow';
 import { JobsFilters } from './JobsFilters';
 import { useConnectorJobs } from './useConnectorJobs';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 export default function ConnectorJobsTab() {
   const t = useTranslations('ConnectorJobs');
@@ -150,7 +151,7 @@ export default function ConnectorJobsTab() {
   }
 
   if (loading) {
-    return <div className="text-center py-12 text-muted">{t('loading')}</div>;
+    return <Placeholder>{t('loading')}</Placeholder>;
   }
 
   if (jobs.length === 0) {
@@ -161,9 +162,9 @@ export default function ConnectorJobsTab() {
           {refreshControls}
         </div>
         {actionError && <ErrorAlert>{actionError}</ErrorAlert>}
-        <div className="text-center py-12 text-muted">
+        <Placeholder>
           {hasFilters ? t('noJobsFiltered') : t('noJobs')}
-        </div>
+        </Placeholder>
       </div>
     );
   }

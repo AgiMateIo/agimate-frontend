@@ -16,6 +16,7 @@ import { getErrorMessage } from '@/utils/error';
 import DeleteAgentModal from '@/components/agents/DeleteAgentModal';
 import AgentForm from '@/components/agents/AgentForm';
 import SecretKeyReveal from '@/components/connectors/SecretKeyReveal';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 export default function EditAgentPage() {
   const t = useTranslations('Agents');
@@ -90,7 +91,7 @@ export default function EditAgentPage() {
   if (dataLoading) {
     return (
       <div className="space-y-6">
-        <div className="text-center py-12 text-muted">{t('loadingAgents')}</div>
+        <Placeholder>{t('loadingAgents')}</Placeholder>
       </div>
     );
   }

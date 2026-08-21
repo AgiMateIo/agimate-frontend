@@ -13,6 +13,7 @@ import {
 } from '@/queries/skills';
 import { Link } from '@/i18n/navigation';
 import SkillsList from '@/components/skills/SkillsList';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 // Rows revealed at once; "show more" grows the list in place. Both scopes are
 // merged client-side, so there is no server page to walk (see the query module).
@@ -105,7 +106,7 @@ export default function SkillsPage() {
 
       <ErrorBoundary>
         <Suspense
-          fallback={<div className="text-center py-12 text-muted">{t('loading')}</div>}
+          fallback={<Placeholder>{t('loading')}</Placeholder>}
         >
           <SkillsContent
             key={`${source}:${debouncedSearch}`}

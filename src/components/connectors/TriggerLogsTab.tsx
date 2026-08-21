@@ -11,6 +11,7 @@ import { Pagination } from '@/components/ui/Pagination';
 import { usePagedLogsQuery } from '@/queries/logs';
 import { connectionsListOptions } from '@/queries/connections';
 import { formatDateTimeFull, formatDateTimeShort } from '@/utils/date';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 export default function TriggerLogsTab() {
   const t = useTranslations('Connectors');
@@ -119,7 +120,7 @@ export default function TriggerLogsTab() {
   }
 
   if (loading) {
-    return <div className="text-center py-12 text-muted">{t('loadingTriggerLogs')}</div>;
+    return <Placeholder>{t('loadingTriggerLogs')}</Placeholder>;
   }
 
   if (logs.length === 0) {
@@ -129,9 +130,9 @@ export default function TriggerLogsTab() {
           {filter}
           {refreshControls}
         </div>
-        <div className="text-center py-12 text-muted">
+        <Placeholder>
           {connectorFilter ? t('noTriggerLogsFiltered') : t('noTriggerLogs')}
-        </div>
+        </Placeholder>
       </div>
     );
   }

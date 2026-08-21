@@ -21,6 +21,7 @@ import {
 import { ConnectionAvatar } from '@/components/connections/ConnectionAvatar';
 import BindConnectionModal from './BindConnectionModal';
 import ConnectionPoliciesPanel from './ConnectionPoliciesPanel';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 interface AgentConnectionsTabProps {
   agentId: string;
@@ -54,7 +55,7 @@ export default function AgentConnectionsTab({
   }
 
   if (isPending) {
-    return <div className="text-center py-12 text-muted">{t('loadingConnections')}</div>;
+    return <Placeholder>{t('loadingConnections')}</Placeholder>;
   }
 
   const rows = connections ?? [];
@@ -77,7 +78,7 @@ export default function AgentConnectionsTab({
       )}
 
       {rows.length === 0 ? (
-        <div className="text-center py-12 text-muted">{t('noConnections')}</div>
+        <Placeholder>{t('noConnections')}</Placeholder>
       ) : (
         <div className="space-y-2">
           {rows.map((conn) => {

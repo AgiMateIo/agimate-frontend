@@ -17,6 +17,7 @@ import { connectionsListOptions } from '@/queries/connections';
 import { agentConnectionsOptions } from '@/queries/agents';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { formatDateTimeFull, formatDateTimeShort } from '@/utils/date';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 export type StatusFilter = 'ALL' | ToolCallStatus;
 export type AccessFilter = 'ALL' | 'ALLOW' | 'DENY';
@@ -241,11 +242,11 @@ export default function ToolUseLogsTab({
     <div className="space-y-4">
       {toolbar}
       {loading ? (
-        <div className="text-center py-12 text-muted">{t('loadingToolUseLogs')}</div>
+        <Placeholder>{t('loadingToolUseLogs')}</Placeholder>
       ) : logs.length === 0 ? (
-        <div className="text-center py-12 text-muted">
+        <Placeholder>
           {anyFilterSet ? t('noToolUseLogsFiltered') : t('noToolUseLogs')}
-        </div>
+        </Placeholder>
       ) : (
         <>
           <div className="text-sm text-muted">{t('toolUseLogsTotal', { count: totalElements })}</div>

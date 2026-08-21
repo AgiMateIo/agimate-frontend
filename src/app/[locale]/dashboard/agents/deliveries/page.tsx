@@ -13,6 +13,7 @@ import { RefreshControls } from '@/components/ui/RefreshControls';
 import { usePagedLogsQuery } from '@/queries/logs';
 import { allAgentsOptions } from '@/queries/agents';
 import { parseBackendDate } from '@/utils/date';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 export default function WebhookDeliveriesPage() {
   const t = useTranslations('Agents');
@@ -102,9 +103,9 @@ export default function WebhookDeliveriesPage() {
       {error ? (
         <ErrorAlert>{error}</ErrorAlert>
       ) : loading ? (
-        <div className="text-center py-12 text-muted">{t('loadingAgents')}</div>
+        <Placeholder>{t('loadingAgents')}</Placeholder>
       ) : deliveries.length === 0 ? (
-        <div className="text-center py-12 text-muted">{t('noDeliveries')}</div>
+        <Placeholder>{t('noDeliveries')}</Placeholder>
       ) : (
         <div className="bg-surface rounded-xl border border-border">
           <div className="overflow-x-auto">

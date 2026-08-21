@@ -16,6 +16,7 @@ import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import { ConnectionAuthBadge } from '@/components/connections/ConnectionAuth';
 import { ConnectionAvatar } from '@/components/connections/ConnectionAvatar';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 interface BindConnectionModalProps {
   agentId: string;
@@ -120,7 +121,7 @@ export default function BindConnectionModal({
 
         <div className="min-h-[160px]">
           {isLoading ? (
-            <div className="text-center py-8 text-muted text-sm">{t('loadingInstances')}</div>
+            <Placeholder size="sm">{t('loadingInstances')}</Placeholder>
           ) : empty ? (
             <Alert variant="info">{t('noInstances')}</Alert>
           ) : (

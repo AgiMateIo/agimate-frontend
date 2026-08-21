@@ -13,6 +13,7 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import DeleteAgentSkillModal from '@/components/agents/DeleteAgentSkillModal';
 import AddSkillAgentModal from './AddSkillAgentModal';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 interface SkillAgentsTabProps {
   skillId: string;
@@ -61,7 +62,7 @@ export default function SkillAgentsTab({ skillId, skillName }: SkillAgentsTabPro
       {error && <ErrorAlert>{getErrorMessage(error, 'Failed to load agents')}</ErrorAlert>}
 
       {loading && !data && (
-        <div className="text-center py-12 text-muted text-sm">{t('loading')}</div>
+        <Placeholder size="sm">{t('loading')}</Placeholder>
       )}
 
       {data && data.content.length === 0 && !loading && (

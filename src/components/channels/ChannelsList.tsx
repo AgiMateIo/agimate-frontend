@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { ChannelResponse } from '@/types';
 import { Button } from '@/components/ui/Button';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 interface ChannelsListProps {
   channels: ChannelResponse[];
@@ -30,9 +31,9 @@ export default function ChannelsList({
       </Button>
 
       {loading ? (
-        <div className="text-center py-8 text-muted text-sm">{t('loading')}</div>
+        <Placeholder size="sm">{t('loading')}</Placeholder>
       ) : channels.length === 0 ? (
-        <div className="text-center py-8 text-muted text-sm">{t('noChannels')}</div>
+        <Placeholder size="sm">{t('noChannels')}</Placeholder>
       ) : (
         <div className="space-y-2 overflow-y-auto pr-1">
           {channels.map((c) => {

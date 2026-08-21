@@ -22,6 +22,7 @@ import { connectionsListOptions } from '@/queries/connections';
 import { connectorCatalogOptions } from '@/queries/connectors';
 import { useSkillsListQuery } from '@/queries/skills';
 import { openAgentAccess, splitSkillConnectors } from './skillAccess';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 const PAGE_SIZE = 10;
 
@@ -177,11 +178,11 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
         {/* Skills list */}
         <div className="min-h-[280px]">
           {skillsLoading ? (
-            <div className="text-center py-12 text-muted text-sm">{t('loadingSkills')}</div>
+            <Placeholder size="sm">{t('loadingSkills')}</Placeholder>
           ) : skillsError ? (
             <ErrorAlert>{getErrorMessage(skillsError, 'Failed to load skills')}</ErrorAlert>
           ) : skills.length === 0 ? (
-            <div className="text-center py-12 text-muted text-sm">{t('noSkillsFound')}</div>
+            <Placeholder size="sm">{t('noSkillsFound')}</Placeholder>
           ) : (
             <div className="space-y-1">
               {skills.map((skill) => {

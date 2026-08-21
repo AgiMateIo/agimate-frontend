@@ -14,6 +14,7 @@ import { formatDate } from '@/utils/date';
 import AddConnectorModal from './AddConnectorModal';
 import EditConnectorModal from './EditConnectorModal';
 import DeleteConnectorModal from './DeleteConnectorModal';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 function ConnectorsListView({
   page,
@@ -83,9 +84,9 @@ function ConnectorsListView({
         </div>
 
         {connectors.length === 0 ? (
-          <div className="text-center py-8 text-muted">
+          <Placeholder size="sm">
             {t('noApps')}
-          </div>
+          </Placeholder>
         ) : (
           <div className="space-y-3">
             {connectors.map((connector) => (
@@ -196,7 +197,7 @@ export default function ConnectorsTab() {
 
   return (
     <ErrorBoundary>
-      <Suspense fallback={<div className="text-center py-12 text-muted">{t('loadingApps')}</div>}>
+      <Suspense fallback={<Placeholder>{t('loadingApps')}</Placeholder>}>
         <ConnectorsListView page={page} onPageChange={setPage} />
       </Suspense>
     </ErrorBoundary>

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { useChannelSessionMessagesQuery } from '@/queries/channels';
 import { formatDate } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 interface ChannelChatViewProps {
   session: ChannelSessionResponse;
@@ -91,9 +92,9 @@ export default function ChannelChatView({ session, onClosed }: ChannelChatViewPr
 
       <div ref={listRef} className="flex-1 overflow-y-auto py-4 space-y-3 min-h-0">
         {isPending ? (
-          <div className="text-center py-8 text-muted text-sm">{t('loadingMessages')}</div>
+          <Placeholder size="sm">{t('loadingMessages')}</Placeholder>
         ) : messages.length === 0 ? (
-          <div className="text-center py-8 text-muted text-sm">{t('noMessages')}</div>
+          <Placeholder size="sm">{t('noMessages')}</Placeholder>
         ) : (
           <>
             {hasNextPage && (

@@ -33,6 +33,7 @@ import { LlmProviderCatalogPicker } from './LlmProviderCatalogPicker';
 import { MediaTransportField, type MediaTransportChoice } from './MediaTransportField';
 import { ExtraBodyField } from './ExtraBodyField';
 import { parseExtraBodyInput } from './extraBody';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 interface AddLlmProviderModalProps {
   onClose: () => void;
@@ -205,7 +206,7 @@ export default function AddLlmProviderModal({ onClose, onSuccess }: AddLlmProvid
     return (
       <Modal isOpen={true} onClose={onClose} title={t('catalogTitle')} size="xl">
         {catalogQuery.isLoading ? (
-          <p className="text-sm text-muted py-8 text-center">{tc('loading')}</p>
+          <Placeholder size="sm">{tc('loading')}</Placeholder>
         ) : (
           <LlmProviderCatalogPicker
             entries={entries}

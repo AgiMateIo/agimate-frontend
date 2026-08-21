@@ -8,6 +8,7 @@ import { useAgentDetailSuspenseQuery } from '@/queries/agents';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { getAgentAvatarUrl } from '@/utils/avatar';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 // Shell shared by every agent section (general/models/channels/…). It owns the
 // agent header, breadcrumb override and the ErrorBoundary + Suspense boundary the
@@ -55,7 +56,7 @@ export default function AgentDetailLayout({ children }: { children: React.ReactN
   return (
     <div className={isChat ? 'h-full' : 'space-y-6'}>
       <ErrorBoundary resetKeys={[agentId]}>
-        <Suspense fallback={<div className="text-center py-12 text-muted">{t('loadingAgents')}</div>}>
+        <Suspense fallback={<Placeholder>{t('loadingAgents')}</Placeholder>}>
           <AgentShellHeader agentId={agentId} breadcrumbOnly={isChat} />
           {children}
         </Suspense>

@@ -8,6 +8,7 @@ import { useChannelCacheActions, useChannelSessionsQuery } from '@/queries/chann
 import { formatDate, parseBackendDate } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
 import ChannelChatView from './ChannelChatView';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 interface ChannelSessionsListProps {
   channelId: string;
@@ -41,9 +42,9 @@ export default function ChannelSessionsList({ channelId }: ChannelSessionsListPr
     <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 min-h-0 h-[600px]">
       <div className="border border-border rounded-lg overflow-y-auto p-2">
         {isPending ? (
-          <div className="text-center py-8 text-muted text-sm">{t('loadingSessions')}</div>
+          <Placeholder size="sm">{t('loadingSessions')}</Placeholder>
         ) : sessions.length === 0 ? (
-          <div className="text-center py-8 text-muted text-sm">{t('noSessions')}</div>
+          <Placeholder size="sm">{t('noSessions')}</Placeholder>
         ) : (
           <div className="space-y-1">
             {sessions.map((s) => {
@@ -98,7 +99,7 @@ export default function ChannelSessionsList({ channelId }: ChannelSessionsListPr
             onClosed={(updated) => patchSession(channelId, updated)}
           />
         ) : (
-          <div className="text-center py-12 text-muted text-sm">{t('selectSessionHint')}</div>
+          <Placeholder size="sm">{t('selectSessionHint')}</Placeholder>
         )}
       </div>
     </div>

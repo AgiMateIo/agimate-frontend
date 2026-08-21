@@ -10,6 +10,7 @@ import { FileTable } from './FileTable';
 import { FileTile } from './FileTile';
 import DeleteFileModal from './DeleteFileModal';
 import type { FilesViewMode } from './filesViewMode';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 export default function UserFilesList({
   agentId,
@@ -37,9 +38,9 @@ export default function UserFilesList({
 
   if (data.content.length === 0) {
     return (
-      <div className="py-12 text-center text-muted">
+      <Placeholder>
         {agentId || name ? t('noFilesFiltered') : t('noFiles')}
-      </div>
+      </Placeholder>
     );
   }
 

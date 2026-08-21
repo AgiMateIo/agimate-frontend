@@ -37,6 +37,7 @@ import ConnectionSkillsTab from '@/components/connections/ConnectionSkillsTab';
 import ConnectionToolsTab from '@/components/connections/ConnectionToolsTab';
 import ConnectionTriggersTab from '@/components/connections/ConnectionTriggersTab';
 import ConnectionJobsTab from '@/components/connections/ConnectionJobsTab';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 type Tab = 'info' | 'tools' | 'triggers' | 'jobs' | 'skills' | 'agents';
 
@@ -307,7 +308,7 @@ export default function ConnectionDetailPage() {
       </Link>
 
       <ErrorBoundary resetKeys={[id]}>
-        <Suspense fallback={<div className="text-center py-12 text-muted">{t('loading')}</div>}>
+        <Suspense fallback={<Placeholder>{t('loading')}</Placeholder>}>
           <ConnectionDetailContent id={id} />
         </Suspense>
       </ErrorBoundary>

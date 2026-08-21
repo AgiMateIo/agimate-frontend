@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/FormField';
 import { formatDateTimeShort } from '@/utils/date';
 import type { AgentResponse, WebchatSessionResponse } from '@/types';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 interface WebchatSessionsPaneProps {
   agents: AgentResponse[];
@@ -117,9 +118,9 @@ export default function WebchatSessionsPane({
 
       <div className="flex-1 overflow-y-auto min-h-0 p-2 space-y-1">
         {sessionsLoading ? (
-          <div className="text-center py-8 text-muted text-sm">{t('loadingSessions')}</div>
+          <Placeholder size="sm">{t('loadingSessions')}</Placeholder>
         ) : sessions.length === 0 ? (
-          <div className="text-center py-8 px-3 text-muted text-sm">{t('noSessions')}</div>
+          <Placeholder size="sm">{t('noSessions')}</Placeholder>
         ) : (
           <>
             {sessions.map((s) => {

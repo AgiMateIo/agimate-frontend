@@ -9,6 +9,7 @@ import { Link } from '@/i18n/navigation';
 import { allAgentsOptions } from '@/queries/agents';
 import { useActivityFeed } from '@/queries/dashboard';
 import { formatDateTimeFull, formatDateTimeShort } from '@/utils/date';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 export default function ActivityFeed({
   refreshSeconds,
@@ -48,7 +49,7 @@ export default function ActivityFeed({
           ))}
         </div>
       ) : logs.length === 0 ? (
-        <p className="px-1 py-6 text-center text-sm text-muted">{t('activityEmpty')}</p>
+        <Placeholder size="sm">{t('activityEmpty')}</Placeholder>
       ) : (
         <ul className="divide-y divide-border">
           {logs.map((log) => {

@@ -15,6 +15,7 @@ import { useUser } from '@/contexts/UserContext';
 import { buildSkillMd } from '@/utils/skill';
 import { getErrorMessage } from '@/utils/error';
 import SkillForm from '@/components/skills/SkillForm';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 export default function EditSkillPage() {
   const t = useTranslations('Skills');
@@ -56,7 +57,7 @@ export default function EditSkillPage() {
   if (pageLoading || redirecting) {
     return (
       <div className="space-y-6">
-        <div className="text-center py-12 text-muted">{t('loadingSkill')}</div>
+        <Placeholder>{t('loadingSkill')}</Placeholder>
       </div>
     );
   }

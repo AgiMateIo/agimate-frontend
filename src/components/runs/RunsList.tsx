@@ -22,6 +22,7 @@ import { formatDateTimeFull, formatDateTimeShort, parseBackendDate } from '@/uti
 import { getErrorMessage } from '@/utils/error';
 import { RunStatusBadge, STOPPABLE } from './RunStatusBadge';
 import { formatTokens, useUsageTooltip } from './RunBlocks';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 type StatusFilter = 'ALL' | RunStatus;
 
@@ -371,11 +372,11 @@ export default function RunsList({
       {toolbar}
       {stopError && <ErrorAlert>{stopError}</ErrorAlert>}
       {loading ? (
-        <div className="text-center py-12 text-muted">{t('loadingRuns')}</div>
+        <Placeholder>{t('loadingRuns')}</Placeholder>
       ) : runs.length === 0 ? (
-        <div className="text-center py-12 text-muted">
+        <Placeholder>
           {anyFilterSet ? t('noRunsFiltered') : t('noRuns')}
-        </div>
+        </Placeholder>
       ) : (
         <>
           <div className="text-sm text-muted">{t('runsTotal', { count: totalElements })}</div>

@@ -8,6 +8,7 @@ import { useRunTurnsQuery } from '@/queries/runs';
 import { formatDateTimeShort, formatDateTimeFull } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
 import type { RunTurnResponse } from '@/types';
+import { Placeholder } from '@/components/ui/Placeholder';
 import {
   Collapsible,
   RoleIcon,
@@ -105,10 +106,10 @@ export default function RunTurnsList({ runId }: { runId: string }) {
     return <ErrorAlert>{getErrorMessage(error, t('loadTurnsError'))}</ErrorAlert>;
   }
   if (isPending) {
-    return <div className="py-8 text-center text-sm text-muted">{t('loadingTurns')}</div>;
+    return <Placeholder size="sm">{t('loadingTurns')}</Placeholder>;
   }
   if (turns.length === 0) {
-    return <div className="py-8 text-center text-sm text-muted">{t('noTurns')}</div>;
+    return <Placeholder size="sm">{t('noTurns')}</Placeholder>;
   }
 
   return (

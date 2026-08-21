@@ -6,6 +6,7 @@ import { Link } from '@/i18n/navigation';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { useAgentsListQuery } from '@/queries/agents';
 import AgentsList from '@/components/agents/AgentsList';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 function AgentsContent() {
   const { data: { content: agents } } = useAgentsListQuery();
@@ -37,7 +38,7 @@ export default function AgentsPage() {
       </div>
 
       <ErrorBoundary>
-        <Suspense fallback={<div className="text-center py-12 text-muted">{t('loadingAgents')}</div>}>
+        <Suspense fallback={<Placeholder>{t('loadingAgents')}</Placeholder>}>
           <AgentsContent />
         </Suspense>
       </ErrorBoundary>

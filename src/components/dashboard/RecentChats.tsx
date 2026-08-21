@@ -8,6 +8,7 @@ import { allAgentsOptions } from '@/queries/agents';
 import { useWebchatCacheActions, webchatSessionsOptions } from '@/queries/webchat';
 import { useWebchatActivitySubscription } from '@/realtime/useWebchatActivitySubscription';
 import { formatDateTimeFull, formatDateTimeShort } from '@/utils/date';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 const RECENT_SIZE = 5;
 
@@ -51,7 +52,7 @@ export default function RecentChats() {
           ))}
         </div>
       ) : recent.length === 0 ? (
-        <p className="px-1 py-6 text-center text-sm text-muted">{t('chatsEmpty')}</p>
+        <Placeholder size="sm">{t('chatsEmpty')}</Placeholder>
       ) : (
         <ul className="divide-y divide-border">
           {recent.map((session) => (

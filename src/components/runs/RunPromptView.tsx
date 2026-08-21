@@ -7,6 +7,7 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useRunPromptQuery } from '@/queries/runs';
 import { getErrorMessage } from '@/utils/error';
 import type { RunPromptMessage, RunPromptPart } from '@/types';
+import { Placeholder } from '@/components/ui/Placeholder';
 import {
   Collapsible,
   RoleIcon,
@@ -106,12 +107,12 @@ export default function RunPromptView({ runId }: { runId: string }) {
     return <ErrorAlert>{getErrorMessage(error, t('loadPromptError'))}</ErrorAlert>;
   }
   if (isPending) {
-    return <div className="py-8 text-center text-sm text-muted">{t('loadingPrompt')}</div>;
+    return <Placeholder size="sm">{t('loadingPrompt')}</Placeholder>;
   }
   // A missing snapshot is an ordinary answer, not a failure: the run never
   // reached the loop, or it is older than the feature.
   if (!data?.messages) {
-    return <div className="py-8 text-center text-sm text-muted">{t('promptNotSaved')}</div>;
+    return <Placeholder size="sm">{t('promptNotSaved')}</Placeholder>;
   }
 
   return (

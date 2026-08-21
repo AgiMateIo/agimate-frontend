@@ -9,6 +9,7 @@ import { formatDate } from '@/utils/date';
 import ChannelConfigForm from './ChannelConfigForm';
 import ChannelSessionsList from './ChannelSessionsList';
 import DeleteChannelModal from './DeleteChannelModal';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 type Mode = 'view' | 'edit' | 'create';
 type SubTab = 'config' | 'sessions' | 'test';
@@ -129,9 +130,9 @@ export default function ChannelDetailPane({
       {subTab === 'config' && <ConfigView channel={channel} />}
       {subTab === 'sessions' && <ChannelSessionsList channelId={channel.id} />}
       {subTab === 'test' && (
-        <div className="py-12 text-center text-sm text-muted">
+        <Placeholder size="sm">
           {t('testComingSoon')}
-        </div>
+        </Placeholder>
       )}
 
       {confirmDelete && (

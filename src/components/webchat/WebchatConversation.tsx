@@ -37,6 +37,7 @@ import { ComposerAttachments } from './ComposerAttachments';
 import FilePickerModal from '@/components/files/FilePickerModal';
 import { useComposerAttachments, MAX_ATTACHMENTS } from './useComposerAttachments';
 import type { WebchatMessagePayload, WebchatSessionResponse } from '@/types';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 interface WebchatConversationProps {
   session: WebchatSessionResponse;
@@ -398,9 +399,9 @@ export default function WebchatConversation({
           )}
 
           {thread.loading ? (
-            <div className="text-center py-8 text-muted text-sm">{t('loadingMessages')}</div>
+            <Placeholder size="sm">{t('loadingMessages')}</Placeholder>
           ) : thread.messages.length === 0 && !thread.awaitingReply ? (
-            <div className="text-center py-8 text-muted text-sm">{t('noMessages')}</div>
+            <Placeholder size="sm">{t('noMessages')}</Placeholder>
           ) : (
             // Own spacing instead of the container's space-y so consecutive
             // progress lines can sit closer together than message bubbles.

@@ -13,6 +13,7 @@ import { allAgentsOptions } from '@/queries/agents';
 import { useUserFilesQuery } from '@/queries/files';
 import type { UserFileResponse } from '@/types';
 import { FileCard } from './FileCard';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 const PAGE_SIZE = 12;
 
@@ -44,9 +45,9 @@ function PickerGrid({
 
   if (data.content.length === 0) {
     return (
-      <div className="py-10 text-center text-sm text-muted">
+      <Placeholder size="sm">
         {name ? t('noFilesFiltered') : t('noFiles')}
-      </div>
+      </Placeholder>
     );
   }
 
@@ -133,7 +134,7 @@ export default function FilePickerModal({
         <div className="max-h-[55vh] overflow-y-auto pr-1">
           <ErrorBoundary resetKeys={[debouncedSearch, page, pageSize]}>
             <Suspense
-              fallback={<div className="py-10 text-center text-sm text-muted">{t('loadingFiles')}</div>}
+              fallback={<Placeholder size="sm">{t('loadingFiles')}</Placeholder>}
             >
               <PickerGrid
                 name={debouncedSearch}

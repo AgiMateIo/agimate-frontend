@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { UsageBars } from '@/components/llm-providers/UsageBars';
 import { Link } from '@/i18n/navigation';
 import { useLlmUsageQuery } from '@/queries/llm-providers';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 /**
  * Token spend for every provider the user's agents run on, day and month.
@@ -30,7 +31,7 @@ export default function LlmSpend() {
       {isPending ? (
         <div className="h-20 animate-pulse rounded-lg bg-surface-secondary" />
       ) : !usage || usage.length === 0 ? (
-        <p className="px-1 py-6 text-center text-sm text-muted">{tUsage('noUsage')}</p>
+        <Placeholder size="sm">{tUsage('noUsage')}</Placeholder>
       ) : (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {usage.map((entry) => (

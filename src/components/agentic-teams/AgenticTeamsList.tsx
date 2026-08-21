@@ -5,6 +5,7 @@ import { Link } from '@/i18n/navigation';
 import { localeMap } from '@/i18n/routing';
 import { AgenticTeam } from '@/types/agentic-teams';
 import { formatDate } from '@/utils/date';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 interface AgenticTeamsListProps {
   teams: AgenticTeam[];
@@ -17,9 +18,9 @@ export default function AgenticTeamsList({ teams }: AgenticTeamsListProps) {
 
   if (teams.length === 0) {
     return (
-      <div className="text-center py-12 text-muted">
+      <Placeholder>
         {t('noTeams')}
-      </div>
+      </Placeholder>
     );
   }
 

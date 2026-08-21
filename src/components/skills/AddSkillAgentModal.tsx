@@ -14,6 +14,7 @@ import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 const PAGE_SIZE = 10;
 
@@ -73,11 +74,11 @@ export default function AddSkillAgentModal({ skillId, onClose, onSuccess }: AddS
         {/* Agents list */}
         <div className="min-h-[280px]">
           {agentsLoading ? (
-            <div className="text-center py-12 text-muted text-sm">{t('loading')}</div>
+            <Placeholder size="sm">{t('loading')}</Placeholder>
           ) : agentsError ? (
             <ErrorAlert>{getErrorMessage(agentsError, 'Failed to load agents')}</ErrorAlert>
           ) : agents.length === 0 ? (
-            <div className="text-center py-12 text-muted text-sm">{t('noAgentsFound')}</div>
+            <Placeholder size="sm">{t('noAgentsFound')}</Placeholder>
           ) : (
             <div className="space-y-1">
               {agents.map((agent) => {

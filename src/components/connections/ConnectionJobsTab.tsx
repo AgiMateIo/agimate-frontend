@@ -10,6 +10,7 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { JobCard } from '@/components/connectors/JobCard';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 interface ConnectionJobsTabProps {
   connectionId: string;
@@ -87,13 +88,13 @@ export default function ConnectionJobsTab({ connectionId }: ConnectionJobsTabPro
   };
 
   if (isPending) {
-    return <div className="text-center py-12 text-muted">{t('loading')}</div>;
+    return <Placeholder>{t('loading')}</Placeholder>;
   }
   if (error) {
     return <ErrorAlert>{getErrorMessage(error, t('actionFailed'))}</ErrorAlert>;
   }
   if (jobs.length === 0) {
-    return <div className="text-center py-12 text-muted">{t('noJobs')}</div>;
+    return <Placeholder>{t('noJobs')}</Placeholder>;
   }
 
   return (

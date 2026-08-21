@@ -11,6 +11,7 @@ import { Link } from '@/i18n/navigation';
 import { useUpcomingJobs } from '@/queries/dashboard';
 import type { ConnectorJobType } from '@/types';
 import { formatDateTimeFull, formatDateTimeShort } from '@/utils/date';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 // Same icon per schedule kind as the connector-jobs cards.
 const TYPE_ICON: Record<ConnectorJobType, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
@@ -48,7 +49,7 @@ export default function UpcomingJobs({
           ))}
         </div>
       ) : jobs.length === 0 ? (
-        <p className="px-1 py-6 text-center text-sm text-muted">{t('upcomingEmpty')}</p>
+        <Placeholder size="sm">{t('upcomingEmpty')}</Placeholder>
       ) : (
         <ul className="divide-y divide-border">
           {jobs.map((job) => {

@@ -12,6 +12,7 @@ import { allAgentsOptions } from '@/queries/agents';
 import UserFilesList from './UserFilesList';
 import { FilesViewSwitcher } from './FilesViewSwitcher';
 import { useFilesViewMode } from './filesViewMode';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 /**
  * Search + filters + the file list in the chosen view mode.
@@ -84,7 +85,7 @@ export default function FilesBrowser({ fixedAgentId }: { fixedAgentId?: string }
 
       <ErrorBoundary resetKeys={[debouncedSearch, agentId, page, pageSize]}>
         <Suspense
-          fallback={<div className="py-12 text-center text-muted">{t('loadingFiles')}</div>}
+          fallback={<Placeholder>{t('loadingFiles')}</Placeholder>}
         >
           <UserFilesList
             agentId={agentId}

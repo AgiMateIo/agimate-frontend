@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Pagination } from '@/components/ui/Pagination';
 import { useAdminUsersQuery, type RoleFilter } from '@/queries/admin';
 import AdminUserRow from './AdminUserRow';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 export default function AdminUsersList({
   search,
@@ -43,9 +44,9 @@ export default function AdminUsersList({
 
   if (data.content.length === 0) {
     return (
-      <div className="text-center py-12 text-muted">
+      <Placeholder>
         {search || role !== 'ALL' ? t('noUsersFiltered') : t('noUsers')}
-      </div>
+      </Placeholder>
     );
   }
 

@@ -6,6 +6,7 @@ import { Alert } from '@/components/ui/Alert';
 import SkillCard from '@/components/skills/SkillCard';
 import { useConnectorSkillsQuery } from '@/queries/skills';
 import { getErrorMessage } from '@/utils/error';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 interface ConnectionSkillsTabProps {
   connectorCode: string;
@@ -20,7 +21,7 @@ export default function ConnectionSkillsTab({ connectorCode }: ConnectionSkillsT
   const { skills, isPending, error, truncated } = useConnectorSkillsQuery(connectorCode);
 
   if (isPending) {
-    return <div className="text-center py-12 text-muted">{t('loadingSkills')}</div>;
+    return <Placeholder>{t('loadingSkills')}</Placeholder>;
   }
 
   if (error) {
@@ -28,7 +29,7 @@ export default function ConnectionSkillsTab({ connectorCode }: ConnectionSkillsT
   }
 
   if (skills.length === 0) {
-    return <div className="text-center py-12 text-muted">{t('noSkills')}</div>;
+    return <Placeholder>{t('noSkills')}</Placeholder>;
   }
 
   return (

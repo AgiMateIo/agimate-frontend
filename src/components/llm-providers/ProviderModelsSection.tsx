@@ -21,6 +21,7 @@ import { localeMap } from '@/i18n/routing';
 import { useLlmProviderCacheActions } from '@/queries/llm-providers';
 import ModelExtraBodyModal from './ModelExtraBodyModal';
 import { hasExtraBody } from './extraBody';
+import { Placeholder } from '@/components/ui/Placeholder';
 import {
   CapabilityAxis,
   CapabilityFilter,
@@ -193,7 +194,7 @@ export default function ProviderModelsSection({
           />
 
           {filtered.length === 0 ? (
-            <div className="text-center py-8 text-sm text-muted">{t('noModelsMatch')}</div>
+            <Placeholder size="sm">{t('noModelsMatch')}</Placeholder>
           ) : (
             <div className="bg-surface rounded-xl border border-border divide-y divide-border">
               {filtered.map(({ m, capMatch }) => {

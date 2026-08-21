@@ -9,6 +9,7 @@ import { connectionsListOptions, useConnectionCacheActions } from '@/queries/con
 import { connectorCatalogOptions, integrationPlatformsOptions } from '@/queries/connectors';
 import ConnectionsList from '@/components/connections/ConnectionsList';
 import AddConnectionModal from '@/components/connections/AddConnectionModal';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 function ConnectionsContent() {
   const t = useTranslations('Connections');
@@ -67,7 +68,7 @@ export default function ConnectionsPage() {
               <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
               <p className="text-muted mt-1">{t('subtitle')}</p>
             </div>
-            <div className="text-center py-12 text-muted">{t('loading')}</div>
+            <Placeholder>{t('loading')}</Placeholder>
           </>
         }>
           <ConnectionsContent />

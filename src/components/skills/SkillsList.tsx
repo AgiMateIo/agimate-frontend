@@ -9,6 +9,7 @@ import { useRouter } from '@/i18n/navigation';
 import SkillCard from './SkillCard';
 import DeleteSkillModal from './DeleteSkillModal';
 import AddSkillAgentModal from './AddSkillAgentModal';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 interface SkillsListProps {
   skills: PickedSkill[];
@@ -34,7 +35,7 @@ export default function SkillsList({
   };
 
   if (skills.length === 0) {
-    return <div className="text-center py-8 text-muted">{emptyText}</div>;
+    return <Placeholder size="sm">{emptyText}</Placeholder>;
   }
 
   return (

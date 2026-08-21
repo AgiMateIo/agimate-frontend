@@ -10,6 +10,7 @@ import { UserGroupIcon } from '@heroicons/react/24/outline';
 import { useAgenticTeamQuery, agenticTeamOptions } from '@/queries/agentic-teams';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 // The header row exposes an actions slot (right-aligned next to the team name).
 // Section pages fill it by wrapping their buttons in <TeamHeaderActions> — the
@@ -77,7 +78,7 @@ export default function AgenticTeamDetailLayout({ children }: { children: React.
   return (
     <div className="space-y-6">
       <ErrorBoundary resetKeys={[teamId]}>
-        <Suspense fallback={<div className="text-center py-12 text-muted">{t('loading')}</div>}>
+        <Suspense fallback={<Placeholder>{t('loading')}</Placeholder>}>
           <HeaderActionsTargetContext.Provider value={actionsTarget}>
             <TeamShellHeader teamId={teamId} onActionsRef={setActionsTarget} />
             {children}

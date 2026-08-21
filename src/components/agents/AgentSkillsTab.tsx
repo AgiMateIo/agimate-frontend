@@ -27,6 +27,7 @@ import AddAgentSkillModal from './AddAgentSkillModal';
 import DeleteAgentSkillModal from './DeleteAgentSkillModal';
 import SkillConnectionsModal from './SkillConnectionsModal';
 import SkillConnectorChip, { connectorFix } from './SkillConnectorChip';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 interface AgentSkillsTabProps {
   agentId: string;
@@ -116,7 +117,7 @@ export default function AgentSkillsTab({ agentId, onCreateConnection }: AgentSki
   }
 
   if (isPending) {
-    return <div className="text-center py-12 text-muted">{t('loadingSkills')}</div>;
+    return <Placeholder>{t('loadingSkills')}</Placeholder>;
   }
 
   return (
@@ -151,7 +152,7 @@ export default function AgentSkillsTab({ agentId, onCreateConnection }: AgentSki
       {actionError && <ErrorAlert>{actionError}</ErrorAlert>}
 
       {bindings.length === 0 ? (
-        <div className="text-center py-12 text-muted">{t('noAgentSkills')}</div>
+        <Placeholder>{t('noAgentSkills')}</Placeholder>
       ) : (
         <>
           <div className="overflow-x-auto">

@@ -24,6 +24,7 @@ import type { SkillResponse } from '@/types';
 import { WizardStepProps } from './AgentWizard';
 import { createAgentFromWizard, resolveSkillConnection } from './createAgent';
 import WizardActions from './WizardActions';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 // Rows revealed at once. "Show more" grows the list in place instead of paging,
 // so the step keeps one scroll (the page's) and never nests another.
@@ -204,7 +205,7 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
           ) : skillsError ? (
             <ErrorAlert>{getErrorMessage(skillsError, t('skillsLoadError'))}</ErrorAlert>
           ) : skills.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted">{t('noSkillsFound')}</p>
+            <Placeholder size="sm">{t('noSkillsFound')}</Placeholder>
           ) : (
             <div className="space-y-1.5">
               {shown.map((skill) => {

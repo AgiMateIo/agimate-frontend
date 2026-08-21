@@ -12,6 +12,7 @@ import { FilterPill } from '@/components/ui/FilterPill';
 import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import { ConnectionAvatar } from './ConnectionAvatar';
 import { ConnectionAuthBadge, needsAuthorization } from './ConnectionAuth';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 interface ConnectionsListProps {
   connections: ConnectionResponse[];
@@ -118,9 +119,9 @@ export default function ConnectionsList({
 
   if (connections.length === 0) {
     return (
-      <div className="text-center py-8 text-muted">
+      <Placeholder size="sm">
         {t('noConnections')}
-      </div>
+      </Placeholder>
     );
   }
 
@@ -167,9 +168,9 @@ export default function ConnectionsList({
       />
 
       {filtered.length === 0 ? (
-        <div className="text-center py-8 text-muted">
+        <Placeholder size="sm">
           {t('noSearchResults')}
-        </div>
+        </Placeholder>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {filtered.map((connection) => (

@@ -13,6 +13,7 @@ import { formatDate } from '@/utils/date';
 import { PROVIDER_TYPE_LABEL_KEY, deriveProviderNameFromUrl } from './providerTypes';
 import { firstPurposeModel } from './llmPurpose';
 import { ProviderAvatar } from './ProviderAvatar';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 interface LlmProvidersListProps {
   providers: LlmProviderResponse[];
@@ -52,9 +53,9 @@ export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersLi
 
   if (providers.length === 0) {
     return (
-      <div className="text-center py-12 text-muted">
+      <Placeholder>
         {t('noProviders')}
-      </div>
+      </Placeholder>
     );
   }
 

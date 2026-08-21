@@ -10,6 +10,7 @@ import { ConnectionAvatar } from '@/components/connections/ConnectionAvatar';
 import { useConnectorSearchQuery } from '@/queries/connectors';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { getConnectorKind, ConnectorKind } from '@/utils/connector';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 type CapabilityKey =
   | `capabilities.executionKind.${ExecutionKind}`
@@ -148,7 +149,7 @@ export default function ConnectorsPage() {
 
       {/* List */}
       <ErrorBoundary>
-        <Suspense fallback={<div className="text-center py-12 text-muted">{t('loading')}</div>}>
+        <Suspense fallback={<Placeholder>{t('loading')}</Placeholder>}>
           <ConnectorsContent search={debouncedSearch} page={page} onPageChange={setPage} />
         </Suspense>
       </ErrorBoundary>

@@ -11,6 +11,7 @@ import { useUser } from '@/contexts/UserContext';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import type { RoleFilter } from '@/queries/admin';
+import { Placeholder } from '@/components/ui/Placeholder';
 
 const ROLE_FILTERS: RoleFilter[] = ['ALL', 'GUEST', 'USER', 'ADMIN'];
 
@@ -41,7 +42,7 @@ export default function AdminUsersPage() {
       <div className="space-y-6">
         {header}
         {loading || !user ? (
-          <div className="text-center py-12 text-muted">{tCommon('loading')}</div>
+          <Placeholder>{tCommon('loading')}</Placeholder>
         ) : (
           <Alert variant="error">{t('noAccess')}</Alert>
         )}
@@ -82,7 +83,7 @@ export default function AdminUsersPage() {
 
       <ErrorBoundary resetKeys={[debouncedSearch, role]}>
         <Suspense
-          fallback={<div className="text-center py-12 text-muted">{t('loadingUsers')}</div>}
+          fallback={<Placeholder>{t('loadingUsers')}</Placeholder>}
         >
           <AdminUsersList
             key={`${role}:${debouncedSearch}`}

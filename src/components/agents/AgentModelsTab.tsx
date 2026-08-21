@@ -20,6 +20,7 @@ import { Chip } from '@/components/ui/Chip';
 import AgentLlmRowEditor from './AgentLlmRowEditor';
 import DeleteAgentLlmModal from './DeleteAgentLlmModal';
 import { matchCapabilityFilter } from '@/components/llm-providers/modelRegistry';
+import { Placeholder } from '@/components/ui/Placeholder';
 import {
   LLM_PURPOSES,
   purposeLabelKey,
@@ -123,7 +124,7 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
   }
 
   if (bindingsPending || providersPending || !bindings || !allProviders) {
-    return <div className="text-center py-12 text-muted">{t('loadingBindings')}</div>;
+    return <Placeholder>{t('loadingBindings')}</Placeholder>;
   }
 
   const providerById = (id: string) => allProviders.find((p) => p.id === id);
