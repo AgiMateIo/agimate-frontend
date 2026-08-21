@@ -127,7 +127,7 @@ export default function ConnectorsPage() {
   const t = useTranslations('ConnectorCatalog');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
-  const debouncedSearch = useDebouncedValue(search, 300);
+  const debouncedSearch = useDebouncedValue(search);
 
   return (
     <div className="space-y-6">

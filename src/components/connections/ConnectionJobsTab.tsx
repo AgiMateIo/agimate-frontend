@@ -11,6 +11,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { JobCard } from '@/components/connectors/JobCard';
 import { Placeholder } from '@/components/ui/Placeholder';
+import { useIdSet } from '@/hooks/useIdSet';
 
 interface ConnectionJobsTabProps {
   connectionId: string;
@@ -26,33 +27,20 @@ export default function ConnectionJobsTab({ connectionId }: ConnectionJobsTabPro
   const tCommon = useTranslations('Common');
   const { data: jobs, isPending, error, refetch } = useConnectionJobsQuery(connectionId);
   const [actionError, setActionError] = useState('');
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-  const [actingIds, setActingIds] = useState<Set<string>>(new Set());
+  const expanded = useIdSet();
+  const acting = useIdSet();
   const [deleteTarget, setDeleteTarget] = useState<ConnectorJobResponse | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  const toggleExpand = (id: string) => {
-    setExpandedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
   const withActing = async (id: string, action: () => Promise<void>) => {
-    setActingIds((prev) => new Set(prev).add(id));
+    acting.add(id);
     setActionError('');
     try {
       await action();
     } catch (err) {
       setActionError(getErrorMessage(err, t('actionFailed')));
     } finally {
-      setActingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
+      acting.remove(id);
     }
   };
 
@@ -105,9 +93,9 @@ export default function ConnectionJobsTab({ connectionId }: ConnectionJobsTabPro
           <JobCard
             key={job.id}
             job={job}
-            isExpanded={expandedIds.has(job.id)}
-            acting={actingIds.has(job.id)}
-            onToggleExpand={() => toggleExpand(job.id)}
+            isExpanded={expanded.has(job.id)}
+            acting={acting.has(job.id)}
+            onToggleExpand={() => expanded.toggle(job.id)}
             onRunNow={() => handleRunNow(job.id)}
             onPause={() => runAction(job.id, () => apiService.pauseConnectorJob(job.id))}
             onResume={() => runAction(job.id, () => apiService.resumeConnectorJob(job.id))}

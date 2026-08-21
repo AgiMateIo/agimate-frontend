@@ -12,10 +12,11 @@ import { usePagedLogsQuery } from '@/queries/logs';
 import { connectionsListOptions } from '@/queries/connections';
 import { formatDateTimeFull, formatDateTimeShort } from '@/utils/date';
 import { Placeholder } from '@/components/ui/Placeholder';
+import { useIdSet } from '@/hooks/useIdSet';
 
 export default function TriggerLogsTab() {
   const t = useTranslations('Connectors');
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const expanded = useIdSet();
   const [connectorFilter, setConnectorFilter] = useState('');
 
   // Resolve connectionId → human-readable name, and provide the connector
@@ -59,17 +60,6 @@ export default function TriggerLogsTab() {
     setPage(0);
   };
 
-  const toggleExpand = (id: string) => {
-    setExpandedIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
 
   // Deliberately not the Select primitive: this one hides the native arrow
   // (appearance-none + pr-8) to place its own ChevronDownIcon, which is a
@@ -185,15 +175,15 @@ export default function TriggerLogsTab() {
                 {log.input && Object.keys(log.input).length > 0 ? (
                   <div>
                     <button
-                      onClick={() => toggleExpand(log.id)}
+                      onClick={() => expanded.toggle(log.id)}
                       className="flex items-center gap-1 text-xs text-accent hover:text-accent/80 font-medium transition-colors"
                     >
                       <span className="max-w-[340px] truncate font-mono">
                         {JSON.stringify(log.input)}
                       </span>
-                      <span className="shrink-0">{expandedIds.has(log.id) ? '▲' : '▼'}</span>
+                      <span className="shrink-0">{expanded.has(log.id) ? '▲' : '▼'}</span>
                     </button>
-                    {expandedIds.has(log.id) && (
+                    {expanded.has(log.id) && (
                       <pre className="mt-2 p-3 bg-background rounded-lg text-xs font-mono text-foreground/80 overflow-x-auto max-w-xl">
                         {JSON.stringify(log.input, null, 2)}
                       </pre>

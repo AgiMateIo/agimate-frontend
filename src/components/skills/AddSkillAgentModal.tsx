@@ -29,7 +29,7 @@ export default function AddSkillAgentModal({ skillId, onClose, onSuccess }: AddS
   const tCommon = useTranslations('Common');
 
   const [search, setSearch] = useState('');
-  const debouncedSearch = useDebouncedValue(search, 300);
+  const debouncedSearch = useDebouncedValue(search);
   const [page, setPage] = useState(0);
   const [selectedAgent, setSelectedAgent] = useState<AgentResponse | null>(null);
 

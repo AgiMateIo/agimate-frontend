@@ -14,6 +14,7 @@ import { JobRow } from './JobRow';
 import { JobsFilters } from './JobsFilters';
 import { useConnectorJobs } from './useConnectorJobs';
 import { Placeholder } from '@/components/ui/Placeholder';
+import { useIdSet } from '@/hooks/useIdSet';
 
 export default function ConnectorJobsTab() {
   const t = useTranslations('ConnectorJobs');
@@ -37,25 +38,13 @@ export default function ConnectorJobsTab() {
   } = useConnectorJobs();
 
   const [actionError, setActionError] = useState('');
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-  const [actingIds, setActingIds] = useState<Set<string>>(new Set());
+  const expanded = useIdSet();
+  const acting = useIdSet();
   const [deleteTarget, setDeleteTarget] = useState<ConnectorJobResponse | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  const toggleExpand = (id: string) => {
-    setExpandedIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
-
   const runAction = async (id: string, action: () => Promise<void>) => {
-    setActingIds(prev => new Set(prev).add(id));
+    acting.add(id);
     setActionError('');
     try {
       await action();
@@ -63,16 +52,12 @@ export default function ConnectorJobsTab() {
     } catch (err) {
       setActionError(getErrorMessage(err, t('actionFailed')));
     } finally {
-      setActingIds(prev => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
+      acting.remove(id);
     }
   };
 
   const handleRunNow = async (id: string) => {
-    setActingIds(prev => new Set(prev).add(id));
+    acting.add(id);
     setActionError('');
     try {
       // Fire-and-forget: 200 means "queued". The actual run happens within ~1s.
@@ -83,11 +68,7 @@ export default function ConnectorJobsTab() {
     } catch (err) {
       setActionError(getErrorMessage(err, t('actionFailed')));
     } finally {
-      setActingIds(prev => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
+      acting.remove(id);
     }
   };
 
@@ -197,9 +178,9 @@ export default function ConnectorJobsTab() {
             <JobRow
               key={job.id}
               job={job}
-              isExpanded={expandedIds.has(job.id)}
-              acting={actingIds.has(job.id)}
-              onToggleExpand={() => toggleExpand(job.id)}
+              isExpanded={expanded.has(job.id)}
+              acting={acting.has(job.id)}
+              onToggleExpand={() => expanded.toggle(job.id)}
               onRunNow={() => handleRunNow(job.id)}
               onPause={() => runAction(job.id, () => apiService.pauseConnectorJob(job.id))}
               onResume={() => runAction(job.id, () => apiService.resumeConnectorJob(job.id))}

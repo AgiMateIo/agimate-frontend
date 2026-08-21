@@ -14,7 +14,7 @@ import { usePagedLogsQuery } from '@/queries/logs';
 export function useConnectorJobs() {
   const [kindFilter, setKindFilter] = useState<ConnectorJobKind | ''>('');
   const [codeFilter, setCodeFilter] = useState('');
-  const debouncedCodeFilter = useDebouncedValue(codeFilter.trim(), 300);
+  const debouncedCodeFilter = useDebouncedValue(codeFilter.trim());
 
   const paged = usePagedLogsQuery(
     'connector-jobs',

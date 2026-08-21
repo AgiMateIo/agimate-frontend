@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { ClockIcon, CpuChipIcon, GlobeAltIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
@@ -14,6 +13,7 @@ import { PROVIDER_TYPE_LABEL_KEY, deriveProviderNameFromUrl } from './providerTy
 import { firstPurposeModel } from './llmPurpose';
 import { ProviderAvatar } from './ProviderAvatar';
 import { Placeholder } from '@/components/ui/Placeholder';
+import { useIdSet } from '@/hooks/useIdSet';
 
 interface LlmProvidersListProps {
   providers: LlmProviderResponse[];
@@ -26,18 +26,10 @@ export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersLi
   const locale = useLocale();
   const bcp47 = localeMap[locale];
 
-  const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
-
-  const setBusy = (id: string, on: boolean) => {
-    setBusyIds(prev => {
-      const next = new Set(prev);
-      if (on) next.add(id); else next.delete(id);
-      return next;
-    });
-  };
+  const busy = useIdSet();
 
   const handleToggleEnabled = async (provider: LlmProviderResponse) => {
-    setBusy(provider.id, true);
+    busy.add(provider.id);
     const newEnabled = !provider.enabled;
     onUpdate(providers.map(p => p.id === provider.id ? { ...p, enabled: newEnabled } : p));
     try {
@@ -47,7 +39,7 @@ export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersLi
       console.error('Failed to toggle provider', err);
       onUpdate(providers.map(p => p.id === provider.id ? { ...p, enabled: provider.enabled } : p));
     } finally {
-      setBusy(provider.id, false);
+      busy.remove(provider.id);
     }
   };
 
@@ -65,7 +57,7 @@ export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersLi
   const personalProviders = providers.filter(p => !p.platform);
 
   const renderCard = (provider: LlmProviderResponse) => {
-    const busy = busyIds.has(provider.id);
+    const isBusy = busy.has(provider.id);
     // The list DTO no longer carries models — the registry lives on the detail page.
     const neverRefreshed = provider.modelsRefreshedAt === null;
     const isPlatform = provider.platform;
@@ -123,7 +115,7 @@ export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersLi
             <Toggle
               checked={provider.enabled}
               onChange={() => handleToggleEnabled(provider)}
-              disabled={busy}
+              disabled={isBusy}
             />
           </div>
         </div>

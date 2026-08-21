@@ -15,6 +15,7 @@ import AddConnectorModal from './AddConnectorModal';
 import EditConnectorModal from './EditConnectorModal';
 import DeleteConnectorModal from './DeleteConnectorModal';
 import { Placeholder } from '@/components/ui/Placeholder';
+import { useIdSet } from '@/hooks/useIdSet';
 
 function ConnectorsListView({
   page,
@@ -33,7 +34,7 @@ function ConnectorsListView({
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingConnector, setEditingConnector] = useState<AppResponse | null>(null);
   const [deletingConnector, setDeletingConnector] = useState<AppResponse | null>(null);
-  const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
+  const updating = useIdSet();
 
   const handleConnectorAdded = () => {
     invalidateLists();
@@ -41,7 +42,7 @@ function ConnectorsListView({
   };
 
   const handleToggleEnabled = async (connector: AppResponse) => {
-    setUpdatingIds(prev => new Set(prev).add(connector.id));
+    updating.add(connector.id);
     patchAppInLists(connector.id, { enabled: !connector.enabled });
 
     try {
@@ -52,11 +53,7 @@ function ConnectorsListView({
       console.error('Failed to update app:', err);
       patchAppInLists(connector.id, { enabled: connector.enabled });
     } finally {
-      setUpdatingIds(prev => {
-        const next = new Set(prev);
-        next.delete(connector.id);
-        return next;
-      });
+      updating.remove(connector.id);
     }
   };
 
@@ -111,7 +108,7 @@ function ConnectorsListView({
                     <Toggle
                       checked={connector.enabled}
                       onChange={() => handleToggleEnabled(connector)}
-                      disabled={updatingIds.has(connector.id)}
+                      disabled={updating.has(connector.id)}
                     />
 
                     <button

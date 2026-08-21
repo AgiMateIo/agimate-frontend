@@ -29,7 +29,7 @@ export default function FilesBrowser({ fixedAgentId }: { fixedAgentId?: string }
   const [selectedAgent, setSelectedAgent] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
-  const debouncedSearch = useDebouncedValue(search.trim(), 300);
+  const debouncedSearch = useDebouncedValue(search.trim());
 
   const agentId = fixedAgentId ?? selectedAgent;
 

@@ -40,7 +40,7 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
 
   const [source, setSource] = useState<'my' | 'public'>('my');
   const [search, setSearch] = useState('');
-  const debouncedSearch = useDebouncedValue(search, 300);
+  const debouncedSearch = useDebouncedValue(search);
   const [page, setPage] = useState(0);
   const [selectedSkill, setSelectedSkill] = useState<SkillResponse | null>(null);
 

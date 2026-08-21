@@ -23,6 +23,7 @@ import { getErrorMessage } from '@/utils/error';
 import { RunStatusBadge, STOPPABLE } from './RunStatusBadge';
 import { formatTokens, useUsageTooltip } from './RunBlocks';
 import { Placeholder } from '@/components/ui/Placeholder';
+import { useIdSet } from '@/hooks/useIdSet';
 
 type StatusFilter = 'ALL' | RunStatus;
 
@@ -69,16 +70,16 @@ export default function RunsList({
   const t = useTranslations('Runs');
   const usageTooltip = useUsageTooltip();
   const queryClient = useQueryClient();
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const expanded = useIdSet();
   // Runs a stop was asked for. Ids stay in here after the request lands: the
   // row keeps its RUNNING status until the run reaches its next seam, and the
   // button has to read "stopping" for that whole stretch. Terminal rows drop
   // the button entirely, so the set never needs cleaning up.
-  const [stoppingIds, setStoppingIds] = useState<Set<string>>(new Set());
+  const stopping = useIdSet();
   const [stopError, setStopError] = useState('');
 
   const [search, setSearch] = useState('');
-  const debouncedSearch = useDebouncedValue(search.trim(), 300);
+  const debouncedSearch = useDebouncedValue(search.trim());
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
   const [agentFilter, setAgentFilter] = useState('ALL');
   const [connectorFilter, setConnectorFilter] = useState('ALL');
@@ -243,7 +244,7 @@ export default function RunsList({
   // doing anything new. Whatever it already did (a message sent, a file
   // written) stays — the run says so itself in its closing message.
   const handleStop = async (runId: string) => {
-    setStoppingIds((prev) => new Set(prev).add(runId));
+    stopping.add(runId);
     setStopError('');
     try {
       await apiService.cancelRun(runId);
@@ -251,25 +252,9 @@ export default function RunsList({
       // queued (it never starts at all) drops out of the live states quickly.
       refresh();
     } catch (err) {
-      setStoppingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(runId);
-        return next;
-      });
+      stopping.remove(runId);
       setStopError(getErrorMessage(err, t('stopRunError')));
     }
-  };
-
-  const toggleExpand = (id: string) => {
-    setExpandedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
   };
 
   // The detail page has no endpoint of its own for this row — hand it over
@@ -468,15 +453,15 @@ export default function RunsList({
                         {run.input && Object.keys(run.input).length > 0 ? (
                           <div>
                             <button
-                              onClick={() => toggleExpand(`input-${run.id}`)}
+                              onClick={() => expanded.toggle(`input-${run.id}`)}
                               className="flex items-center gap-1 text-xs text-accent hover:text-accent/80 font-medium transition-colors"
                             >
                               <span className="max-w-[340px] truncate font-mono">
                                 {JSON.stringify(run.input)}
                               </span>
-                              <span className="shrink-0">{expandedIds.has(`input-${run.id}`) ? '▲' : '▼'}</span>
+                              <span className="shrink-0">{expanded.has(`input-${run.id}`) ? '▲' : '▼'}</span>
                             </button>
-                            {expandedIds.has(`input-${run.id}`) && (
+                            {expanded.has(`input-${run.id}`) && (
                               <pre className="mt-2 p-3 bg-background rounded-lg text-xs font-mono text-foreground/80 overflow-x-auto max-w-xl">
                                 {JSON.stringify(run.input, null, 2)}
                               </pre>
@@ -515,11 +500,11 @@ export default function RunsList({
                           <button
                             type="button"
                             onClick={() => handleStop(run.id)}
-                            disabled={stoppingIds.has(run.id)}
+                            disabled={stopping.has(run.id)}
                             className="mt-1.5 flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs whitespace-nowrap text-muted transition-colors hover:border-error/50 hover:text-error disabled:cursor-default disabled:opacity-60 disabled:hover:border-border disabled:hover:text-muted"
                           >
                             <StopIcon className="h-3.5 w-3.5 shrink-0" />
-                            {stoppingIds.has(run.id) ? t('stoppingRun') : t('stopRun')}
+                            {stopping.has(run.id) ? t('stoppingRun') : t('stopRun')}
                           </button>
                         )}
                       </td>
@@ -556,13 +541,13 @@ export default function RunsList({
                         ) : run.result !== null ? (
                           <div>
                             <button
-                              onClick={() => toggleExpand(`result-${run.id}`)}
+                              onClick={() => expanded.toggle(`result-${run.id}`)}
                               className="flex items-center gap-1 text-xs text-success hover:text-success/80 font-medium transition-colors"
                             >
                               <span className="max-w-[200px] truncate">{run.result}</span>
-                              <span className="shrink-0">{expandedIds.has(`result-${run.id}`) ? '▲' : '▼'}</span>
+                              <span className="shrink-0">{expanded.has(`result-${run.id}`) ? '▲' : '▼'}</span>
                             </button>
-                            {expandedIds.has(`result-${run.id}`) && (
+                            {expanded.has(`result-${run.id}`) && (
                               <pre className="mt-2 p-3 bg-background rounded-lg text-xs font-mono text-foreground/80 overflow-x-auto max-w-md whitespace-pre-wrap">
                                 {run.result}
                               </pre>

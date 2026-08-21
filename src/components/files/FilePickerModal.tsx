@@ -99,7 +99,7 @@ export default function FilePickerModal({
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(PAGE_SIZE);
   const [selected, setSelected] = useState<UserFileResponse[]>([]);
-  const debouncedSearch = useDebouncedValue(search.trim(), 300);
+  const debouncedSearch = useDebouncedValue(search.trim());
 
   const agentsQuery = useQuery(allAgentsOptions());
   const agentNames = useMemo(

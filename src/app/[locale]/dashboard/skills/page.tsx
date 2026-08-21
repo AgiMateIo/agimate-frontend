@@ -70,7 +70,7 @@ export default function SkillsPage() {
   const t = useTranslations('Skills');
   const [source, setSource] = useState<SkillPickerSource>('all');
   const [search, setSearch] = useState('');
-  const debouncedSearch = useDebouncedValue(search, 300);
+  const debouncedSearch = useDebouncedValue(search);
 
   return (
     <div className="space-y-6">

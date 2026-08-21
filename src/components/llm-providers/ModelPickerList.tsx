@@ -16,6 +16,7 @@ import {
 import { LlmProviderModelResponse } from '@/types';
 import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import { Placeholder } from '@/components/ui/Placeholder';
+import { useIdSet } from '@/hooks/useIdSet';
 import {
   CapabilityAxis,
   CapabilityFilter,
@@ -93,7 +94,10 @@ export function ModelPickerList({ models, value, onChange, disabled, requirement
   const t = useTranslations('LlmProviders');
 
   const [search, setSearch] = useState('');
-  const [quick, setQuick] = useState<Set<string>>(() => new Set());
+  const quick = useIdSet();
+  // The set itself, so the memo below depends on its identity rather than on the
+  // hook's return object, which is new on every render.
+  const quickIds = quick.ids;
   // Escape hatch for a hard requirement: provider listings are incomplete often
   // enough that the picker must never be a dead end.
   const [showUnfit, setShowUnfit] = useState(false);
@@ -113,10 +117,10 @@ export function ModelPickerList({ models, value, onChange, disabled, requirement
   const capFilter = useMemo(() => {
     const next: CapabilityFilter = { input: [], output: [], params: [] };
     for (const f of QUICK_FILTERS) {
-      if (quick.has(f.key)) next[f.axis] = [...next[f.axis], f.value];
+      if (quickIds.has(f.key)) next[f.axis] = [...next[f.axis], f.value];
     }
     return next;
-  }, [quick]);
+  }, [quickIds]);
   const filterActive = quick.size > 0;
 
   const selectedRow = value ? models.find((m) => m.model === value) : undefined;
@@ -159,12 +163,7 @@ export function ModelPickerList({ models, value, onChange, disabled, requirement
     return { matched: sortModels(matched), unknown: sortModels(unknown), unfit: sortModels(unfit) };
   }, [models, search, capFilter, value, requirement]);
 
-  const toggleQuick = (key: string) =>
-    setQuick((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key); else next.add(key);
-      return next;
-    });
+  const toggleQuick = quick.toggle;
 
   const renderRow = (m: LlmProviderModelResponse) => (
     <button

@@ -54,7 +54,7 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
   const tCommon = useTranslations('Common');
   const [source, setSource] = useState<SkillPickerSource>('all');
   const [search, setSearch] = useState('');
-  const debouncedSearch = useDebouncedValue(search, 300);
+  const debouncedSearch = useDebouncedValue(search);
 
   // How many rows are revealed, tied to the list it was counted for: a new
   // search or source collapses back to one chunk without an effect.

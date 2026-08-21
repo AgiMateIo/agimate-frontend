@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Pagination } from '@/components/ui/Pagination';
 import { useAdminUsersQuery, type RoleFilter } from '@/queries/admin';
 import AdminUserRow from './AdminUserRow';
 import { Placeholder } from '@/components/ui/Placeholder';
+import { useIdSet } from '@/hooks/useIdSet';
 
 export default function AdminUsersList({
   search,
@@ -28,19 +28,8 @@ export default function AdminUsersList({
 }) {
   const t = useTranslations('Admin');
   const { data } = useAdminUsersQuery(search, role, page, pageSize);
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const expanded = useIdSet();
 
-  const toggleExpand = (id: string) => {
-    setExpandedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
 
   if (data.content.length === 0) {
     return (
@@ -75,8 +64,8 @@ export default function AdminUsersList({
               <AdminUserRow
                 key={user.id}
                 user={user}
-                expanded={expandedIds.has(user.id)}
-                onToggle={() => toggleExpand(user.id)}
+                expanded={expanded.has(user.id)}
+                onToggle={() => expanded.toggle(user.id)}
                 isSelf={!!currentUserId && currentUserId === user.id}
               />
             ))}

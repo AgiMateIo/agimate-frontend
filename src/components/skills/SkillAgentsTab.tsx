@@ -25,7 +25,7 @@ export default function SkillAgentsTab({ skillId, skillName }: SkillAgentsTabPro
 
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
-  const debouncedSearch = useDebouncedValue(search, 300);
+  const debouncedSearch = useDebouncedValue(search);
 
   const [deletingAgent, setDeletingAgent] = useState<AgentSummaryResponse | null>(null);
   const [showAdd, setShowAdd] = useState(false);

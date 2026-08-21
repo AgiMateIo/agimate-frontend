@@ -18,6 +18,7 @@ import { agentConnectionsOptions } from '@/queries/agents';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { formatDateTimeFull, formatDateTimeShort } from '@/utils/date';
 import { Placeholder } from '@/components/ui/Placeholder';
+import { useIdSet } from '@/hooks/useIdSet';
 
 export type StatusFilter = 'ALL' | ToolCallStatus;
 export type AccessFilter = 'ALL' | 'ALLOW' | 'DENY';
@@ -38,10 +39,10 @@ export default function ToolUseLogsTab({
   initialAccess?: AccessFilter;
 }) {
   const t = useTranslations('Connectors');
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const expanded = useIdSet();
 
   const [search, setSearch] = useState('');
-  const debouncedSearch = useDebouncedValue(search.trim(), 300);
+  const debouncedSearch = useDebouncedValue(search.trim());
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(initialStatus);
   const [accessFilter, setAccessFilter] = useState<AccessFilter>(initialAccess);
   const [connectorFilter, setConnectorFilter] = useState('ALL');
@@ -146,17 +147,6 @@ export default function ToolUseLogsTab({
     setPage(0);
   };
 
-  const toggleExpand = (id: string) => {
-    setExpandedIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
 
   const toolbar = (
     <div className="flex items-start gap-3">
@@ -306,15 +296,15 @@ export default function ToolUseLogsTab({
                         {log.input && Object.keys(log.input).length > 0 ? (
                           <div>
                             <button
-                              onClick={() => toggleExpand(`input-${log.id}`)}
+                              onClick={() => expanded.toggle(`input-${log.id}`)}
                               className="flex items-center gap-1 text-xs text-accent hover:text-accent/80 font-medium transition-colors"
                             >
                               <span className="max-w-[340px] truncate font-mono">
                                 {JSON.stringify(log.input)}
                               </span>
-                              <span className="shrink-0">{expandedIds.has(`input-${log.id}`) ? '▲' : '▼'}</span>
+                              <span className="shrink-0">{expanded.has(`input-${log.id}`) ? '▲' : '▼'}</span>
                             </button>
-                            {expandedIds.has(`input-${log.id}`) && (
+                            {expanded.has(`input-${log.id}`) && (
                               <pre className="mt-2 p-3 bg-background rounded-lg text-xs font-mono text-foreground/80 overflow-x-auto max-w-xl">
                                 {JSON.stringify(log.input, null, 2)}
                               </pre>
@@ -340,15 +330,15 @@ export default function ToolUseLogsTab({
                         ) : log.output !== null ? (
                           <div>
                             <button
-                              onClick={() => toggleExpand(`output-${log.id}`)}
+                              onClick={() => expanded.toggle(`output-${log.id}`)}
                               className="flex items-center gap-1 text-xs text-success hover:text-success/80 font-medium transition-colors"
                             >
                               <span className="max-w-[200px] truncate font-mono">
                                 {log.output}
                               </span>
-                              <span className="shrink-0">{expandedIds.has(`output-${log.id}`) ? '▲' : '▼'}</span>
+                              <span className="shrink-0">{expanded.has(`output-${log.id}`) ? '▲' : '▼'}</span>
                             </button>
-                            {expandedIds.has(`output-${log.id}`) && (
+                            {expanded.has(`output-${log.id}`) && (
                               <pre className="mt-2 p-3 bg-background rounded-lg text-xs font-mono text-foreground/80 overflow-x-auto max-w-md whitespace-pre-wrap">
                                 {log.output}
                               </pre>

@@ -25,7 +25,7 @@ export default function AdminUsersPage() {
   const [role, setRole] = useState<RoleFilter>('ALL');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
-  const debouncedSearch = useDebouncedValue(search.trim(), 300);
+  const debouncedSearch = useDebouncedValue(search.trim());
 
   const header = (
     <div>
