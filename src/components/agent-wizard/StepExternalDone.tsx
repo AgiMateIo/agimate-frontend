@@ -25,6 +25,7 @@ interface StepExternalDoneProps extends WizardStepProps {
 // someone else's config file, and nothing works without it.
 export default function StepExternalDone({ data, onReset }: StepExternalDoneProps) {
   const t = useTranslations('AgentWizard');
+  const tCommon = useTranslations('Common');
   const router = useRouter();
   const { copied, copy } = useClipboard();
 
@@ -64,8 +65,8 @@ export default function StepExternalDone({ data, onReset }: StepExternalDoneProp
               type="button"
               onClick={() => copy(fullKey)}
               className="shrink-0 rounded-lg border border-border/50 p-2.5 text-muted transition-colors hover:bg-surface-secondary hover:text-foreground"
-              title={t('copy')}
-              aria-label={t('copy')}
+              title={tCommon('copy')}
+              aria-label={tCommon('copy')}
             >
               {copied ? (
                 <ClipboardDocumentCheckIcon className="h-5 w-5 text-success" />

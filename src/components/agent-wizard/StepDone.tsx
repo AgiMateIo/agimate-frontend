@@ -27,6 +27,7 @@ interface StepDoneProps extends WizardStepProps {
 
 export default function StepDone({ data, onReset }: StepDoneProps) {
   const t = useTranslations('AgentWizard');
+  const tCommon = useTranslations('Common');
   const router = useRouter();
   const { copied, copy } = useClipboard();
   const [showKey, setShowKey] = useState(false);
@@ -152,7 +153,7 @@ export default function StepDone({ data, onReset }: StepDoneProps) {
                   type="button"
                   onClick={() => copy(data.created!.fullKey)}
                   className="shrink-0 p-2.5 rounded-lg border border-border/50 hover:bg-surface-secondary transition-colors text-muted hover:text-foreground"
-                  title={t('copy')}
+                  title={tCommon('copy')}
                 >
                   {copied ? (
                     <ClipboardDocumentCheckIcon className="w-5 h-5 text-success" />

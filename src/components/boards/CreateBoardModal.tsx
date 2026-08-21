@@ -18,6 +18,7 @@ interface CreateBoardModalProps {
 
 export default function CreateBoardModal({ teamId, onClose, onSuccess }: CreateBoardModalProps) {
   const t = useTranslations('Board');
+  const tCommon = useTranslations('Common');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
@@ -59,7 +60,7 @@ export default function CreateBoardModal({ teamId, onClose, onSuccess }: CreateB
         </FormField>
         <div className="flex gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose} className="flex-1">
-            {t('cancel')}
+            {tCommon('cancel')}
           </Button>
           <Button type="submit" disabled={!name.trim()} loading={loading} className="flex-1">
             {t('create')}

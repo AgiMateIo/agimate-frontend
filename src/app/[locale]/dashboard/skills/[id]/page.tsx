@@ -31,6 +31,7 @@ type Tab = 'overview' | 'connectors' | 'agents';
 
 function SkillDetailContent({ skillId }: { skillId: string }) {
   const t = useTranslations('Skills');
+  const tCommon = useTranslations('Common');
   const locale = useLocale();
   const router = useRouter();
   const { user } = useUser();
@@ -176,13 +177,13 @@ function SkillDetailContent({ skillId }: { skillId: string }) {
                       disabled={!isDirty || saving || !editSkillMd.trim()}
                       loading={saving}
                     >
-                      {t('save')}
+                      {tCommon('save')}
                     </Button>
                     <button
                       onClick={() => setShowDeleteModal(true)}
                       className="px-4 py-2 rounded-lg font-medium text-sm border border-error text-error hover:bg-error/10 transition-colors"
                     >
-                      {t('delete')}
+                      {tCommon('delete')}
                     </button>
                   </div>
                 )}

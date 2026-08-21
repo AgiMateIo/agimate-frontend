@@ -19,6 +19,7 @@ interface RotateLlmProviderKeyModalProps {
 
 export default function RotateLlmProviderKeyModal({ provider, onClose, onSuccess }: RotateLlmProviderKeyModalProps) {
   const t = useTranslations('LlmProviders');
+  const tCommon = useTranslations('Common');
   const [apiKey, setApiKey] = useState('');
 
   const { loading, error, handleSubmit } = useAsyncForm<LlmProviderResponse>({
@@ -51,7 +52,7 @@ export default function RotateLlmProviderKeyModal({ provider, onClose, onSuccess
 
         <div className="flex gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose} disabled={loading}>
-            {t('cancel')}
+            {tCommon('cancel')}
           </Button>
           <Button type="submit" variant="warning" loading={loading} disabled={loading || !apiKey.trim()}>
             {t('rotate')}

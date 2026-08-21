@@ -19,6 +19,7 @@ import SecretKeyReveal from '@/components/connectors/SecretKeyReveal';
 
 export default function EditAgentPage() {
   const t = useTranslations('Agents');
+  const tCommon = useTranslations('Common');
   const router = useRouter();
   const params = useParams();
   const agentId = params.id as string;
@@ -182,7 +183,7 @@ export default function EditAgentPage() {
               disabled={loading}
               className="flex-1"
             >
-              {t('cancel')}
+              {tCommon('cancel')}
             </Button>
             <Button
               type="submit"
@@ -190,7 +191,7 @@ export default function EditAgentPage() {
               loading={loading}
               className="flex-1"
             >
-              {t('save')}
+              {tCommon('save')}
             </Button>
           </div>
 

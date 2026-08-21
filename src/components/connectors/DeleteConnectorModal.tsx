@@ -15,11 +15,12 @@ interface DeleteConnectorModalProps {
 export default function DeleteConnectorModal({ connector, onClose, onSuccess }: DeleteConnectorModalProps) {
   const t = useTranslations('Connectors');
 
+  const tCommon = useTranslations('Common');
   return (
     <ConfirmDeleteModal
       title={t('deleteApp')}
-      confirmLabel={t('delete')}
-      cancelLabel={t('cancel')}
+      confirmLabel={tCommon('delete')}
+      cancelLabel={tCommon('cancel')}
       defaultError="Failed to delete connector"
       size="sm"
       fullWidthButtons

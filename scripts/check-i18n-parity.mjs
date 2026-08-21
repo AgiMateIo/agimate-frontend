@@ -62,5 +62,32 @@ for (const locale of ['en', 'ru']) {
   }
 }
 
+// A dashboard namespace re-declaring a Common string is how "Отмена" ended up
+// translated fourteen times over: both copies stay in ru/en parity, so the check
+// above sees nothing wrong while the two drift apart word by word. Only an exact
+// value match counts as a duplicate — a namespace saying "Загрузка навыков…"
+// where Common says "Загрузка..." is deliberately more specific and stays.
+{
+  const commonEn = load('messages/en.json').Common ?? {};
+  const commonRu = load('messages/ru.json').Common ?? {};
+  const dashEn = load('messages/dashboard/en.json');
+  const dashRu = load('messages/dashboard/ru.json');
+  const dupes = [];
+  for (const [ns, keys] of Object.entries(dashEn)) {
+    if (!keys || typeof keys !== 'object') continue;
+    for (const [k, v] of Object.entries(keys)) {
+      if (typeof v !== 'string') continue;
+      if (v === commonEn[k] && dashRu[ns]?.[k] === commonRu[k]) dupes.push(`${ns}.${k}`);
+    }
+  }
+  if (dupes.length) {
+    failed = true;
+    console.error("✗ dashboard namespaces duplicate Common verbatim — read them with useTranslations('Common'):");
+    for (const d of dupes) console.error(`    ${d}`);
+  } else {
+    console.log('✓ no verbatim duplicates of Common');
+  }
+}
+
 if (failed) process.exit(1);
 console.log('✓ no namespace collisions');

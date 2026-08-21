@@ -35,6 +35,7 @@ export default function ChannelConfigForm({
   onSuccess,
 }: ChannelConfigFormProps) {
   const t = useTranslations('Channels');
+  const tCommon = useTranslations('Common');
   const isEdit = !!channel;
 
   const [name, setName] = useState(channel?.name ?? '');
@@ -313,10 +314,10 @@ export default function ChannelConfigForm({
 
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="secondary" onClick={onCancel} disabled={loading}>
-          {t('cancel')}
+          {tCommon('cancel')}
         </Button>
         <Button type="submit" loading={loading}>
-          {isEdit ? t('save') : t('create')}
+          {isEdit ? tCommon('save') : t('create')}
         </Button>
       </div>
     </form>

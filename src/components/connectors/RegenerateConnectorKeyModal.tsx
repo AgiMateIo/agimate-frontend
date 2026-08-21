@@ -20,6 +20,7 @@ interface RegenerateConnectorKeyModalProps {
 
 export default function RegenerateConnectorKeyModal({ connectorId, connectorName, onClose, onSuccess }: RegenerateConnectorKeyModalProps) {
   const t = useTranslations('Connectors');
+  const tCommon = useTranslations('Common');
   const [regeneratedKey, setRegeneratedKey] = useState<AppCreatedResponse | null>(null);
 
   const { loading, error, handleSubmit } = useAsyncForm<AppCreatedResponse>({
@@ -66,7 +67,7 @@ export default function RegenerateConnectorKeyModal({ connectorId, connectorName
             disabled={loading}
             className="flex-1"
           >
-            {t('cancel')}
+            {tCommon('cancel')}
           </Button>
           <Button
             type="submit"

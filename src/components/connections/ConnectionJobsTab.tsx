@@ -22,6 +22,7 @@ interface ConnectionJobsTabProps {
 // connection columns carried is this page's own context.
 export default function ConnectionJobsTab({ connectionId }: ConnectionJobsTabProps) {
   const t = useTranslations('ConnectorJobs');
+  const tCommon = useTranslations('Common');
   const { data: jobs, isPending, error, refetch } = useConnectionJobsQuery(connectionId);
   const [actionError, setActionError] = useState('');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
@@ -126,10 +127,10 @@ export default function ConnectionJobsTab({ connectionId }: ConnectionJobsTabPro
           <p className="text-sm text-muted">{t('deleteWarning')}</p>
           <div className="flex justify-end gap-3">
             <Button variant="secondary" onClick={() => setDeleteTarget(null)} disabled={deleting}>
-              {t('cancel')}
+              {tCommon('cancel')}
             </Button>
             <Button variant="danger" loading={deleting} onClick={handleDelete}>
-              {t('delete')}
+              {tCommon('delete')}
             </Button>
           </div>
         </div>

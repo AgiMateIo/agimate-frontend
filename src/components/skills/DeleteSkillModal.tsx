@@ -19,11 +19,12 @@ export default function DeleteSkillModal({
 }: DeleteSkillModalProps) {
   const t = useTranslations('Skills');
 
+  const tCommon = useTranslations('Common');
   return (
     <ConfirmDeleteModal
       title={t('deleteSkillTitle')}
-      confirmLabel={t('delete')}
-      cancelLabel={t('cancel')}
+      confirmLabel={tCommon('delete')}
+      cancelLabel={tCommon('cancel')}
       defaultError="Failed to delete skill"
       size="sm"
       fullWidthButtons

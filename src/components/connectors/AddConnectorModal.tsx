@@ -19,6 +19,7 @@ interface AddConnectorModalProps {
 
 export default function AddConnectorModal({ onClose, onSuccess }: AddConnectorModalProps) {
   const t = useTranslations('Connectors');
+  const tCommon = useTranslations('Common');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [createdConnector, setCreatedConnector] = useState<AppCreatedResponse | null>(null);
@@ -97,7 +98,7 @@ export default function AddConnectorModal({ onClose, onSuccess }: AddConnectorMo
             disabled={loading}
             className="flex-1"
           >
-            {t('cancel')}
+            {tCommon('cancel')}
           </Button>
           <Button
             type="submit"

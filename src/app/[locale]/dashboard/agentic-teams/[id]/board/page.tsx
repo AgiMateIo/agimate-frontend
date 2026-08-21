@@ -36,6 +36,7 @@ function buildAgentMap(agents: AgentResponse[]): Map<string, string> {
 function BoardView({ board, teamId }: { board: Board; teamId: string }) {
   const t = useTranslations('Board');
 
+  const tCommon = useTranslations('Common');
   // Tasks (this board) and agents (this team) fetched in parallel — two suspense
   // queries in one component would otherwise run serially.
   const [{ data: columns }, { data: agentsPage }] = useSuspenseQueries({
@@ -135,7 +136,7 @@ function BoardView({ board, teamId }: { board: Board; teamId: string }) {
         <button
           onClick={() => invalidateTasks(board.id)}
           className="text-muted hover:text-foreground transition-colors p-2"
-          aria-label={t('refresh')}
+          aria-label={tCommon('refresh')}
         >
           <ArrowPathIcon className="h-5 w-5" />
         </button>

@@ -127,12 +127,13 @@ function DeletePolicyModal({
   onSuccess: () => void;
 }) {
   const t = useTranslations('Agents');
+  const tCommon = useTranslations('Common');
 
   return (
     <ConfirmDeleteModal
       title={t('deletePolicy')}
       confirmLabel={t('deletePolicy')}
-      cancelLabel={t('cancel')}
+      cancelLabel={tCommon('cancel')}
       defaultError="Failed to delete policy"
       fullWidthButtons
       onConfirm={() => apiService.deleteAgentConnectionPolicy(connection.id, policy.id)}

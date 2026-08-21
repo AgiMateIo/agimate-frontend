@@ -16,6 +16,7 @@ import { useConnectorJobs } from './useConnectorJobs';
 
 export default function ConnectorJobsTab() {
   const t = useTranslations('ConnectorJobs');
+  const tCommon = useTranslations('Common');
   const {
     pagedData,
     loading,
@@ -221,10 +222,10 @@ export default function ConnectorJobsTab() {
           <p className="text-sm text-muted">{t('deleteWarning')}</p>
           <div className="flex justify-end gap-3">
             <Button variant="secondary" onClick={() => setDeleteTarget(null)} disabled={deleting}>
-              {t('cancel')}
+              {tCommon('cancel')}
             </Button>
             <Button variant="danger" loading={deleting} onClick={handleDelete}>
-              {t('delete')}
+              {tCommon('delete')}
             </Button>
           </div>
         </div>

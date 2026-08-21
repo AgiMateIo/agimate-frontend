@@ -27,6 +27,7 @@ interface ModelExtraBodyModalProps {
 // by the backend (model wins, arrays replaced whole). Refresh never touches it.
 export default function ModelExtraBodyModal({ providerId, model, onClose, onSuccess }: ModelExtraBodyModalProps) {
   const t = useTranslations('LlmProviders');
+  const tCommon = useTranslations('Common');
   const [text, setText] = useState(formatExtraBody(model.extraBody));
 
   const { loading, error, handleSubmit, setError } = useAsyncForm<LlmProviderModelResponse>({
@@ -73,10 +74,10 @@ export default function ModelExtraBodyModal({ providerId, model, onClose, onSucc
 
         <div className="flex gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose} disabled={loading}>
-            {t('cancel')}
+            {tCommon('cancel')}
           </Button>
           <Button type="submit" loading={loading} disabled={loading}>
-            {t('save')}
+            {tCommon('save')}
           </Button>
         </div>
       </form>

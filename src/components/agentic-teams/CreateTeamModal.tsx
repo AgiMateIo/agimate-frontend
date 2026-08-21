@@ -16,6 +16,7 @@ interface CreateTeamModalProps {
 
 export default function CreateTeamModal({ onClose, onSuccess }: CreateTeamModalProps) {
   const t = useTranslations('AgenticTeams');
+  const tCommon = useTranslations('Common');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
@@ -65,7 +66,7 @@ export default function CreateTeamModal({ onClose, onSuccess }: CreateTeamModalP
             onClick={onClose}
             className="flex-1"
           >
-            {t('cancel')}
+            {tCommon('cancel')}
           </Button>
           <Button
             type="submit"

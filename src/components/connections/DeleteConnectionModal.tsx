@@ -19,11 +19,12 @@ export default function DeleteConnectionModal({
 }: DeleteConnectionModalProps) {
   const t = useTranslations('Connections');
 
+  const tCommon = useTranslations('Common');
   return (
     <ConfirmDeleteModal
       title={t('deleteConnection')}
-      confirmLabel={t('delete')}
-      cancelLabel={t('cancel')}
+      confirmLabel={tCommon('delete')}
+      cancelLabel={tCommon('cancel')}
       defaultError={t('deleteError')}
       size="sm"
       fullWidthButtons

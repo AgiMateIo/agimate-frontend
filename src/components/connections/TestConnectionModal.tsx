@@ -25,6 +25,7 @@ export default function TestConnectionModal({
   onClose,
 }: TestConnectionModalProps) {
   const t = useTranslations('ConnectionDetail');
+  const tCommon = useTranslations('Common');
   // The dialog is mounted only while open, so the test runs on mount and the
   // retry button is a refetch of the same query.
   const {
@@ -73,7 +74,7 @@ export default function TestConnectionModal({
             {t('testRetry')}
           </Button>
           <Button type="button" onClick={onClose} className="flex-1" disabled={loading}>
-            {t('close')}
+            {tCommon('close')}
           </Button>
         </div>
       </div>

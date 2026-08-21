@@ -42,6 +42,7 @@ export default function BindConnectionModal({
   onSuccess,
 }: BindConnectionModalProps) {
   const t = useTranslations('Agents');
+  const tCommon = useTranslations('Common');
   const [search, setSearch] = useState('');
   // `conn:<id>` for an instance, `code:<connectorCode>` for an internal one.
   const [selected, setSelected] = useState<string>('');
@@ -210,7 +211,7 @@ export default function BindConnectionModal({
 
         <div className="flex gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose} className="flex-1">
-            {t('cancel')}
+            {tCommon('cancel')}
           </Button>
           <Button
             type="button"

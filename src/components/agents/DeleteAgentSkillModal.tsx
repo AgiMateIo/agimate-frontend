@@ -16,11 +16,12 @@ interface DeleteAgentSkillModalProps {
 export default function DeleteAgentSkillModal({ agentId, skillId, skillName, onClose, onSuccess }: DeleteAgentSkillModalProps) {
   const t = useTranslations('Agents');
 
+  const tCommon = useTranslations('Common');
   return (
     <ConfirmDeleteModal
       title={t('removeSkill')}
       confirmLabel={t('removeSkill')}
-      cancelLabel={t('cancel')}
+      cancelLabel={tCommon('cancel')}
       defaultError="Failed to unbind skill"
       fullWidthButtons
       onConfirm={() => apiService.unbindAgentSkill(agentId, skillId)}

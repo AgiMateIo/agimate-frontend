@@ -24,6 +24,7 @@ interface EditLlmProviderModalProps {
 // its own screen (ProviderPurposesSection), since it needs the model registry.
 export default function EditLlmProviderModal({ provider, onClose, onSuccess }: EditLlmProviderModalProps) {
   const t = useTranslations('LlmProviders');
+  const tCommon = useTranslations('Common');
   const [name, setName] = useState(provider.name);
   const [baseUrl, setBaseUrl] = useState(provider.baseUrl ?? '');
   const [enabled, setEnabled] = useState(provider.enabled);
@@ -121,10 +122,10 @@ export default function EditLlmProviderModal({ provider, onClose, onSuccess }: E
 
         <div className="flex gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose} disabled={loading}>
-            {t('cancel')}
+            {tCommon('cancel')}
           </Button>
           <Button type="submit" loading={loading} disabled={loading || !name.trim()}>
-            {t('save')}
+            {tCommon('save')}
           </Button>
         </div>
       </form>

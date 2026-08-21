@@ -30,6 +30,7 @@ export default function SkillForm({
 }: SkillFormProps) {
   const t = useTranslations('Skills');
 
+  const tCommon = useTranslations('Common');
   const [skillMd, setSkillMd] = useState(initialSkillMd);
   const [isPublic, setIsPublic] = useState(initialIsPublic);
   const [lastInitials, setLastInitials] = useState({ initialSkillMd, initialIsPublic });
@@ -88,7 +89,7 @@ export default function SkillForm({
           disabled={loading}
           className="flex-1"
         >
-          {t('cancel')}
+          {tCommon('cancel')}
         </Button>
         <Button
           type="submit"

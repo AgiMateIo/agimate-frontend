@@ -45,6 +45,7 @@ export default function AddConnectionPolicyModal({
   onSuccess,
 }: AddConnectionPolicyModalProps) {
   const t = useTranslations('Agents');
+  const tCommon = useTranslations('Common');
   const isEdit = !!policy;
 
   const [kind, setKind] = useState<PolicyKind>(policy?.kind ?? 'TOOL');
@@ -202,10 +203,10 @@ export default function AddConnectionPolicyModal({
 
         <div className="flex gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose} disabled={loading} className="flex-1">
-            {t('cancel')}
+            {tCommon('cancel')}
           </Button>
           <Button type="submit" loading={loading} disabled={loading} className="flex-1">
-            {t('save')}
+            {tCommon('save')}
           </Button>
         </div>
       </form>

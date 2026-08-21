@@ -382,7 +382,7 @@ export default function AddLlmProviderModal({ onClose, onSuccess }: AddLlmProvid
                 </Button>
               ) : (
                 <Button type="button" variant="secondary" onClick={onClose} disabled={busy}>
-                  {t('cancel')}
+                  {tc('cancel')}
                 </Button>
               )}
               <Button

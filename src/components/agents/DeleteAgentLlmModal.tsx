@@ -25,13 +25,14 @@ export default function DeleteAgentLlmModal({
   onSuccess,
 }: DeleteAgentLlmModalProps) {
   const t = useTranslations('Agents');
+  const tCommon = useTranslations('Common');
   const tp = useTranslations('LlmProviders');
 
   return (
     <ConfirmDeleteModal
       title={t('deleteModelBinding')}
       confirmLabel={t('deleteModelBinding')}
-      cancelLabel={t('cancel')}
+      cancelLabel={tCommon('cancel')}
       defaultError="Failed to delete binding"
       fullWidthButtons
       onConfirm={() => apiService.deleteAgentLlm(agentId, binding.purpose)}

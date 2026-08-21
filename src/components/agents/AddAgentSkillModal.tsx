@@ -34,6 +34,7 @@ interface AddAgentSkillModalProps {
 
 export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, onSuccess }: AddAgentSkillModalProps) {
   const t = useTranslations('Agents');
+  const tCommon = useTranslations('Common');
   const tSkills = useTranslations('Skills');
 
   const [source, setSource] = useState<'my' | 'public'>('my');
@@ -319,7 +320,7 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
             disabled={loading}
             className="flex-1"
           >
-            {t('cancel')}
+            {tCommon('cancel')}
           </Button>
           <Button
             type="submit"

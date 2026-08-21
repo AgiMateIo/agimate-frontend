@@ -36,6 +36,7 @@ export default function StepConnections({
   final?: boolean;
 }) {
   const t = useTranslations('AgentWizard');
+  const tCommon = useTranslations('Common');
   const [search, setSearch] = useState('');
 
   const [{ data: catalog, isPending: catalogPending }, { data: connections, isPending: connectionsPending }] =
@@ -216,7 +217,7 @@ export default function StepConnections({
       <WizardActions
         left={
           <Button type="button" variant="secondary" onClick={goBack} disabled={loading}>
-            {t('back')}
+            {tCommon('back')}
           </Button>
         }
       >

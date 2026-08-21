@@ -191,12 +191,13 @@ function UnbindConnectionModal({
   onSuccess: () => void;
 }) {
   const t = useTranslations('Agents');
+  const tCommon = useTranslations('Common');
 
   return (
     <ConfirmDeleteModal
       title={t('unbindConnection')}
       confirmLabel={t('unbindConnection')}
-      cancelLabel={t('cancel')}
+      cancelLabel={tCommon('cancel')}
       defaultError="Failed to remove connection"
       fullWidthButtons
       confirmVariant="danger"

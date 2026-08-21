@@ -16,6 +16,7 @@ import ConnectionSetupForm from '@/components/connections/ConnectionSetupForm';
 // the query, so the platform-picker step is skipped entirely.
 function CreateConnectionContent() {
   const t = useTranslations('Connections');
+  const tCommon = useTranslations('Common');
   const router = useRouter();
   const searchParams = useSearchParams();
   const connectorCode = searchParams.get('connector') ?? '';
@@ -55,7 +56,7 @@ function CreateConnectionContent() {
         initialName={initialName}
         onSuccess={handleSuccess}
         onCancel={() => router.push('/dashboard/connections')}
-        cancelLabel={t('cancel')}
+        cancelLabel={tCommon('cancel')}
       />
     </div>
   );

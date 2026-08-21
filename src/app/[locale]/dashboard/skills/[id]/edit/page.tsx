@@ -18,6 +18,7 @@ import SkillForm from '@/components/skills/SkillForm';
 
 export default function EditSkillPage() {
   const t = useTranslations('Skills');
+  const tCommon = useTranslations('Common');
   const router = useRouter();
   const params = useParams();
   const skillId = params.id as string;
@@ -99,7 +100,7 @@ export default function EditSkillPage() {
           loading={loading}
           error={error}
           fieldErrors={fieldErrors}
-          submitLabel={t('save')}
+          submitLabel={tCommon('save')}
           onSubmit={onSubmit}
           onCancel={() => router.push(`/dashboard/skills/${skillId}`)}
         />

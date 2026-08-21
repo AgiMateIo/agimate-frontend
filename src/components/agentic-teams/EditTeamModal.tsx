@@ -19,6 +19,7 @@ interface EditTeamModalProps {
 
 export default function EditTeamModal({ team, onClose, onUpdated, onDeleted }: EditTeamModalProps) {
   const t = useTranslations('AgenticTeams');
+  const tCommon = useTranslations('Common');
   const [name, setName] = useState(team.name);
   const [description, setDescription] = useState(team.description);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -82,7 +83,7 @@ export default function EditTeamModal({ team, onClose, onUpdated, onDeleted }: E
               onClick={() => setShowDeleteConfirm(true)}
               disabled={saving}
             >
-              {t('delete')}
+              {tCommon('delete')}
             </Button>
             <div className="flex-1" />
             <Button
@@ -91,14 +92,14 @@ export default function EditTeamModal({ team, onClose, onUpdated, onDeleted }: E
               onClick={onClose}
               disabled={saving}
             >
-              {t('cancel')}
+              {tCommon('cancel')}
             </Button>
             <Button
               type="submit"
               loading={saving}
               disabled={!name.trim() || (name.trim() === team.name && description.trim() === team.description)}
             >
-              {t('save')}
+              {tCommon('save')}
             </Button>
           </div>
         </form>
@@ -118,7 +119,7 @@ export default function EditTeamModal({ team, onClose, onUpdated, onDeleted }: E
               disabled={deleting}
               className="flex-1"
             >
-              {t('cancel')}
+              {tCommon('cancel')}
             </Button>
             <Button
               type="submit"
@@ -126,7 +127,7 @@ export default function EditTeamModal({ team, onClose, onUpdated, onDeleted }: E
               loading={deleting}
               className="flex-1"
             >
-              {t('delete')}
+              {tCommon('delete')}
             </Button>
           </div>
         </form>

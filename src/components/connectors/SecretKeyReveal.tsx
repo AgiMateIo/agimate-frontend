@@ -20,6 +20,7 @@ interface SecretKeyRevealProps {
 
 export default function SecretKeyReveal({ secret, onDone, label, children }: SecretKeyRevealProps) {
   const t = useTranslations('Connectors');
+  const tCommon = useTranslations('Common');
   const { copied, copy } = useClipboard();
 
   return (
@@ -45,12 +46,12 @@ export default function SecretKeyReveal({ secret, onDone, label, children }: Sec
             {copied ? (
               <>
                 <CheckIcon className="h-5 w-5" />
-                {t('copied')}
+                {tCommon('copied')}
               </>
             ) : (
               <>
                 <ClipboardDocumentIcon className="h-5 w-5" />
-                {t('copy')}
+                {tCommon('copy')}
               </>
             )}
           </Button>

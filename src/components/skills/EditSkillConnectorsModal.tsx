@@ -132,10 +132,10 @@ export default function EditSkillConnectorsModal({
 
         <div className="flex items-center justify-end gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose} disabled={loading}>
-            {t('cancel')}
+            {tc('cancel')}
           </Button>
           <Button type="submit" disabled={!isDirty || loading} loading={loading}>
-            {t('save')}
+            {tc('save')}
           </Button>
         </div>
       </form>

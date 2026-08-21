@@ -25,6 +25,7 @@ export default function UpdateCredentialsModal({
   onSuccess,
 }: UpdateCredentialsModalProps) {
   const t = useTranslations('Connections');
+  const tCommon = useTranslations('Common');
   const { credentials, handleFieldChange, canSubmit, filledCredentials } =
     useCredentialFields(credentialFields);
 
@@ -64,7 +65,7 @@ export default function UpdateCredentialsModal({
             disabled={loading}
             className="flex-1"
           >
-            {t('cancel')}
+            {tCommon('cancel')}
           </Button>
           <Button
             type="submit"
@@ -72,7 +73,7 @@ export default function UpdateCredentialsModal({
             loading={loading}
             className="flex-1"
           >
-            {t('save')}
+            {tCommon('save')}
           </Button>
         </div>
       </form>

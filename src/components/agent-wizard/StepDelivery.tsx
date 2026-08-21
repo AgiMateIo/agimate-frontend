@@ -32,6 +32,7 @@ function deliveryReady(type: AgentType | null, webhookUrl: string): boolean {
 export default function StepDelivery({ data, setData, goNext, goBack }: WizardStepProps) {
   const t = useTranslations('AgentWizard');
 
+  const tCommon = useTranslations('Common');
   const selected = data.agentType;
   const ready = deliveryReady(selected, data.webhookUrl);
 
@@ -118,7 +119,7 @@ export default function StepDelivery({ data, setData, goNext, goBack }: WizardSt
       <WizardActions
         left={
           <Button type="button" variant="secondary" onClick={goBack}>
-            {t('back')}
+            {tCommon('back')}
           </Button>
         }
       >

@@ -50,6 +50,7 @@ const CONNECTOR_ICON = {
 export default function StepSkills({ data, setData, goNext, goBack, teamId }: WizardStepProps) {
   const t = useTranslations('AgentWizard');
 
+  const tCommon = useTranslations('Common');
   const [source, setSource] = useState<SkillPickerSource>('all');
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, 300);
@@ -315,7 +316,7 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
       <WizardActions
         left={
           <Button type="button" variant="secondary" onClick={goBack} disabled={loading}>
-            {t('back')}
+            {tCommon('back')}
           </Button>
         }
       >

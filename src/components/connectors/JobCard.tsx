@@ -80,6 +80,7 @@ export function JobCard({
 }: JobCardProps) {
   const t = useTranslations('ConnectorJobs');
 
+  const tCommon = useTranslations('Common');
   const Icon = TYPE_ICON[job.type];
 
   const schedule =
@@ -215,7 +216,7 @@ export function JobCard({
               onClick={onDelete}
               disabled={acting}
               className="p-1.5 rounded-lg text-muted hover:text-error hover:bg-surface transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-              title={t('delete')}
+              title={tCommon('delete')}
             >
               <TrashIcon className="h-4 w-4" />
             </button>

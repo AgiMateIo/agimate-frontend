@@ -31,6 +31,7 @@ export default function ChannelDetailPane({
   onChannelDeleted,
 }: ChannelDetailPaneProps) {
   const t = useTranslations('Channels');
+  const tCommon = useTranslations('Common');
   const locale = useLocale();
   const [subTab, setSubTab] = useState<SubTab>('config');
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -95,12 +96,12 @@ export default function ChannelDetailPane({
             className="flex items-center gap-2"
           >
             <PencilIcon className="h-4 w-4" />
-            {t('edit')}
+            {tCommon('edit')}
           </Button>
           <button
             onClick={() => setConfirmDelete(true)}
             className="p-2 rounded-lg text-muted hover:text-error hover:bg-error/10 transition-colors"
-            title={t('delete')}
+            title={tCommon('delete')}
           >
             <TrashIcon className="h-4 w-4" />
           </button>

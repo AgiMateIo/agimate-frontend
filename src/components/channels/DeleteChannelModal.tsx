@@ -15,11 +15,12 @@ interface DeleteChannelModalProps {
 export default function DeleteChannelModal({ channel, onClose, onSuccess }: DeleteChannelModalProps) {
   const t = useTranslations('Channels');
 
+  const tCommon = useTranslations('Common');
   return (
     <ConfirmDeleteModal
       title={t('deleteTitle')}
-      confirmLabel={t('delete')}
-      cancelLabel={t('cancel')}
+      confirmLabel={tCommon('delete')}
+      cancelLabel={tCommon('cancel')}
       defaultError="Failed to delete channel"
       size="sm"
       blockCloseWhileLoading

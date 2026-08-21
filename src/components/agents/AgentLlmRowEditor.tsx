@@ -41,6 +41,7 @@ export default function AgentLlmRowEditor({
   onSuccess,
 }: AgentLlmRowEditorProps) {
   const t = useTranslations('Agents');
+  const tCommon = useTranslations('Common');
   const tp = useTranslations('LlmProviders');
 
   const initialProvider = binding?.llmProviderId ?? providers[0]?.id ?? '';
@@ -88,7 +89,7 @@ export default function AgentLlmRowEditor({
           type="button"
           onClick={onCancel}
           disabled={submitting}
-          aria-label={t('cancel')}
+          aria-label={tCommon('cancel')}
           className="p-1 rounded-md text-muted hover:text-foreground hover:bg-surface transition-colors"
         >
           <XMarkIcon className="h-4 w-4" />
@@ -138,10 +139,10 @@ export default function AgentLlmRowEditor({
 
       <div className="flex gap-3">
         <Button onClick={handleSubmit} disabled={submitting || !model.trim()} loading={submitting}>
-          {t('save')}
+          {tCommon('save')}
         </Button>
         <Button variant="secondary" onClick={onCancel} disabled={submitting}>
-          {t('cancel')}
+          {tCommon('cancel')}
         </Button>
       </div>
     </div>

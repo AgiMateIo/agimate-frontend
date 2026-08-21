@@ -15,11 +15,12 @@ interface DeleteLlmProviderModalProps {
 export default function DeleteLlmProviderModal({ provider, onClose, onSuccess }: DeleteLlmProviderModalProps) {
   const t = useTranslations('LlmProviders');
 
+  const tCommon = useTranslations('Common');
   return (
     <ConfirmDeleteModal
       title={`${t('deleteProvider')}: ${provider.name}`}
-      confirmLabel={t('delete')}
-      cancelLabel={t('cancel')}
+      confirmLabel={tCommon('delete')}
+      cancelLabel={tCommon('cancel')}
       defaultError="Failed to delete provider"
       onConfirm={() => apiService.deleteLlmProvider(provider.id)}
       onClose={onClose}

@@ -22,6 +22,7 @@ export default function AddConnectionModal({
   onSuccess,
 }: AddConnectionModalProps) {
   const t = useTranslations('Connections');
+  const tCommon = useTranslations('Common');
   const [selectedPlatform, setSelectedPlatform] = useState<ConnectorCatalogEntry | null>(null);
 
   const connectors = platforms.filter(p => p.integrationMeta);
@@ -105,7 +106,7 @@ export default function AddConnectionModal({
           connector={selectedPlatform}
           onSuccess={onSuccess}
           onCancel={() => setSelectedPlatform(null)}
-          cancelLabel={t('back')}
+          cancelLabel={tCommon('back')}
         />
       )}
     </Modal>

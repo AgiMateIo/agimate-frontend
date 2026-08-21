@@ -36,6 +36,7 @@ export default function SkillConnectionsModal({
 }: SkillConnectionsModalProps) {
   const t = useTranslations('Agents');
 
+  const tCommon = useTranslations('Common');
   const [
     { data: userConnections },
     { data: agentConnections, isPending: agentConnectionsPending },
@@ -157,13 +158,13 @@ export default function SkillConnectionsModal({
 
         <div className="flex gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose} disabled={loading} className="flex-1">
-            {t('cancel')}
+            {tCommon('cancel')}
           </Button>
           {/* A connector with no instance at all does not block the rest: the
               map is replaced wholesale, and a code left out simply stays
               without an instance — that skill connector was broken already. */}
           <Button type="submit" loading={loading} disabled={loading || notReady} className="flex-1">
-            {t('save')}
+            {tCommon('save')}
           </Button>
         </div>
       </form>

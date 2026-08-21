@@ -27,6 +27,7 @@ export default function CreateTaskModal({
   onSuccess,
 }: CreateTaskModalProps) {
   const t = useTranslations('Board');
+  const tCommon = useTranslations('Common');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState<TaskType>('TASK');
@@ -153,7 +154,7 @@ export default function CreateTaskModal({
 
         <div className="flex gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose} className="flex-1">
-            {t('cancel')}
+            {tCommon('cancel')}
           </Button>
           <Button
             type="submit"

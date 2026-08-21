@@ -28,6 +28,7 @@ interface AddPlatformProviderModalProps {
 // quotas are set.
 export default function AddPlatformProviderModal({ onClose, onSuccess }: AddPlatformProviderModalProps) {
   const t = useTranslations('LlmProviders');
+  const tCommon = useTranslations('Common');
   const tu = useTranslations('LlmUsage');
 
   const [providerType, setProviderType] = useState<LlmProviderType>(DEFAULT_PROVIDER_TYPE);
@@ -171,7 +172,7 @@ export default function AddPlatformProviderModal({ onClose, onSuccess }: AddPlat
           ) : (
             <>
               <Button type="button" variant="secondary" onClick={onClose} disabled={busy}>
-                {t('cancel')}
+                {tCommon('cancel')}
               </Button>
               <Button
                 type="submit"

@@ -18,6 +18,7 @@ interface EditConnectorModalProps {
 
 export default function EditConnectorModal({ connector, onClose, onSuccess }: EditConnectorModalProps) {
   const t = useTranslations('Connectors');
+  const tCommon = useTranslations('Common');
   const [name, setName] = useState(connector.name);
   const [description, setDescription] = useState(connector.description || '');
 
@@ -68,7 +69,7 @@ export default function EditConnectorModal({ connector, onClose, onSuccess }: Ed
             disabled={loading}
             className="flex-1"
           >
-            {t('cancel')}
+            {tCommon('cancel')}
           </Button>
           <Button
             type="submit"
@@ -76,7 +77,7 @@ export default function EditConnectorModal({ connector, onClose, onSuccess }: Ed
             loading={loading}
             className="flex-1"
           >
-            {t('save')}
+            {tCommon('save')}
           </Button>
         </div>
       </form>

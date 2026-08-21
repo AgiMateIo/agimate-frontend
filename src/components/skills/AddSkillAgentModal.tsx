@@ -25,7 +25,7 @@ interface AddSkillAgentModalProps {
 
 export default function AddSkillAgentModal({ skillId, onClose, onSuccess }: AddSkillAgentModalProps) {
   const t = useTranslations('SkillAgents');
-  const tAgents = useTranslations('Agents');
+  const tCommon = useTranslations('Common');
 
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, 300);
@@ -170,7 +170,7 @@ export default function AddSkillAgentModal({ skillId, onClose, onSuccess }: AddS
             disabled={loading}
             className="flex-1"
           >
-            {tAgents('cancel')}
+            {tCommon('cancel')}
           </Button>
           <Button
             type="submit"
