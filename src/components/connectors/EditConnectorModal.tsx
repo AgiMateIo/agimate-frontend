@@ -31,7 +31,10 @@ export default function EditConnectorModal({ connector, onClose, onSuccess }: Ed
     handleSubmit(e, () =>
       apiService.updateApp(connector.id, {
         name,
-        description: description || undefined,
+        // Sent even when empty: "" is what clears the field. Dropping the key
+        // instead used to mean an emptied description simply stayed put, with
+        // no way to remove one from this form at all.
+        description,
       })
     );
 
