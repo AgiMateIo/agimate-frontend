@@ -7,10 +7,15 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { usePathname } from '@/i18n/navigation';
 import { UserGroupIcon } from '@heroicons/react/24/outline';
-import { useAgenticTeamQuery, agenticTeamOptions } from '@/queries/agentic-teams';
+import {
+  useAgenticTeamQuery,
+  useUpdateAgenticTeamMutation,
+  agenticTeamOptions,
+} from '@/queries/agentic-teams';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { Placeholder } from '@/components/ui/Placeholder';
+import { InlineEditTitle } from '@/components/ui/InlineEdit';
 
 // The header row exposes an actions slot (right-aligned next to the team name).
 // Section pages fill it by wrapping their buttons in <TeamHeaderActions> — the
@@ -35,7 +40,9 @@ function TeamShellHeader({
   teamId: string;
   onActionsRef: (el: HTMLElement | null) => void;
 }) {
+  const t = useTranslations('AgenticTeams');
   const { data: team } = useAgenticTeamQuery(teamId);
+  const updateTeam = useUpdateAgenticTeamMutation(teamId);
   useSetBreadcrumb(teamId, team.name);
 
   return (
@@ -43,10 +50,18 @@ function TeamShellHeader({
     // share one row there, and `ml-auto` keeps the actions right-aligned in
     // whichever row they end up in.
     <div className="flex flex-wrap items-center gap-3">
-      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-accent/10 text-accent">
-        <UserGroupIcon className="h-7 w-7" />
-      </span>
-      <h1 className="min-w-0 truncate text-2xl font-bold text-foreground">{team.name}</h1>
+      <InlineEditTitle
+        value={team.name}
+        onSave={(name) => updateTeam.mutateAsync({ name })}
+        defaultError={t('editError')}
+        ariaLabel={t('teamName')}
+        className="flex-1"
+        leading={
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-accent/10 text-accent">
+            <UserGroupIcon className="h-7 w-7" />
+          </span>
+        }
+      />
       <div ref={onActionsRef} className="ml-auto flex items-center gap-2" />
     </div>
   );

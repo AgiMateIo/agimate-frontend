@@ -4,7 +4,7 @@ import { API } from '@/config/constants';
 import type {
   AgenticTeam,
   CreateAgenticTeamRequest,
-  UpdateAgenticTeamRequest,
+  PatchAgenticTeamRequest,
 } from '@/types';
 
 export const agenticTeamsApi = {
@@ -21,8 +21,11 @@ export const agenticTeamsApi = {
     return httpClient.post<AgenticTeam>(`${API.ENDPOINTS.CONTROL_API}/manage/agentic-teams/`, data);
   },
 
-  async updateAgenticTeam(id: string, data: UpdateAgenticTeamRequest): Promise<AgenticTeam> {
-    return httpClient.put<AgenticTeam>(`${API.ENDPOINTS.CONTROL_API}/manage/agentic-teams/${id}`, data);
+  // PATCH rather than the PUT beside it: PUT wants a name every time, so the
+  // description could not be edited without resending one — and resending it
+  // could trip the name-taken check on a team that never renamed.
+  async patchAgenticTeam(id: string, data: PatchAgenticTeamRequest): Promise<AgenticTeam> {
+    return httpClient.patch<AgenticTeam>(`${API.ENDPOINTS.CONTROL_API}/manage/agentic-teams/${id}`, data);
   },
 
   async deleteAgenticTeam(id: string): Promise<void> {

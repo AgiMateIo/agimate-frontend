@@ -5,23 +5,32 @@ import { useParams } from 'next/navigation';
 import { useQuery, useSuspenseQueries } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import {
-  PencilIcon,
+  TrashIcon,
   UserCircleIcon,
   ClipboardDocumentListIcon,
   ClockIcon,
   CheckCircleIcon,
 } from '@heroicons/react/24/outline';
 import { Link, useRouter } from '@/i18n/navigation';
-import { Button } from '@/components/ui/Button';
-import { agenticTeamOptions, useAgenticTeamCacheActions } from '@/queries/agentic-teams';
+import apiService from '@/services/api';
+import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
+import { DropdownMenu } from '@/components/ui/DropdownMenu';
+import { InlineEditField } from '@/components/ui/InlineEdit';
+import { TextArea } from '@/components/ui/FormField';
+import {
+  agenticTeamOptions,
+  useAgenticTeamCacheActions,
+  useUpdateAgenticTeamMutation,
+} from '@/queries/agentic-teams';
 import { agentsListOptions } from '@/queries/agents';
 import { boardsListOptions, boardTasksOptions } from '@/queries/boards';
-import EditTeamModal from '@/components/agentic-teams/EditTeamModal';
+import { TeamHeaderActions } from './layout';
 import { formatDate } from '@/utils/date';
 
 export default function AgenticTeamGeneralPage() {
   const t = useTranslations('AgenticTeams');
   const tBoard = useTranslations('Board');
+  const tCommon = useTranslations('Common');
   const locale = useLocale();
   const router = useRouter();
   const teamId = useParams().id as string;
@@ -33,18 +42,9 @@ export default function AgenticTeamGeneralPage() {
   // Depends on the resolved board id — non-suspense so the tiles render while it loads.
   const { data: columns } = useQuery({ ...boardTasksOptions(board?.id ?? ''), enabled: !!board });
 
-  const [showEditModal, setShowEditModal] = useState(false);
+  const updateTeam = useUpdateAgenticTeamMutation(teamId);
   const { invalidateAll } = useAgenticTeamCacheActions();
-
-  const handleUpdated = () => {
-    invalidateAll();
-    setShowEditModal(false);
-  };
-
-  const handleDeleted = () => {
-    setShowEditModal(false);
-    router.push('/dashboard/agentic-teams');
-  };
+  const [deleting, setDeleting] = useState(false);
 
   // No board yet → the team has 0 tasks; board present but tasks still loading → placeholder.
   const taskValue = (count: number | undefined) => (board ? (count ?? '—') : 0);
@@ -86,6 +86,21 @@ export default function AgenticTeamGeneralPage() {
 
   return (
     <div className="space-y-6">
+      {/* The name is edited on the header line itself, so what is left for a
+          menu is the one action that is not a field: deleting the team. */}
+      <TeamHeaderActions>
+        <DropdownMenu
+          items={[
+            {
+              label: t('deleteTeam'),
+              icon: TrashIcon,
+              onClick: () => setDeleting(true),
+              danger: true,
+            },
+          ]}
+        />
+      </TeamHeaderActions>
+
       {/* Stat tiles */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {tiles.map(({ key, label, value, icon: Icon, href }) => (
@@ -104,24 +119,32 @@ export default function AgenticTeamGeneralPage() {
       </div>
 
       <div className="bg-surface rounded-xl border border-border p-6 space-y-6">
-        <div className="flex items-start justify-between gap-3">
-          {team.description ? (
-            <div className="min-w-0">
-              <h3 className="text-sm font-medium text-muted mb-2">{t('teamDescription')}</h3>
-              <p className="text-sm text-foreground">{team.description}</p>
-            </div>
-          ) : (
-            <div />
+        <InlineEditField
+          label={t('teamDescription')}
+          value={team.description ?? ''}
+          // An emptied field sends "" — that is what clears it; null would read
+          // as "leave it alone".
+          onSave={(next) => updateTeam.mutateAsync({ description: next.trim() })}
+          defaultError={t('editError')}
+          editor={({ draft, setDraft, disabled, onKeyDown }) => (
+            <TextArea
+              autoFocus
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={onKeyDown}
+              disabled={disabled}
+              placeholder={t('teamDescriptionPlaceholder')}
+              rows={3}
+              maxLength={500}
+            />
           )}
-          <Button
-            variant="secondary"
-            onClick={() => setShowEditModal(true)}
-            className="inline-flex items-center whitespace-nowrap shrink-0"
-          >
-            <PencilIcon className="h-4 w-4 mr-1.5 shrink-0" />
-            {t('editTeam')}
-          </Button>
-        </div>
+        >
+          {team.description ? (
+            <p className="text-sm text-foreground">{team.description}</p>
+          ) : (
+            <p className="text-sm text-muted">{t('noDescription')}</p>
+          )}
+        </InlineEditField>
 
         <div>
           <h3 className="text-sm font-medium text-muted mb-2">{t('created')}</h3>
@@ -134,13 +157,23 @@ export default function AgenticTeamGeneralPage() {
         </div>
       </div>
 
-      {showEditModal && (
-        <EditTeamModal
-          team={team}
-          onClose={() => setShowEditModal(false)}
-          onUpdated={handleUpdated}
-          onDeleted={handleDeleted}
-        />
+      {deleting && (
+        <ConfirmDeleteModal
+          title={t('deleteTeam')}
+          confirmLabel={tCommon('delete')}
+          cancelLabel={tCommon('cancel')}
+          defaultError={t('deleteError')}
+          onConfirm={() => apiService.deleteAgenticTeam(teamId)}
+          onClose={() => setDeleting(false)}
+          onSuccess={() => {
+            invalidateAll();
+            router.push('/dashboard/agentic-teams');
+          }}
+        >
+          <p className="text-sm text-foreground">
+            {t('deleteTeamConfirm', { name: team.name })}
+          </p>
+        </ConfirmDeleteModal>
       )}
     </div>
   );
