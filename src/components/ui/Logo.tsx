@@ -1,37 +1,50 @@
-// AgiMate brand mark — a diamond over two chevrons over two diamonds, all on one
+// AgiMate brand mark — a diamond over one chevron over two diamonds, all on one
 // 45-degree grid. Geometry mirrors public/logo-mark.svg; keep them in sync.
 //
-// Two inks alternate down the stack (diamond, chevron, chevron, diamonds) but the
-// component still takes only one: callers set it with a text-* class, and the
-// second band is that same colour at 0.62 alpha. Hence `currentColor` survives —
-// the landing header animates it on hover, and the sidebar hands it white.
+// The file facets each shape with a teal ramp; this component does the same with
+// one colour, because it only ever gets one: callers set it with a text-* class,
+// and the ramp runs from that colour to the same colour at 0.62. So
+// `currentColor` survives — the landing header still animates it on hover, and
+// the sidebar still hands it white.
 //
-// Which band is dimmed is not free. It has to be the upper chevron and the bottom
-// diamonds, so that the top diamond stays the bright one and this matches both
-// public/logo-mark.svg and public/logo-tile.svg — the sidebar renders this
-// component inside the very tile that file draws, and the two must not come out
-// mirrored. The consequence is that on the dark theme the alternation runs toward
-// the background instead of always lighter: with one input colour there is no way
-// round it, since the sidebar's currentColor is white and nothing is lighter.
+// currentColor inside a <stop> works here ONLY because the gradient sits in this
+// component's own <defs>: a stop resolves the keyword against its own ancestors,
+// not against the shape referencing the gradient, so the same trick from a shared
+// sprite sheet would silently paint the mark in the sprite's colour instead.
 //
-// 0.62 rather than 0.5 is a trade: it costs separation on dark (luminance ratio
-// 1.85 against the file's 2.24) and buys the dimmed band visibility against the
-// ground (2.34 rather than 1.95, which read as holes). On light it lands at 2.09,
-// near the file's 2.11.
+// The id is fixed rather than from useId: this is a server component (no hooks),
+// and two instances on one page would only duplicate an identical definition —
+// url(#…) takes the first, which is the same gradient either way.
+//
+// 0.62 rather than the file's 0.52 floor is a size trade: the sidebar renders
+// this at h-4, where a deeper fade costs contrast and buys nothing, since the
+// ramp itself is invisible below about 40 px.
 export default function Logo({ className = 'h-6 w-auto' }: { className?: string }) {
   return (
-    <svg viewBox="-3.54 -0.68 87.08 78.75" className={className} fill="currentColor" aria-hidden="true">
-      {/* top diamond + lower chevron — the bright band */}
+    <svg viewBox="3.67 -0.06 72.66 66.09" className={className} fill="currentColor" aria-hidden="true">
+      <defs>
+        <linearGradient id="agimate-logo-facet" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="currentColor" stopOpacity={1} />
+          <stop offset="1" stopColor="currentColor" stopOpacity={0.62} />
+        </linearGradient>
+      </defs>
+      {/* chevron */}
       <path
-        d="M36.46 0.79 A5.0 5.0 0 0 1 43.54 0.79 L50.96 8.21 A5.0 5.0 0 0 1 50.96 15.29 L43.54 22.71 A5.0 5.0 0 0 1 36.46 22.71 L29.04 15.29 A5.0 5.0 0 0 1 29.04 8.21 Z
-           M10.27 43.52 A5.0 5.0 0 0 1 10.27 39.98 L13.98 36.27 A5.0 5.0 0 0 1 17.52 36.27 L38.23 56.98 A5.0 5.0 0 0 0 41.77 56.98 L62.48 36.27 A5.0 5.0 0 0 1 66.02 36.27 L69.73 39.98 A5.0 5.0 0 0 1 69.73 43.52 L41.77 71.48 A5.0 5.0 0 0 1 38.23 71.48 Z"
+        fill="url(#agimate-logo-facet)"
+        d="M5.57 20.82 A6.5 6.5 0 0 1 5.57 11.63 L6.38 10.82 A6.5 6.5 0 0 1 15.57 10.82 L35.4 30.65 A6.5 6.5 0 0 0 44.6 30.65 L64.43 10.82 A6.5 6.5 0 0 1 73.62 10.82 L74.43 11.63 A6.5 6.5 0 0 1 74.43 20.82 L44.6 50.65 A6.5 6.5 0 0 1 35.4 50.65 Z"
       />
-      {/* upper chevron + the two bottom diamonds */}
+      {/* the three diamonds — each gets the ramp across its own box */}
       <path
-        fillOpacity={0.62}
-        d="M10.27 20.02 A5.0 5.0 0 0 1 10.27 16.48 L13.98 12.77 A5.0 5.0 0 0 1 17.52 12.77 L38.23 33.48 A5.0 5.0 0 0 0 41.77 33.48 L62.48 12.77 A5.0 5.0 0 0 1 66.02 12.77 L69.73 16.48 A5.0 5.0 0 0 1 69.73 20.02 L41.77 47.98 A5.0 5.0 0 0 1 38.23 47.98 Z
-           M5.35 54.68 A5.0 5.0 0 0 1 12.43 54.68 L19.85 62.1 A5.0 5.0 0 0 1 19.85 69.18 L12.43 76.6 A5.0 5.0 0 0 1 5.35 76.6 L-2.07 69.18 A5.0 5.0 0 0 1 -2.07 62.1 Z
-           M67.57 54.68 A5.0 5.0 0 0 1 74.65 54.68 L82.07 62.1 A5.0 5.0 0 0 1 82.07 69.18 L74.65 76.6 A5.0 5.0 0 0 1 67.57 76.6 L60.15 69.18 A5.0 5.0 0 0 1 60.15 62.1 Z"
+        fill="url(#agimate-logo-facet)"
+        d="M35.4 1.85 A6.5 6.5 0 0 1 44.6 1.85 L49.9 7.15 A6.5 6.5 0 0 1 49.9 16.35 L44.6 21.65 A6.5 6.5 0 0 1 35.4 21.65 L30.1 16.35 A6.5 6.5 0 0 1 30.1 7.15 Z"
+      />
+      <path
+        fill="url(#agimate-logo-facet)"
+        d="M10.88 44.32 A6.5 6.5 0 0 1 20.07 44.32 L25.38 49.63 A6.5 6.5 0 0 1 25.38 58.82 L20.07 64.13 A6.5 6.5 0 0 1 10.88 64.13 L5.57 58.82 A6.5 6.5 0 0 1 5.57 49.63 Z"
+      />
+      <path
+        fill="url(#agimate-logo-facet)"
+        d="M59.93 44.32 A6.5 6.5 0 0 1 69.12 44.32 L74.43 49.63 A6.5 6.5 0 0 1 74.43 58.82 L69.12 64.13 A6.5 6.5 0 0 1 59.93 64.13 L54.62 58.82 A6.5 6.5 0 0 1 54.62 49.63 Z"
       />
     </svg>
   );

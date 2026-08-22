@@ -1,29 +1,59 @@
-<!-- AgiMate app tile — the mark inset in the site palette. The mark is white on
-     the accent plate, so its two inks cannot both be hues: the second band is the
-     same white at 0.62 alpha, the same derivation Logo.tsx uses and for the same
-     reason (nothing is lighter than white). The brighter band is the top diamond
-     and the lower chevron, matching public/logo-mark.svg.
+<!-- AgiMate app tile — the mark inset in the site palette.
+     The plate is a teal ramp down the same 45-degree diagonal the mark is drawn
+     on, plus a warm bloom in the far corner: the accent hue never appears flat,
+     and the warm is the `warm` token already tinting the dashboard ground, laid
+     over the ramp the way `aurora-tint` is there rather than mixed into it. It
+     is a separate rect on purpose — that keeps the corner a glow instead of a
+     brown wedge, which is what a third stop in the linear ramp turns into once
+     the tile is scaled down to 28.
+     The mark is white and faceted: one objectBoundingBox ramp from full white to
+     white at 0.62, reused by all four shapes, so each carries the light in its
+     own upper-left corner. White with alpha rather than a second hue, so the
+     plate shows through and the two gradients stay independent of each other.
+     0.62 is a floor, not a taste: the bloom lightens the same corner the facet
+     fades into, and at 0.52 the far corner of the lower-right diamond falls to
+     2.72 against its plate. 0.58 clears 3.0; 0.62 clears it with margin and is
+     the alpha the rest of the identity already uses.
+     Every colour here is a token — mark-plate-from / -to / -bloom. They are
+     repeated as hex because a standalone SVG loaded as an image sees no CSS
+     variables; if the tokens move, these move with them.
      The mark is placed by transform rather than baked coordinates, which keeps
-     this file diffable against logo-mark.svg. Scale 0.91872 holds the old 24 of
-     side padding; the vertical padding falls out of centring. Both were
-     recomputed when the corner radius went to 5 and the ink box shrank. -->
+     this file diffable against logo-mark.svg. Scale 1.19786 puts it at 68% of
+     the side — 16 of padding left and right, enough for both the circular mask
+     Android crops to and the squircle iOS draws; the vertical padding falls out
+     of centring. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="AgiMate">
   <style>
     /* globals.css: dark is the default, light comes from prefers-color-scheme */
-    .agimate-tile { fill: #228391; }
-    .agimate-mark { fill: #ffffff; }
+    .agimate-plate-from { stop-color: #1fa4b8; }  /* teal-400 = mark-plate-from */
+    .agimate-plate-to   { stop-color: #1c6975; }  /* teal-600 = mark-plate-to   */
+    .agimate-warm       { stop-color: #a47764; }  /* warm, dark theme */
     @media (prefers-color-scheme: light) {
-      .agimate-tile { fill: #1c6975; }
+      .agimate-plate-from { stop-color: #228391; }  /* teal-500 */
+      .agimate-plate-to   { stop-color: #154e58; }  /* teal-700 */
+      .agimate-warm       { stop-color: #8a6250; }  /* warm, light theme */
     }
   </style>
-  <rect class="agimate-tile" width="128" height="128" />
-  <g transform="translate(27.25 28.45) scale(0.91872)">
-    <!-- top diamond + lower chevron: the brighter band, as in the standalone mark -->
-    <path class="agimate-mark" d="M36.46 0.79 A5.0 5.0 0 0 1 43.54 0.79 L50.96 8.21 A5.0 5.0 0 0 1 50.96 15.29 L43.54 22.71 A5.0 5.0 0 0 1 36.46 22.71 L29.04 15.29 A5.0 5.0 0 0 1 29.04 8.21 Z
-         M10.27 43.52 A5.0 5.0 0 0 1 10.27 39.98 L13.98 36.27 A5.0 5.0 0 0 1 17.52 36.27 L38.23 56.98 A5.0 5.0 0 0 0 41.77 56.98 L62.48 36.27 A5.0 5.0 0 0 1 66.02 36.27 L69.73 39.98 A5.0 5.0 0 0 1 69.73 43.52 L41.77 71.48 A5.0 5.0 0 0 1 38.23 71.48 Z" />
-    <!-- upper chevron + the two bottom diamonds -->
-    <path class="agimate-mark" fill-opacity="0.62" d="M10.27 20.02 A5.0 5.0 0 0 1 10.27 16.48 L13.98 12.77 A5.0 5.0 0 0 1 17.52 12.77 L38.23 33.48 A5.0 5.0 0 0 0 41.77 33.48 L62.48 12.77 A5.0 5.0 0 0 1 66.02 12.77 L69.73 16.48 A5.0 5.0 0 0 1 69.73 20.02 L41.77 47.98 A5.0 5.0 0 0 1 38.23 47.98 Z
-         M5.35 54.68 A5.0 5.0 0 0 1 12.43 54.68 L19.85 62.1 A5.0 5.0 0 0 1 19.85 69.18 L12.43 76.6 A5.0 5.0 0 0 1 5.35 76.6 L-2.07 69.18 A5.0 5.0 0 0 1 -2.07 62.1 Z
-         M67.57 54.68 A5.0 5.0 0 0 1 74.65 54.68 L82.07 62.1 A5.0 5.0 0 0 1 82.07 69.18 L74.65 76.6 A5.0 5.0 0 0 1 67.57 76.6 L60.15 69.18 A5.0 5.0 0 0 1 60.15 62.1 Z" />
+  <defs>
+    <linearGradient id="agimate-plate" x1="0" y1="0" x2="1" y2="1">
+      <stop class="agimate-plate-from" offset="0" />
+      <stop class="agimate-plate-to" offset="1" />
+    </linearGradient>
+    <radialGradient id="agimate-bloom" cx="1" cy="1" r="0.8">
+      <stop class="agimate-warm" offset="0" stop-opacity="0.62" />
+      <stop class="agimate-warm" offset="1" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="agimate-facet" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="1" />
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.62" />
+    </linearGradient>
+  </defs>
+  <rect fill="url(#agimate-plate)" width="128" height="128" />
+  <rect fill="url(#agimate-bloom)" width="128" height="128" />
+  <g transform="translate(16.09 24.48) scale(1.19786)">
+    <path fill="url(#agimate-facet)" d="M5.57 20.82 A6.5 6.5 0 0 1 5.57 11.63 L6.38 10.82 A6.5 6.5 0 0 1 15.57 10.82 L35.4 30.65 A6.5 6.5 0 0 0 44.6 30.65 L64.43 10.82 A6.5 6.5 0 0 1 73.62 10.82 L74.43 11.63 A6.5 6.5 0 0 1 74.43 20.82 L44.6 50.65 A6.5 6.5 0 0 1 35.4 50.65 Z" />
+    <path fill="url(#agimate-facet)" d="M35.4 1.85 A6.5 6.5 0 0 1 44.6 1.85 L49.9 7.15 A6.5 6.5 0 0 1 49.9 16.35 L44.6 21.65 A6.5 6.5 0 0 1 35.4 21.65 L30.1 16.35 A6.5 6.5 0 0 1 30.1 7.15 Z" />
+    <path fill="url(#agimate-facet)" d="M10.88 44.32 A6.5 6.5 0 0 1 20.07 44.32 L25.38 49.63 A6.5 6.5 0 0 1 25.38 58.82 L20.07 64.13 A6.5 6.5 0 0 1 10.88 64.13 L5.57 58.82 A6.5 6.5 0 0 1 5.57 49.63 Z" />
+    <path fill="url(#agimate-facet)" d="M59.93 44.32 A6.5 6.5 0 0 1 69.12 44.32 L74.43 49.63 A6.5 6.5 0 0 1 74.43 58.82 L69.12 64.13 A6.5 6.5 0 0 1 59.93 64.13 L54.62 58.82 A6.5 6.5 0 0 1 54.62 49.63 Z" />
   </g>
 </svg>

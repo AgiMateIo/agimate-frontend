@@ -31,12 +31,13 @@ const FONT_DIR = join(process.cwd(), 'public', 'fonts');
 const regular = readFile(join(FONT_DIR, 'IBMPlexSans-Regular.ttf'));
 const semiBold = readFile(join(FONT_DIR, 'IBMPlexSans-SemiBold.ttf'));
 
-// public/logo-mark.svg with both fills inlined — satori resolves neither external
-// files nor the stylesheet's prefers-color-scheme, and a card is always dark here.
-// Because the ground is known, this is the one place that can carry the file's
-// exact dark pair (indigo-500 with indigo-300) instead of deriving the second
-// ink from the first the way Logo.tsx has to.
-const MARK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-3.54 -0.68 87.08 78.75"><path fill="${D.accent}" d="M10.27 20.02 A5.0 5.0 0 0 1 10.27 16.48 L13.98 12.77 A5.0 5.0 0 0 1 17.52 12.77 L38.23 33.48 A5.0 5.0 0 0 0 41.77 33.48 L62.48 12.77 A5.0 5.0 0 0 1 66.02 12.77 L69.73 16.48 A5.0 5.0 0 0 1 69.73 20.02 L41.77 47.98 A5.0 5.0 0 0 1 38.23 47.98 Z M5.35 54.68 A5.0 5.0 0 0 1 12.43 54.68 L19.85 62.1 A5.0 5.0 0 0 1 19.85 69.18 L12.43 76.6 A5.0 5.0 0 0 1 5.35 76.6 L-2.07 69.18 A5.0 5.0 0 0 1 -2.07 62.1 Z M67.57 54.68 A5.0 5.0 0 0 1 74.65 54.68 L82.07 62.1 A5.0 5.0 0 0 1 82.07 69.18 L74.65 76.6 A5.0 5.0 0 0 1 67.57 76.6 L60.15 69.18 A5.0 5.0 0 0 1 60.15 62.1 Z"/><path fill="${D['mark-ink-light']}" d="M36.46 0.79 A5.0 5.0 0 0 1 43.54 0.79 L50.96 8.21 A5.0 5.0 0 0 1 50.96 15.29 L43.54 22.71 A5.0 5.0 0 0 1 36.46 22.71 L29.04 15.29 A5.0 5.0 0 0 1 29.04 8.21 Z M10.27 43.52 A5.0 5.0 0 0 1 10.27 39.98 L13.98 36.27 A5.0 5.0 0 0 1 17.52 36.27 L38.23 56.98 A5.0 5.0 0 0 0 41.77 56.98 L62.48 36.27 A5.0 5.0 0 0 1 66.02 36.27 L69.73 39.98 A5.0 5.0 0 0 1 69.73 43.52 L41.77 71.48 A5.0 5.0 0 0 1 38.23 71.48 Z"/></svg>`;
+// public/logo-mark.svg with the facet ramp inlined — satori resolves neither
+// external files nor the stylesheet's prefers-color-scheme, and a card is always
+// dark here. Because the ground is known, this is the one place that can carry
+// the file's exact dark pair (teal-300 into teal-500) instead of deriving the
+// second end from the first the way Logo.tsx has to. One objectBoundingBox
+// gradient serves all four shapes, so each is faceted across its own box.
+const MARK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="3.67 -0.06 72.66 66.09"><defs><linearGradient id="f" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${D['mark-ink-light']}"/><stop offset="1" stop-color="${D['mark-ink']}"/></linearGradient></defs><path fill="url(#f)" d="M5.57 20.82 A6.5 6.5 0 0 1 5.57 11.63 L6.38 10.82 A6.5 6.5 0 0 1 15.57 10.82 L35.4 30.65 A6.5 6.5 0 0 0 44.6 30.65 L64.43 10.82 A6.5 6.5 0 0 1 73.62 10.82 L74.43 11.63 A6.5 6.5 0 0 1 74.43 20.82 L44.6 50.65 A6.5 6.5 0 0 1 35.4 50.65 Z"/><path fill="url(#f)" d="M35.4 1.85 A6.5 6.5 0 0 1 44.6 1.85 L49.9 7.15 A6.5 6.5 0 0 1 49.9 16.35 L44.6 21.65 A6.5 6.5 0 0 1 35.4 21.65 L30.1 16.35 A6.5 6.5 0 0 1 30.1 7.15 Z"/><path fill="url(#f)" d="M10.88 44.32 A6.5 6.5 0 0 1 20.07 44.32 L25.38 49.63 A6.5 6.5 0 0 1 25.38 58.82 L20.07 64.13 A6.5 6.5 0 0 1 10.88 64.13 L5.57 58.82 A6.5 6.5 0 0 1 5.57 49.63 Z"/><path fill="url(#f)" d="M59.93 44.32 A6.5 6.5 0 0 1 69.12 44.32 L74.43 49.63 A6.5 6.5 0 0 1 74.43 58.82 L69.12 64.13 A6.5 6.5 0 0 1 59.93 64.13 L54.62 58.82 A6.5 6.5 0 0 1 54.62 49.63 Z"/></svg>`;
 const MARK_DATA_URI = `data:image/svg+xml;base64,${Buffer.from(MARK_SVG).toString('base64')}`;
 
 /**

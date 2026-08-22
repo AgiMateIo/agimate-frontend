@@ -1,33 +1,51 @@
-<!-- AgiMate mark — a diamond over two chevrons over two diamonds, all on one
+<!-- AgiMate mark — a diamond over one chevron over two diamonds, all on one
      45-degree grid. Every edge is parallel or perpendicular to every other, the
-     chevrons meet at a true right angle, and the four gaps are the same 6.36
+     chevron meets at a true right angle, and the three gaps are the same 6.36
      stripe. The three diamonds are one shape used three times, their centres an
-     equilateral triangle of side 62.22; the two chevrons are one shape used
-     twice, 23.5 apart. Rhythm down the axis: diamond 29, gap 9, arm 14.5, gap 9,
-     arm 14.5. viewBox is the tight ink box, hence the negative origin.
-     Corners are rounded 5 — and 5 is near the ceiling, not a free parameter. The
-     45-degree cut at each arm tip is only 10.25 long and both its corners eat r,
-     so anything above 5.127 makes the path cross itself. Raising the radius is
-     what warms the mark; there is no room left to warm it further this way.
-     Two inks alternate down the stack, both indigo, a step apart in lightness.
-     The themes use DIFFERENT steps and have to: on the dark ground a light ink
-     only gains contrast, on the light ground it loses it fast. Dark pairs 500
-     with 300, light pairs 600 with 400 — luminance ratio 2.24 against 2.11.
+     equilateral triangle of side 49.05. Rhythm down the axis: diamond 29, gap 9,
+     chevron 20. The arm tips end on the same vertical as the lower diamonds'
+     outer corners (x 0.98 / 79.02), so chevron and diamonds set the width
+     together — that is what fixes the arm length, it is not a free parameter.
+     viewBox is the tight ink box, hence the negative origin.
+     One chevron rather than two: the second one stopped reading at about 48 px
+     but still cost a fourth 6.36 gap, and the pair read as a double down-arrow.
+     Merging the pair into one 20-thick arm is also what warms the mark: the
+     45-degree cut at each tip is now 14.14 long instead of 10.25, both its
+     corners eat r, so the radius ceiling went 5.127 -> 7.07 and the corners
+     could go 5 -> 6.5. There is no room left to warm it further this way.
+     The two teal inks no longer alternate between shapes — they run INSIDE each
+     shape, as one objectBoundingBox ramp reused by all four (hence one gradient,
+     four bounding boxes, four facets). The pair and the reason for it are
+     unchanged: the themes use DIFFERENT steps and have to, since on the dark
+     ground a light ink only gains contrast and on the light ground it loses it
+     fast. Dark ramps 300 -> 500, light ramps 400 -> 600.
+     What this costs: nothing separates the chevron from the diamonds any more
+     except the 6.36 gap, so below ~40 px the mark reads as one tone. That is
+     fine on ground that shows through the gaps, and it is why the gaps may not
+     shrink further.
      Not the same drawing as src/components/ui/Logo.tsx, which is single-colour
-     by contract (currentColor, and the landing header animates it on hover). -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-3.54 -0.68 87.08 78.75" role="img" aria-label="AgiMate">
+     by contract (currentColor, and the landing header animates it on hover) —
+     that file carries the same facet ramp built out of currentColor instead. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="3.67 -0.06 72.66 66.09" role="img" aria-label="AgiMate">
   <style>
-    /* dark is the default; light shifts both inks a step darker (globals.css) */
-    .agimate-ink       { fill: #228391; }  /* teal-500 */
-    .agimate-ink-light { fill: #3cc8de; }  /* teal-300 */
+    /* dark is the default; light shifts both ends a step darker (globals.css) */
+    .agimate-facet-from { stop-color: #3cc8de; }  /* teal-300 */
+    .agimate-facet-to   { stop-color: #228391; }  /* teal-500 */
     @media (prefers-color-scheme: light) {
-      .agimate-ink       { fill: #1c6975; }  /* teal-600 */
-      .agimate-ink-light { fill: #1fa4b8; }  /* teal-400 */
+      .agimate-facet-from { stop-color: #1fa4b8; }  /* teal-400 */
+      .agimate-facet-to   { stop-color: #1c6975; }  /* teal-600 */
     }
   </style>
-  <path class="agimate-ink-light" d="M36.46 0.79 A5.0 5.0 0 0 1 43.54 0.79 L50.96 8.21 A5.0 5.0 0 0 1 50.96 15.29 L43.54 22.71 A5.0 5.0 0 0 1 36.46 22.71 L29.04 15.29 A5.0 5.0 0 0 1 29.04 8.21 Z" />
-  <path class="agimate-ink" d="M10.27 20.02 A5.0 5.0 0 0 1 10.27 16.48 L13.98 12.77 A5.0 5.0 0 0 1 17.52 12.77 L38.23 33.48 A5.0 5.0 0 0 0 41.77 33.48 L62.48 12.77 A5.0 5.0 0 0 1 66.02 12.77 L69.73 16.48 A5.0 5.0 0 0 1 69.73 20.02 L41.77 47.98 A5.0 5.0 0 0 1 38.23 47.98 Z" />
-  <path class="agimate-ink-light" d="M10.27 43.52 A5.0 5.0 0 0 1 10.27 39.98 L13.98 36.27 A5.0 5.0 0 0 1 17.52 36.27 L38.23 56.98 A5.0 5.0 0 0 0 41.77 56.98 L62.48 36.27 A5.0 5.0 0 0 1 66.02 36.27 L69.73 39.98 A5.0 5.0 0 0 1 69.73 43.52 L41.77 71.48 A5.0 5.0 0 0 1 38.23 71.48 Z" />
-  <path class="agimate-ink" d="M5.35 54.68 A5.0 5.0 0 0 1 12.43 54.68 L19.85 62.1 A5.0 5.0 0 0 1 19.85 69.18 L12.43 76.6 A5.0 5.0 0 0 1 5.35 76.6 L-2.07 69.18 A5.0 5.0 0 0 1 -2.07 62.1 Z" />
-  <path class="agimate-ink" d="M67.57 54.68 A5.0 5.0 0 0 1 74.65 54.68 L82.07 62.1 A5.0 5.0 0 0 1 82.07 69.18 L74.65 76.6 A5.0 5.0 0 0 1 67.57 76.6 L60.15 69.18 A5.0 5.0 0 0 1 60.15 62.1 Z" />
+  <defs>
+    <!-- objectBoundingBox: every shape gets the ramp across its own box, so the
+         light corner of each facet points the same way, up and to the left. -->
+    <linearGradient id="agimate-facet" x1="0" y1="0" x2="1" y2="1">
+      <stop class="agimate-facet-from" offset="0" />
+      <stop class="agimate-facet-to" offset="1" />
+    </linearGradient>
+  </defs>
+  <path fill="url(#agimate-facet)" d="M5.57 20.82 A6.5 6.5 0 0 1 5.57 11.63 L6.38 10.82 A6.5 6.5 0 0 1 15.57 10.82 L35.4 30.65 A6.5 6.5 0 0 0 44.6 30.65 L64.43 10.82 A6.5 6.5 0 0 1 73.62 10.82 L74.43 11.63 A6.5 6.5 0 0 1 74.43 20.82 L44.6 50.65 A6.5 6.5 0 0 1 35.4 50.65 Z" />
+  <path fill="url(#agimate-facet)" d="M35.4 1.85 A6.5 6.5 0 0 1 44.6 1.85 L49.9 7.15 A6.5 6.5 0 0 1 49.9 16.35 L44.6 21.65 A6.5 6.5 0 0 1 35.4 21.65 L30.1 16.35 A6.5 6.5 0 0 1 30.1 7.15 Z" />
+  <path fill="url(#agimate-facet)" d="M10.88 44.32 A6.5 6.5 0 0 1 20.07 44.32 L25.38 49.63 A6.5 6.5 0 0 1 25.38 58.82 L20.07 64.13 A6.5 6.5 0 0 1 10.88 64.13 L5.57 58.82 A6.5 6.5 0 0 1 5.57 49.63 Z" />
+  <path fill="url(#agimate-facet)" d="M59.93 44.32 A6.5 6.5 0 0 1 69.12 44.32 L74.43 49.63 A6.5 6.5 0 0 1 74.43 58.82 L69.12 64.13 A6.5 6.5 0 0 1 59.93 64.13 L54.62 58.82 A6.5 6.5 0 0 1 54.62 49.63 Z" />
 </svg>
