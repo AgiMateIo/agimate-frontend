@@ -5,7 +5,7 @@ import type {
   AgentResponse,
   AgentCreatedResponse,
   CreateAgentRequest,
-  UpdateAgentRequest,
+  PatchAgentRequest,
   PagedResponse,
   AgentConnectionResponse,
   BindConnectionRequest,
@@ -42,8 +42,10 @@ export const agentsApi = {
     return httpClient.get<AgentResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${id}`);
   },
 
-  async updateAgent(id: string, data: UpdateAgentRequest): Promise<AgentResponse> {
-    return httpClient.put<AgentResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${id}`, data);
+  // PATCH, not the PUT next to it on the server: that one replaces the agent,
+  // so a body carrying one field empties everything else.
+  async patchAgent(id: string, data: PatchAgentRequest): Promise<AgentResponse> {
+    return httpClient.patch<AgentResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${id}`, data);
   },
 
   async deleteAgent(id: string): Promise<void> {

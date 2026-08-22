@@ -60,7 +60,7 @@ export default function AgentContextNav({
   collapsed,
 }: {
   agentId: string;
-  currentSection: string; // 'general' | section key | 'edit'
+  currentSection: string; // 'general' | section key
   collapsed: boolean;
 }) {
   const t = useTranslations('Agents');
@@ -89,7 +89,7 @@ export default function AgentContextNav({
   });
   const agentsPage = teamId ? teamAgentsPage : allAgentsPage;
 
-  // Preserve the open section when switching agents; edit/unknown fall back to general.
+  // Preserve the open section when switching agents; an unknown one falls back to general.
   const keepSeg = SECTIONS.find((s) => s.key === currentSection)?.seg ?? '';
 
   // An MCP agent runs on the client's own model, so there is no binding to make

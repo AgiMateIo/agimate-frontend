@@ -19,7 +19,9 @@ export interface AgentResponse {
   name: string;
   description: string | null;
   maskedKeyId: string;
-  instructions: string;
+  // Clearable, and cleared by sending `""` — so a prompt that was wiped comes
+  // back as null, not as an empty string.
+  instructions: string | null;
   type: AgentType;
   webhookUrl: string | null;
   hasWebhookAuth: boolean;
@@ -60,11 +62,20 @@ export interface CreateAgentRequest {
   presetName?: string;
 }
 
-export interface UpdateAgentRequest {
+// Body of PATCH /manage/agents/{id}. Three states per field, and the third one
+// is the surprise: absent OR null both mean "leave it alone", and an EMPTY
+// STRING is what clears a field. So there is no need to strip nulls before
+// sending, and no way to clear anything by sending null.
+// `name` is the exception that cannot be cleared at all — "" there is a 400.
+// The PUT this replaced is still on the server and still replaces the whole
+// agent; nothing here should go back to it.
+export interface PatchAgentRequest {
   name?: string;
   description?: string | null;
-  instructions?: string;
+  instructions?: string | null;
   type?: AgentType;
+  // Leave both of these out when moving off WEBHOOK — the server drops the
+  // address and deletes the secret on its own.
   webhookUrl?: string | null;
   webhookAuthHeader?: string | null;
   enabled?: boolean;

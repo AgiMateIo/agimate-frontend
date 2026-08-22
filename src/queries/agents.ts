@@ -1,12 +1,13 @@
 import {
   queryOptions,
+  useMutation,
   useQuery,
   useQueryClient,
   useSuspenseQuery,
 } from '@tanstack/react-query';
 import apiService from '@/services/api';
 import { newestFirst } from '@/utils/date';
-import type { AgentResponse, PagedResponse } from '@/types';
+import type { AgentResponse, PagedResponse, PatchAgentRequest } from '@/types';
 
 export const agentKeys = {
   all: ['agents'] as const,
@@ -120,10 +121,74 @@ export function useAgentDetailSuspenseQuery(id: string) {
   return useSuspenseQuery(agentDetailOptions(id));
 }
 
-// Non-suspense variant for the edit page, which seeds form state from the data
-// and renders its own loading/error UI.
+// Non-suspense variant for consumers that render their own loading/error UI
+// rather than sitting inside the section's Suspense boundary.
 export function useAgentDetailQuery(id: string) {
   return useQuery(agentDetailOptions(id));
+}
+
+// What the server will make of this patch, applied to the cached agent so the
+// screen does not sit on stale values through the round trip. Two rules the
+// request shape does not show: an empty string clears a field (and the agent
+// comes back with null there, never with ""), and moving off WEBHOOK drops the
+// address and the secret server-side, whatever the body said.
+function applyAgentPatch(agent: AgentResponse, patch: PatchAgentRequest): AgentResponse {
+  const patched = (sent: string | null | undefined, current: string | null) =>
+    sent === undefined || sent === null ? current : sent === '' ? null : sent;
+  const type = patch.type ?? agent.type;
+  const offWebhook = type !== 'WEBHOOK';
+  return {
+    ...agent,
+    name: patch.name || agent.name,
+    description: patched(patch.description, agent.description),
+    instructions: patched(patch.instructions, agent.instructions),
+    type,
+    enabled: patch.enabled ?? agent.enabled,
+    webhookUrl: offWebhook ? null : patched(patch.webhookUrl, agent.webhookUrl),
+    // Write-only: the agent reports whether a header exists, never its value.
+    hasWebhookAuth: offWebhook
+      ? false
+      : patch.webhookAuthHeader === ''
+        ? false
+        : patch.webhookAuthHeader
+          ? true
+          : agent.hasWebhookAuth,
+  };
+}
+
+// One mutation behind every field the detail page edits in place: callers send
+// only what they changed. It has to be PATCH — the PUT beside it on the server
+// replaces the whole agent, so a body carrying just `name` empties the prompt
+// and the description.
+export function useUpdateAgentMutation(agentId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (patch: PatchAgentRequest) => apiService.patchAgent(agentId, patch),
+    // Paint the change immediately, roll back if the server refuses it.
+    onMutate: async (patch) => {
+      await queryClient.cancelQueries({ queryKey: agentKeys.detail(agentId) });
+      const previous = queryClient.getQueryData<AgentResponse>(agentKeys.detail(agentId));
+      if (previous) {
+        queryClient.setQueryData<AgentResponse>(
+          agentKeys.detail(agentId),
+          applyAgentPatch(previous, patch)
+        );
+      }
+      return { previous };
+    },
+    onError: (_err, _data, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(agentKeys.detail(agentId), context.previous);
+      }
+    },
+    onSuccess: (updated) => {
+      queryClient.setQueryData<AgentResponse>(agentKeys.detail(agentId), updated);
+    },
+    // The name and the type show up on the cards behind this page.
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: agentKeys.lists() });
+    },
+  });
 }
 
 export function useAgentCacheActions() {
