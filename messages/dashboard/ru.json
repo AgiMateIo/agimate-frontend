@@ -738,8 +738,6 @@
     "skillConnectors": "Коннекторы",
     "needsReinstall": "Доступно обновление",
     "needsReinstallHint": "Скилл обновлён автором. Переподключите его к агенту, чтобы получить свежую версию.",
-    "skillsMine": "Мои",
-    "skillsPublic": "Публичные",
     "tabConnections": "Подключения",
     "tabFiles": "Файлы",
     "tabToolCalls": "Вызовы инструментов",

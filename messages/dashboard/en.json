@@ -738,8 +738,6 @@
     "skillConnectors": "Connectors",
     "needsReinstall": "Update available",
     "needsReinstallHint": "The skill was updated by its author. Re-add it to this agent to get the latest version.",
-    "skillsMine": "My",
-    "skillsPublic": "Public",
     "tabConnections": "Connections",
     "tabFiles": "Files",
     "tabToolCalls": "Tool Calls",
