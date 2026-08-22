@@ -23,8 +23,11 @@
         "$value": "{palette.mocha.500}",
         "$description": "The warm counterweight. Everything the eye lands on is otherwise cool, and the warmth of the palette lives only in the ground; this is the one ink allowed to answer it — empty states, illustration, decorative marks. Deliberately not interactive: the accent owns actions, and a warm control would compete with the warning tone."
       },
-      "mark-ink": { "$value": "{palette.teal.500}", "$description": "Logo, the band that carries the accent." },
-      "mark-ink-light": { "$value": "{palette.teal.300}", "$description": "Logo, the alternating band." },
+      "mark-ink": { "$value": "{palette.teal.500}", "$description": "Logo, the dark end of the facet ramp. The two mark inks used to alternate between shapes; since the mark went to one chevron they run inside each shape instead, as one objectBoundingBox gradient reused by all four." },
+      "mark-ink-light": { "$value": "{palette.teal.300}", "$description": "Logo, the light end of the facet ramp — the upper-left corner of every shape." },
+      "mark-plate-from": { "$value": "{palette.teal.400}", "$description": "App tile, the light end of the plate. The plate runs down the same 45-degree diagonal the mark is drawn on, so a flat accent never appears in the icon." },
+      "mark-plate-to": { "$value": "{palette.teal.600}", "$description": "App tile, the dark end of the plate." },
+      "mark-plate-bloom": { "$value": "#a477649e", "$description": "Mocha at 62% — the warm bloom in the tile's far corner, laid over the plate ramp rather than mixed into it, which is what keeps it a glow instead of the brown wedge a third stop turns into by 28 px. This is the one place the warm ink reaches the identity, and it stays under the mark, never inside it." },
       "accent-glow": { "$value": "#2283914d", "$description": "Accent at 30% — the agent-activate halo. Alpha is baked in; there is no alpha channel in the CSS var otherwise." },
       "aurora-tint": { "$value": "#a4776433", "$description": "Mocha at 20% — peak tint of one landing gradient layer. They overlap, so the backdrop reaches higher." },
       "card-shadow": { "$type": "shadow", "$value": "none", "$description": "The dark theme separates surfaces with border and tone, not shadow." }
@@ -49,6 +52,9 @@
         "$value": "{palette.teal.400}",
         "$description": "2.79 against the light ground — under the 3.0 non-text bar, which exempts logotypes. Do not reuse for controls."
       },
+      "mark-plate-from":   { "$value": "{palette.teal.500}" },
+      "mark-plate-to":     { "$value": "{palette.teal.700}" },
+      "mark-plate-bloom":  { "$value": "#8a62509e", "$description": "Mocha 600 rather than 500: the light theme's plate is darker, and the 500 bloom washes out against it." },
       "accent-glow":       { "$value": "#1c69754d" },
       "aurora-tint": { "$value": "#a4776461", "$description": "Mocha at 38% — the light ground needs more tint to show the same bloom." },
       "card-shadow": { "$type": "shadow", "$value": "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)" }

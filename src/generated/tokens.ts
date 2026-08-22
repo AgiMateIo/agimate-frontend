@@ -1,6 +1,6 @@
 /*
  * GENERATED FILE — do not edit.
- * Source: design/tokens/*.json — regenerate with `pnpm tokens`.
+ * Source: design/tokens (DTCG JSON) — regenerate with `pnpm tokens`.
  */
 
 // For the places that cannot read CSS custom properties — chiefly the OG card,
@@ -23,6 +23,9 @@ export const theme = {
     "warm": "#a47764",
     "mark-ink": "#228391",
     "mark-ink-light": "#3cc8de",
+    "mark-plate-from": "#1fa4b8",
+    "mark-plate-to": "#1c6975",
+    "mark-plate-bloom": "#a477649e",
     "accent-glow": "#2283914d",
     "aurora-tint": "#a4776433",
     "card-shadow": "none",
@@ -44,6 +47,9 @@ export const theme = {
     "warm": "#8a6250",
     "mark-ink": "#1c6975",
     "mark-ink-light": "#1fa4b8",
+    "mark-plate-from": "#228391",
+    "mark-plate-to": "#154e58",
+    "mark-plate-bloom": "#8a62509e",
     "accent-glow": "#1c69754d",
     "aurora-tint": "#a4776461",
     "card-shadow": "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",

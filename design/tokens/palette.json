@@ -7,7 +7,8 @@
       "300": { "$value": "#3cc8de" },
       "400": { "$value": "#1fa4b8" },
       "500": { "$value": "#228391" },
-      "600": { "$value": "#1c6975" }
+      "600": { "$value": "#1c6975" },
+      "700": { "$value": "#154e58", "$description": "The step the app tile's plate ends on in the light theme. Added when the plate became a ramp: it needed a dark end a full step below 600, and inventing one off-scale would have put a teal in the system that nothing else could reach. Continues the ramp exactly — lightness 21.3 after 28.4, the same 7-point step 500->600 takes." }
     },
     "mocha": {
       "$description": "Mocha Mousse — the warm hue the neutrals are tinted with, the landing aurora, and the one warm ink the interface is allowed. It reads as earth rather than as a signal because of its saturation, 26% against the warning amber's 92%, not because of its hue, which sits only 20 degrees away.",

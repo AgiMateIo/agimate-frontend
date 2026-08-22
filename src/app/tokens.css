@@ -1,6 +1,6 @@
 /*
  * GENERATED FILE — do not edit.
- * Source: design/tokens/*.json — regenerate with `pnpm tokens`.
+ * Source: design/tokens (DTCG JSON) — regenerate with `pnpm tokens`.
  */
 
 /* Dark is the default: it applies when nothing else does. */
@@ -21,10 +21,16 @@
   --error: #ef4444;
   /* The warm counterweight. Everything the eye lands on is otherwise cool, and the warmth of the palette lives only in the ground; this is the one ink allowed to answer it — empty states, illustration, decorative marks. Deliberately not interactive: the accent owns actions, and a warm control would compete with the warning tone. */
   --warm: #a47764;
-  /* Logo, the band that carries the accent. */
+  /* Logo, the dark end of the facet ramp. The two mark inks used to alternate between shapes; since the mark went to one chevron they run inside each shape instead, as one objectBoundingBox gradient reused by all four. */
   --mark-ink: #228391;
-  /* Logo, the alternating band. */
+  /* Logo, the light end of the facet ramp — the upper-left corner of every shape. */
   --mark-ink-light: #3cc8de;
+  /* App tile, the light end of the plate. The plate runs down the same 45-degree diagonal the mark is drawn on, so a flat accent never appears in the icon. */
+  --mark-plate-from: #1fa4b8;
+  /* App tile, the dark end of the plate. */
+  --mark-plate-to: #1c6975;
+  /* Mocha at 62% — the warm bloom in the tile's far corner, laid over the plate ramp rather than mixed into it, which is what keeps it a glow instead of the brown wedge a third stop turns into by 28 px. This is the one place the warm ink reaches the identity, and it stays under the mark, never inside it. */
+  --mark-plate-bloom: #a477649e;
   /* Accent at 30% — the agent-activate halo. Alpha is baked in; there is no alpha channel in the CSS var otherwise. */
   --accent-glow: #2283914d;
   /* Mocha at 20% — peak tint of one landing gradient layer. They overlap, so the backdrop reaches higher. */
@@ -74,6 +80,10 @@
     --mark-ink: #1c6975;
     /* 2.79 against the light ground — under the 3.0 non-text bar, which exempts logotypes. Do not reuse for controls. */
     --mark-ink-light: #1fa4b8;
+    --mark-plate-from: #228391;
+    --mark-plate-to: #154e58;
+    /* Mocha 600 rather than 500: the light theme's plate is darker, and the 500 bloom washes out against it. */
+    --mark-plate-bloom: #8a62509e;
     --accent-glow: #1c69754d;
     /* Mocha at 38% — the light ground needs more tint to show the same bloom. */
     --aurora-tint: #a4776461;
@@ -100,6 +110,10 @@
   --mark-ink: #1c6975;
   /* 2.79 against the light ground — under the 3.0 non-text bar, which exempts logotypes. Do not reuse for controls. */
   --mark-ink-light: #1fa4b8;
+  --mark-plate-from: #228391;
+  --mark-plate-to: #154e58;
+  /* Mocha 600 rather than 500: the light theme's plate is darker, and the 500 bloom washes out against it. */
+  --mark-plate-bloom: #8a62509e;
   --accent-glow: #1c69754d;
   /* Mocha at 38% — the light ground needs more tint to show the same bloom. */
   --aurora-tint: #a4776461;
@@ -123,6 +137,9 @@
   --color-warm: var(--warm);
   --color-mark-ink: var(--mark-ink);
   --color-mark-ink-light: var(--mark-ink-light);
+  --color-mark-plate-from: var(--mark-plate-from);
+  --color-mark-plate-to: var(--mark-plate-to);
+  --color-mark-plate-bloom: var(--mark-plate-bloom);
   --color-accent-glow: var(--accent-glow);
   --color-aurora-tint: var(--aurora-tint);
   --shadow-card: var(--card-shadow);

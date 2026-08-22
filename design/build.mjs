@@ -10,7 +10,7 @@ import StyleDictionary from 'style-dictionary';
 
 const HEADER = (what) =>
   `${what.open}\n${what.line} GENERATED FILE — do not edit.\n` +
-  `${what.line} Source: design/tokens/*.json — regenerate with \`pnpm tokens\`.\n${what.close}\n`;
+  `${what.line} Source: design/tokens (DTCG JSON) — regenerate with \`pnpm tokens\`.\n${what.close}\n`;
 
 const val = (t) => (t.$value !== undefined ? t.$value : t.value);
 const isColour = (t) => (t.$type ?? t.type) === 'color';

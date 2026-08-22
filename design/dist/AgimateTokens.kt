@@ -1,6 +1,6 @@
 /*
  * GENERATED FILE — do not edit.
- * Source: design/tokens/*.json — regenerate with `pnpm tokens`.
+ * Source: design/tokens (DTCG JSON) — regenerate with `pnpm tokens`.
  */
 package com.agimate.design
 
@@ -27,6 +27,9 @@ object AgimateTokens {
             val warm = Color(0xFFA47764)
             val markInk = Color(0xFF228391)
             val markInkLight = Color(0xFF3CC8DE)
+            val markPlateFrom = Color(0xFF1FA4B8)
+            val markPlateTo = Color(0xFF1C6975)
+            val markPlateBloom = Color(0x9EA47764)
             val accentGlow = Color(0x4D228391)
             val auroraTint = Color(0x33A47764)
         }
@@ -48,6 +51,9 @@ object AgimateTokens {
             val warm = Color(0xFF8A6250)
             val markInk = Color(0xFF1C6975)
             val markInkLight = Color(0xFF1FA4B8)
+            val markPlateFrom = Color(0xFF228391)
+            val markPlateTo = Color(0xFF154E58)
+            val markPlateBloom = Color(0x9E8A6250)
             val accentGlow = Color(0x4D1C6975)
             val auroraTint = Color(0x61A47764)
         }

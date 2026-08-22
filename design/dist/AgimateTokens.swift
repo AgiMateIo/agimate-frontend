@@ -1,6 +1,6 @@
 /*
  * GENERATED FILE — do not edit.
- * Source: design/tokens/*.json — regenerate with `pnpm tokens`.
+ * Source: design/tokens (DTCG JSON) — regenerate with `pnpm tokens`.
  */
 import SwiftUI
 
@@ -24,6 +24,9 @@ public enum AgimateTokens {
             public static let warm = Color(.sRGB, red: 0.6431, green: 0.4667, blue: 0.3922, opacity: 1.0)
             public static let markInk = Color(.sRGB, red: 0.1333, green: 0.5137, blue: 0.5686, opacity: 1.0)
             public static let markInkLight = Color(.sRGB, red: 0.2353, green: 0.7843, blue: 0.8706, opacity: 1.0)
+            public static let markPlateFrom = Color(.sRGB, red: 0.1216, green: 0.6431, blue: 0.7216, opacity: 1.0)
+            public static let markPlateTo = Color(.sRGB, red: 0.1098, green: 0.4118, blue: 0.4588, opacity: 1.0)
+            public static let markPlateBloom = Color(.sRGB, red: 0.6431, green: 0.4667, blue: 0.3922, opacity: 0.6196)
             public static let accentGlow = Color(.sRGB, red: 0.1333, green: 0.5137, blue: 0.5686, opacity: 0.3020)
             public static let auroraTint = Color(.sRGB, red: 0.6431, green: 0.4667, blue: 0.3922, opacity: 0.2000)
         }
@@ -44,6 +47,9 @@ public enum AgimateTokens {
             public static let warm = Color(.sRGB, red: 0.5412, green: 0.3843, blue: 0.3137, opacity: 1.0)
             public static let markInk = Color(.sRGB, red: 0.1098, green: 0.4118, blue: 0.4588, opacity: 1.0)
             public static let markInkLight = Color(.sRGB, red: 0.1216, green: 0.6431, blue: 0.7216, opacity: 1.0)
+            public static let markPlateFrom = Color(.sRGB, red: 0.1333, green: 0.5137, blue: 0.5686, opacity: 1.0)
+            public static let markPlateTo = Color(.sRGB, red: 0.0824, green: 0.3059, blue: 0.3451, opacity: 1.0)
+            public static let markPlateBloom = Color(.sRGB, red: 0.5412, green: 0.3843, blue: 0.3137, opacity: 0.6196)
             public static let accentGlow = Color(.sRGB, red: 0.1098, green: 0.4118, blue: 0.4588, opacity: 0.3020)
             public static let auroraTint = Color(.sRGB, red: 0.6431, green: 0.4667, blue: 0.3922, opacity: 0.3804)
         }
