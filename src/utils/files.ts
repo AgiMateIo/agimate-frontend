@@ -1,5 +1,3 @@
-import type { UserFileType } from '@/types';
-
 // Human-readable byte size (e.g. "384 KB", "1.2 MB").
 export function formatBytes(bytes: number): string {
   if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
@@ -7,15 +5,6 @@ export function formatBytes(bytes: number): string {
   const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
   const value = bytes / 1024 ** i;
   return `${i === 0 ? value : value.toFixed(1)} ${units[i]}`;
-}
-
-// The list endpoint hands the render kind over as `type`; an upload response
-// carries only the MIME, so derive the same four buckets from it.
-export function fileTypeFromMime(mime: string): UserFileType {
-  if (mime.startsWith('image/')) return 'image';
-  if (mime.startsWith('video/')) return 'video';
-  if (mime.startsWith('audio/')) return 'audio';
-  return 'file';
 }
 
 // Subtypes whose own text is not a usable label (the xlsx one is a 60-character
@@ -60,9 +49,11 @@ export interface FileExpiry {
   urgent: boolean;
 }
 
-// Retention is 7 days by default and cannot be extended from the UI, so the
-// remaining time has to be visible — otherwise files vanishing on schedule
-// reads as data loss.
+// Retention depends on where the file came from — 90 days for an upload, 7 for
+// what a connector produced — and cannot be extended from the UI, so the
+// remaining time is read off `expiresAt` rather than computed from a constant.
+// It has to stay visible: files vanishing on schedule otherwise read as data
+// loss.
 export function getFileExpiry(expiresAt: string, now: number = Date.now()): FileExpiry {
   const at = new Date(expiresAt.replace(' ', 'T')).getTime();
   const left = at - now;

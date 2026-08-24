@@ -8,9 +8,11 @@ export type WebchatStream = 'progress' | 'answer' | 'error';
 // How to render an attachment part.
 export type WebchatPartType = 'image' | 'video' | 'audio' | 'file';
 
-// An attachment on a message — AGENT answers and USER uploads alike. `url` is
-// a signed, short-lived (~15 min) link relative to the control context path —
-// do not persist it; re-read history for a fresh one (dedupe/cache by `fileId`).
+// An attachment on a message — AGENT answers and USER uploads alike. `fileId`
+// is the file layer's `agf_…` id; the row itself lives in `/manage/files/` and
+// outlives the message. `url` is a signed, short-lived (~15 min) link — either
+// relative to the control context path or an absolute storage URL — so do not
+// persist it; re-read history for a fresh one (dedupe/cache by `fileId`).
 // Optimistic USER messages temporarily carry a local `blob:` URL here instead.
 export interface WebchatPart {
   type: WebchatPartType;
@@ -18,17 +20,6 @@ export interface WebchatPart {
   mime: string;
   size: number;
   url: string;
-}
-
-// Response of POST /manage/webchat/files. Reference the upload via its fileId
-// in a message's `parts` before `expiresAt`; unsent uploads expire server-side.
-export interface WebchatFileUploadResponse {
-  fileId: string;
-  mime: string;
-  size: number;
-  // Name the file was stored under (taken from the uploaded file's name).
-  name: string;
-  expiresAt: string;
 }
 
 // Preview of a session's newest message, for a list row. `text` is cut to 160

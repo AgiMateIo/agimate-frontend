@@ -2,14 +2,17 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import apiService, { ApiError } from '@/services/api';
+import { useFileCacheActions } from '@/queries/files';
 import { useFileLabels } from '@/components/files/fileLabels';
 import { resolveControlFileUrl } from '@/utils/api-url';
 import { getErrorMessage } from '@/utils/error';
-import { fileTypeFromMime } from '@/utils/files';
-import type { UserFileResponse, WebchatFileUploadResponse, WebchatPart } from '@/types';
+import type { UserFileResponse, WebchatPart } from '@/types';
 
 // Backend caps parts per message at 5.
 export const MAX_ATTACHMENTS = 5;
+// `origin` label of a composer upload — stored server-side as `user:chat` and
+// shown back in the listing. Must match [a-z0-9][a-z0-9_-]{0,31}.
+const UPLOAD_ORIGIN = 'chat';
 const RATE_LIMIT_RETRIES = 2;
 const RATE_LIMIT_BASE_DELAY_MS = 1500;
 
@@ -29,11 +32,15 @@ export interface ComposerAttachment {
   status: 'uploading' | 'ready' | 'error';
   // Set while an automatic 429 backoff retry is in flight (status stays 'uploading').
   rateLimited: boolean;
-  uploaded: WebchatFileUploadResponse | null;
+  // The stored file row once the upload lands — the same shape the listing
+  // returns, which is why a file picked from storage needs no upload at all.
+  uploaded: UserFileResponse | null;
   error: ComposerAttachmentError | null;
   errorMessage: string; // backend message for the 'generic' case
 }
 
+// A 400 is the refusal with a reason the backend wrote for the user (over 50 MB,
+// or the 500 MB daily quota spent); 429 is the 30-uploads-a-minute limit.
 const classifyError = (err: unknown): ComposerAttachmentError => {
   if (err instanceof ApiError && (err.status === 413 || err.status === 400)) return 'tooLarge';
   if (err instanceof ApiError && err.status === 429) return 'rateLimited';
@@ -56,6 +63,10 @@ const revokePreview = (url: string) => {
 // the user's storage join the same tray already 'ready'.
 export function useComposerAttachments() {
   const { displayName } = useFileLabels();
+  // An upload lands in the user's file storage straight away, whether or not
+  // the message is ever sent — so the Files screen and the picker are stale
+  // from that moment.
+  const { invalidateLists } = useFileCacheActions();
   const [attachments, setAttachments] = useState<ComposerAttachment[]>([]);
   // Mirror for reads after an await (waitForUploads resolves before React
   // re-renders the closed-over state).
@@ -83,8 +94,9 @@ export function useComposerAttachments() {
       const run = (async () => {
         for (let attempt = 0; ; attempt++) {
           try {
-            const uploaded = await apiService.uploadWebchatFile(file);
+            const uploaded = await apiService.uploadUserFile(file, UPLOAD_ORIGIN);
             patch(id, { status: 'ready', rateLimited: false, uploaded });
+            invalidateLists();
             return;
           } catch (err) {
             if (isRateLimited(err) && attempt < RATE_LIMIT_RETRIES) {
@@ -106,7 +118,7 @@ export function useComposerAttachments() {
       });
       uploadsRef.current.set(id, run);
     },
-    [patch]
+    [patch, invalidateLists]
   );
 
   const addFiles = useCallback(
@@ -142,7 +154,7 @@ export function useComposerAttachments() {
       const room = MAX_ATTACHMENTS - attachmentsRef.current.length;
       if (room <= 0) return;
       const taken = new Set(
-        attachmentsRef.current.map((a) => a.uploaded?.fileId).filter(Boolean)
+        attachmentsRef.current.map((a) => a.uploaded?.id).filter(Boolean)
       );
       const fresh = files
         .filter((f) => !taken.has(f.id))
@@ -157,13 +169,7 @@ export function useComposerAttachments() {
           previewUrl: resolveControlFileUrl(f.url),
           status: 'ready',
           rateLimited: false,
-          uploaded: {
-            fileId: f.id,
-            mime: f.mime,
-            size: f.size,
-            name: f.name ?? '',
-            expiresAt: f.expiresAt,
-          },
+          uploaded: f,
           error: null,
           errorMessage: '',
         }));
@@ -222,8 +228,8 @@ export function useComposerAttachments() {
       settled
         .filter((a) => a.status === 'ready' && a.uploaded)
         .map((a) => ({
-          type: fileTypeFromMime(a.uploaded!.mime),
-          fileId: a.uploaded!.fileId,
+          type: a.uploaded!.type,
+          fileId: a.uploaded!.id,
           mime: a.uploaded!.mime,
           size: a.uploaded!.size,
           url: a.previewUrl,

@@ -55,8 +55,9 @@ export default function FilesBrowser({ fixedAgentId }: { fixedAgentId?: string }
             filters={
               fixedAgentId ? undefined : (
                 <FilterRow label={t('agentFilterLabel')}>
-                  {/* "What did this agent produce" is the filtering case that
-                      matters; a pill row would not survive 30 agents. */}
+                  {/* Everything related to one agent — what it produced and
+                      what it was sent — is the filtering case that matters; a
+                      pill row would not survive 30 agents. */}
                   <div className="w-64">
                     <Select
                       value={selectedAgent}
