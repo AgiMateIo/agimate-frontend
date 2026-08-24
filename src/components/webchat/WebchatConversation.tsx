@@ -36,6 +36,7 @@ import { ChatMessageAttachments } from './ChatMessageAttachments';
 import { ComposerAttachments } from './ComposerAttachments';
 import FilePickerModal from '@/components/files/FilePickerModal';
 import { useComposerAttachments, MAX_ATTACHMENTS } from './useComposerAttachments';
+import { useComposerSending, useComposerStore, useComposerText } from './composerStore';
 import type { WebchatMessagePayload, WebchatSessionResponse } from '@/types';
 import { Placeholder } from '@/components/ui/Placeholder';
 
@@ -123,13 +124,22 @@ export default function WebchatConversation({
   const tCommon = useTranslations('Common');
   const tRuns = useTranslations('Runs');
   const router = useRouter();
-  const thread = useWebchatThread(session.sessionId, session.isRunning);
+  const sessionId = session.sessionId;
+  const thread = useWebchatThread(sessionId, session.isRunning);
   const markRead = useMarkWebchatSessionRead();
-  const [draft, setDraft] = useState('');
-  const [sending, setSending] = useState(false);
+  // Text, tray and the in-flight send live above this component: switching
+  // sessions remounts it (`key={sessionId}` — the thread is built on that), and
+  // a draft is not something to lose over a click on another conversation.
+  const composerStore = useComposerStore();
+  const draft = useComposerText(sessionId);
+  const sending = useComposerSending(sessionId);
+  const setDraft = useCallback(
+    (text: string) => composerStore.setText(sessionId, text),
+    [composerStore, sessionId]
+  );
   const [closing, setClosing] = useState(false);
   const [closeError, setCloseError] = useState('');
-  const composer = useComposerAttachments();
+  const composer = useComposerAttachments(sessionId);
   // Depth counter for dragenter/dragleave pairs while a file hovers the pane.
   const [dragDepth, setDragDepth] = useState(0);
   const [showFilePicker, setShowFilePicker] = useState(false);
@@ -152,10 +162,10 @@ export default function WebchatConversation({
   useEffect(() => {
     // A session that never had a message has nothing to mark — that is every
     // freshly created chat, and it opens straight into this component.
-    if (hasMessages) markRead(session.sessionId);
-  }, [markRead, session.sessionId, hasMessages]);
+    if (hasMessages) markRead(sessionId);
+  }, [markRead, sessionId, hasMessages]);
 
-  useWebchatSubscription(session.sessionId, {
+  useWebchatSubscription(sessionId, {
     onMessage: (p: WebchatMessagePayload) => {
       handleEvent(p);
       if (p.stream === 'progress') return;
@@ -163,7 +173,7 @@ export default function WebchatConversation({
       // A reply that lands while the user is looking at it is read on arrival:
       // otherwise leaving the chat would leave a badge for a message they
       // watched being written.
-      if (p.direction === 'AGENT') markRead(session.sessionId);
+      if (p.direction === 'AGENT') markRead(sessionId);
     },
   });
 
@@ -219,12 +229,15 @@ export default function WebchatConversation({
     const text = draft;
     const hasAttachments = composer.attachments.length > 0;
     if ((!text.trim() && !hasAttachments) || session.closedAt || sending) return;
-    setSending(true);
+    composerStore.setSending(sessionId, true);
     try {
       // Uploads start on file pick; here we only wait out the stragglers.
       const settled = await composer.waitForUploads();
-      // A failed upload keeps its error chip in the tray — fix or remove it first.
-      if (settled.some((a) => a.status === 'error')) return;
+      // Anything short of 'ready' holds the send back: a failed upload keeps its
+      // error chip until it is fixed or removed, and a chip still uploading past
+      // the barrier would be dropped by `toOptimisticParts` — the message would
+      // go out without the file and say nothing about it.
+      if (settled.some((a) => a.status !== 'ready')) return;
       setDraft('');
       const ok = await thread.send(text, composer.toOptimisticParts(settled));
       if (!ok) {
@@ -233,7 +246,7 @@ export default function WebchatConversation({
       }
       composer.clearAfterSend();
     } finally {
-      setSending(false);
+      composerStore.setSending(sessionId, false);
     }
   };
 
@@ -282,7 +295,10 @@ export default function WebchatConversation({
     setClosing(true);
     setCloseError('');
     try {
-      const updated = await apiService.closeWebchatSession(session.sessionId);
+      const updated = await apiService.closeWebchatSession(sessionId);
+      // Nothing left to send it from: the composer is replaced by the closed
+      // notice, so the draft goes and its previews with it.
+      composer.discard();
       onSessionClosed(updated);
     } catch (err) {
       setCloseError(getErrorMessage(err, 'Failed to close session'));
@@ -348,7 +364,7 @@ export default function WebchatConversation({
               icon: QueueListIcon,
               onClick: () =>
                 router.push(
-                  `/dashboard/agents/${session.agentId}/runs?sessionId=${session.sessionId}`,
+                  `/dashboard/agents/${session.agentId}/runs?sessionId=${sessionId}`,
                 ),
             },
             ...(session.closedAt

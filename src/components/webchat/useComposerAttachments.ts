@@ -1,11 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback } from 'react';
 import apiService, { ApiError } from '@/services/api';
 import { useFileCacheActions } from '@/queries/files';
 import { useFileLabels } from '@/components/files/fileLabels';
 import { resolveControlFileUrl } from '@/utils/api-url';
 import { getErrorMessage } from '@/utils/error';
+import { revokePreview, useComposerStore, useComposerTray } from './composerStore';
 import type { UserFileResponse, WebchatPart } from '@/types';
 
 // Backend caps parts per message at 5.
@@ -52,45 +53,51 @@ const isRateLimited = (err: unknown): boolean =>
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Only local previews are ours to release; a signed server URL is not.
-const revokePreview = (url: string) => {
-  if (url.startsWith('blob:')) URL.revokeObjectURL(url);
-};
+// Render keys, module-wide: a session switch remounts this hook, and a counter
+// starting over would hand a fresh attachment the key of a parked one.
+let attachmentSeq = 0;
 
 // Composer attachment queue: files start uploading the moment they are picked
 // (parallel, with 429 backoff), so the fileIds are usually ready before the
 // user hits send. `waitForUploads` is the send-side barrier. Files picked from
 // the user's storage join the same tray already 'ready'.
-export function useComposerAttachments() {
+//
+// The tray itself lives in the composer store, keyed by session — the hook is
+// remounted by every session switch, an upload is not. Everything below reads
+// and writes through the store rather than through local state, so an upload
+// that lands while the user is in another conversation still reaches the tray
+// it belongs to.
+export function useComposerAttachments(sessionId: string) {
   const { displayName } = useFileLabels();
   // An upload lands in the user's file storage straight away, whether or not
   // the message is ever sent — so the Files screen and the picker are stale
   // from that moment.
   const { invalidateLists } = useFileCacheActions();
-  const [attachments, setAttachments] = useState<ComposerAttachment[]>([]);
-  // Mirror for reads after an await (waitForUploads resolves before React
-  // re-renders the closed-over state).
-  const attachmentsRef = useRef<ComposerAttachment[]>([]);
-  // In-flight upload promises, keyed by attachment id (settled = removed).
-  const uploadsRef = useRef<Map<string, Promise<void>>>(new Map());
-  const seqRef = useRef(0);
+  const store = useComposerStore();
+  const attachments = useComposerTray(sessionId);
 
-  const update = useCallback((next: ComposerAttachment[]) => {
-    attachmentsRef.current = next;
-    setAttachments(next);
-  }, []);
+  // Reads go to the store, not to the rendered array: an upload settling after
+  // a session switch has no render of its own to read from.
+  const read = useCallback(
+    () => store.getEntry(sessionId).attachments,
+    [store, sessionId]
+  );
+
+  const update = useCallback(
+    (next: ComposerAttachment[]) => store.setAttachments(sessionId, next),
+    [store, sessionId]
+  );
 
   const patch = useCallback(
     (id: string, changes: Partial<ComposerAttachment>) => {
-      update(
-        attachmentsRef.current.map((a) => (a.id === id ? { ...a, ...changes } : a))
-      );
+      update(read().map((a) => (a.id === id ? { ...a, ...changes } : a)));
     },
-    [update]
+    [read, update]
   );
 
   const startUpload = useCallback(
     (id: string, file: File) => {
+      const uploads = store.uploads(sessionId);
       const run = (async () => {
         for (let attempt = 0; ; attempt++) {
           try {
@@ -114,20 +121,21 @@ export function useComposerAttachments() {
           }
         }
       })().finally(() => {
-        uploadsRef.current.delete(id);
+        uploads.delete(id);
       });
-      uploadsRef.current.set(id, run);
+      uploads.set(id, run);
     },
-    [patch, invalidateLists]
+    [patch, invalidateLists, store, sessionId]
   );
 
   const addFiles = useCallback(
     (files: File[]) => {
-      const room = MAX_ATTACHMENTS - attachmentsRef.current.length;
+      const current = read();
+      const room = MAX_ATTACHMENTS - current.length;
       if (room <= 0) return;
       const accepted = files.slice(0, room);
       const fresh = accepted.map<ComposerAttachment>((file) => ({
-        id: `att-${++seqRef.current}`,
+        id: `att-${++attachmentSeq}`,
         source: 'upload',
         file,
         name: file.name,
@@ -140,10 +148,10 @@ export function useComposerAttachments() {
         error: null,
         errorMessage: '',
       }));
-      update([...attachmentsRef.current, ...fresh]);
+      update([...current, ...fresh]);
       fresh.forEach((a) => startUpload(a.id, a.file!));
     },
-    [update, startUpload]
+    [read, update, startUpload]
   );
 
   // Files picked from the user's storage: nothing to upload, the fileId is the
@@ -151,16 +159,15 @@ export function useComposerAttachments() {
   // duplicated — the same file twice in one message helps nobody.
   const addExisting = useCallback(
     (files: UserFileResponse[]) => {
-      const room = MAX_ATTACHMENTS - attachmentsRef.current.length;
+      const current = read();
+      const room = MAX_ATTACHMENTS - current.length;
       if (room <= 0) return;
-      const taken = new Set(
-        attachmentsRef.current.map((a) => a.uploaded?.id).filter(Boolean)
-      );
+      const taken = new Set(current.map((a) => a.uploaded?.id).filter(Boolean));
       const fresh = files
         .filter((f) => !taken.has(f.id))
         .slice(0, room)
         .map<ComposerAttachment>((f) => ({
-          id: `att-${++seqRef.current}`,
+          id: `att-${++attachmentSeq}`,
           source: 'existing',
           file: null,
           name: displayName(f),
@@ -174,29 +181,30 @@ export function useComposerAttachments() {
           errorMessage: '',
         }));
       if (fresh.length === 0) return;
-      update([...attachmentsRef.current, ...fresh]);
+      update([...current, ...fresh]);
     },
-    [update, displayName]
+    [read, update, displayName]
   );
 
   const remove = useCallback(
     (id: string) => {
-      const target = attachmentsRef.current.find((a) => a.id === id);
+      const current = read();
+      const target = current.find((a) => a.id === id);
       if (target) revokePreview(target.previewUrl);
-      update(attachmentsRef.current.filter((a) => a.id !== id));
+      update(current.filter((a) => a.id !== id));
     },
-    [update]
+    [read, update]
   );
 
   const retry = useCallback(
     (id: string) => {
-      const target = attachmentsRef.current.find((a) => a.id === id);
+      const target = read().find((a) => a.id === id);
       // Only an upload can be retried; an existing file never failed.
       if (!target || target.status !== 'error' || !target.file) return;
       patch(id, { status: 'uploading', error: null, errorMessage: '' });
       startUpload(id, target.file);
     },
-    [patch, startUpload]
+    [read, patch, startUpload]
   );
 
   // Clears the tray after a successful send. The previews are NOT revoked —
@@ -206,22 +214,21 @@ export function useComposerAttachments() {
     update([]);
   }, [update]);
 
+  // Drops the draft outright, previews included — the session was closed, so
+  // there is no composer left to send it from.
+  const discard = useCallback(() => {
+    store.dispose(sessionId);
+  }, [store, sessionId]);
+
   // Send barrier: resolves once no upload is in flight (retries included) and
   // returns the settled attachments for a status check.
   const waitForUploads = useCallback(async (): Promise<ComposerAttachment[]> => {
-    while (uploadsRef.current.size > 0) {
-      await Promise.all([...uploadsRef.current.values()]);
+    const uploads = store.uploads(sessionId);
+    while (uploads.size > 0) {
+      await Promise.all([...uploads.values()]);
     }
-    return attachmentsRef.current;
-  }, []);
-
-  // Revoke previews still sitting in the tray when the composer unmounts.
-  useEffect(() => {
-    return () => {
-      attachmentsRef.current.forEach((a) => revokePreview(a.previewUrl));
-      attachmentsRef.current = [];
-    };
-  }, []);
+    return read();
+  }, [store, sessionId, read]);
 
   const toOptimisticParts = useCallback(
     (settled: ComposerAttachment[]): WebchatPart[] =>
@@ -246,6 +253,7 @@ export function useComposerAttachments() {
     remove,
     retry,
     clearAfterSend,
+    discard,
     waitForUploads,
     toOptimisticParts,
   };

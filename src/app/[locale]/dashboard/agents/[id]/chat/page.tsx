@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import WebchatSessionsPane from '@/components/webchat/WebchatSessionsPane';
 import WebchatConversation from '@/components/webchat/WebchatConversation';
+import { WebchatComposerProvider } from '@/components/webchat/composerStore';
 import AgentMcpUnavailable from '@/components/agents/AgentMcpUnavailable';
 import { useAgentDetailSuspenseQuery } from '@/queries/agents';
 import { useWebchatCacheActions, useWebchatSessionsQuery } from '@/queries/webchat';
@@ -83,64 +84,69 @@ function AgentChatView({ agent }: { agent: AgentResponse }) {
   };
 
   return (
-    <div className="flex h-full min-h-[420px] flex-col gap-4">
-      {error && <ErrorAlert>{error}</ErrorAlert>}
+    // Above the conversation's `key={sessionId}` remount on purpose: the draft
+    // text and the attachment tray of every session opened on this screen live
+    // in here, and switching between them must not clear either.
+    <WebchatComposerProvider>
+      <div className="flex h-full min-h-[420px] flex-col gap-4">
+        {error && <ErrorAlert>{error}</ErrorAlert>}
 
-      <div className="flex flex-1 min-h-0 bg-surface rounded-xl border border-border overflow-hidden">
-        {/* Both panes stay mounted; below `md` only one is displayed at a time. */}
-        <WebchatSessionsPane
-          className={mobilePane === 'list' ? 'flex' : 'hidden'}
-          agents={[agent]}
-          agentsById={agentsById}
-          selectedAgentId={agentId}
-          onAgentChange={() => {}}
-          sessions={sessions}
-          sessionsLoading={sessionsQuery.isPending}
-          activeSessionId={activeSession?.sessionId ?? null}
-          onSelectSession={(sessionId) => {
-            setActiveSessionId(sessionId);
-            setMobilePane('conversation');
-          }}
-          onNewSession={handleNewSession}
-          creating={creating}
-          hasMoreSessions={sessionsQuery.hasNextPage}
-          loadingMoreSessions={sessionsQuery.isFetchingNextPage}
-          onLoadMoreSessions={() => sessionsQuery.fetchNextPage()}
-          hideAgentFilter
-        />
+        <div className="flex flex-1 min-h-0 bg-surface rounded-xl border border-border overflow-hidden">
+          {/* Both panes stay mounted; below `md` only one is displayed at a time. */}
+          <WebchatSessionsPane
+            className={mobilePane === 'list' ? 'flex' : 'hidden'}
+            agents={[agent]}
+            agentsById={agentsById}
+            selectedAgentId={agentId}
+            onAgentChange={() => {}}
+            sessions={sessions}
+            sessionsLoading={sessionsQuery.isPending}
+            activeSessionId={activeSession?.sessionId ?? null}
+            onSelectSession={(sessionId) => {
+              setActiveSessionId(sessionId);
+              setMobilePane('conversation');
+            }}
+            onNewSession={handleNewSession}
+            creating={creating}
+            hasMoreSessions={sessionsQuery.hasNextPage}
+            loadingMoreSessions={sessionsQuery.isFetchingNextPage}
+            onLoadMoreSessions={() => sessionsQuery.fetchNextPage()}
+            hideAgentFilter
+          />
 
-        <div
-          className={`${mobilePane === 'conversation' ? 'flex' : 'hidden'} flex-1 min-w-0 flex-col md:flex`}
-        >
-          {activeSession ? (
-            <WebchatConversation
-              key={activeSession.sessionId}
-              session={activeSession}
-              agentName={agent.name}
-              onSessionClosed={patchSession}
-              onActivity={invalidateSessions}
-              onBack={() => setMobilePane('list')}
-            />
-          ) : sessionsQuery.isPending ? (
-            <div className="flex-1 grid place-items-center text-sm text-muted">
-              {t('loadingSessions')}
-            </div>
-          ) : (
-            // Only reachable with zero sessions now that the newest one is
-            // auto-selected — so it opens the first chat instead of asking the
-            // user to pick from an empty list.
-            <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center p-8">
-              <ChatBubbleOvalLeftEllipsisIcon className="h-12 w-12 text-muted/50" />
-              <div className="text-sm font-medium text-foreground">{t('noSessionsTitle')}</div>
-              <div className="text-sm text-muted max-w-sm">{t('noSessionsHint')}</div>
-              <Button onClick={handleNewSession} loading={creating}>
-                <PlusIcon className="h-4 w-4" />
-                {t('newSession')}
-              </Button>
-            </div>
-          )}
+          <div
+            className={`${mobilePane === 'conversation' ? 'flex' : 'hidden'} flex-1 min-w-0 flex-col md:flex`}
+          >
+            {activeSession ? (
+              <WebchatConversation
+                key={activeSession.sessionId}
+                session={activeSession}
+                agentName={agent.name}
+                onSessionClosed={patchSession}
+                onActivity={invalidateSessions}
+                onBack={() => setMobilePane('list')}
+              />
+            ) : sessionsQuery.isPending ? (
+              <div className="flex-1 grid place-items-center text-sm text-muted">
+                {t('loadingSessions')}
+              </div>
+            ) : (
+              // Only reachable with zero sessions now that the newest one is
+              // auto-selected — so it opens the first chat instead of asking the
+              // user to pick from an empty list.
+              <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center p-8">
+                <ChatBubbleOvalLeftEllipsisIcon className="h-12 w-12 text-muted/50" />
+                <div className="text-sm font-medium text-foreground">{t('noSessionsTitle')}</div>
+                <div className="text-sm text-muted max-w-sm">{t('noSessionsHint')}</div>
+                <Button onClick={handleNewSession} loading={creating}>
+                  <PlusIcon className="h-4 w-4" />
+                  {t('newSession')}
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </WebchatComposerProvider>
   );
 }
