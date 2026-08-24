@@ -41,15 +41,21 @@ The base URL points to the API gateway root; service-specific prefixes are added
 
 The frontend reaches the backend through the API gateway using two service prefixes, defined in `API.ENDPOINTS` (`src/config/constants.ts`):
 
-- **`user/`** (`USER_API`) — OAuth2 auth and user info.
+- **`user/`** (`USER_API`) — sign-in (password and OAuth2), ways into an account, and user info.
 - **`control/`** (`CONTROL_API`) — everything else: agents, skills, apps, channels, agentic teams, boards, connections, LLM providers, the connector catalog, tool/trigger/webhook logs, and the Centrifugo token.
 
 > The `control-api` service was previously named `device-api` (URL prefix `/device` → `/control`). Domain terms that legitimately mean "device" stay: the `deviceId` payload field and the Centrifugo `device:{deviceId}` namespace are unrelated to the service name.
 
 ### User API (`user/`)
 - **OAuth2**: `POST /oauth2/refresh`, `POST /oauth2/logout`
+- **Password sign-in**: `POST /auth/login` (`{email, password, client?}` — `client: WEB` is the default and decides only the *shape* of the answer: web gets its refresh token as an httpOnly cookie, `NATIVE` in the body. `401` covers an unknown address and a wrong password **alike and in the same time** — there is nothing to tell them apart with, so the screen says one thing; `429` after ten failures per mailbox in 15 minutes, with the wait in its `message`).
+- **Registration** (three requests and a letter): `POST /auth/register` (`{email, displayName?, ref?}`) → **200 always**, free address or taken — the endpoint would otherwise be a check of who is registered here, so the screen promises "if the address can be registered, a letter is on its way"; `POST /auth/register/resend {email}`; `POST /auth/register/confirm {token, password, client?}` → a token pair. **There is no password in the registration request**: it is named by whoever opens the letter, or one person picks the password while another proves the mailbox. **The account row appears on confirm**, not on register.
+- **Password**: `POST /auth/password/forgot {email}` → 200 always (same reason; the screen says the letter went out **unconditionally** — flat wording is fine, wording that varies with the address is not), the letter links to `{front}/password/reset?token=…`; `POST /auth/password/reset {token, password}` — **ends every session of the account, the one that asked included**, so the client must treat itself as signed out (`authApi.resetPassword` calls `httpClient.forgetSession()`); `POST /auth/password/change {currentPassword, newPassword}` (Bearer) — ends every *other* session, this one survives. Rules: ≥8 characters, **≤72 bytes** — the limit is in bytes because the hash reads 72 of them, so 40 Cyrillic letters are already over while looking short (`src/utils/password.ts` counts UTF-8, never characters). No composition rules, deliberately.
+- **Ways in** (`GET /auth/methods/`, **trailing slash significant**): one row per way — providers oldest to newest, password last; a provider row's `email` is legitimately `null`. `DELETE /auth/methods/oauth/{PROVIDER}` (**uppercase** here, lowercase in the authorization URL — enum value vs the provider's own registration id) and `DELETE /auth/methods/password`. **The last way in never unlinks**: both answer 400, so the UI greys the button out rather than catching a refusal. Open to a `GUEST`, like the devices list. **Every change here mails the account owner** — say so before the letter surprises them.
+- **Linking a provider** (`POST /auth/methods/link {proof}`, Bearer) — see **Linking a provider** below.
+- **Mail-less installations**: `register`, `register/resend` and `password/forgot` answer **503** where mail is not configured. Sign-in and an already-issued link keep working.
 - **User**: `GET /user/me` (the `/user/user/me` double segment is a wart of that controller, not the convention — the admin area below sits at `user/admin/…`)
-- **Sessions** (active sign-ins, one row per device): `GET /user/sessions/` (**trailing slash significant**, one `user` segment — these sit next to `user/oauth2/…`), revoke `DELETE /user/sessions/{id}`. Sorted by `lastSeenAt`, freshest first — **do not re-sort**; revoked and expired sign-ins are absent rather than listed, so there is no status. Timestamps are ISO-8601 with microseconds, not the control API's `yyyy-MM-dd HH:mm:ss`. `deviceLabel` is legitimately `null` (a model for `client: NATIVE`, the raw User-Agent for `WEB` — `describeUserAgent` in `src/utils/user-agent.ts` turns the latter into "Chrome · macOS"). `push` is empty for **every** `WEB` row (web push doesn't exist yet), so notification state is only meaningful for `NATIVE`, and two entries for one device is normal during a token rotation — `maskedToken` is a prefix, never a token, goes nowhere back to the API. Revoking kills token refresh at once but the issued access token lives out its term (a day for web, an hour for the app) — promise "will be signed out", never instant; push stops immediately. `404` = already revoked → treat as success and re-read. There is no "sign out everywhere" endpoint. **The screen is open to a `GUEST`** (a lost phone must not wait for approval), which is why the dashboard layout lets that one route through (`GUEST_ALLOWED_ROUTES`).
+- **Sessions** (active sign-ins, one row per device): `GET /user/sessions/` (**trailing slash significant**, one `user` segment — these sit next to `user/oauth2/…`), revoke `DELETE /user/sessions/{id}`. Sorted by `lastSeenAt`, freshest first — **do not re-sort**; revoked and expired sign-ins are absent rather than listed, so there is no status. Timestamps are ISO-8601 with microseconds, not the control API's `yyyy-MM-dd HH:mm:ss`. `deviceLabel` is legitimately `null` (a model for `client: NATIVE`, the raw User-Agent for `WEB` — `describeUserAgent` in `src/utils/user-agent.ts` turns the latter into "Chrome · macOS"). `push` is empty for **every** `WEB` row (web push doesn't exist yet), so notification state is only meaningful for `NATIVE`, and two entries for one device is normal during a token rotation — `maskedToken` is a prefix, never a token, goes nowhere back to the API. Revoking kills token refresh at once but the issued access token lives out its term (an hour, on web and app alike since the lifetimes converged) — promise "will be signed out", never instant; push stops immediately. `GET /user/me` is the one endpoint that re-checks the registry, so a revoked device notices at its next page load rather than at the hour. `404` = already revoked → treat as success and re-read. There is no "sign out everywhere" endpoint. **The screen is open to a `GUEST`** (a lost phone must not wait for approval), which is why the dashboard layout lets that one route through (`GUEST_ALLOWED_ROUTES`).
 - **Admin** (ADMIN only): paged directory `GET /admin/users/` (`search` = substring of email *or* display name, `role` = exact, order fixed newest-first with no sort parameter, `size` capped at 100), role change `PATCH /admin/users/{id}/role` (returns the updated user; 400 on your own row so the platform can't end up with no admin; setting the role a user already has is a no-op success). The gate is the `/admin` path prefix, not the individual handler — 403 for a non-ADMIN, 401 without a token, and any endpoint added under it inherits that. **A role change is not platform-wide at once**: user-api applies it immediately, the rest of the API reads the role from the user's access token, so it lands there only after their session refreshes (up to a day) — never promise "access revoked".
 
 ### Control API (`control/`)
@@ -76,19 +82,29 @@ All paths below are under `control/manage/…` unless noted. Representative grou
 Sophisticated OAuth2 flow with JWT tokens and automatic refresh.
 
 ### Token Management
-- **Access Token**: JWT in `sessionStorage`, ~24h, used for API authorization
+- **Access Token**: JWT in `sessionStorage`, **~1h** (was 24h) — read the term from `expiresIn` on every token response, never from a constant: the backend changes it without telling clients. `storeTokens` turns it into an absolute `access_token_refresh_at` at **90% of the lifetime**, and `startTokenLifecycle()` (armed once by `UserProvider`) refreshes in the background at that mark. That does **not** replace the reactive refresh on 401 — a laptop asleep through the window wakes holding a dead token — and neither half is enough alone.
 - **Refresh Token**: JWT in an HTTP-only cookie (browser-managed), ~7 days
-- **Refresh Token ID**: identifier in `localStorage`, prevents token replay
+- **Refresh Token ID**: identifier in `localStorage`, prevents token replay. Refresh is single-use with rotation, so it is serialized in `httpClient` (one in-flight promise), a **409 "Concurrent refresh" is retried once** with whatever id is in storage by then (someone rotated first — a live session, not a dead one), and a lost response can be replayed with the same id for a minute. A **403 "already rotated"** past that minute is the backend closing the session: for us, a sign-out.
 - **Session ID**: `sessionId` from every `/oauth2/refresh` response, in `localStorage` next to the refresh token id (`src/services/currentSession.ts`, read via `useCurrentSessionId`). Stable for the life of the sign-in and the **only** way to tell which row of the device list is this browser — the list carries no such flag. Absent until the first refresh that returns it, and then no row is marked rather than the wrong one.
 
+### `GET /user/me` is the only revocation check
+Every other endpoint trusts the token's signature until the hour is out; `/me` alone reads the session registry and answers **401** when the sign-in was revoked (signed out on this device, killed from the devices list, password changed or reset). The transport already does the right thing with it: refresh → retry → clear tokens and hard-redirect to `/login`. The third outcome is normal, not a bug — it is what "somebody signed me out from another device" looks like.
+
 ### Authentication Flow
+Two ways in, and one account can hold both at once (see **Linking a provider**).
+
+**Password**: `/login` posts to `/auth/login`, the pair is stored, `fetchUser()` runs, and the page lands on `?next=` or `/dashboard`. Registration is `/register` → letter → `/register/confirm?token=…` (sets the password, creates the account, signs in). "Forgot" is `/password/forgot` → letter → `/password/reset?token=…`. The email links carry **no locale prefix** — the next-intl proxy adds the visitor's own on the way in, as it does for `/login-check`.
+
+**Provider**:
 1. `/login` sends the user to backend `/oauth2/authorization/{provider}?redirect_to=<login_check_url>`
 2. After provider auth, backend redirects to `/login-check#rti-<refreshTokenId>`
 3. `/login-check` extracts the refresh token ID from the URL fragment and calls `/oauth2/refresh`
 4. Backend validates the refresh-token cookie + ID, returns a new access token and refresh token ID
 5. Tokens stored locally, user redirected to the dashboard
 
-`/login` offers a provider only when nobody is signed in: with a stored refresh token id it waits for `UserContext`, and a live user is redirected to `?next=` or `/dashboard` instead. Signing in on top of a live sign-in is not idempotent — the backend opens a **second session**, which the device list then shows as a stray row (`hasStoredSession()` from the transport is what keeps SSR rendering the buttons as before).
+A provider sign-in looks for the person by "provider + its id" first and only then by confirmed address, and that second step can now refuse in words: two accounts at one provider on one mailbox, or a provider not authorised to walk into an existing account by address. **Those refusals carry no machine-readable code, only an English `message`** — show it verbatim; matching on the string is the fragile thing the backend offered to fix with an `error.code` if a screen ever needs its own wording.
+
+`/login` offers a way in only when nobody is signed in: with a stored refresh token id it waits for `UserContext`, and a live user is redirected to `?next=` or `/dashboard` instead. Signing in on top of a live sign-in is not idempotent — the backend opens a **second session**, which the device list then shows as a stray row (`hasStoredSession()` from the transport is what keeps SSR rendering the buttons as before).
 
 The two pages are split on purpose: `/login` only offers the providers, `/login-check` owns the callback. Nothing on `/login` reads the fragment, so a backend that ignores `redirect_to` and lands the user on `/login#rti-…` produces a dead page with no request in the network tab — check the callback-side `redirect_to` allowlist before suspecting the frontend.
 
@@ -104,6 +120,25 @@ Never store the actual refresh token in JavaScript-accessible storage.
 
 ### Returning to an interrupted page after sign-in
 `/login` accepts `?next=<locale-less in-app path>` and threads it through as `redirect_to=<origin>/login-check?next=…`; `/login-check` navigates there instead of `/dashboard`. Values pass through `safeNextPath` (`src/utils/next-path.ts`) — in-app paths only, no absolute or protocol-relative URLs. It exists for the MCP OAuth callback, whose single-use `code`/`state` must survive the sign-in round trip **in the URL** rather than in storage.
+
+## Linking a provider
+
+Adding a second door to an account somebody is already inside. **Two steps, and the order is the point**: the round trip through the provider establishes *which provider* and nothing else, and *whose account* is said by the next request, with an `Authorization` header a foreign page cannot send. A one-step version let anyone who could make a browser follow a link attach their own provider account to somebody else's login.
+
+1. A page navigation (never `fetch`) to `GET /user/oauth2/authorization/{provider}?link=1&redirect_to=…`. `link=1` is exactly that string; anything else reads as an ordinary sign-in. `redirect_to` is matched against the installation's allow-list **character for character**, so it carries no locale prefix: `${origin}/dashboard/settings`.
+2. The provider returns to `{redirect_to}?link_proof=<64 hex>&provider=github`. `AuthMethodsCard` reads it out of `window.location.search`, **strips both parameters with `history.replaceState` before anything else** (otherwise they ride along in `Referer` and settle into history, and a reload replays a spent proof), then posts `{proof}` to `/auth/methods/link`. The proof lives 5 minutes — the trip from the callback, not time to think it over — and is spent once, guarded by a module-level `Set` so StrictMode's second mount doesn't turn a success into "already used".
+
+**When `redirect_to` is not on the installation's allow-list the backend silently returns to its default address instead — which is `/login-check`.** The failure is invisible: the proof arrives, `/login-check` finds no `#rti-` fragment, bounces to `/login`, and a signed-in person lands on the dashboard as if the round trip never happened. So `/login-check` forwards a `link_proof` in its query to `/dashboard/settings` rather than dropping it, and linking works either way — one extra hop until the settings address is allow-listed.
+
+**The outcome is held at page-load scope, not in component state** (the module store beside `spentProofs` in `AuthMethodsCard`). The two facts have one lifetime: a proof is spendable once, so a second mount cannot retry it — and an outcome living in a `useMutation` would be stranded by any unmount, leaving a "linking…" that never finishes or no banner at all, with the spent-proof guard blocking a retry. A settled banner is cleared when the card unmounts; one still in flight is not.
+
+Four outcomes, **all of them HTTP 200**: `LINKED` and `ALREADY_YOURS` are success, `TAKEN` and `PROVIDER_OCCUPIED` are refusals — the status says nothing, the `outcome` says everything. A separate **403** means the proof is expired, spent or forged → offer the round trip again.
+
+Gone with this design: the ticket endpoint (`POST /auth/methods/link/{provider}`), the `link_ticket` parameter, and the `?linked=` / `?link_error=` redirect outcomes. Nothing in this repo ever spoke that protocol.
+
+**Adding a password** to a provider-only account is not a separate endpoint: settings sends the same `password/forgot` letter as the sign-in screen.
+
+**CORS is now an allow-list** of the installation's sign-in redirect origins. A dev host that is not on it fails at the preflight — fixed in the installation's configuration, never on the client.
 
 ## MCP OAuth connections
 
@@ -200,15 +235,20 @@ src/
 │       │   ├── skills/            # list, create, [id], [id]/edit
 │       │   ├── tool-use-logs/     # accepts ?status= / ?access= to seed filters
 │       │   ├── trigger-logs/
-│       │   └── settings/       # profile, devices (sessions), invite link;
+│       │   └── settings/       # profile, ways in (providers + password), devices,
+│       │                      #   invite link; also the return address of provider linking;
 │       │                      #   the one dashboard route a GUEST may open
 │       ├── connections/             # public deep links: new/ (→ dashboard),
 │       │                            #   oauth/callback/ (MCP OAuth return address)
 │       ├── login/  login-check/  logout/
+│       ├── register/  register/confirm/      # email sign-up: request, then set the password
+│       ├── password/forgot/  password/reset/ # one letter, two entry points
 │       └── n8n/  desktop/  android/   # landing pages
 │   └── connections/oauth/client.json/ # route handler, no locale prefix (see MCP OAuth)
 ├── components/
 │   ├── admin/  agents/  agentic-teams/  boards/  channels/  connectors/
+│   ├── auth/                      # AuthCard, ProviderIcon, NewPasswordFields — shared by
+│   │                              #   the out-of-app screens and the settings card
 │   ├── connections/  dashboard/  files/  llm-providers/  runs/  settings/  skills/
 │   ├── webchat/
 │   ├── landing/  layout/
@@ -217,6 +257,7 @@ src/
 │                                  #   SearchToolbar, FilterPill,
 │                                  #   ErrorAlert, ErrorBoundary, LocaleSwitcher
 ├── config/constants.ts            # UI, API.ENDPOINTS
+├── config/authProviders.ts        # which providers are offered, and where
 ├── contexts/                      # UserContext, BreadcrumbContext, QueryProvider
 ├── hooks/                         # useAsyncForm, useClipboard, useDebouncedValue
 ├── i18n/                          # routing.ts, request.ts
@@ -229,7 +270,7 @@ src/
 │                                  #   agent-connections, agent-skills, connector-jobs, webhooks,
 │                                  #   centrifugo, tool-use-logs, connectors via skills.ts) + index.ts
 ├── utils/                         # date, error, clipboard, api-url, avatar, animateCardMove,
-│                                  #   next-path (post-sign-in return path)
+│                                  #   next-path (post-sign-in return path), password (byte-counted rules)
 └── proxy.ts                     # next-intl locale routing (was middleware.ts)
 ```
 Note: keep this tree approximate — verify against `src/` before relying on a specific path.

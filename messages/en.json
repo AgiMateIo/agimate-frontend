@@ -586,11 +586,8 @@
   },
   "Login": {
     "title": "Sign in to AgiMate",
-    "subtitle": "The account is created on the first login.",
+    "subtitle": "Sign in with a password or through a provider",
     "signInWith": "Sign in with {provider}",
-    "google": "Google",
-    "yandex": "Yandex",
-    "github": "GitHub",
     "terms": "By continuing, you agree to the",
     "termsLink": "Terms of Service",
     "and": "and",
@@ -598,7 +595,16 @@
     "redirecting": "Redirecting...",
     "checkingSession": "Checking whether you are signed in…",
     "alreadySignedIn": "You are already signed in — opening the dashboard",
-    "signInAsAnother": "Sign in with another account"
+    "signInAsAnother": "Sign in with another account",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign in",
+    "signInFailed": "Could not sign in",
+    "invalidCredentials": "Wrong email or password",
+    "forgotPassword": "Forgot your password?",
+    "or": "or",
+    "noAccount": "No account yet?",
+    "registerLink": "Create one"
   },
   "LoginCheck": {
     "authorizing": "Authorizing...",
@@ -651,7 +657,12 @@
     "theme": "Theme",
     "theme_system": "System",
     "theme_light": "Light",
-    "theme_dark": "Dark"
+    "theme_dark": "Dark",
+    "providers": {
+      "github": "GitHub",
+      "google": "Google",
+      "yandex": "Yandex"
+    }
   },
   "LocaleSwitcher": {
     "ru": "RU",
@@ -1442,5 +1453,59 @@
       "telegram": "Telegram",
       "docs": "Documentation"
     }
+  },
+  "Register": {
+    "title": "Create an account",
+    "subtitle": "You will set the password from the link in the email",
+    "email": "Email",
+    "displayName": "Name",
+    "displayNameHint": "What to call you. Optional",
+    "passwordLater": "The password is named by whoever opens the email — which is why there is no field for it here.",
+    "submit": "Create account",
+    "failed": "Could not send the email",
+    "haveAccount": "Already have an account?",
+    "signInLink": "Sign in",
+    "sentTitle": "Check your inbox",
+    "sentBody": "If {email} can be registered, an email with the link is already on its way.",
+    "sentNote": "The link opens a page where you set the password. The account appears after that.",
+    "resend": "Send the email again",
+    "resent": "Email sent",
+    "backToSignIn": "Back to sign in",
+    "confirmTitle": "Set a password",
+    "confirmSubtitle": "The last step — it signs you in",
+    "confirmSubmit": "Create account",
+    "confirmFailed": "Could not finish the registration",
+    "linkDeadTitle": "This link no longer works",
+    "linkDeadBody": "It has expired, has already been used, or arrived incomplete. Start the registration again.",
+    "linkDeadAction": "Back to registration"
+  },
+  "Password": {
+    "email": "Email",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "repeatPassword": "Repeat the password",
+    "rules": "At least {min} characters and no longer than {max} bytes — a Cyrillic letter takes two",
+    "problem": {
+      "tooShort": "The password is shorter than {min} characters",
+      "tooLong": "The password is longer than {max} bytes: a Cyrillic letter takes two",
+      "mismatch": "The passwords do not match"
+    },
+    "forgotTitle": "Reset your password",
+    "forgotSubtitle": "We will send a link for setting a new password",
+    "forgotSubmit": "Send the link",
+    "forgotFailed": "Could not send the email",
+    "forgotSentTitle": "Check your inbox",
+    "forgotSentBody": "A link has been sent to {email}",
+    "backToSignIn": "Back to sign in",
+    "resetTitle": "New password",
+    "resetSubtitle": "Set the password you will sign in with",
+    "resetSubmit": "Save the password",
+    "resetFailed": "Could not change the password",
+    "resetSignsOutEverywhere": "Every session of the account ends — you will sign in again on all your devices.",
+    "resetDoneTitle": "Password changed",
+    "resetDoneBody": "Every session of the account has ended. Sign in with the new password.",
+    "linkDeadTitle": "This link no longer works",
+    "linkDeadBody": "It has expired or has already been used. Ask for a new one.",
+    "linkDeadAction": "Ask for a new link"
   }
 }

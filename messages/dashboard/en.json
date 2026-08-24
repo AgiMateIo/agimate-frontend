@@ -1282,7 +1282,7 @@
       "revokeTitle": "Revoke this sign-in?",
       "revokeConfirm": "Revoke",
       "revokeBody": "“{device}” will be signed out of the account.",
-      "revokeNote": "Not instantly: the device can no longer refresh its sign-in, but the access it already holds runs out its term — up to a day. Notifications to it stop right away.",
+      "revokeNote": "Not instant: the device can no longer refresh its sign-in, but the access it already holds lives out its term — up to an hour. Notifications to it stop immediately.",
       "revokeCurrentTitle": "Sign out on this device?",
       "revokeCurrentConfirm": "Sign out",
       "revokeCurrentBody": "This is the device you are using right now. Revoking it signs you out: you will land on the home page and have to sign in again.",
@@ -1295,6 +1295,39 @@
       "invited": "Signed up with your link",
       "note": "The link records who invited an account — it does not open access: an invited person joins the same queue for approval. It only works for a brand-new account: someone who has signed in before stays as they are.",
       "error": "Could not load the invite link"
+    },
+    "authMethods": {
+      "title": "Ways in",
+      "description": "What can open this account",
+      "error": "Could not load the ways in",
+      "noEmail": "No address reported",
+      "password": "Password",
+      "unlink": "Unlink",
+      "unlinkTitle": "Unlink this provider?",
+      "unlinkBody": "Signing in through {provider} will no longer work.",
+      "unlinkNote": "The other ways in stay. The account owner gets an email about this change.",
+      "unlinkError": "Could not unlink",
+      "changePassword": "Change",
+      "changePasswordNote": "Every other session ends; this one survives.",
+      "changePasswordError": "Could not change the password",
+      "removePassword": "Remove",
+      "removePasswordTitle": "Remove password sign-in?",
+      "removePasswordBody": "Signing in with an email and a password will no longer work — the linked providers stay.",
+      "addTitle": "Add a way in",
+      "addPassword": "Add a password",
+      "addPasswordSent": "Email sent",
+      "addPasswordNote": "A link for setting the password went to {email}.",
+      "emailNote": "Every change here sends the account owner an email.",
+      "lastMethodNote": "The last way in cannot be removed — add another one first.",
+      "linking": "Linking the provider…",
+      "linkExpired": "Linking failed: the confirmation has expired or has already been used. Walk through it again.",
+      "outcome": {
+        "LINKED": "{provider} linked",
+        "ALREADY_YOURS": "{provider} was already linked to your account",
+        "TAKEN": "This {provider} account is already linked to another user",
+        "PROVIDER_OCCUPIED": "You already have another {provider} account linked. Unlink it first"
+      },
+      "linkFailed": "Could not link the provider"
     }
   },
   "Channels": {

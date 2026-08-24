@@ -19,8 +19,10 @@ export const sessionsApi = {
   },
 
   // The device stops being able to refresh its tokens immediately; the access
-  // token it already holds lives out its term (a day for web, an hour for the
-  // app), so the UI must promise "will be signed out", not "right this second".
+  // token it already holds lives out its term — an hour on both web and app now
+  // — so the UI must promise "will be signed out", not "right this second".
+  // `GET /user/me` is the one endpoint that checks the registry per request, so
+  // a revoked device notices at its next page load rather than at the hour.
   // Push subscriptions go with the sign-in, so notifications do stop at once.
   //
   // 404 means "no such sign-in, or someone else's" — for this screen that is a

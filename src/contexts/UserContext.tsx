@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, ReactNode, useCallback, useMemo } from 'react';
+import { createContext, useContext, ReactNode, useCallback, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import apiService, { hasStoredSession } from '@/services/api';
 import { User } from '@/services/types';
@@ -27,6 +27,13 @@ interface UserProviderProps {
 
 export const UserProvider = ({ children }: UserProviderProps) => {
   const queryClient = useQueryClient();
+
+  // The access token lives an hour, and the backend may shorten that again
+  // without telling anyone, so the refresh is scheduled from what the last
+  // response said rather than from a constant. Armed here because this provider
+  // wraps every page: a tab opened onto an existing sign-in never saw the tokens
+  // stored, and would otherwise wait for a 401 to notice they had gone stale.
+  useEffect(() => apiService.startTokenLifecycle(), []);
 
   // The "is anyone signed in" check lives inside the query function rather than
   // in `enabled`: localStorage is unreadable during SSR, and a disabled query

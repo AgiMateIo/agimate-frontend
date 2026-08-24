@@ -5,6 +5,7 @@ import { localeMap } from '@/i18n/routing';
 import { useUser } from '@/contexts/UserContext';
 import { UserIcon } from '@heroicons/react/24/outline';
 import ReferralCard from '@/components/referral/ReferralCard';
+import AuthMethodsCard from '@/components/settings/AuthMethodsCard';
 import SessionsCard from '@/components/settings/SessionsCard';
 
 export default function SettingsPage() {
@@ -65,6 +66,10 @@ export default function SettingsPage() {
             </div>
           </div>
         ))}
+
+        {/* Also the return address of the provider linking round trip — it
+            reads `link_proof` out of the query on mount. */}
+        <AuthMethodsCard />
 
         <SessionsCard />
 

@@ -27,6 +27,24 @@ function LoginCheckContent() {
 
   // Returns the failure kind, or null when the callback handled itself.
   const runOAuthCallback = useCallback(async (): Promise<'network' | 'rejected' | null> => {
+    // Linking a provider returns to the settings page, not here — unless its
+    // address is missing from the installation's redirect allow-list, in which
+    // case the backend falls back to the default one, which is this page. The
+    // proof rides along in the query, so forward it instead of dropping it:
+    // without this the round trip ends on the dashboard as if nothing happened,
+    // and the only trace is a `link_proof` nobody spent.
+    const search = new URLSearchParams(window.location.search);
+    const linkProof = search.get('link_proof');
+    if (linkProof) {
+      const forwarded = new URLSearchParams({ link_proof: linkProof });
+      const provider = search.get('provider');
+      if (provider) forwarded.set('provider', provider);
+      // replace, not push: the address holding the proof must not be somewhere
+      // the back button can return to.
+      router.replace(`/dashboard/settings?${forwarded.toString()}`);
+      return null;
+    }
+
     const hash = window.location.hash.substring(1);
 
     if (!hash.startsWith('rti-')) {

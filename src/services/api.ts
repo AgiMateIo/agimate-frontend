@@ -5,6 +5,7 @@
 // `import { ApiError } from '@/services/api'` keeps working.
 import { httpClient, ApiError, hasStoredSession } from './httpClient';
 import { adminApi } from './modules/admin';
+import { authApi } from './modules/auth';
 import { agentsApi } from './modules/agents';
 import { agentPresetsApi } from './modules/agentPresets';
 import { appsApi } from './modules/apps';
@@ -24,6 +25,7 @@ import { webchatApi } from './modules/webchat';
 
 const apiService = {
   ...adminApi,
+  ...authApi,
   ...agentsApi,
   ...agentPresetsApi,
   ...appsApi,
@@ -51,6 +53,8 @@ const apiService = {
   // Auth/session methods live on the transport client; delegate via arrow funcs
   // so `this` binds correctly to httpClient.
   refreshAuthTokens: (refreshTokenId: string): Promise<boolean> => httpClient.refreshAuthTokens(refreshTokenId),
+  // Arms the background token refresh for this tab; returns the teardown.
+  startTokenLifecycle: (): (() => void) => httpClient.startTokenLifecycle(),
   logout: (): Promise<boolean> => httpClient.logout(),
 };
 
