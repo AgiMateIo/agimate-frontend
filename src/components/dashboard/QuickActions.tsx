@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import {
   ChatBubbleOvalLeftEllipsisIcon,
-  CpuChipIcon,
+  LinkIcon,
   PlusCircleIcon,
 } from '@heroicons/react/24/outline';
 import { Link } from '@/i18n/navigation';
@@ -39,8 +39,8 @@ export default function QuickActions({
     },
     {
       key: 'actionConnect',
-      icon: CpuChipIcon,
-      href: '/dashboard/connectors',
+      icon: LinkIcon,
+      href: '/dashboard/connections',
     },
   ];
 

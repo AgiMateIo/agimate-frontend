@@ -201,7 +201,7 @@ messages/
 └── dashboard/
     └── en.json / ru.json         # Dashboard namespaces:
                                    #   Sidebar, TopBar, DashboardHome, ApiKeys,
-                                   #   ConnectorCatalog, Connectors, Agents, LlmProviders,
+                                   #   Connectors, Agents, LlmProviders,
                                    #   AgenticTeams, Connections, ConnectionDetail,
                                    #   ConnectionAuth, Board,
                                    #   Skills, SkillConnectors, SkillAgents, Settings, Channels, Chat,
@@ -224,7 +224,6 @@ src/
 │       │   ├── agentic-teams/     # list, [id], [id]/agents, [id]/board
 │       │   ├── apps/              # list, [id]
 │       │   ├── channels/
-│       │   ├── connectors/        # connector catalog
 │       │   ├── connections/       # list, [id]
 │       │   ├── connector-jobs/
 │       │   ├── files/             # user files: list, delete (also the chat attachment picker

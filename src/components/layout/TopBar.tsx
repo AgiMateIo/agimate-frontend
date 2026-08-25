@@ -62,7 +62,6 @@ export default function TopBar({
   const breadcrumbSegmentNames: Record<string, string> = {
     dashboard: t('breadcrumbs.dashboard'),
     chat: t('breadcrumbs.chat'),
-    connectors: t('breadcrumbs.connectors'),
     apps: t('breadcrumbs.apps'),
     agents: t('breadcrumbs.agents'),
     'agentic-teams': t('breadcrumbs.agenticTeams'),

@@ -4,7 +4,6 @@
     "agentWizard": "Фабрика агентов",
     "chat": "Чат",
     "llmProviders": "LLM-провайдеры",
-    "connectors": "Коннекторы",
     "apps": "Приложения",
     "agents": "Агенты",
     "agenticTeams": "Команды агентов",
@@ -33,7 +32,6 @@
       "dashboard": "Dashboard",
       "chat": "Чат",
       "apps": "Приложения",
-      "connectors": "Коннекторы",
       "agents": "Агенты",
       "triggers": "Триггеры",
       "actions": "Действия",
@@ -309,30 +307,6 @@
     "createApiKey": "Создать API ключ",
     "loadingApiKeys": "Загрузка API ключей...",
     "noApiKeys": "API ключи не созданы"
-  },
-  "ConnectorCatalog": {
-    "title": "Коннекторы",
-    "subtitle": "Каталог доступных типов коннекторов",
-    "searchPlaceholder": "Поиск по названию или описанию…",
-    "kind": {
-      "INTEGRATION": "Интеграция",
-      "APP": "Приложение",
-      "SERVICE": "Сервис"
-    },
-    "noDescription": "Описание отсутствует",
-    "empty": "Коннекторы не найдены",
-    "loading": "Загрузка коннекторов…",
-    "capabilities": {
-      "executionKind": {
-        "BACKEND": "Бэкенд",
-        "APP": "Приложение пользователя",
-        "LOOPBACK": "Сам агент"
-      },
-      "definitionBinding": {
-        "STATIC": "Статичные тулы",
-        "DYNAMIC": "Динамические тулы"
-      }
-    }
   },
   "Connectors": {
     "title": "Приложения",

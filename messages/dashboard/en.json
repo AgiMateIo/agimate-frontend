@@ -4,7 +4,6 @@
     "agentWizard": "Agent Factory",
     "chat": "Chat",
     "llmProviders": "LLM Providers",
-    "connectors": "Connectors",
     "apps": "Apps",
     "agents": "Agents",
     "agenticTeams": "Agentic Teams",
@@ -33,7 +32,6 @@
       "dashboard": "Dashboard",
       "chat": "Chat",
       "apps": "Apps",
-      "connectors": "Connectors",
       "agents": "Agents",
       "triggers": "Triggers",
       "actions": "Actions",
@@ -309,30 +307,6 @@
     "createApiKey": "Create API Key",
     "loadingApiKeys": "Loading API keys...",
     "noApiKeys": "No API keys created yet"
-  },
-  "ConnectorCatalog": {
-    "title": "Connectors",
-    "subtitle": "Catalog of available connector types",
-    "searchPlaceholder": "Search by name or description…",
-    "kind": {
-      "INTEGRATION": "Integration",
-      "APP": "App",
-      "SERVICE": "Service"
-    },
-    "noDescription": "No description",
-    "empty": "No connectors found",
-    "loading": "Loading connectors…",
-    "capabilities": {
-      "executionKind": {
-        "BACKEND": "Backend",
-        "APP": "User app",
-        "LOOPBACK": "Loopback"
-      },
-      "definitionBinding": {
-        "STATIC": "Static tools",
-        "DYNAMIC": "Dynamic tools"
-      }
-    }
   },
   "Connectors": {
     "title": "Apps",

@@ -59,7 +59,7 @@ export default function SetupProgress({
       key: 'setupConnection',
       hintKey: 'setupConnectionHint',
       done: (connections.count ?? 0) > 0,
-      href: '/dashboard/connectors',
+      href: '/dashboard/connections',
     },
     {
       key: 'setupChat',

@@ -12,7 +12,6 @@ import {
   QueueListIcon,
   WrenchScrewdriverIcon,
   LinkIcon,
-  CpuChipIcon,
   AcademicCapIcon,
   SparklesIcon,
   ChatBubbleLeftRightIcon,
@@ -125,9 +124,8 @@ const getNavGroups = (t: ReturnType<typeof useTranslations>): NavGroup[] => [
     label: t('infrastructure'),
     items: [
       { label: t('llmProviders'), icon: SparklesIcon, href: '/dashboard/llm-providers' },
-      { label: t('connectors'), icon: CpuChipIcon, href: '/dashboard/connectors' },
-      { label: t('apps'), icon: DevicePhoneMobileIcon, href: '/dashboard/apps' },
       { label: t('connections'), icon: LinkIcon, href: '/dashboard/connections' },
+      { label: t('apps'), icon: DevicePhoneMobileIcon, href: '/dashboard/apps' },
       { label: t('channels'), icon: ChatBubbleLeftRightIcon, href: '/dashboard/channels' },
       { label: t('connectorJobs'), icon: ClockIcon, href: '/dashboard/connector-jobs' },
       { label: t('files'), icon: FolderIcon, href: '/dashboard/files' },
