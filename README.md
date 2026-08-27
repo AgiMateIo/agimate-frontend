@@ -27,7 +27,7 @@ Built with Next.js 16 (App Router), React 19, TypeScript and Tailwind CSS v4.
 ## Quick Start
 
 ```bash
-git clone https://github.com/AgiMateIo/frontend.git agimate-frontend
+git clone https://github.com/AgiMateIo/agimate-frontend.git agimate-frontend
 cd agimate-frontend
 
 corepack enable

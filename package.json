@@ -7,10 +7,10 @@
   "homepage": "https://agimate.io",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AgiMateIo/frontend.git"
+    "url": "git+https://github.com/AgiMateIo/agimate-frontend.git"
   },
   "bugs": {
-    "url": "https://github.com/AgiMateIo/frontend/issues"
+    "url": "https://github.com/AgiMateIo/agimate-frontend/issues"
   },
   "scripts": {
     "dev": "next dev",
