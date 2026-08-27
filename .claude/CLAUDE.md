@@ -249,7 +249,8 @@ src/
 │   ├── admin/  agents/  agentic-teams/  boards/  channels/  connectors/
 │   ├── auth/                      # AuthCard, ProviderIcon, NewPasswordFields — shared by
 │   │                              #   the out-of-app screens and the settings card
-│   ├── connections/  dashboard/  files/  llm-providers/  runs/  settings/  skills/
+│   ├── connections/  dashboard/  files/  llm-providers/  runs/  sessions/  settings/
+│   ├── skills/
 │   ├── webchat/
 │   ├── landing/  layout/
 │   └── ui/                        # Alert, Button, FormField (+ Select), Modal, ConfirmDeleteModal,

@@ -122,7 +122,7 @@ function AgentChatView({ agent }: { agent: AgentResponse }) {
                 key={activeSession.id}
                 session={activeSession}
                 agentName={agent.name}
-                onSessionClosed={patchSession}
+                onSessionUpdated={patchSession}
                 onActivity={invalidateSessions}
                 onBack={() => setMobilePane('list')}
               />

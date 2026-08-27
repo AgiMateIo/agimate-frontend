@@ -4,8 +4,11 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import apiService from '@/services/api';
 import { ChatSessionResponse } from '@/types';
+import { PencilSquareIcon } from '@heroicons/react/24/outline';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Button } from '@/components/ui/Button';
+import { RowAction } from '@/components/ui/RowAction';
+import RenameSessionModal from '@/components/sessions/RenameSessionModal';
 import { useChannelSessionMessagesQuery } from '@/queries/channels';
 import { formatDate } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
@@ -13,15 +16,19 @@ import { Placeholder } from '@/components/ui/Placeholder';
 
 interface ChannelChatViewProps {
   session: ChatSessionResponse;
-  onClosed: (updated: ChatSessionResponse) => void;
+  // Closing and renaming both answer the enriched row — one handler puts either
+  // back into the sessions list.
+  onUpdated: (updated: ChatSessionResponse) => void;
 }
 
-export default function ChannelChatView({ session, onClosed }: ChannelChatViewProps) {
+export default function ChannelChatView({ session, onUpdated }: ChannelChatViewProps) {
   const t = useTranslations('Channels');
+  const tChat = useTranslations('Chat');
   const tCommon = useTranslations('Common');
   const locale = useLocale();
   const [closing, setClosing] = useState(false);
   const [closeError, setCloseError] = useState('');
+  const [renaming, setRenaming] = useState(false);
 
   const { messages, isPending, error, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useChannelSessionMessagesQuery(session.id);
@@ -58,7 +65,7 @@ export default function ChannelChatView({ session, onClosed }: ChannelChatViewPr
     setClosing(true);
     try {
       const updated = await apiService.closeChatSession(session.id);
-      onClosed(updated);
+      onUpdated(updated);
     } catch (err) {
       setCloseError(getErrorMessage(err, 'Failed to close session'));
     } finally {
@@ -81,11 +88,22 @@ export default function ChannelChatView({ session, onClosed }: ChannelChatViewPr
               : t('sessionLastMessageAt', { date: formatDate(session.lastActivityAt, locale) })}
           </div>
         </div>
-        {!session.closedAt && (
-          <Button variant="secondary" onClick={handleClose} loading={closing}>
-            {t('closeSession')}
-          </Button>
-        )}
+        <div className="flex shrink-0 items-center gap-2">
+          {/* A messenger conversation names itself after its first message just
+              like a chat does — and the same endpoint renames both. Offered on a
+              closed session too: an archive is exactly where a name earns its
+              keep. */}
+          <RowAction
+            icon={PencilSquareIcon}
+            label={tChat('rename')}
+            onClick={() => setRenaming(true)}
+          />
+          {!session.closedAt && (
+            <Button variant="secondary" onClick={handleClose} loading={closing}>
+              {t('closeSession')}
+            </Button>
+          )}
+        </div>
       </div>
 
       {(loadError || closeError) && <ErrorAlert>{loadError || closeError}</ErrorAlert>}
@@ -144,6 +162,17 @@ export default function ChannelChatView({ session, onClosed }: ChannelChatViewPr
           </>
         )}
       </div>
+
+      {renaming && (
+        <RenameSessionModal
+          session={session}
+          onClose={() => setRenaming(false)}
+          onRenamed={(updated) => {
+            onUpdated(updated);
+            setRenaming(false);
+          }}
+        />
+      )}
     </div>
   );
 }

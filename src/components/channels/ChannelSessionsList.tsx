@@ -96,7 +96,7 @@ export default function ChannelSessionsList({ channelId }: ChannelSessionsListPr
           <ChannelChatView
             key={selected.id}
             session={selected}
-            onClosed={(updated) => patchSession(channelId, updated)}
+            onUpdated={(updated) => patchSession(channelId, updated)}
           />
         ) : (
           <Placeholder size="sm">{t('selectSessionHint')}</Placeholder>

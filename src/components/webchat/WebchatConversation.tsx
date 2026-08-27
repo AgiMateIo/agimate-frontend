@@ -16,6 +16,7 @@ import {
   ArrowUpTrayIcon,
   Cog6ToothIcon,
   FolderOpenIcon,
+  PencilSquareIcon,
   PlusIcon,
   QueueListIcon,
   StopIcon,
@@ -35,6 +36,7 @@ import { ChatMessageText } from './ChatMessageText';
 import { ChatMessageAttachments } from './ChatMessageAttachments';
 import { ComposerAttachments } from './ComposerAttachments';
 import FilePickerModal from '@/components/files/FilePickerModal';
+import RenameSessionModal from '@/components/sessions/RenameSessionModal';
 import { useComposerAttachments, MAX_ATTACHMENTS } from './useComposerAttachments';
 import { useComposerSending, useComposerStore, useComposerText } from './composerStore';
 import type { WebchatMessagePayload, ChatSessionResponse } from '@/types';
@@ -43,7 +45,9 @@ import { Placeholder } from '@/components/ui/Placeholder';
 interface WebchatConversationProps {
   session: ChatSessionResponse;
   agentName: string;
-  onSessionClosed: (updated: ChatSessionResponse) => void;
+  // Closing and renaming both answer the enriched row — one handler puts either
+  // back into the sessions list.
+  onSessionUpdated: (updated: ChatSessionResponse) => void;
   // Title/lastActivityAt change server-side as messages flow — the parent
   // refreshes the sessions list on non-progress events.
   onActivity: () => void;
@@ -116,7 +120,7 @@ function MessageRow({
 export default function WebchatConversation({
   session,
   agentName,
-  onSessionClosed,
+  onSessionUpdated,
   onActivity,
   onBack,
 }: WebchatConversationProps) {
@@ -139,6 +143,7 @@ export default function WebchatConversation({
   );
   const [closing, setClosing] = useState(false);
   const [closeError, setCloseError] = useState('');
+  const [renaming, setRenaming] = useState(false);
   const composer = useComposerAttachments(sessionId);
   // Depth counter for dragenter/dragleave pairs while a file hovers the pane.
   const [dragDepth, setDragDepth] = useState(0);
@@ -299,7 +304,7 @@ export default function WebchatConversation({
       // Nothing left to send it from: the composer is replaced by the closed
       // notice, so the draft goes and its previews with it.
       composer.discard();
-      onSessionClosed(updated);
+      onSessionUpdated(updated);
     } catch (err) {
       setCloseError(getErrorMessage(err, 'Failed to close session'));
     } finally {
@@ -356,6 +361,14 @@ export default function WebchatConversation({
             enough to sit apart, at the bottom and in the error colour. */}
         <DropdownMenu
           items={[
+            {
+              // The title is the only handle on a conversation in the list
+              // beside it, and the one the backend wrote from the first message
+              // rarely survives contact with a long chat.
+              label: t('rename'),
+              icon: PencilSquareIcon,
+              onClick: () => setRenaming(true),
+            },
             {
               // The chat shows what was said; the runs behind it show what was
               // done — the tool calls, the reasoning, and the runs that were
@@ -592,6 +605,17 @@ export default function WebchatConversation({
           onPick={(files) => {
             composer.addExisting(files);
             setShowFilePicker(false);
+          }}
+        />
+      )}
+
+      {renaming && (
+        <RenameSessionModal
+          session={session}
+          onClose={() => setRenaming(false)}
+          onRenamed={(updated) => {
+            onSessionUpdated(updated);
+            setRenaming(false);
           }}
         />
       )}
