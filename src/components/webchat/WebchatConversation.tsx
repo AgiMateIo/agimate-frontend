@@ -37,14 +37,14 @@ import { ComposerAttachments } from './ComposerAttachments';
 import FilePickerModal from '@/components/files/FilePickerModal';
 import { useComposerAttachments, MAX_ATTACHMENTS } from './useComposerAttachments';
 import { useComposerSending, useComposerStore, useComposerText } from './composerStore';
-import type { WebchatMessagePayload, WebchatSessionResponse } from '@/types';
+import type { WebchatMessagePayload, ChatSessionResponse } from '@/types';
 import { Placeholder } from '@/components/ui/Placeholder';
 
 interface WebchatConversationProps {
-  session: WebchatSessionResponse;
+  session: ChatSessionResponse;
   agentName: string;
-  onSessionClosed: (updated: WebchatSessionResponse) => void;
-  // Title/lastMessageAt change server-side as messages flow — the parent
+  onSessionClosed: (updated: ChatSessionResponse) => void;
+  // Title/lastActivityAt change server-side as messages flow — the parent
   // refreshes the sessions list on non-progress events.
   onActivity: () => void;
   // Returns to the sessions list where the two panes can't share the screen
@@ -124,7 +124,7 @@ export default function WebchatConversation({
   const tCommon = useTranslations('Common');
   const tRuns = useTranslations('Runs');
   const router = useRouter();
-  const sessionId = session.sessionId;
+  const sessionId = session.id;
   const thread = useWebchatThread(sessionId, session.isRunning);
   const markRead = useMarkWebchatSessionRead();
   // Text, tray and the in-flight send live above this component: switching
@@ -295,7 +295,7 @@ export default function WebchatConversation({
     setClosing(true);
     setCloseError('');
     try {
-      const updated = await apiService.closeWebchatSession(sessionId);
+      const updated = await apiService.closeChatSession(sessionId);
       // Nothing left to send it from: the composer is replaced by the closed
       // notice, so the draft goes and its previews with it.
       composer.discard();

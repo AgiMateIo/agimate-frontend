@@ -9,7 +9,7 @@ import {
 } from '@tanstack/react-query';
 import apiService from '@/services/api';
 import { dedupeById, nextPageParam } from '@/utils/paging';
-import type { WebchatActivityPayload, PagedResponse, WebchatSessionResponse } from '@/types';
+import type { WebchatActivityPayload, PagedResponse, ChatSessionResponse } from '@/types';
 
 export const webchatKeys = {
   all: ['webchat'] as const,
@@ -25,21 +25,39 @@ export const webchatKeys = {
 
 const SESSIONS_PAGE_SIZE = 50;
 
-type SessionPages = InfiniteData<PagedResponse<WebchatSessionResponse>>;
+// The chat pane lists conversations that go through the dashboard's own chat and
+// nothing else. `/manage/sessions` without this filter is *every* conversation
+// the user has — messenger threads and a connection's channel-less event stream
+// included — and those carry no unread count, preview or running flag, so a row
+// of another connector would render as a chat that is permanently silent.
+const WEBCHAT = 'webchat';
+
+type SessionPages = InfiniteData<PagedResponse<ChatSessionResponse>>;
 
 // The newest page, for callers that want a count or the last few conversations
 // rather than the list itself — `totalElements` is the whole set either way.
 export const webchatSessionsOptions = (agentId?: string) =>
   queryOptions({
     queryKey: webchatKeys.sessionsList(agentId),
-    queryFn: () => apiService.getWebchatSessions({ agentId, page: 0, size: SESSIONS_PAGE_SIZE }),
+    queryFn: () =>
+      apiService.getChatSessions({
+        agentId,
+        connectorCode: WEBCHAT,
+        page: 0,
+        size: SESSIONS_PAGE_SIZE,
+      }),
   });
 
 export const webchatSessionsPagesOptions = (agentId?: string) =>
   infiniteQueryOptions({
     queryKey: webchatKeys.sessionsPages(agentId),
     queryFn: ({ pageParam }) =>
-      apiService.getWebchatSessions({ agentId, page: pageParam, size: SESSIONS_PAGE_SIZE }),
+      apiService.getChatSessions({
+        agentId,
+        connectorCode: WEBCHAT,
+        page: pageParam,
+        size: SESSIONS_PAGE_SIZE,
+      }),
     initialPageParam: 0,
     getNextPageParam: nextPageParam,
   });
@@ -51,7 +69,7 @@ export function useWebchatSessionsQuery(agentId?: string) {
   // the same row can arrive twice — keep the copy in the position the user has
   // already been looking at.
   const sessions = useMemo(
-    () => dedupeById(query.data?.pages.flatMap((p) => p.content) ?? [], (s) => s.sessionId),
+    () => dedupeById(query.data?.pages.flatMap((p) => p.content) ?? [], (s) => s.id),
     [query.data],
   );
   return { ...query, sessions };
@@ -61,7 +79,7 @@ export function useWebchatSessionsQuery(agentId?: string) {
 // list is cached in (paged-through pages and the single newest page).
 function patchSessionRows(
   queryClient: QueryClient,
-  update: (session: WebchatSessionResponse) => WebchatSessionResponse,
+  update: (session: ChatSessionResponse) => ChatSessionResponse,
 ) {
   queryClient.setQueriesData<SessionPages>(
     { queryKey: webchatKeys.sessionsPagesAll() },
@@ -71,7 +89,7 @@ function patchSessionRows(
         pages: old.pages.map((p) => ({ ...p, content: p.content.map(update) })),
       },
   );
-  queryClient.setQueriesData<PagedResponse<WebchatSessionResponse>>(
+  queryClient.setQueriesData<PagedResponse<ChatSessionResponse>>(
     { queryKey: webchatKeys.sessionsLists() },
     (old) => old && { ...old, content: old.content.map(update) },
   );
@@ -92,11 +110,11 @@ export function useMarkWebchatSessionRead() {
     async (sessionId: string, lastReadMessageId?: string) => {
       const clear = () =>
         patchSessionRows(queryClient, (s) =>
-          s.sessionId === sessionId && s.unreadCount > 0 ? { ...s, unreadCount: 0 } : s,
+          s.id === sessionId && s.unreadCount > 0 ? { ...s, unreadCount: 0 } : s,
         );
       clear();
       try {
-        await apiService.markWebchatSessionRead(sessionId, lastReadMessageId);
+        await apiService.markChatSessionRead(sessionId, lastReadMessageId);
         // Again after the round trip: the same message that triggered this also
         // refetches the sessions list, and a response the server prepared before
         // the pointer moved brings the count back.
@@ -114,7 +132,7 @@ export function useWebchatCacheActions() {
 
   return {
     // Prepend a freshly created session into the lists it belongs to.
-    addSession: (session: WebchatSessionResponse) => {
+    addSession: (session: ChatSessionResponse) => {
       for (const key of [
         webchatKeys.sessionsPages(undefined),
         webchatKeys.sessionsPages(session.agentId),
@@ -123,7 +141,7 @@ export function useWebchatCacheActions() {
           if (!old) return old;
           const pages = old.pages.map((p) => ({
             ...p,
-            content: p.content.filter((s) => s.sessionId !== session.sessionId),
+            content: p.content.filter((s) => s.id !== session.id),
           }));
           return {
             ...old,
@@ -136,7 +154,7 @@ export function useWebchatCacheActions() {
       queryClient.invalidateQueries({ queryKey: webchatKeys.sessionsLists() });
     },
     // Replace a session in-place across every cached page (e.g. after close).
-    patchSession: (session: WebchatSessionResponse) => {
+    patchSession: (session: ChatSessionResponse) => {
       queryClient.setQueriesData<SessionPages>(
         { queryKey: webchatKeys.sessionsPagesAll() },
         (old) =>
@@ -144,7 +162,7 @@ export function useWebchatCacheActions() {
             ...old,
             pages: old.pages.map((p) => ({
               ...p,
-              content: p.content.map((s) => (s.sessionId === session.sessionId ? session : s)),
+              content: p.content.map((s) => (s.id === session.id ? session : s)),
             })),
           },
       );
@@ -157,13 +175,13 @@ export function useWebchatCacheActions() {
     // moved server-side.
     applyActivity: (p: WebchatActivityPayload) => {
       patchSessionRows(queryClient, (s) =>
-        s.sessionId === p.sessionId
+        s.id === p.sessionId
           ? {
               ...s,
               unreadCount: s.unreadCount + 1,
               // Whatever the run was doing, this message ended the turn.
               isRunning: false,
-              lastMessageAt: p.createdAt,
+              lastActivityAt: p.createdAt,
               lastMessage: {
                 text: p.preview,
                 direction: 'AGENT',
@@ -183,7 +201,7 @@ export function useWebchatCacheActions() {
         queryClient.invalidateQueries({ queryKey: key });
       }
     },
-    // Called on chat activity (title and lastMessageAt move server-side). It
+    // Called on chat activity (title and lastActivityAt move server-side). It
     // costs one request per page the user has loaded, so paging deep into the
     // sessions while an agent is answering is the expensive combination — rare
     // enough to leave alone, and page 0 is where the change lands anyway.

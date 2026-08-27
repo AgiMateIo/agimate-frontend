@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { ArrowDownTrayIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import { resolveControlFileUrl } from '@/utils/api-url';
 import { formatBytes } from '@/utils/files';
-import type { WebchatPart } from '@/types';
+import type { ChatPart } from '@/types';
 
 // Every image occupies the same tile regardless of its own dimensions, so a
 // thread mixing screenshots, portrait photos and tiny icons keeps one rhythm
@@ -21,7 +21,7 @@ function AttachmentImage({
   part,
   onExpired,
 }: {
-  part: WebchatPart;
+  part: ChatPart;
   onExpired: () => Promise<void>;
 }) {
   const t = useTranslations('Chat');
@@ -76,7 +76,7 @@ const MIME_LABELS: Record<string, string> = {
 
 // Non-image attachment: a download card. The server serves these as
 // Content-Disposition: attachment, so a plain anchor downloads on click.
-function AttachmentFile({ part }: { part: WebchatPart }) {
+function AttachmentFile({ part }: { part: ChatPart }) {
   const t = useTranslations('Chat');
   const href = resolveControlFileUrl(part.url);
   const kind = MIME_LABELS[part.mime] ?? part.mime.split('/')[1]?.toUpperCase() ?? part.type.toUpperCase();
@@ -104,7 +104,7 @@ export function ChatMessageAttachments({
   parts,
   onExpired,
 }: {
-  parts: WebchatPart[];
+  parts: ChatPart[];
   onExpired: () => Promise<void>;
 }) {
   if (parts.length === 0) return null;

@@ -5,7 +5,7 @@ import type { PagedResponse } from '@/types';
  *
  * Page-number paging over a live list needs this: rows arrive while the user is
  * paging, everything below shifts down, and a row already shown on page N comes
- * back on page N+1. Sessions shift hardest — `lastMessageAt` sends an active one
+ * back on page N+1. Sessions shift hardest — `lastActivityAt` sends an active one
  * back to the top of page 0 — but message history does it too.
  */
 export function dedupeById<T>(items: T[], getId: (item: T) => string): T[] {

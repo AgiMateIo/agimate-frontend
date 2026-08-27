@@ -9,7 +9,7 @@ import {
 } from '@tanstack/react-query';
 import apiService from '@/services/api';
 import { dedupeById, nextPageParam } from '@/utils/paging';
-import type { ChannelResponse, ChannelSessionResponse, PagedResponse } from '@/types';
+import type { ChannelResponse, ChatSessionResponse, PagedResponse } from '@/types';
 
 export const channelKeys = {
   all: ['channels'] as const,
@@ -35,6 +35,11 @@ export function useAgentChannelsQuery(agentId: string) {
 
 // A busy channel accumulates sessions without limit, so the pane loads one page
 // and grows on demand rather than pretending the first page is the whole list.
+//
+// Conversations of every channel live in one resource (`/manage/sessions`), so a
+// channel's own list is that resource filtered by `channelId` — the rows are the
+// same shape a webchat row has, minus the three webchat-only fields
+// (`unreadCount`, `lastMessage`, `isRunning`), which arrive empty here.
 const SESSIONS_PAGE_SIZE = 50;
 const MESSAGES_PAGE_SIZE = 50;
 
@@ -42,7 +47,7 @@ export const channelSessionsOptions = (channelId: string) =>
   infiniteQueryOptions({
     queryKey: channelKeys.sessions(channelId),
     queryFn: ({ pageParam }) =>
-      apiService.getChannelSessions(channelId, { page: pageParam, size: SESSIONS_PAGE_SIZE }),
+      apiService.getChatSessions({ channelId, page: pageParam, size: SESSIONS_PAGE_SIZE }),
     initialPageParam: 0,
     getNextPageParam: nextPageParam,
   });
@@ -60,7 +65,7 @@ export const channelSessionMessagesOptions = (sessionId: string) =>
   infiniteQueryOptions({
     queryKey: channelKeys.sessionMessages(sessionId),
     queryFn: ({ pageParam }) =>
-      apiService.getChannelSessionMessages(sessionId, {
+      apiService.getChatSessionMessages(sessionId, {
         page: pageParam,
         size: MESSAGES_PAGE_SIZE,
       }),
@@ -104,8 +109,8 @@ export function useChannelCacheActions() {
     },
     // Replace a session in place across the loaded pages (e.g. after closing it),
     // instead of refetching pages the user has already scrolled past.
-    patchSession: (channelId: string, session: ChannelSessionResponse) => {
-      queryClient.setQueryData<InfiniteData<PagedResponse<ChannelSessionResponse>>>(
+    patchSession: (channelId: string, session: ChatSessionResponse) => {
+      queryClient.setQueryData<InfiniteData<PagedResponse<ChatSessionResponse>>>(
         channelKeys.sessions(channelId),
         (old) =>
           old && {

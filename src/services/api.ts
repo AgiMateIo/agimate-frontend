@@ -12,6 +12,7 @@ import { appsApi } from './modules/apps';
 import { skillsApi } from './modules/skills';
 import { llmProvidersApi } from './modules/llmProviders';
 import { channelsApi } from './modules/channels';
+import { chatSessionsApi } from './modules/chatSessions';
 import { boardsApi } from './modules/boards';
 import { connectionsApi } from './modules/connections';
 import { connectorsApi } from './modules/connectors';
@@ -32,6 +33,7 @@ const apiService = {
   ...skillsApi,
   ...llmProvidersApi,
   ...channelsApi,
+  ...chatSessionsApi,
   ...boardsApi,
   ...connectionsApi,
   ...connectorsApi,

@@ -36,7 +36,7 @@ export default function RecentChats() {
     () =>
       (sessions?.content ?? [])
         .filter((s) => s.closedAt === null)
-        .sort((a, b) => b.lastMessageAt.localeCompare(a.lastMessageAt))
+        .sort((a, b) => b.lastActivityAt.localeCompare(a.lastActivityAt))
         .slice(0, RECENT_SIZE),
     [sessions],
   );
@@ -56,7 +56,7 @@ export default function RecentChats() {
       ) : (
         <ul className="divide-y divide-border">
           {recent.map((session) => (
-            <li key={session.sessionId}>
+            <li key={session.id}>
               <Link
                 href={`/dashboard/agents/${session.agentId}/chat`}
                 className="flex items-center gap-3 px-1 py-2 transition-colors hover:bg-surface-secondary"
@@ -88,9 +88,9 @@ export default function RecentChats() {
                 )}
                 <span
                   className="shrink-0 whitespace-nowrap text-xs tabular-nums text-muted"
-                  title={formatDateTimeFull(session.lastMessageAt)}
+                  title={formatDateTimeFull(session.lastActivityAt)}
                 >
-                  {formatDateTimeShort(session.lastMessageAt)}
+                  {formatDateTimeShort(session.lastActivityAt)}
                 </span>
               </Link>
             </li>

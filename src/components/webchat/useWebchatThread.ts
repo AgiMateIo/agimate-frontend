@@ -4,11 +4,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import apiService from '@/services/api';
 import { getErrorMessage } from '@/utils/error';
 import type {
-  WebchatDirection,
+  ChatDirection,
   WebchatMessagePayload,
-  WebchatMessageResponse,
-  WebchatPart,
-  WebchatStream,
+  ChatSessionMessageResponse,
+  ChatPart,
+  ChatStream,
 } from '@/types';
 
 const PAGE_SIZE = 50;
@@ -16,10 +16,10 @@ const PAGE_SIZE = 50;
 export interface ThreadMessage {
   key: string; // stable render key: messageId, or a local key for optimistic sends
   messageId: string | null; // null until the send POST resolves
-  direction: WebchatDirection;
-  stream: WebchatStream | null;
+  direction: ChatDirection;
+  stream: ChatStream | null;
   text: string; // trimmed; normalized to '' for attachment-only messages (wire sends null)
-  parts: WebchatPart[]; // attachments (normalized to [] when the wire field is null)
+  parts: ChatPart[]; // attachments (normalized to [] when the wire field is null)
   createdAt: string;
   pending: boolean; // optimistic send not yet acknowledged by the backend
 }
@@ -29,9 +29,15 @@ export interface ThreadMessage {
 // so everything downstream (rendering, echo matching) sees the trimmed form.
 const normalizeText = (text: string | null): string => text?.trim() ?? '';
 
-const fromHistory = (m: WebchatMessageResponse): ThreadMessage => ({
-  key: m.messageId,
-  messageId: m.messageId,
+// History is one shape for every channel now, so `messageId` — the key live
+// events dedupe against — is nullable there: outside webchat no such id exists.
+// A webchat row always has one; the row's own `id` is the fallback that keeps
+// every history key non-null, and null keeps meaning "optimistic send" alone.
+const historyMessageId = (m: ChatSessionMessageResponse): string => m.messageId ?? m.id;
+
+const fromHistory = (m: ChatSessionMessageResponse): ThreadMessage => ({
+  key: historyMessageId(m),
+  messageId: historyMessageId(m),
   direction: m.direction,
   stream: m.stream,
   text: normalizeText(m.text),
@@ -62,7 +68,7 @@ const fromEvent = (p: WebchatMessagePayload): ThreadMessage => ({
 // send, so without it a reply in flight looks like a conversation gone quiet.
 //
 // Switching sessions is a remount, not a reset: WebchatConversation is rendered
-// with `key={session.sessionId}`, so `sessionId` is fixed for the life of this
+// with `key={session.id}`, so `sessionId` is fixed for the life of this
 // hook and every "start over" below is plain initial state. Rendering the
 // consumer without that key would leave a new session showing the old thread.
 export function useWebchatThread(sessionId: string | null, running = false) {
@@ -115,11 +121,11 @@ export function useWebchatThread(sessionId: string | null, running = false) {
 
     let cancelled = false;
     apiService
-      .getWebchatMessages(sessionId, { page: 0, size: PAGE_SIZE })
+      .getChatSessionMessages(sessionId, { page: 0, size: PAGE_SIZE })
       .then((page) => {
         if (cancelled) return;
-        const fresh = page.content.filter((m) => !seenHistoryIdsRef.current.has(m.messageId));
-        fresh.forEach((m) => seenHistoryIdsRef.current.add(m.messageId));
+        const fresh = page.content.filter((m) => !seenHistoryIdsRef.current.has(historyMessageId(m)));
+        fresh.forEach((m) => seenHistoryIdsRef.current.add(historyMessageId(m)));
         pagesLoadedRef.current = 1;
         setHasOlder(page.totalPages > 1);
         // Live events may have raced the fetch — keep them at the tail, drop overlaps.
@@ -147,12 +153,12 @@ export function useWebchatThread(sessionId: string | null, running = false) {
     if (!sessionId || loadingOlder || !hasOlder) return;
     setLoadingOlder(true);
     try {
-      const page = await apiService.getWebchatMessages(sessionId, {
+      const page = await apiService.getChatSessionMessages(sessionId, {
         page: pagesLoadedRef.current,
         size: PAGE_SIZE,
       });
-      const fresh = page.content.filter((m) => !seenHistoryIdsRef.current.has(m.messageId));
-      fresh.forEach((m) => seenHistoryIdsRef.current.add(m.messageId));
+      const fresh = page.content.filter((m) => !seenHistoryIdsRef.current.has(historyMessageId(m)));
+      fresh.forEach((m) => seenHistoryIdsRef.current.add(historyMessageId(m)));
       pagesLoadedRef.current += 1;
       setHasOlder(pagesLoadedRef.current < page.totalPages);
       setMessages((prev) => [...fresh.slice().reverse().map(fromHistory), ...prev]);
@@ -170,8 +176,8 @@ export function useWebchatThread(sessionId: string | null, running = false) {
   const refreshParts = useCallback(async () => {
     if (!sessionId) return;
     try {
-      const page = await apiService.getWebchatMessages(sessionId, { page: 0, size: PAGE_SIZE });
-      const freshById = new Map(page.content.map((m) => [m.messageId, m.parts ?? []]));
+      const page = await apiService.getChatSessionMessages(sessionId, { page: 0, size: PAGE_SIZE });
+      const freshById = new Map(page.content.map((m) => [historyMessageId(m), m.parts ?? []]));
       setMessages((prev) =>
         prev.map((m) =>
           m.messageId && freshById.has(m.messageId)
@@ -237,7 +243,7 @@ export function useWebchatThread(sessionId: string | null, running = false) {
   // fileId) with a local blob: preview in `url`. The USER echo swaps the
   // previews for signed server URLs.
   const send = useCallback(
-    async (text: string, parts: WebchatPart[] = []): Promise<boolean> => {
+    async (text: string, parts: ChatPart[] = []): Promise<boolean> => {
       const trimmed = text.trim();
       if (!sessionId || (!trimmed && parts.length === 0)) return false;
       const key = `local-${++localSeqRef.current}`;

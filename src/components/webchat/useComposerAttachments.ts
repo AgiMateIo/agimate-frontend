@@ -7,7 +7,7 @@ import { useFileLabels } from '@/components/files/fileLabels';
 import { resolveControlFileUrl } from '@/utils/api-url';
 import { getErrorMessage } from '@/utils/error';
 import { revokePreview, useComposerStore, useComposerTray } from './composerStore';
-import type { UserFileResponse, WebchatPart } from '@/types';
+import type { UserFileResponse, ChatPart } from '@/types';
 
 // Backend caps parts per message at 5.
 export const MAX_ATTACHMENTS = 5;
@@ -231,7 +231,7 @@ export function useComposerAttachments(sessionId: string) {
   }, [store, sessionId, read]);
 
   const toOptimisticParts = useCallback(
-    (settled: ComposerAttachment[]): WebchatPart[] =>
+    (settled: ComposerAttachment[]): ChatPart[] =>
       settled
         .filter((a) => a.status === 'ready' && a.uploaded)
         .map((a) => ({

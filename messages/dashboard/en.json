@@ -1354,6 +1354,7 @@
     "selectSessionHint": "Select a session to view the conversation",
     "loadingMessages": "Loading messages...",
     "noMessages": "No messages in this session",
+    "messageAttachmentOnly": "Attachment",
     "sessionUntitled": "Untitled session",
     "sessionLastMessageAt": "Last message: {date}",
     "sessionClosedAt": "Closed: {date}",

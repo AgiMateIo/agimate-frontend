@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import apiService from '@/services/api';
-import { ChannelSessionResponse } from '@/types';
+import { ChatSessionResponse } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Button } from '@/components/ui/Button';
 import { useChannelSessionMessagesQuery } from '@/queries/channels';
@@ -12,8 +12,8 @@ import { getErrorMessage } from '@/utils/error';
 import { Placeholder } from '@/components/ui/Placeholder';
 
 interface ChannelChatViewProps {
-  session: ChannelSessionResponse;
-  onClosed: (updated: ChannelSessionResponse) => void;
+  session: ChatSessionResponse;
+  onClosed: (updated: ChatSessionResponse) => void;
 }
 
 export default function ChannelChatView({ session, onClosed }: ChannelChatViewProps) {
@@ -57,7 +57,7 @@ export default function ChannelChatView({ session, onClosed }: ChannelChatViewPr
   const handleClose = async () => {
     setClosing(true);
     try {
-      const updated = await apiService.closeChannelSession(session.id);
+      const updated = await apiService.closeChatSession(session.id);
       onClosed(updated);
     } catch (err) {
       setCloseError(getErrorMessage(err, 'Failed to close session'));
@@ -78,7 +78,7 @@ export default function ChannelChatView({ session, onClosed }: ChannelChatViewPr
           <div className="text-xs text-muted">
             {session.closedAt
               ? t('sessionClosedAt', { date: formatDate(session.closedAt, locale) })
-              : t('sessionLastMessageAt', { date: formatDate(session.lastMessageAt, locale) })}
+              : t('sessionLastMessageAt', { date: formatDate(session.lastActivityAt, locale) })}
           </div>
         </div>
         {!session.closedAt && (
@@ -109,29 +109,38 @@ export default function ChannelChatView({ session, onClosed }: ChannelChatViewPr
                 </button>
               </div>
             )}
-            {messages.map((m) => (
-              <div
-                key={m.id}
-                className={`flex ${m.direction === 'OUT' ? 'justify-end' : 'justify-start'}`}
-              >
+            {messages.map((m) => {
+              // The agent's side of an external conversation is the outgoing one
+              // — it keeps the right-hand accent bubble the old IN/OUT rendering
+              // gave it. `text` is null on a message that was only attachments,
+              // which this view has no way to show yet.
+              const outgoing = m.direction === 'AGENT';
+              return (
                 <div
-                  className={`max-w-[80%] rounded-lg px-3 py-2 ${
-                    m.direction === 'OUT'
-                      ? 'bg-accent text-accent-foreground'
-                      : 'bg-surface-secondary text-foreground'
-                  }`}
+                  key={m.id}
+                  className={`flex ${outgoing ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div className="text-sm whitespace-pre-wrap break-words">{m.message}</div>
                   <div
-                    className={`mt-1 text-[10px] ${
-                      m.direction === 'OUT' ? 'text-accent-foreground/70' : 'text-muted'
+                    className={`max-w-[80%] rounded-lg px-3 py-2 ${
+                      outgoing
+                        ? 'bg-accent text-accent-foreground'
+                        : 'bg-surface-secondary text-foreground'
                     }`}
                   >
-                    {formatDate(m.createdAt, locale)}
+                    <div className="text-sm whitespace-pre-wrap break-words">
+                      {m.text ?? t('messageAttachmentOnly')}
+                    </div>
+                    <div
+                      className={`mt-1 text-[10px] ${
+                        outgoing ? 'text-accent-foreground/70' : 'text-muted'
+                      }`}
+                    >
+                      {formatDate(m.createdAt, locale)}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </>
         )}
       </div>

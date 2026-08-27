@@ -46,20 +46,3 @@ export interface ChannelHandlerResponse {
   name: string;
   configFields: ToolJsonSchema;
 }
-
-export interface ChannelSessionResponse {
-  id: string;
-  title: string | null;
-  lastMessageAt: string;
-  closedAt: string | null;
-  createdAt: string;
-}
-
-export type ChannelMessageDirection = 'IN' | 'OUT';
-
-export interface ChannelSessionMessageResponse {
-  id: string;
-  direction: ChannelMessageDirection;
-  message: string;
-  createdAt: string;
-}

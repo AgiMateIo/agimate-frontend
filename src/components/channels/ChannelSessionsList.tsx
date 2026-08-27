@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { ChannelSessionResponse } from '@/types';
+import { ChatSessionResponse } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useChannelCacheActions, useChannelSessionsQuery } from '@/queries/channels';
 import { formatDate, parseBackendDate } from '@/utils/date';
@@ -16,9 +16,9 @@ interface ChannelSessionsListProps {
 
 const SESSION_ACTIVE_WINDOW_MS = 12 * 60 * 60 * 1000;
 
-function isSessionActive(s: ChannelSessionResponse): boolean {
+function isSessionActive(s: ChatSessionResponse): boolean {
   if (s.closedAt) return false;
-  const last = parseBackendDate(s.lastMessageAt).getTime();
+  const last = parseBackendDate(s.lastActivityAt).getTime();
   return Date.now() - last < SESSION_ACTIVE_WINDOW_MS;
 }
 
@@ -72,7 +72,7 @@ export default function ChannelSessionsList({ channelId }: ChannelSessionsListPr
                     </span>
                   </div>
                   <div className="mt-0.5 text-[10px] text-muted truncate">
-                    {formatDate(s.lastMessageAt, locale)}
+                    {formatDate(s.lastActivityAt, locale)}
                   </div>
                 </button>
               );

@@ -5,7 +5,7 @@ import { PlusIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/FormField';
 import { formatDateTimeShort } from '@/utils/date';
-import type { AgentResponse, WebchatSessionResponse } from '@/types';
+import type { AgentResponse, ChatSessionResponse } from '@/types';
 import { Placeholder } from '@/components/ui/Placeholder';
 
 interface WebchatSessionsPaneProps {
@@ -13,7 +13,7 @@ interface WebchatSessionsPaneProps {
   agentsById: Record<string, AgentResponse>;
   selectedAgentId: string; // '' = all agents
   onAgentChange: (agentId: string) => void;
-  sessions: WebchatSessionResponse[];
+  sessions: ChatSessionResponse[];
   sessionsLoading: boolean;
   activeSessionId: string | null;
   onSelectSession: (sessionId: string) => void;
@@ -35,7 +35,7 @@ interface WebchatSessionsPaneProps {
 // an own message is prefixed; a message that was only attachments says so rather
 // than rendering as a blank line (`text` is legitimately null there, and it is
 // cut to 160 characters server-side).
-function SessionPreview({ session }: { session: WebchatSessionResponse }) {
+function SessionPreview({ session }: { session: ChatSessionResponse }) {
   const t = useTranslations('Chat');
   const last = session.lastMessage;
   const body = last ? (last.text ?? (last.hasAttachments ? t('previewAttachment') : '')) : '';
@@ -124,7 +124,7 @@ export default function WebchatSessionsPane({
         ) : (
           <>
             {sessions.map((s) => {
-              const isActive = s.sessionId === activeSessionId;
+              const isActive = s.id === activeSessionId;
               const agentName = agentsById[s.agentId]?.name ?? s.agentId.slice(0, 8);
               // The open conversation is being read right now: it is marked read
               // on open and on every arriving reply, so a count that survives a
@@ -132,8 +132,8 @@ export default function WebchatSessionsPane({
               const unread = s.unreadCount > 0 && !isActive;
               return (
                 <button
-                  key={s.sessionId}
-                  onClick={() => onSelectSession(s.sessionId)}
+                  key={s.id}
+                  onClick={() => onSelectSession(s.id)}
                   className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors
                     ${isActive
                       ? 'bg-accent/10 border border-accent/40'
@@ -147,7 +147,7 @@ export default function WebchatSessionsPane({
                       {s.title || t('untitledSession')}
                     </span>
                     <span className="shrink-0 text-[11px] tabular-nums text-muted">
-                      {formatDateTimeShort(s.lastMessageAt)}
+                      {formatDateTimeShort(s.lastActivityAt)}
                     </span>
                   </div>
                   {/* The line the eye lands on second: what was last said, or

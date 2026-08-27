@@ -49,17 +49,17 @@ function AgentChatView({ agent }: { agent: AgentResponse }) {
   const agentsById = useMemo(() => ({ [agent.id]: agent }), [agent]);
   const sessions = sessionsQuery.sessions;
   // Land straight in the newest conversation rather than an empty frame — the
-  // backend sorts by lastMessageAt desc, so sessions[0] is where the user left off.
+  // backend sorts by lastActivityAt desc, so sessions[0] is where the user left off.
   // Derived instead of an effect: nothing to sync, and a session that disappears
   // from the list falls back to the newest on its own.
   const activeSession =
-    sessions.find((s) => s.sessionId === activeSessionId) ?? sessions[0] ?? null;
+    sessions.find((s) => s.id === activeSessionId) ?? sessions[0] ?? null;
 
   // Badges for the conversations the user is *not* in. The open one has its own
   // per-session subscription, renders the message itself and marks it read on
   // arrival — counting it here would raise a badge for a message on screen.
   useWebchatActivitySubscription((p) => {
-    if (p.sessionId === activeSession?.sessionId) return;
+    if (p.sessionId === activeSession?.id) return;
     applyActivity(p);
   });
 
@@ -74,7 +74,7 @@ function AgentChatView({ agent }: { agent: AgentResponse }) {
     try {
       const session = await apiService.createWebchatSession(agentId);
       addSession(session);
-      setActiveSessionId(session.sessionId);
+      setActiveSessionId(session.id);
       setMobilePane('conversation');
     } catch (err) {
       setActionError(getErrorMessage(err, 'Failed to create session'));
@@ -101,7 +101,7 @@ function AgentChatView({ agent }: { agent: AgentResponse }) {
             onAgentChange={() => {}}
             sessions={sessions}
             sessionsLoading={sessionsQuery.isPending}
-            activeSessionId={activeSession?.sessionId ?? null}
+            activeSessionId={activeSession?.id ?? null}
             onSelectSession={(sessionId) => {
               setActiveSessionId(sessionId);
               setMobilePane('conversation');
@@ -119,7 +119,7 @@ function AgentChatView({ agent }: { agent: AgentResponse }) {
           >
             {activeSession ? (
               <WebchatConversation
-                key={activeSession.sessionId}
+                key={activeSession.id}
                 session={activeSession}
                 agentName={agent.name}
                 onSessionClosed={patchSession}

@@ -20,6 +20,7 @@ export * from './agent-presets';
 export * from './skills';
 export * from './centrifugo';
 export * from './webchat';
+export * from './chat-sessions';
 export * from './files';
 export * from './llm-providers';
 export * from './channels';

@@ -1354,6 +1354,7 @@
     "selectSessionHint": "Выберите сессию, чтобы увидеть диалог",
     "loadingMessages": "Загрузка сообщений...",
     "noMessages": "В этой сессии нет сообщений",
+    "messageAttachmentOnly": "Вложение",
     "sessionUntitled": "Без названия",
     "sessionLastMessageAt": "Последнее сообщение: {date}",
     "sessionClosedAt": "Закрыта: {date}",
