@@ -57,8 +57,8 @@ export interface WizardData {
   description: string;
   instructions: string;
   skills: WizardSkill[];
-  // What the agent may reach outwards, opened right after creation. Chosen
-  // before the skills, since a skill may only point at an open connection.
+  // What the agent may reach outwards, opened right after creation. Only the
+  // external branch picks these — a GENERIC agent has no connections step.
   connections: WizardConnection[];
   // Per picked skill: which instance serves each external connector it declares.
   skillConnections: Record<string, Record<string, string>>;
@@ -139,10 +139,8 @@ export default function AgentWizard({ teamId = null }: AgentWizardProps) {
       ]
     : [
         { key: 'role', label: t('stepRole') },
-        // Connections come first and it is not a preference: binding a skill to
-        // an external connector means naming an instance, and only an instance
-        // already open to the agent can be named.
-        { key: 'connections', label: t('stepConnections') },
+        // No connections step in this branch: a GENERIC agent picks skills, and
+        // what they reach outwards is opened on the agent's own page afterwards.
         { key: 'skills', label: t('stepSkills') },
         { key: 'done', label: t('stepDone') },
       ];
@@ -229,9 +227,8 @@ export default function AgentWizard({ teamId = null }: AgentWizardProps) {
           </>
         ) : (
           <>
-            {current === 1 && <StepConnections {...stepProps} />}
-            {current === 2 && <StepSkills {...stepProps} />}
-            {current === 3 && <StepDone {...stepProps} onReset={reset} />}
+            {current === 1 && <StepSkills {...stepProps} />}
+            {current === 2 && <StepDone {...stepProps} onReset={reset} />}
           </>
         )}
       </div>
