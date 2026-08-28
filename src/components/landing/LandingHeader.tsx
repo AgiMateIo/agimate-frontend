@@ -1,12 +1,18 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useUser } from '@/contexts/UserContext';
+import { ProviderIcon } from '@/components/auth/ProviderIcon';
 import LocaleSwitcher from '@/components/ui/LocaleSwitcher';
 import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
 import Logo from '@/components/ui/Logo';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+
+// The organisation, not one repository: the header is shared by every landing
+// page, and their per-product repos are already linked from each page's footer.
+const GITHUB_URL = 'https://github.com/AgiMateIo';
 
 interface NavLink {
   href: string;
@@ -20,6 +26,7 @@ interface LandingHeaderProps {
 }
 
 export default function LandingHeader({ navLinks, loginLabel, dashboardLabel }: LandingHeaderProps) {
+  const t = useTranslations('Common');
   const { user, loading } = useUser();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -70,6 +77,18 @@ export default function LandingHeader({ navLinks, loginLabel, dashboardLabel }: 
               {link.label}
             </a>
           ))}
+          {/* Hidden on a phone, where the row is already at the width the
+              wordmark has to truncate for — the mobile menu below carries it. */}
+          <a
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={t('providers.github')}
+            title={t('providers.github')}
+            className="hidden sm:flex items-center rounded-lg bg-surface-secondary px-2 py-1 text-muted transition-colors hover:text-foreground"
+          >
+            <ProviderIcon provider="github" className="h-4 w-4" />
+          </a>
           <ThemeSwitcher />
           <LocaleSwitcher />
           {!loading && user ? (
@@ -115,6 +134,16 @@ export default function LandingHeader({ navLinks, loginLabel, dashboardLabel }: 
                 {link.label}
               </a>
             ))}
+            <a
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setMenuOpen(false)}
+              className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-muted hover:text-foreground hover:bg-surface-secondary transition-colors"
+            >
+              <ProviderIcon provider="github" className="h-4 w-4 shrink-0" />
+              {t('providers.github')}
+            </a>
           </div>
         </div>
       )}
