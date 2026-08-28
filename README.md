@@ -22,7 +22,7 @@ Built with Next.js 16 (App Router), React 19, TypeScript and Tailwind CSS v4.
 
 - **Node.js 24+** and **pnpm** (the version is pinned in `packageManager`)
 - A running **AgiMate API gateway** — this is a client for the backend and does
-  not work standalone. See [AgiMateIo/backend](https://github.com/AgiMateIo/backend).
+  not work standalone. See [AgiMateIo/agimate-backend](https://github.com/AgiMateIo/agimate-backend).
 
 ## Quick Start
 
@@ -168,6 +168,7 @@ docker run -p 3000:3000 agimate-frontend
 
 ## Related Projects
 
+- [agimate-backend](https://github.com/AgiMateIo/agimate-backend) — the platform backend this dashboard talks to
 - [desktop](https://github.com/AgiMateIo/desktop) — cross-platform system tray agent
 - [android](https://github.com/AgiMateIo/android) — Android companion agent
 - [n8n-nodes-agimate](https://github.com/AgiMateIo/n8n-nodes-agimate) — n8n community nodes
