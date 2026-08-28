@@ -169,8 +169,8 @@ docker run -p 3000:3000 agimate-frontend
 ## Related Projects
 
 - [agimate-backend](https://github.com/AgiMateIo/agimate-backend) — the platform backend this dashboard talks to
-- [desktop](https://github.com/AgiMateIo/desktop) — cross-platform system tray agent
-- [android](https://github.com/AgiMateIo/android) — Android companion agent
+- [connector-desktop](https://github.com/AgiMateIo/connector-desktop) — cross-platform system tray agent
+- [connector-android](https://github.com/AgiMateIo/connector-android) — Android companion agent
 - [n8n-nodes-agimate](https://github.com/AgiMateIo/n8n-nodes-agimate) — n8n community nodes
 
 ## Contributing
