@@ -54,6 +54,13 @@ your change manually.
 - One logical change per pull request; explain the *why* in the description.
 - Screenshots or a short clip are very welcome for UI changes.
 
+## Contributor License Agreement
+
+Contributors sign the
+[CLA](https://github.com/AgiMateIo/agimate-backend/blob/master/CLA.md) once, on
+their first pull request, by replying to a bot comment. One signature covers
+every AgiMate repository.
+
 ## Reporting bugs
 
 Open an issue with the steps to reproduce, the expected and actual behaviour,
