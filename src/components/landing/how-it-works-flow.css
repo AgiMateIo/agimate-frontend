@@ -1,0 +1,796 @@
+/* ==========================================================================
+   How-it-works flow diagram (landing). Ported from marketing/how-it-works.
+   Site tokens only: the short names below are aliases onto tokens.css so the
+   ported rules read the same as the source. Dark is the default, as sitewide.
+   ========================================================================== */
+.hiw {
+  --surface-2: var(--surface-secondary);
+  --line: var(--border);
+  --ink: var(--foreground);
+  --ink-dim: var(--muted);
+  --accent-2: var(--mark-ink-light);
+  --mocha: var(--warm);
+  --ok: var(--success);
+  --bad: var(--error);
+  --shadow: var(--card-shadow);
+
+  /* The two locals tokens.css does not carry. */
+  --ink-faint: #6b6560;
+  --hatch: rgba(255, 255, 255, 0.035);
+
+  --r-control: var(--radius-control);
+  --r-card: var(--radius-card);
+  --r-panel: var(--radius-panel);
+  --d-crossfade: var(--motion-duration-crossfade);
+  --d-nav: var(--motion-duration-nav);
+  --d-flight: var(--motion-duration-flight);
+  --d-arrive: var(--motion-duration-arrive);
+  --e-standard: var(--motion-easing-standard);
+  --e-arrive: var(--motion-easing-arrive);
+
+  /* Derived roles. Colour carries meaning here: warm = an event arriving,
+     cool = a call going out. Every value is mixed from the palette above —
+     the plain fallback comes first for engines without color-mix. */
+  --flow-trigger: var(--mocha);
+  --flow-tool: var(--accent-2);
+  --flow-reply: var(--accent);
+  --flow-reply: color-mix(in oklab, var(--accent-2) 55%, var(--accent));
+
+  --tint-trigger: var(--surface-2);
+  --tint-trigger: color-mix(in oklab, var(--mocha) 11%, var(--surface-2));
+  --tint-tool: var(--surface-2);
+  --tint-tool: color-mix(in oklab, var(--accent) 10%, var(--surface-2));
+  --tint-agent: var(--surface-2);
+  --tint-agent: color-mix(in oklab, var(--accent) 15%, var(--surface-2));
+
+  --line-trigger: var(--line);
+  --line-trigger: color-mix(in oklab, var(--mocha) 42%, var(--line));
+  --line-tool: var(--line);
+  --line-tool: color-mix(in oklab, var(--accent) 40%, var(--line));
+  --line-agent: var(--line);
+  --line-agent: color-mix(in oklab, var(--accent) 32%, var(--line));
+
+  --flow: var(--flow-tool);
+}
+/* Same cascade as tokens.css: the OS decides unless a choice is stamped on <html>. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) .hiw {
+    --ink-faint: #95908a;
+    --hatch: rgba(15, 14, 13, 0.045);
+  }
+}
+[data-theme='light'] .hiw {
+  --ink-faint: #95908a;
+  --hatch: rgba(15, 14, 13, 0.045);
+}
+
+/* ==========================================================================
+   Section header
+   ========================================================================== */
+.hiw__eyebrow {
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  margin: 0 0 6px;
+}
+.hiw__lede {
+  font-size: clamp(21px, 2.6vw, 27px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.22;
+  margin: 0 0 14px;
+  max-width: 26ch;
+  text-wrap: balance;
+}
+.hiw__rule {
+  height: 10px;
+  margin-bottom: 28px;
+  border-top: 1px solid var(--line);
+  background: repeating-linear-gradient(45deg, transparent 0 7px, var(--line) 7px 8px);
+  opacity: 0.85;
+}
+.hiw__intro {
+  color: var(--ink-dim);
+  font-size: 15.5px;
+  max-width: 66ch;
+  margin: 0 0 26px;
+}
+
+.hiw__stage {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-panel);
+  box-shadow: var(--shadow);
+}
+/* One diagram at every width. On a phone it is shown through a small window of
+   the same drawing and the view follows the packet — the arrangement never
+   changes, only how much of it you see. A transform on a group is composited;
+   animating the viewBox would not be. */
+.hiw__canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.hiw .cam {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+/* Explore mode on a phone: the whole diagram at readable size, panned by hand. */
+.hiw__stage {
+  overflow: hidden;
+}
+.hiw__stage.is-explore {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  max-height: 72vh;
+}
+.hiw__stage.is-explore .hiw__canvas {
+  width: 1160px;
+  max-width: none;
+}
+
+/* ---- logs ---- */
+.hiw__logs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--line);
+}
+.hiw__log {
+  padding: 14px 18px 16px;
+  display: grid;
+  gap: 5px;
+  align-content: start;
+}
+.hiw__log + .hiw__log {
+  border-left: 1px solid var(--line);
+}
+@media (max-width: 767px) {
+  .hiw__logs {
+    grid-template-columns: 1fr;
+  }
+  .hiw__log + .hiw__log {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+}
+.hiw__logcap {
+  font-size: 11px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hiw__logcap::before {
+  content: '';
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+  background: currentColor;
+}
+[data-log='trigger'] .hiw__logcap {
+  color: var(--flow-trigger);
+}
+[data-log='tool'] .hiw__logcap {
+  color: var(--flow-tool);
+}
+.hiw__row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-family: var(--font-mono), ui-monospace, Menlo, Consolas, monospace;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-dim);
+  min-height: 20px;
+  will-change: opacity, transform;
+}
+/* The letters and digits on the diagram, repeated here: the connector's name,
+   the agent's, the Greek name of the packet that carried the trigger. */
+.hiw__id {
+  font-weight: 500;
+}
+[data-log='trigger'] .hiw__id {
+  color: var(--flow-trigger);
+}
+[data-log='tool'] .hiw__id {
+  color: var(--flow-tool);
+}
+.hiw__what {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hiw__row[data-age='0'] {
+  color: var(--ink);
+}
+.hiw__row[data-age='1'] {
+  opacity: 0.62;
+}
+.hiw__row[data-age='2'] {
+  opacity: 0.3;
+}
+.hiw__row:empty {
+  opacity: 0;
+}
+.hiw__time {
+  color: var(--ink-faint);
+}
+.hiw__verdict {
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.hiw__verdict[data-v='ok'] {
+  color: var(--ok);
+}
+.hiw__verdict[data-v='bad'] {
+  color: var(--bad);
+}
+.hiw__row--enter {
+  animation: hiwRowIn 320ms var(--e-arrive) both;
+}
+@keyframes hiwRowIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (max-width: 900px) {
+  .hiw__row {
+    font-size: 11px;
+    gap: 9px;
+  }
+}
+
+/* ---- footer ---- */
+.hiw__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 22px;
+  align-items: center;
+  margin-top: 16px;
+  font-size: 12.5px;
+  color: var(--ink-faint);
+}
+/* Which stage the camera is looking at — without it a close-up loses its place. */
+.hiw__stagecap {
+  display: none;
+  border-top: 1px solid var(--line);
+  padding: 10px 18px;
+  margin: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  color: var(--ink-dim);
+}
+.hiw__stagecap b {
+  font-weight: 500;
+  color: var(--flow);
+}
+.hiw__btn--narrow {
+  display: none;
+}
+@media (max-width: 767px) {
+  .hiw__stagecap {
+    display: block;
+  }
+  .hiw__btn--narrow {
+    display: inline-block;
+  }
+  .hiw__foot span {
+    flex: 1 1 100%;
+  }
+}
+.hiw__btn {
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--ink-dim);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  padding: 5px 12px;
+  cursor: pointer;
+  transition:
+    color var(--d-nav) var(--e-standard),
+    border-color var(--d-nav) var(--e-standard);
+}
+.hiw__btn:hover {
+  color: var(--ink);
+  border-color: var(--accent);
+}
+.hiw__btn:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 2px;
+}
+
+.hiw__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ==========================================================================
+   Diagram
+   ========================================================================== */
+/* Every <text> below carries a class that sets its own fill. The base rule must
+   not set one: `.hiw svg text` outranks a bare class selector, and would repaint
+   the whole diagram in one colour no matter what the classes say. */
+.hiw svg text {
+  -webkit-user-select: none;
+  user-select: none;
+}
+.hiw .n-label {
+  font-size: 12.5px;
+  font-weight: 500;
+  fill: var(--ink);
+}
+.hiw .n-chip {
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  fill: var(--ink-dim);
+}
+.hiw .n-core {
+  font-size: 14px;
+  font-weight: 600;
+  fill: var(--ink);
+  letter-spacing: -0.01em;
+}
+.hiw .n-plate {
+  font-size: 11.5px;
+  font-weight: 500;
+  fill: var(--ink);
+}
+.hiw .n-screen {
+  font-size: 11.5px;
+  fill: var(--ink);
+}
+.hiw .n-hex {
+  font-size: 11px;
+  fill: var(--ink);
+  font-weight: 500;
+}
+.hiw .n-note {
+  font-size: 10.5px;
+  fill: var(--accent-2);
+  letter-spacing: 0.02em;
+}
+
+/* edges */
+.hiw .edge {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  opacity: 0.9;
+  transition:
+    opacity var(--d-nav) var(--e-standard),
+    stroke var(--d-nav) var(--e-standard);
+}
+.hiw .edge--live {
+  animation: hiwEdgeBreathe 6.4s ease-in-out infinite;
+}
+@keyframes hiwEdgeBreathe {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+.hiw .edge.is-hot {
+  stroke: var(--flow);
+  opacity: 1;
+}
+
+/* nodes */
+.hiw .node {
+  cursor: pointer;
+}
+.hiw .node .shape {
+  fill: var(--surface-2);
+  stroke: var(--line);
+  stroke-width: 1.25;
+  transition:
+    stroke var(--d-nav) var(--e-standard),
+    fill var(--d-nav) var(--e-standard);
+}
+.hiw .node:hover .shape {
+  stroke: var(--accent);
+}
+.hiw .node.is-hot .shape {
+  stroke: var(--flow);
+}
+.hiw .node .glow {
+  fill: none;
+  stroke: var(--flow);
+  stroke-width: 1.25;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: opacity, transform;
+}
+.hiw .node.is-hot .glow {
+  animation: hiwNodeFlash 760ms var(--e-arrive) both;
+}
+@keyframes hiwNodeFlash {
+  0% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.16);
+  }
+}
+
+/* A tool chip is cool, a trigger chip is warm — the same two hues the two logs use. */
+.hiw .chip--tool .shape {
+  fill: var(--tint-tool);
+  stroke: var(--line-tool);
+}
+.hiw .chip--tool .notch {
+  stroke: var(--line-tool);
+  stroke-width: 1.25;
+}
+.hiw .chip--trigger .shape {
+  fill: var(--tint-trigger);
+  stroke: var(--line-trigger);
+}
+.hiw .hex .shape {
+  fill: var(--tint-agent);
+  stroke: var(--line-agent);
+}
+
+/* core */
+.hiw .core-plate {
+  fill: var(--surface);
+  stroke: var(--line);
+  stroke-width: 1.25;
+}
+.hiw .core-hatch {
+  fill: url(#hatch45);
+  opacity: 1;
+  pointer-events: none;
+}
+.hiw .core-pulse {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.25;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hiwCorePulse 5.2s ease-in-out infinite;
+}
+@keyframes hiwCorePulse {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  46% {
+    opacity: 0.34;
+    transform: scale(1.012);
+  }
+}
+.hiw .plate .shape {
+  fill: var(--surface-2);
+  stroke: var(--line);
+  stroke-width: 1.25;
+  transition: stroke var(--d-nav) var(--e-standard);
+}
+.hiw .plate:hover .shape {
+  stroke: var(--accent);
+}
+.hiw .plate .verdict {
+  fill: none;
+  stroke-width: 1.5;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: opacity, transform;
+}
+.hiw .plate.is-ok .verdict {
+  stroke: var(--ok);
+  animation: hiwVerdictFlash 720ms var(--e-arrive) both;
+}
+.hiw .plate.is-bad .verdict {
+  stroke: var(--bad);
+  animation: hiwVerdictFlash 720ms var(--e-arrive) both;
+}
+@keyframes hiwVerdictFlash {
+  0% {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+  18% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+}
+.hiw .plate.is-routing .shape {
+  stroke: var(--flow);
+}
+
+/* key */
+.hiw .key {
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+.hiw .key .glyph {
+  fill: none;
+  stroke: var(--mocha);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  transition: stroke var(--d-nav) var(--e-standard);
+}
+.hiw .key .ring {
+  fill: none;
+  stroke: var(--flow);
+  stroke-width: 1.25;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.hiw .key.is-lit .glyph {
+  stroke: var(--flow);
+}
+.hiw .key.is-lit {
+  animation: hiwKeyBounce 900ms var(--e-standard) both;
+}
+.hiw .key.is-lit .ring {
+  animation: hiwKeyRing 900ms var(--e-arrive) both;
+}
+@keyframes hiwKeyBounce {
+  0% {
+    transform: translateX(0);
+  }
+  38% {
+    transform: translateX(15px);
+  }
+  62% {
+    transform: translateX(-4px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+@keyframes hiwKeyRing {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  30% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.45);
+  }
+}
+.hiw .key-note {
+  opacity: 0;
+  transition: opacity var(--d-flight) var(--e-standard);
+}
+.hiw .key-note.is-shown {
+  opacity: 1;
+}
+
+/* screens */
+.hiw .screen .shape {
+  fill: var(--surface-2);
+  stroke: var(--line);
+  stroke-width: 1.25;
+  transition: stroke var(--d-nav) var(--e-standard);
+}
+.hiw .screen.is-hot .shape {
+  stroke: var(--flow);
+}
+.hiw .screen .glow {
+  fill: none;
+  stroke: var(--flow);
+  stroke-width: 1.25;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.hiw .screen.is-hot .glow {
+  animation: hiwNodeFlash 900ms var(--e-arrive) both;
+}
+
+/* agents */
+.hiw .hex .shape {
+  transition:
+    stroke var(--d-nav) var(--e-standard),
+    opacity var(--d-nav) var(--e-standard);
+}
+.hiw .hex text {
+  transition: opacity var(--d-nav) var(--e-standard);
+}
+.hiw.is-routed .hex:not(.is-hot) .shape {
+  opacity: 0.4;
+}
+.hiw.is-routed .hex:not(.is-hot) text {
+  opacity: 0.4;
+}
+.hiw .hex.is-hot .shape {
+  stroke: var(--accent-2);
+}
+
+/* Packet trail: one contour laid over the segment, with a graduated dash pattern —
+   short ticks at the far end growing into a long one right behind the packet. The
+   pattern slides with stroke-dashoffset, so the tail sits exactly on the curve. */
+.hiw .trail {
+  fill: none;
+  stroke: var(--flow);
+  stroke-width: 3.6;
+  stroke-linecap: round;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--d-crossfade) linear;
+}
+.hiw .trail.is-visible {
+  opacity: 0.6;
+}
+.hiw .trail.is-bad {
+  stroke: var(--bad);
+}
+
+/* packet */
+.hiw .pkt {
+  opacity: 0;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+.hiw .pkt-name {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  fill: var(--flow);
+  opacity: 0.85;
+}
+.hiw .pkt .core-dot {
+  fill: var(--flow);
+}
+.hiw .pkt .halo {
+  fill: none;
+  stroke: var(--flow);
+  stroke-width: 1.25;
+  opacity: 0.45;
+}
+.hiw .pkt.is-bad .core-dot {
+  fill: var(--bad);
+}
+.hiw .pkt.is-bad .halo {
+  stroke: var(--bad);
+}
+.hiw .pkt.is-visible {
+  opacity: 1;
+}
+
+/* node focus */
+.hiw.is-focus .edge:not(.is-related) {
+  opacity: 0.1;
+}
+.hiw.is-focus .node:not(.is-picked) .shape,
+.hiw.is-focus .hex:not(.is-picked) .shape {
+  opacity: 0.34;
+}
+.hiw.is-focus .node:not(.is-picked) text,
+.hiw.is-focus .hex:not(.is-picked) text {
+  opacity: 0.34;
+}
+.hiw.is-focus .edge.is-related {
+  stroke: var(--accent);
+  opacity: 1;
+}
+.hiw.is-focus .node.is-picked .shape {
+  stroke: var(--accent-2);
+}
+
+.hiw.is-paused .edge--live,
+.hiw.is-paused .core-pulse {
+  animation-play-state: paused;
+}
+
+/* tooltip */
+.hiw__tip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow);
+  padding: 10px 13px;
+  max-width: 260px;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity var(--d-crossfade) var(--e-standard),
+    transform var(--d-crossfade) var(--e-standard);
+}
+.hiw__tip.is-shown {
+  opacity: 1;
+  transform: none;
+}
+.hiw__tip b {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.hiw__tip dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 8px;
+  font-size: 11.5px;
+}
+.hiw__tip dt {
+  color: var(--ink-faint);
+}
+.hiw__tip dd {
+  margin: 0;
+  color: var(--ink-dim);
+}
+.hiw__tip p {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--ink-dim);
+}
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .hiw * {
+    animation: none !important;
+    transition: none !important;
+  }
+  .hiw .trail {
+    display: none;
+  }
+  .hiw .edge.is-static-path {
+    stroke: var(--accent);
+    opacity: 1;
+  }
+  .hiw .node.is-static-hot .shape,
+  .hiw .hex.is-static-hot .shape,
+  .hiw .screen.is-static-hot .shape {
+    stroke: var(--accent-2);
+  }
+  .hiw .key .glyph {
+    stroke: var(--flow-tool);
+  }
+  .hiw .key-note {
+    opacity: 1;
+  }
+  .hiw .pkt.is-static {
+    opacity: 1;
+  }
+}

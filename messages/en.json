@@ -19,24 +19,7 @@
       "title": "A multiagent",
       "titleHighlight": "harness.",
       "subtitle": "Not an assistant — a system of agents. The harness around any language model gives them tools, keys to your systems, rules and a log. As many agents as you need, each one its own: its own model, its own instructions, its own access, its own skills — and none of them ever sees a key.",
-      "cta": "Build your system free",
-      "secondaryCta": "What a harness is"
-    },
-    "heroScheme": {
-      "steps": [
-        {
-          "label": "Event",
-          "sub": "message, schedule, webhook"
-        },
-        {
-          "label": "The harness",
-          "sub": "agents with their own models, rights and skills"
-        },
-        {
-          "label": "Action",
-          "sub": "in your system, not advice in a chat"
-        }
-      ]
+      "cta": "Build your system free"
     },
     "harness": {
       "title": "What a harness is",
@@ -177,127 +160,131 @@
         "Your phone, computer and IDE"
       ]
     },
-    "problems": {
-      "title": "Sound familiar?",
-      "items": [
-        {
-          "title": "All or nothing",
-          "description": "The assistant gets access to everything at once — email, files, calendar. One bad tool and the boundaries are gone."
-        },
-        {
-          "title": "Black box",
-          "description": "You don't know what the assistant did: which tool it called, with what parameters, what came back. Nothing to investigate with."
-        },
-        {
-          "title": "Someone else's model, someone else's bill",
-          "description": "The model was chosen for you, spend is invisible, tokens are resold at a markup. Switching providers isn't an option."
-        }
-      ]
-    },
     "howItWorks": {
-      "title": "How it works",
-      "subtitle": "Everything rests on triggers: an event arrives, the system wakes the agents it belongs to, hands them the skills for it and checks the rights on every call.",
-      "gate": "Your routing rules",
-      "parallelNote": "In parallel, not one after another",
-      "gateLabel": "Rights check",
-      "deniedLabel": "denied by a rule",
-      "channelsLabel": "The answer goes to your channel",
-      "boardNote": "The board is yours to watch, and it updates live",
-      "tabs": [
-        {
-          "label": "Triggers",
-          "title": "It all starts with an event",
-          "description": "A trigger is what agents react to: you wrote to an agent or sent a file, someone left a review of your product, new mail arrived, another agent asked for data, a scheduled time came round. Which triggers reach which agent is yours to decide.",
-          "sources": [
-            "A message or file from you",
-            "A review of your product",
-            "New mail",
-            "A request from another agent",
-            "A scheduled event"
-          ],
-          "agents": [
-            "Assistant",
-            "Analyst",
-            "Designer"
-          ]
+      "eyebrow": "How it works",
+      "lede": "Every call goes through a rule",
+      "intro": "A trigger arrives from a connector or a device. The platform checks it against the agent's rules and hands it to one agent. Having done its work, the agent calls a tool back through the core — and that call goes through the same check. Credentials are attached inside the core and never reach the agent, and every trigger and every call lands in its own log: allowed and denied alike.",
+      "sr": "Flow diagram. On the left are the sources: tools and triggers, grouped into connectors and devices. A trigger travels from a connector or a device into the AgiMate core. There it is checked by the Policy block: is it allowed for this agent or not. A denied trigger goes no further and lands in the trigger log. An allowed one passes to Trigger routing, which hands it to one specific agent. Having worked on the trigger, the agent reaches back into the core and calls a tool on a connector or a device. That call is checked by the same rules and lands in the tool call log. Credentials stay in the core and are never passed to the agent. The agent's answer returns through the core, surfaces in the User Channel block, and leaves for the messenger the conversation is in — webchat, Telegram, WhatsApp or Slack. On the diagram each connector and device carries its own name — Mail, Laptop, Calendar, Android — each agent carries the name it was given, and each packet in flight carries a Greek letter. The trigger log lists the time, the connector or device, the trigger name, the Greek name of the packet that carried it, and the verdict. The tool call log lists the time, the agent that asked, the connector or device it went to, the tool, and the verdict.",
+      "tool": "Tool",
+      "trigger": "Trigger",
+      "rules": "Policy",
+      "routing": "Trigger routing",
+      "agent": "Agent",
+      "channel": "User Channel",
+      "webchat": "Webchat",
+      "telegram": "Telegram",
+      "whatsapp": "WhatsApp",
+      "slack": "Slack",
+      "keynote": "Credentials stay in the platform",
+      "logTrigger": "Trigger log",
+      "logTool": "Tool call log",
+      "allowed": "allowed",
+      "denied": "denied",
+      "pause": "Pause",
+      "resume": "Resume",
+      "whole": "Whole diagram",
+      "windowed": "Follow the packet",
+      "stTrigger": "Trigger from a connector",
+      "stPolicy": "Checked against the policy",
+      "stRouting": "Routed to one agent",
+      "stTool": "The agent calls a tool",
+      "stAnswer": "The answer goes out through the channel",
+      "stDenied": "Denied — logged, not sent",
+      "hint": "Click a node to highlight only its links.",
+      "model": "Model",
+      "access": "Access",
+      "skills": "Skills",
+      "agentTip": "Agent “{name}”",
+      "agents": {
+        "a1": {
+          "name": "Secretary",
+          "model": "Claude Sonnet 5",
+          "access": "Mail · Calendar",
+          "skills": "triage, reply drafts"
         },
-        {
-          "label": "Launch",
-          "title": "The system wakes the agents and hands out skills",
-          "description": "The agents the trigger belongs to stand up. Each is handed the skills this particular event needs — not their whole set. They start together and work in parallel, without waiting for one another.",
-          "trigger": "New mail",
-          "crew": [
-            {
-              "name": "Assistant",
-              "skill": "reading the mail"
-            },
-            {
-              "name": "Analyst",
-              "skill": "summing up the numbers"
-            },
-            {
-              "name": "Designer",
-              "skill": "fixing the layout"
-            }
-          ]
+        "a2": {
+          "name": "Scheduler",
+          "model": "GPT-5 mini",
+          "access": "Calendar · Android",
+          "skills": "meetings, reminders"
         },
-        {
-          "label": "Work",
-          "title": "A tool only fires once the rights check passes",
-          "description": "An agent picks from the tools available to it, and every call goes through a check: a denied tool never fires, and the attempt stays in the log. The answer can go back through any channel you talk to it on.",
-          "tools": [
-            {
-              "name": "Read the mail",
-              "allowed": true
-            },
-            {
-              "name": "File a task",
-              "allowed": true
-            },
-            {
-              "name": "Send the reply",
-              "allowed": true
-            },
-            {
-              "name": "Delete the mail",
-              "allowed": false
-            }
-          ],
-          "channels": [
-            "Telegram",
-            "Web chat",
-            "Phone"
-          ]
+        "a3": {
+          "name": "Finance",
+          "model": "Claude Opus 5",
+          "access": "Mail",
+          "skills": "reconciliation, monthly report"
         },
-        {
-          "label": "Team and board",
-          "title": "Agents work it out on the board",
-          "description": "When agents work as a team they ask each other clarifying questions and keep a shared task board: statuses, assignees, comments. The board is open to you too — you can see who took what, what they decided on, and what the context was.",
-          "question": "What's the budget?",
-          "columns": [
-            "In progress",
-            "Needs input",
-            "Done"
-          ],
-          "cards": [
-            {
-              "title": "Read the mail",
-              "agent": "Assistant",
-              "column": 0
-            },
-            {
-              "title": "Sum up the numbers",
-              "agent": "Analyst",
-              "column": 1
-            },
-            {
-              "title": "Reply sent",
-              "agent": "Assistant",
-              "column": 2
-            }
-          ]
+        "a4": {
+          "name": "On-call",
+          "model": "Claude Sonnet 5",
+          "access": "Laptop · Android",
+          "skills": "alert triage"
+        },
+        "a5": {
+          "name": "Notes",
+          "model": "Local Qwen",
+          "access": "Laptop",
+          "skills": "summaries, search"
+        },
+        "a6": {
+          "name": "Reports",
+          "model": "Claude Sonnet 5",
+          "access": "Mail · Laptop",
+          "skills": "digests, delivery"
         }
-      ]
+      },
+      "sources": {
+        "c1": {
+          "kind": "Tool",
+          "what": "Send email"
+        },
+        "c2": {
+          "kind": "Trigger",
+          "what": "New email"
+        },
+        "c3": {
+          "kind": "Trigger",
+          "what": "File changed"
+        },
+        "c7": {
+          "kind": "Tool",
+          "what": "Screenshot"
+        },
+        "c4": {
+          "kind": "Trigger",
+          "what": "Calendar event"
+        },
+        "c5": {
+          "kind": "Tool",
+          "what": "Create meeting"
+        },
+        "c6": {
+          "kind": "Trigger",
+          "what": "Geofence entered"
+        },
+        "c8": {
+          "kind": "Tool",
+          "what": "Show notification"
+        }
+      },
+      "tips": {
+        "connector": {
+          "title": "Connector",
+          "body": "An external service: mail, calendar, messenger, MCP server. Its credentials are stored here, in the platform."
+        },
+        "device": {
+          "title": "Device",
+          "body": "A companion on your own machine or phone. It raises triggers of its own — a watched file, a geofence — and exposes only the tools built into it."
+        },
+        "rules": {
+          "title": "Policy",
+          "body": "Checked before the service is called."
+        },
+        "channel": {
+          "title": "User Channel",
+          "body": "The one way out to a person. The agent's answer leaves through this channel into whichever messenger the conversation is in."
+        }
+      }
     },
     "useCases": {
       "title": "What you can build today",

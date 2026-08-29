@@ -1,17 +1,14 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
 import { Link } from '@/i18n/navigation';
 import { useUser } from '@/contexts/UserContext';
 import { useTranslations } from 'next-intl';
 import LandingHeader from '@/components/landing/LandingHeader';
 import LandingBackground from '@/components/landing/LandingBackground';
 import LandingFooter from '@/components/landing/LandingFooter';
+import HowItWorksFlow from '@/components/landing/HowItWorksFlow';
 import {
   ArrowRightIcon,
-  ShieldExclamationIcon,
-  EyeSlashIcon,
-  BanknotesIcon,
   ShieldCheckIcon,
   ClipboardDocumentListIcon,
   BoltIcon,
@@ -24,17 +21,13 @@ import {
   ChartBarIcon,
   UserGroupIcon,
   DocumentTextIcon,
-  FunnelIcon,
-  Squares2X2Icon,
   AcademicCapIcon,
   DevicePhoneMobileIcon,
   ComputerDesktopIcon,
   ChatBubbleLeftRightIcon,
   ServerIcon,
-  XCircleIcon,
 } from '@heroicons/react/24/outline';
 
-const problemIcons = [ShieldExclamationIcon, EyeSlashIcon, BanknotesIcon];
 // Order mirrors harness.items: tools → skills → keys → rails → trail → team.
 // The log card is deliberately not called "memory": agents have memory of their
 // own (the notes mixed into a run's first model call), and it is the opposite of
@@ -51,7 +44,6 @@ const harnessIcons = [
 ];
 // Order mirrors agents.axes: model → instructions → access → skills.
 const agentAxisIcons = [SparklesIcon, DocumentTextIcon, KeyIcon, AcademicCapIcon];
-const tabIcons = [BoltIcon, SparklesIcon, WrenchScrewdriverIcon, Squares2X2Icon];
 // Order mirrors security.items: binding gate → pre-call rules → log.
 const securityIcons = [ShieldCheckIcon, AdjustmentsHorizontalIcon, ClipboardDocumentListIcon];
 const modelIcons = [KeyIcon, SparklesIcon, ChartBarIcon];
@@ -59,13 +51,10 @@ const modelIcons = [KeyIcon, SparklesIcon, ChartBarIcon];
 export default function HomePage() {
   const { user } = useUser();
   const t = useTranslations('HomePage');
-  const [activeTab, setActiveTab] = useState(0);
 
-  const problemItems = t.raw('problems.items') as Array<{ title: string; description: string }>;
   const harnessItems = t.raw('harness.items') as PlainItem[];
   const agentAxes = t.raw('agents.axes') as PlainItem[];
   const agentTable = t.raw('agents.table') as { columns: string[]; rows: string[][] };
-  const howItWorksTabs = t.raw('howItWorks.tabs') as HowItWorksTab[];
   const useCaseItems = t.raw('useCases.items') as Array<{
     title: string;
     description: string;
@@ -146,19 +135,6 @@ export default function HomePage() {
               <ArrowRightIcon className="h-4 w-4" />
             </Link>
           )}
-          <a
-            href="#harness"
-            className="w-full sm:w-auto justify-center inline-flex items-center gap-2 rounded-lg border border-border px-7 py-3.5 font-medium text-foreground hover:bg-surface-secondary transition-colors"
-          >
-            {t('hero.secondaryCta')}
-          </a>
-        </div>
-
-        {/* Hero Scheme */}
-        <div className="mt-12 sm:mt-16">
-          <HeroScheme
-            steps={t.raw('heroScheme.steps') as HeroStep[]}
-          />
         </div>
       </section>
 
@@ -197,6 +173,35 @@ export default function HomePage() {
         <p className="mx-auto mt-8 max-w-3xl rounded-2xl border border-accent/20 bg-accent/5 p-6 text-center text-sm leading-relaxed sm:text-base">
           {t('harness.callout')}
         </p>
+      </section>
+
+      {/* How It Works — the animated call path: trigger → policy → one agent →
+          tool call through the same check → the answer out through a channel,
+          with both logs filling underneath. Ported from the marketing repo. */}
+      <HowItWorksFlow />
+
+      {/* Security */}
+      <section id="security" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <h2 className="mb-8 sm:mb-10 md:mb-14 text-center text-2xl sm:text-3xl font-bold tracking-tight">
+          {t('security.title')}
+        </h2>
+        <div className="grid gap-6 sm:grid-cols-3">
+          {securityItems.map((item, i) => {
+            const Icon = securityIcons[i];
+            return (
+              <div
+                key={item.title}
+                className="rounded-2xl border border-accent/20 bg-surface shadow-card p-6"
+              >
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                  <Icon className="h-6 w-6" />
+                </div>
+                <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
+                <p className="text-sm leading-relaxed text-muted">{item.description}</p>
+              </div>
+            );
+          })}
+        </div>
       </section>
 
       {/* Agents — the multi-agent half of the position. The table is the proof:
@@ -267,7 +272,8 @@ export default function HomePage() {
         </p>
       </section>
 
-      {/* Quick start — backs the hero's promise before the page argues anything else */}
+      {/* Quick start — right after the flow diagram: everything it just showed
+          is assembled in three steps */}
       <section id="quick-start" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
         <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">
           {t('quickStart.title')}
@@ -307,86 +313,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Problems */}
-      <section className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
-        <h2 className="mb-8 sm:mb-10 md:mb-14 text-center text-2xl sm:text-3xl font-bold tracking-tight">
-          {t('problems.title')}
-        </h2>
-        <div className="grid gap-6 sm:grid-cols-3">
-          {problemItems.map((item, i) => {
-            const Icon = problemIcons[i];
-            return (
-              <div
-                key={item.title}
-                className="rounded-2xl border border-error/20 bg-surface shadow-card p-6"
-              >
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-error/10 text-error">
-                  <Icon className="h-6 w-6" />
-                </div>
-                <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
-                <p className="text-sm leading-relaxed text-muted">{item.description}</p>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section id="how-it-works" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
-        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">
-          {t('howItWorks.title')}
-        </h2>
-        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-2xl text-center text-muted">
-          {t('howItWorks.subtitle')}
-        </p>
-
-        {/* Tab buttons. Wrapping because three Russian labels plus their icons
-            and padding come to ~400px of min-content — over a 375px screen. */}
-        <div className="mx-auto mb-8 flex flex-wrap justify-center gap-2">
-          {howItWorksTabs.map((tab, i) => {
-            const Icon = tabIcons[i];
-            return (
-              <button
-                key={tab.label}
-                onClick={() => setActiveTab(i)}
-                className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
-                  activeTab === i
-                    ? 'bg-accent text-accent-foreground shadow-lg shadow-accent/25'
-                    : 'border border-border text-muted hover:text-foreground hover:bg-surface-secondary'
-                }`}
-              >
-                <Icon className="h-4 w-4" />
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Tab content */}
-        <div className="rounded-2xl border border-border/50 bg-surface shadow-card p-6 sm:p-8 md:p-10">
-          <h3 className="mb-3 text-xl font-semibold">{howItWorksTabs[activeTab].title}</h3>
-          <p className="mb-8 max-w-2xl text-muted">{howItWorksTabs[activeTab].description}</p>
-
-          {activeTab === 0 && (
-            <TriggersView tab={howItWorksTabs[0]} gate={t('howItWorks.gate')} />
-          )}
-          {activeTab === 1 && (
-            <LaunchView tab={howItWorksTabs[1]} note={t('howItWorks.parallelNote')} />
-          )}
-          {activeTab === 2 && (
-            <WorkView
-              tab={howItWorksTabs[2]}
-              gateLabel={t('howItWorks.gateLabel')}
-              deniedLabel={t('howItWorks.deniedLabel')}
-              channelsLabel={t('howItWorks.channelsLabel')}
-            />
-          )}
-          {activeTab === 3 && (
-            <BoardView tab={howItWorksTabs[3]} note={t('howItWorks.boardNote')} />
-          )}
-        </div>
-      </section>
-
       {/* Use Cases */}
       <section id="use-cases" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
         <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">
@@ -417,30 +343,6 @@ export default function HomePage() {
               </div>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* Security */}
-      <section id="security" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
-        <h2 className="mb-8 sm:mb-10 md:mb-14 text-center text-2xl sm:text-3xl font-bold tracking-tight">
-          {t('security.title')}
-        </h2>
-        <div className="grid gap-6 sm:grid-cols-3">
-          {securityItems.map((item, i) => {
-            const Icon = securityIcons[i];
-            return (
-              <div
-                key={item.title}
-                className="rounded-2xl border border-accent/20 bg-surface shadow-card p-6"
-              >
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent">
-                  <Icon className="h-6 w-6" />
-                </div>
-                <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
-                <p className="text-sm leading-relaxed text-muted">{item.description}</p>
-              </div>
-            );
-          })}
         </div>
       </section>
 
@@ -683,339 +585,8 @@ export default function HomePage() {
   );
 }
 
-/* ── Hero Scheme ──
-   The creation path the hero promises: a ready-made role → skills already ticked →
-   the agent answering. The three `agent-activate` delays (0s/2s/4s of one 6s cycle)
-   light the steps in order, so the animation reads as "three taps" rather than
-   decoration. The section below the fold carries the same three steps in prose. */
 interface PlainItem {
   title: string;
   tech: string;
   plain: string;
-}
-
-interface HeroStep {
-  label: string;
-  sub: string;
-}
-
-function HeroScheme({ steps }: { steps: HeroStep[] }) {
-  return (
-    <div className="mx-auto max-w-3xl">
-      {/* Horizontal layout (sm+) */}
-      <div className="hidden sm:flex items-start justify-center gap-3">
-        {steps.map((step, i) => (
-          <div key={step.label} className="flex items-start gap-3">
-            {i > 0 && (
-              <div className="pt-5">
-                <FlowArrow direction="right" />
-              </div>
-            )}
-            <SchemeStep step={step} index={i} isLast={i === steps.length - 1} />
-          </div>
-        ))}
-      </div>
-
-      {/* Vertical layout (mobile) */}
-      <div className="flex sm:hidden flex-col items-center gap-2">
-        {steps.map((step, i) => (
-          <div key={step.label} className="flex flex-col items-center gap-2">
-            {i > 0 && <FlowArrow direction="down" />}
-            <SchemeStep step={step} index={i} isLast={i === steps.length - 1} />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function SchemeStep({
-  step,
-  index,
-  isLast,
-}: {
-  step: HeroStep;
-  index: number;
-  isLast: boolean;
-}) {
-  const activation = [
-    'animate-agent-activate',
-    'animate-agent-activate-delay-1',
-    'animate-agent-activate-delay-2',
-  ][index] ?? 'animate-agent-activate';
-
-  return (
-    <div className="flex w-36 flex-col items-center gap-1.5 text-center sm:w-40">
-      <div
-        className={`flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-medium ${activation} ${
-          isLast
-            ? 'border-2 border-accent bg-accent/10 text-accent'
-            : 'border border-border/50 bg-surface-secondary text-foreground'
-        }`}
-      >
-        <span
-          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
-            isLast ? 'bg-accent text-accent-foreground' : 'bg-accent/10 text-accent'
-          }`}
-        >
-          {index + 1}
-        </span>
-        {step.label}
-      </div>
-      <span className="text-[11px] leading-snug text-muted">{step.sub}</span>
-    </div>
-  );
-}
-
-/* ── How it works ──
-   Four beats of one story: what wakes an agent, who gets woken and with which
-   skills, what a tool call passes through on its way out, and how a team keeps
-   its work visible. All four are drawn from the same vocabulary — the glyph,
-   the flowing arrow, the accent chip — so switching tabs reads as one sequence
-   rather than four unrelated diagrams. */
-interface HowItWorksTab {
-  label: string;
-  title: string;
-  description: string;
-  sources?: string[];
-  agents?: string[];
-  trigger?: string;
-  crew?: Array<{ name: string; skill: string }>;
-  tools?: Array<{ name: string; allowed: boolean }>;
-  channels?: string[];
-  question?: string;
-  columns?: string[];
-  cards?: Array<{ title: string; agent: string; column: number }>;
-}
-
-function AgentGlyph({ small }: { small?: boolean }) {
-  return (
-    <div
-      className={`flex items-center justify-center rounded-full border-2 border-accent bg-accent/10 text-accent animate-pulse-dot ${
-        small ? 'h-10 w-10' : 'h-14 w-14'
-      }`}
-    >
-      <SparklesIcon className={small ? 'h-4 w-4' : 'h-6 w-6'} />
-    </div>
-  );
-}
-
-/* `responsive` is the diagram case: a row on a wide screen, a column on a
-   phone, where a rightward arrow would point at nothing. */
-function FlowArrow({
-  direction,
-  size = 'sm',
-}: {
-  direction: 'right' | 'down' | 'responsive';
-  size?: 'sm' | 'md';
-}) {
-  const icon = size === 'sm' ? 'h-3 w-3' : 'h-5 w-5';
-  const right = (
-    <div
-      className={`items-center text-accent animate-flow-right ${
-        direction === 'responsive' ? 'hidden sm:flex' : 'flex'
-      }`}
-    >
-      <div className={`h-px bg-accent ${size === 'sm' ? 'w-4' : 'w-12'}`} />
-      <ArrowRightIcon className={icon} />
-    </div>
-  );
-  const down = (
-    <div
-      className={`flex-col items-center text-accent animate-flow-down ${
-        direction === 'responsive' ? 'flex sm:hidden' : 'flex'
-      }`}
-    >
-      <div className={`w-px bg-accent ${size === 'sm' ? 'h-4' : 'h-8'}`} />
-      <svg className={icon} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m0 0l6.75-6.75M12 19.5l-6.75-6.75" />
-      </svg>
-    </div>
-  );
-  if (direction === 'right') return right;
-  if (direction === 'down') return down;
-  return (
-    <>
-      {right}
-      {down}
-    </>
-  );
-}
-
-function Pill({ children, tone = 'accent' }: { children: ReactNode; tone?: 'accent' | 'muted' }) {
-  return (
-    <span
-      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium ${
-        tone === 'accent'
-          ? 'border-accent/40 bg-accent/5 text-accent'
-          : 'border-border/60 bg-surface-secondary text-muted'
-      }`}
-    >
-      {children}
-    </span>
-  );
-}
-
-/* Triggers on the left, agents on the right, your routing rules in between —
-   the point of the picture is that the middle box is yours to set. */
-function TriggersView({ tab, gate }: { tab: HowItWorksTab; gate: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center gap-5 lg:flex-row lg:gap-6">
-      <div className="flex flex-col gap-3">
-        {(tab.sources || []).map((src) => (
-          <div key={src} className="flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
-              <BoltIcon className="h-4 w-4 animate-pulse-dot" />
-            </div>
-            <span className="text-sm font-medium">{src}</span>
-          </div>
-        ))}
-      </div>
-      <FlowArrow direction="responsive" size="md" />
-      <div className="rounded-xl border-2 border-dashed border-accent/60 bg-accent/5 px-5 py-4 text-center">
-        <FunnelIcon className="mx-auto mb-2 h-6 w-6 text-accent" />
-        <span className="text-xs font-medium leading-snug text-accent">{gate}</span>
-      </div>
-      <FlowArrow direction="responsive" size="md" />
-      <div className="flex flex-col gap-3">
-        {(tab.agents || []).map((agent) => (
-          <div key={agent} className="flex items-center gap-3">
-            <AgentGlyph small />
-            <span className="text-sm font-medium">{agent}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* One event, three agents lit at once. They deliberately share a single
-   animation class with no delays — staggering it would read as a queue,
-   which is the opposite of what happens. */
-function LaunchView({ tab, note }: { tab: HowItWorksTab; note: string }) {
-  return (
-    <div className="flex flex-col items-center gap-5">
-      <Pill>
-        <BoltIcon className="h-4 w-4" />
-        {tab.trigger}
-      </Pill>
-      <FlowArrow direction="down" size="md" />
-      <div className="flex flex-wrap justify-center gap-6">
-        {(tab.crew || []).map((member) => (
-          <div
-            key={member.name}
-            className="flex w-36 flex-col items-center gap-2 animate-agent-activate"
-          >
-            <AgentGlyph />
-            <span className="text-sm font-medium">{member.name}</span>
-            <span className="rounded-full border border-accent/40 bg-accent/5 px-3 py-1 text-center text-xs leading-snug text-accent">
-              {member.skill}
-            </span>
-          </div>
-        ))}
-      </div>
-      <span className="text-xs uppercase tracking-wide text-muted">{note}</span>
-    </div>
-  );
-}
-
-/* The one diagram on the page that shows the gate actually stopping something:
-   a denied tool is struck through in the error colour rather than left out. */
-function WorkView({
-  tab,
-  gateLabel,
-  deniedLabel,
-  channelsLabel,
-}: {
-  tab: HowItWorksTab;
-  gateLabel: string;
-  deniedLabel: string;
-  channelsLabel: string;
-}) {
-  const tools = tab.tools || [];
-  return (
-    <div className="flex flex-col items-center gap-4">
-      <AgentGlyph />
-      <FlowArrow direction="down" size="md" />
-      <div className="flex items-center gap-2 rounded-xl border-2 border-accent bg-accent/10 px-5 py-3 text-sm font-semibold text-accent">
-        <ShieldCheckIcon className="h-5 w-5" />
-        {gateLabel}
-      </div>
-      <FlowArrow direction="down" size="md" />
-      <div className="flex flex-wrap justify-center gap-3">
-        {tools.map((tool) =>
-          tool.allowed ? (
-            <Pill key={tool.name}>
-              <CheckCircleIcon className="h-4 w-4" />
-              {tool.name}
-            </Pill>
-          ) : (
-            <span
-              key={tool.name}
-              className="inline-flex items-center gap-2 rounded-full border border-error/40 bg-error/5 px-4 py-2 text-xs font-medium text-error"
-            >
-              <XCircleIcon className="h-4 w-4" />
-              <span className="line-through">{tool.name}</span>
-              <span className="not-italic opacity-80">— {deniedLabel}</span>
-            </span>
-          )
-        )}
-      </div>
-      <div className="mt-4 flex flex-col items-center gap-3 border-t border-border/50 pt-5">
-        <span className="text-xs uppercase tracking-wide text-muted">{channelsLabel}</span>
-        <div className="flex flex-wrap justify-center gap-3">
-          {(tab.channels || []).map((channel) => (
-            <Pill key={channel} tone="muted">
-              <ChatBubbleLeftRightIcon className="h-4 w-4 text-accent" />
-              {channel}
-            </Pill>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* A board small enough to read at a glance: two agents talking above it, three
-   columns under them. It is the only place the page shows agents addressing
-   each other rather than the user. */
-function BoardView({ tab, note }: { tab: HowItWorksTab; note: string }) {
-  const cards = tab.cards || [];
-  return (
-    <div className="flex flex-col items-center gap-6">
-      <div className="flex items-center gap-3">
-        <AgentGlyph small />
-        <span className="rounded-2xl rounded-bl-sm border border-accent/40 bg-accent/5 px-3 py-2 text-xs font-medium text-accent">
-          {tab.question}
-        </span>
-        <AgentGlyph small />
-      </div>
-      <div className="grid w-full max-w-2xl gap-3 sm:grid-cols-3">
-        {(tab.columns || []).map((column, ci) => (
-          <div key={column} className="rounded-xl border border-border/50 bg-surface-secondary/50 p-3">
-            <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted">
-              {column}
-            </div>
-            <div className="flex flex-col gap-2">
-              {cards
-                .filter((card) => card.column === ci)
-                .map((card) => (
-                  <div
-                    key={card.title}
-                    className="rounded-lg border border-border/50 bg-surface p-3 shadow-card animate-task-arrive"
-                  >
-                    <div className="text-sm font-medium">{card.title}</div>
-                    <div className="mt-1 flex items-center gap-1.5 text-xs text-muted">
-                      <SparklesIcon className="h-3.5 w-3.5 text-accent" />
-                      {card.agent}
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
-        ))}
-      </div>
-      <span className="text-xs text-muted">{note}</span>
-    </div>
-  );
 }
