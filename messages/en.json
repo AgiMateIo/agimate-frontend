@@ -609,6 +609,14 @@
     "confirm": "Yes, sign out",
     "back": "Go back"
   },
+  "AppAuth": {
+    "meta": {
+      "title": "Signed in — AgiMate"
+    },
+    "title": "You are signed in",
+    "description": "Now go back to the AgiMate app. If it did not pick the sign-in up on its own, open it and sign in again.",
+    "install": "Get the app"
+  },
   "Common": {
     "loading": "Loading...",
     "cancel": "Cancel",

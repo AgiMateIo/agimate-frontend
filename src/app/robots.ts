@@ -15,6 +15,12 @@ export const dynamic = 'force-dynamic';
 // OAuth provider fetching client.json does not consult robots.txt.
 const PRIVATE_PATHS = ['/dashboard', '/login', '/login-check', '/logout', '/connections'];
 
+// Locale-less by construction, so it stays out of the per-locale flatMap below:
+// /app/auth is the Android App Link return address and exists at exactly one
+// URL. Its own `noindex` is what actually keeps it out of an index — this line
+// keeps a crawler from requesting a URL that carries a single-use credential.
+const UNPREFIXED_PRIVATE_PATHS = ['/app/auth'];
+
 export default async function robots(): Promise<MetadataRoute.Robots> {
     // APP_PUBLIC_HOST left unset means every host is indexable — that is the
     // behaviour of having no robots.txt at all, and failing the other way would
@@ -27,6 +33,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
 
     const disallow = [
         ...PRIVATE_PATHS,
+        ...UNPREFIXED_PRIVATE_PATHS,
         ...routing.locales.flatMap((locale) => PRIVATE_PATHS.map((path) => `/${locale}${path}`)),
     ];
 

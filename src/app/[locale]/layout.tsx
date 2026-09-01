@@ -7,27 +7,9 @@ import { QueryProvider } from '@/contexts/QueryProvider';
 import { YandexMetrika } from '@/components/analytics/YandexMetrika';
 import ReferralCapture from '@/components/referral/ReferralCapture';
 import { getSiteOrigin, YANDEX_VERIFICATION } from '@/utils/seo';
-import { IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google';
+import { brandFontVariables } from '@/app/fonts';
 import { THEME_BOOT_SCRIPT } from '@/utils/theme';
 import '../globals.css';
-
-// `cyrillic` is not optional here: ru is the default locale and carries ~2000
-// strings, so without it the primary language falls back to a system face.
-// IBM Plex is not variable on Google Fonts, hence the explicit weight list —
-// only the four the interface actually uses. Italic is real rather than
-// synthesised: markdown `em` in chat renders it, and a slanted roman looks it.
-const brandSans = IBM_Plex_Sans({
-  variable: '--font-brand-sans',
-  subsets: ['latin', 'cyrillic'],
-  weight: ['400', '500', '600', '700'],
-  style: ['normal', 'italic'],
-});
-
-const brandMono = IBM_Plex_Mono({
-  variable: '--font-brand-mono',
-  subsets: ['latin', 'cyrillic'],
-  weight: ['400', '500'],
-});
 
 export async function generateMetadata({
   params,
@@ -76,17 +58,12 @@ export default async function LocaleLayout({
     // boot script stamps data-theme here before React hydrates, so the attribute
     // is legitimately present in the DOM and absent from the server markup. This
     // silences that one comparison, not the subtree below it.
-    // The font variables belong on <html>, not on <body>. Tailwind declares
-    // `--font-sans` and `--default-font-family` on `:root` — that is <html> — so a
-    // variable defined one level lower on <body> is not in scope there: both
-    // resolve to the guaranteed-invalid value and preflight quietly falls back to
-    // the system stack. That is exactly what used to happen, which is why the
-    // typeface never actually applied.
+    // The font variables belong on <html>, not on <body> — see `@/app/fonts`.
     // `data-scroll-behavior` tells the router that the smooth scrolling declared
     // in globals.css is deliberate, so it can disable it during route changes.
     <html
       lang={locale}
-      className={`${brandSans.variable} ${brandMono.variable}`}
+      className={brandFontVariables}
       data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
