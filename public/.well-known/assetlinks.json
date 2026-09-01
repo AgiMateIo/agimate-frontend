@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "ru.agimate.mobile",
+      "sha256_cert_fingerprints": [
+        "8C:F4:0F:99:C3:B9:02:36:CF:C0:FF:CA:BD:B7:C2:4D:96:F2:B8:17:33:81:CA:1A:75:7A:6E:80:D7:37:D5:57",
+        "96:B0:C5:72:5C:92:CD:C1:D9:F8:78:32:C4:57:B6:49:96:0D:A4:C0:F5:1C:09:55:D0:0F:C5:DC:97:98:DA:D1"
+      ]
+    }
+  }
+]
