@@ -7,6 +7,7 @@ import { UserIcon } from '@heroicons/react/24/outline';
 import ReferralCard from '@/components/referral/ReferralCard';
 import AuthMethodsCard from '@/components/settings/AuthMethodsCard';
 import SessionsCard from '@/components/settings/SessionsCard';
+import InstallAppCard from '@/components/settings/InstallAppCard';
 
 export default function SettingsPage() {
   const locale = useLocale();
@@ -72,6 +73,8 @@ export default function SettingsPage() {
         <AuthMethodsCard />
 
         <SessionsCard />
+
+        <InstallAppCard />
 
         <ReferralCard />
       </div>

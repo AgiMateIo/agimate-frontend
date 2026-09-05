@@ -1267,6 +1267,18 @@
       "revokeCurrentBody": "This is the device you are using right now. Revoking it signs you out: you will land on the home page and have to sign in again.",
       "revokeError": "Could not revoke the sign-in"
     },
+    "installApp": {
+      "title": "App",
+      "description": "Open the dashboard in its own window, without tabs or an address bar",
+      "install": "Install",
+      "installed": "Installed. “AgiMate Web” is now among your apps, and this window can be closed.",
+      "hint": {
+        "ios": "In Safari, tap Share and choose “Add to Home Screen”. The installed app keeps its own storage, so you will sign in once more.",
+        "safari": "In Safari, open the File menu and choose “Add to Dock”. The installed app keeps its own storage, so you will sign in once more.",
+        "firefox": "Firefox on the desktop does not install sites as apps. Open the dashboard in Chrome, Edge or Safari.",
+        "other": "The browser offers the install with an icon in the address bar, or as “Install AgiMate Web” in its menu, once it decides the site qualifies. If the app is already installed, open it from your list of apps."
+      }
+    },
     "referral": {
       "title": "Invite",
       "description": "Your personal link for anyone you want to bring in",

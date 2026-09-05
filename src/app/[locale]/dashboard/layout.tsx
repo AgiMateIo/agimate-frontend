@@ -9,6 +9,10 @@ import TopBar from '@/components/layout/TopBar';
 import PendingActivationNotice from '@/components/dashboard/PendingActivationNotice';
 import { BreadcrumbProvider } from '@/contexts/BreadcrumbContext';
 import { useIsGuest } from '@/hooks/useIsGuest';
+// Side effect only: starts listening for the browser's install offer as soon as
+// the dashboard loads. It fires once per page load, and the settings card that
+// shows it may mount much later.
+import '@/utils/installPrompt';
 
 // The one dashboard route a guest account may open: it holds the device list,
 // and someone who has just lost a phone must not wait for account approval to

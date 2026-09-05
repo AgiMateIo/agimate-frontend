@@ -8,8 +8,19 @@ import { YandexMetrika } from '@/components/analytics/YandexMetrika';
 import ReferralCapture from '@/components/referral/ReferralCapture';
 import { getSiteOrigin, YANDEX_VERIFICATION } from '@/utils/seo';
 import { brandFontVariables } from '@/app/fonts';
-import { THEME_BOOT_SCRIPT } from '@/utils/theme';
+import { THEME_BOOT_SCRIPT, THEME_COLORS } from '@/utils/theme';
 import '../globals.css';
+import type { Viewport } from 'next';
+
+// One theme-color per scheme, so the title bar of the installed app window and
+// a phone's status bar match the page ground. The media queries only know the
+// OS; `applyTheme` rewrites these tags when the person overrides it.
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: THEME_COLORS.light },
+    { media: '(prefers-color-scheme: dark)', color: THEME_COLORS.dark },
+  ],
+};
 
 export async function generateMetadata({
   params,
@@ -36,6 +47,10 @@ export async function generateMetadata({
     // X reads og:image only once a card type is declared; without this the
     // generated card degrades to a thumbnail next to the title.
     twitter: { card: 'summary_large_image' },
+    // iOS reads the manifest for most of this since 11.3, but the home-screen
+    // label still comes from here, and it matches the manifest's short_name so
+    // the icon is called the same thing on every platform.
+    appleWebApp: { capable: true, title: 'AgiMate Web', statusBarStyle: 'default' },
     // Yandex checks the site root, which the locale middleware redirects to
     // /ru — so the tag has to live on every locale page, not on one of them.
     ...(YANDEX_VERIFICATION && { verification: { yandex: YANDEX_VERIFICATION } }),
