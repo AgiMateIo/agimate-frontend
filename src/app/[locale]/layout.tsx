@@ -82,6 +82,17 @@ export default async function LocaleLayout({
       data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
+      <head>
+        {/* Rendered by hand, and not through `app/manifest.ts`, because the file
+            convention emits this link as part of the route's metadata — which
+            Next re-renders on every client-side navigation, removing and
+            re-inserting the element with the same href. Chrome reads that as the
+            manifest URL changing and refetches it, reporting "manifest location
+            changed during fetch" whenever a removal lands mid-fetch. Here the
+            link belongs to the layout, which outlives every navigation inside a
+            locale. */}
+        <link rel="manifest" href="/manifest.webmanifest" />
+      </head>
       <body className="antialiased">
         {/* First thing in the body so the stored theme is on <html> before the
             first paint. A React effect would run after it, and the page would

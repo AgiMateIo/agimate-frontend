@@ -1,9 +1,19 @@
 import type { MetadataRoute } from 'next';
 import { theme } from '@/generated/tokens';
 
-// The Web App Manifest — what makes the dashboard installable. Next serves it at
-// /manifest.webmanifest and adds the <link> itself; the dotted path keeps it out
-// of the locale proxy, so it needs no matcher entry.
+// The Web App Manifest — what makes the dashboard installable. Served from a
+// route handler rather than `app/manifest.ts`, and the difference is not
+// cosmetic: the file convention makes Next emit the `<link rel="manifest">` as
+// part of the route's *metadata*, and metadata is re-rendered on every
+// client-side navigation — the element is removed and re-inserted with the same
+// href. Chrome reads that as the manifest URL changing, refetches on every
+// in-app navigation, and reports "manifest location changed during fetch" when
+// a removal lands while a fetch is in flight. A dashboard navigates constantly,
+// so that was permanent. The `<link>` now lives in the locale layout's <head>,
+// inside the persistent layout tree, and never unmounts.
+//
+// The dotted path keeps this out of the locale proxy (matcher skips paths with
+// a dot), same as /connections/oauth/client.json.
 //
 // Locale-less on purpose. `start_url` has no prefix because the proxy redirects
 // it to the visitor's own locale, and a redirect inside the scope is fine with
@@ -28,7 +38,11 @@ import { theme } from '@/generated/tokens';
 // (/login-check, /app/auth, the MCP OAuth callback, settings?link_proof=), so any
 // cached navigation is a replayed proof. Every merge to main deploys, too, so a
 // precache would mostly show "reload to update".
-export default function manifest(): MetadataRoute.Manifest {
+
+// Nothing here is read off the request, so it is baked at build time.
+export const dynamic = 'force-static';
+
+function manifest(): MetadataRoute.Manifest {
     return {
         id: '/dashboard',
         name: 'AgiMate Dashboard',
@@ -57,4 +71,16 @@ export default function manifest(): MetadataRoute.Manifest {
             { src: '/icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
     };
+}
+
+export function GET() {
+    return Response.json(manifest(), {
+        headers: {
+            // The manifest MIME type. Chrome accepts application/json too, but
+            // a wrong type is one of the few things that makes it refuse the
+            // document outright.
+            'Content-Type': 'application/manifest+json',
+            'Cache-Control': 'public, max-age=0, must-revalidate',
+        },
+    });
 }
