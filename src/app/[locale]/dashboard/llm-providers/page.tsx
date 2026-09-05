@@ -1,24 +1,50 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useEffect, useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/navigation';
 import { Button } from '@/components/ui/Button';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useLlmProvidersQuery, useLlmProviderCacheActions } from '@/queries/llm-providers';
 import LlmProvidersList from '@/components/llm-providers/LlmProvidersList';
-import AddLlmProviderModal from '@/components/llm-providers/AddLlmProviderModal';
+import AddLlmProviderModal, { type LlmProviderPrefill } from '@/components/llm-providers/AddLlmProviderModal';
 import AddPlatformProviderModal from '@/components/llm-providers/AddPlatformProviderModal';
+import { parseProviderType } from '@/components/llm-providers/providerTypes';
 import { Placeholder } from '@/components/ui/Placeholder';
 
 function LlmProvidersContent() {
   const t = useTranslations('LlmProviders');
   const tu = useTranslations('LlmUsage');
   const isAdmin = useIsAdmin();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: providers } = useLlmProvidersQuery();
   const { setProviders, invalidate } = useLlmProviderCacheActions();
-  const [showAddModal, setShowAddModal] = useState(false);
+
+  // Target of the `/llm-providers/new` deep link. The query is read once, at
+  // mount, and stripped straight after: the create form lives in a modal, and a
+  // link left in the address bar would reopen it on every reload and on the way
+  // back from a provider page.
+  const [deepLink] = useState<{ open: boolean; prefill: LlmProviderPrefill | null }>(() => {
+    const providerType = parseProviderType(searchParams.get('providerType'));
+    const name = searchParams.get('name');
+    const open = ['providerType', 'name', 'baseUrl'].some((key) => searchParams.has(key));
+    // A link the tool built wrong still opens the form — the person asked to
+    // create a provider, and a plain list would read as a dead link. It just
+    // opens at the catalog step, with nothing filled in.
+    const prefill = providerType && name
+      ? { providerType, name, baseUrl: searchParams.get('baseUrl') ?? '' }
+      : null;
+    return { open, prefill };
+  });
+  const [showAddModal, setShowAddModal] = useState(deepLink.open);
   const [showPlatformModal, setShowPlatformModal] = useState(false);
+
+  useEffect(() => {
+    if (deepLink.open) router.replace('/dashboard/llm-providers');
+  }, [deepLink.open, router]);
 
   // The platform provider is a singleton — only offer to create it to an admin who
   // doesn't already have one (the backend only returns the platform row to admins).
@@ -63,6 +89,7 @@ function LlmProvidersContent() {
         <AddLlmProviderModal
           onClose={() => setShowAddModal(false)}
           onSuccess={handleAddSuccess}
+          prefill={deepLink.prefill ?? undefined}
         />
       )}
 

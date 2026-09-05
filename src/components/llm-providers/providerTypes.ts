@@ -29,6 +29,13 @@ export const PROVIDER_TYPE_LABEL_KEY = {
   OPENAI_COMPATIBLE: 'providerTypeOpenAICompatible',
 } as const satisfies Record<LlmProviderType, string>;
 
+// A provider type as it arrives from outside — the `create_llm_provider` deep
+// link. Anything unknown is dropped rather than guessed: a type this build never
+// heard of would create a provider that cannot answer.
+export function parseProviderType(value: string | null | undefined): LlmProviderType | null {
+  return value && value in PROVIDER_TYPE_LABEL_KEY ? (value as LlmProviderType) : null;
+}
+
 // Types the dropdown must show: the supported ones, plus whatever the form is
 // already carrying (a catalog entry may name a type this build does not offer —
 // hiding it would silently create the provider under a different type).

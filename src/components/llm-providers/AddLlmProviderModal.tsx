@@ -35,15 +35,27 @@ import { ExtraBodyField } from './ExtraBodyField';
 import { parseExtraBodyInput } from './extraBody';
 import { Placeholder } from '@/components/ui/Placeholder';
 
+/**
+ * Values carried in by the `create_llm_provider` deep link. Never a key: the
+ * whole point of the link is that the secret is typed here, by a person.
+ */
+export interface LlmProviderPrefill {
+  providerType: LlmProviderType;
+  name: string;
+  baseUrl: string;
+}
+
 interface AddLlmProviderModalProps {
   onClose: () => void;
   onSuccess: () => void;
+  /** Skips the catalog step: the link already said which provider this is. */
+  prefill?: LlmProviderPrefill;
 }
 
 // null — the catalog step is still on screen; 'manual' — the user declined it.
 type Chosen = LlmProviderCatalogEntry | 'manual' | null;
 
-export default function AddLlmProviderModal({ onClose, onSuccess }: AddLlmProviderModalProps) {
+export default function AddLlmProviderModal({ onClose, onSuccess, prefill }: AddLlmProviderModalProps) {
   const t = useTranslations('LlmProviders');
   const tc = useTranslations('Common');
   const router = useRouter();
@@ -54,15 +66,24 @@ export default function AddLlmProviderModal({ onClose, onSuccess }: AddLlmProvid
   const catalogQuery = useLlmProviderCatalogQuery();
   const entries = catalogQuery.data ?? [];
 
-  const [chosen, setChosen] = useState<Chosen>(null);
-  const [providerType, setProviderType] = useState<LlmProviderType>(DEFAULT_PROVIDER_TYPE);
-  const [name, setName] = useState(deriveProviderNameFromUrl(DEFAULT_BASE_URL[DEFAULT_PROVIDER_TYPE]));
+  const initialType = prefill?.providerType ?? DEFAULT_PROVIDER_TYPE;
+  const initialBaseUrl = prefill?.baseUrl || DEFAULT_BASE_URL[initialType];
+
+  // A link that already names the provider walks past the catalog picker: the
+  // choice it offers has been made in the conversation the link came from.
+  const [chosen, setChosen] = useState<Chosen>(prefill ? 'manual' : null);
+  const [providerType, setProviderType] = useState<LlmProviderType>(initialType);
+  const [name, setName] = useState(prefill?.name || deriveProviderNameFromUrl(initialBaseUrl));
   // Whether the user has manually typed a name. While false, the name tracks the URL domain.
-  const [nameEdited, setNameEdited] = useState(false);
-  const [baseUrl, setBaseUrl] = useState(DEFAULT_BASE_URL[DEFAULT_PROVIDER_TYPE]);
+  // A name from the link counts as typed — editing the URL must not overwrite it.
+  const [nameEdited, setNameEdited] = useState(Boolean(prefill?.name));
+  const [baseUrl, setBaseUrl] = useState(initialBaseUrl);
   const [apiKey, setApiKey] = useState('');
   const [extraBodyText, setExtraBodyText] = useState('');
-  const [mediaTransport, setMediaTransport] = useState<MediaTransportChoice>('');
+  const [mediaTransport, setMediaTransport] = useState<MediaTransportChoice>(
+    // Same guess the field makes when the URL is typed by hand.
+    prefill && suggestMediaTransport(initialBaseUrl) === 'MEDIA_ENDPOINT' ? 'MEDIA_ENDPOINT' : ''
+  );
   // Once the user picks a transport, the URL stops steering it.
   const [mediaTransportEdited, setMediaTransportEdited] = useState(false);
   // Purpose lists seeded from the catalog. Sent as-is on create and reconciled

@@ -20,6 +20,7 @@ import { DropdownMenu } from '@/components/ui/DropdownMenu';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { FormField, Input, TextArea } from '@/components/ui/FormField';
 import { InlineEditField } from '@/components/ui/InlineEdit';
+import { RowAction } from '@/components/ui/RowAction';
 import AgentTypePicker from '@/components/agents/AgentTypePicker';
 import DeleteAgentModal from '@/components/agents/DeleteAgentModal';
 import SecretKeyReveal from '@/components/connectors/SecretKeyReveal';
@@ -49,6 +50,8 @@ interface TypeDraft {
   type: AgentType;
   webhookUrl: string;
   webhookAuthHeader: string;
+  /** Armed by "remove the header": the save sends "" instead of a new value. */
+  clearWebhookAuth: boolean;
 }
 
 export default function AgentGeneralPage() {
@@ -178,6 +181,7 @@ export default function AgentGeneralPage() {
             webhookUrl: agent.webhookUrl ?? '',
             // Write-only: the agent reports whether one is set, never its value.
             webhookAuthHeader: '',
+            clearWebhookAuth: false,
           }}
           canSave={(draft) =>
             draft.type !== 'WEBHOOK' || /^https?:\/\/.+/.test(draft.webhookUrl.trim())
@@ -190,11 +194,14 @@ export default function AgentGeneralPage() {
               ...(draft.type === 'WEBHOOK'
                 ? {
                     webhookUrl: draft.webhookUrl.trim(),
-                    // Left blank means "keep the one you have" — this screen
-                    // offers no way to delete a header, only to replace it.
-                    ...(draft.webhookAuthHeader
-                      ? { webhookAuthHeader: draft.webhookAuthHeader }
-                      : {}),
+                    // Three answers, not two: an empty string deletes the header
+                    // server-side, so "leave it alone" (blank field) has to stay
+                    // distinct from "remove it" (the armed action below).
+                    ...(draft.clearWebhookAuth
+                      ? { webhookAuthHeader: '' }
+                      : draft.webhookAuthHeader
+                        ? { webhookAuthHeader: draft.webhookAuthHeader }
+                        : {}),
                   }
                 : {}),
             })
@@ -223,12 +230,37 @@ export default function AgentGeneralPage() {
                     <Input
                       value={draft.webhookAuthHeader}
                       onChange={(e) => setDraft({ ...draft, webhookAuthHeader: e.target.value })}
-                      disabled={disabled}
+                      // While removal is armed there is nothing to type: a value
+                      // and its deletion cannot both be meant by one save.
+                      disabled={disabled || draft.clearWebhookAuth}
                       placeholder={t('webhookAuthHeaderPlaceholder')}
                     />
-                    {agent.hasWebhookAuth && (
-                      <p className="text-xs text-muted mt-1">{t('webhookAuthConfigured')}</p>
-                    )}
+                    {agent.hasWebhookAuth &&
+                      (draft.clearWebhookAuth ? (
+                        <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                          <p className="text-xs text-warning">{t('webhookAuthWillBeRemoved')}</p>
+                          <button
+                            type="button"
+                            onClick={() => setDraft({ ...draft, clearWebhookAuth: false })}
+                            disabled={disabled}
+                            className="text-xs text-accent underline hover:no-underline disabled:opacity-50"
+                          >
+                            {t('keepWebhookAuth')}
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2">
+                          <p className="text-xs text-muted">{t('webhookAuthConfigured')}</p>
+                          <RowAction
+                            icon={TrashIcon}
+                            label={t('removeWebhookAuth')}
+                            onClick={() =>
+                              setDraft({ ...draft, webhookAuthHeader: '', clearWebhookAuth: true })
+                            }
+                            disabled={disabled}
+                          />
+                        </div>
+                      ))}
                   </FormField>
                 </>
               )}

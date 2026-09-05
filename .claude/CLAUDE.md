@@ -240,6 +240,8 @@ src/
 │       │                      #   the one dashboard route a GUEST may open
 │       ├── connections/             # public deep links: new/ (→ dashboard),
 │       │                            #   oauth/callback/ (MCP OAuth return address)
+│       ├── llm-providers/new/       # public deep link (→ dashboard list, create modal
+│       │                            #   prefilled from providerType/name/baseUrl)
 │       ├── login/  login-check/  logout/
 │       ├── register/  register/confirm/      # email sign-up: request, then set the password
 │       ├── password/forgot/  password/reset/ # one letter, two entry points
