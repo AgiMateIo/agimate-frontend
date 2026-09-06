@@ -91,6 +91,11 @@ export function useWebchatThread(sessionId: string | null, running = false) {
   // redelivered progress event must not resurrect the "agent working" indicator.
   const processedEventIdsRef = useRef<Set<string>>(new Set());
   const pagesLoadedRef = useRef(0);
+  // In-flight guard for `loadOlder`. The state flag alone is not enough now
+  // that scrolling triggers it: two scroll events fire before React re-renders,
+  // both read the stale `false`, and the transport hands both the same deduped
+  // GET — so the page counter would advance twice for one page.
+  const loadingOlderRef = useRef(false);
   const localSeqRef = useRef(0);
   // blob: preview URLs handed to optimistic sends. Kept alive for the whole
   // session selection (the echo swap to signed URLs happens inside a state
@@ -150,7 +155,8 @@ export function useWebchatThread(sessionId: string | null, running = false) {
   }, [sessionId]);
 
   const loadOlder = useCallback(async () => {
-    if (!sessionId || loadingOlder || !hasOlder) return;
+    if (!sessionId || loadingOlderRef.current || !hasOlder) return;
+    loadingOlderRef.current = true;
     setLoadingOlder(true);
     try {
       const page = await apiService.getChatSessionMessages(sessionId, {
@@ -165,9 +171,10 @@ export function useWebchatThread(sessionId: string | null, running = false) {
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to load messages'));
     } finally {
+      loadingOlderRef.current = false;
       setLoadingOlder(false);
     }
-  }, [sessionId, loadingOlder, hasOlder]);
+  }, [sessionId, hasOlder]);
 
   // Re-fetches the newest history page and refreshes attachment links on any
   // already-rendered message (matched by messageId). Signed `part.url`s expire

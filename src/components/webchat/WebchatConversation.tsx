@@ -153,6 +153,10 @@ export default function WebchatConversation({
 
   const listRef = useRef<HTMLDivElement>(null);
   const stickToBottomRef = useRef(true);
+  // A load of older messages is between its fetch and the scroll adjustment
+  // that puts the read position back — until then `scrollTop` is still at the
+  // top and would ask for the next page straight away.
+  const anchoringRef = useRef(false);
 
   const { handleEvent } = thread;
   const onActivityRef = useRef(onActivity);
@@ -182,10 +186,43 @@ export default function WebchatConversation({
     },
   });
 
+  const handleLoadOlder = async () => {
+    const el = listRef.current;
+    const prevHeight = el?.scrollHeight ?? 0;
+    anchoringRef.current = true;
+    await thread.loadOlder();
+    // Keep the viewport anchored after older messages are prepended.
+    requestAnimationFrame(() => {
+      const el2 = listRef.current;
+      if (el2) el2.scrollTop += el2.scrollHeight - prevHeight;
+      anchoringRef.current = false;
+    });
+  };
+
   const handleScroll = () => {
     const el = listRef.current;
     if (!el) return;
     stickToBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+    // Scrolling to the top *is* the request for older messages: reaching the end
+    // of what is loaded and looking for something to click is not what a reader
+    // scrolling back through a chat does. The button below stays for the one
+    // case no scroll event ever fires — a first page shorter than the pane.
+    //
+    // Guards, in order: the page is still on its way (the flag lags a second
+    // scroll event by a render, so `loadOlder` guards itself too); the scroll
+    // position hasn't been put back yet, so `scrollTop` still reads as "at the
+    // top"; a page already failed, and every further scroll event would fire
+    // another request at an endpoint that just refused — the button offers that
+    // retry by hand instead.
+    if (
+      el.scrollTop < 80 &&
+      thread.hasOlder &&
+      !thread.loadingOlder &&
+      !anchoringRef.current &&
+      !thread.error
+    ) {
+      void handleLoadOlder();
+    }
   };
 
   // Follow the tail unless the user scrolled up to read history. `draft` belongs
@@ -218,17 +255,6 @@ export default function WebchatConversation({
     window.addEventListener('resize', resizeComposer);
     return () => window.removeEventListener('resize', resizeComposer);
   }, [draft, resizeComposer]);
-
-  const handleLoadOlder = async () => {
-    const el = listRef.current;
-    const prevHeight = el?.scrollHeight ?? 0;
-    await thread.loadOlder();
-    // Keep the viewport anchored after older messages are prepended.
-    requestAnimationFrame(() => {
-      const el2 = listRef.current;
-      if (el2) el2.scrollTop += el2.scrollHeight - prevHeight;
-    });
-  };
 
   const handleSend = async () => {
     const text = draft;
@@ -418,9 +444,10 @@ export default function WebchatConversation({
           {thread.hasOlder && (
             <div className="text-center">
               <button
+                type="button"
                 onClick={handleLoadOlder}
                 disabled={thread.loadingOlder}
-                className="text-xs text-accent hover:text-accent/80 disabled:opacity-50 transition-colors"
+                className="cursor-pointer text-xs text-accent underline underline-offset-2 transition-colors hover:text-accent/80 disabled:cursor-default disabled:no-underline disabled:opacity-50"
               >
                 {thread.loadingOlder ? t('loadingMessages') : tCommon('loadOlder')}
               </button>

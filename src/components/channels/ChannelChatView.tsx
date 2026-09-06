@@ -56,9 +56,28 @@ export default function ChannelChatView({ session, onUpdated }: ChannelChatViewP
     anchorRef.current = null;
   }, [messages]);
 
+  // A fetch that fails never changes `messages`, so the layout effect above
+  // never runs to clear the anchor — without this the guard below would block
+  // every retry.
+  useEffect(() => {
+    if (!isFetchingNextPage) anchorRef.current = null;
+  }, [isFetchingNextPage]);
+
   const handleLoadOlder = () => {
-    anchorRef.current = listRef.current?.scrollHeight ?? null;
+    const el = listRef.current;
+    // A live `anchorRef` is a fetch already on its way: two scroll events fire
+    // before `isFetchingNextPage` has re-rendered, and the second one would
+    // overwrite the anchor the first is waiting on.
+    if (!el || !hasNextPage || isFetchingNextPage || anchorRef.current !== null) return;
+    anchorRef.current = el.scrollHeight;
     fetchNextPage();
+  };
+
+  // Scrolling to the top is the request for older messages; the button below is
+  // the fallback for a thread too short to scroll at all.
+  const handleScroll = () => {
+    const el = listRef.current;
+    if (el && el.scrollTop < 80 && !error) handleLoadOlder();
   };
 
   const handleClose = async () => {
@@ -108,7 +127,11 @@ export default function ChannelChatView({ session, onUpdated }: ChannelChatViewP
 
       {(loadError || closeError) && <ErrorAlert>{loadError || closeError}</ErrorAlert>}
 
-      <div ref={listRef} className="flex-1 overflow-y-auto py-4 space-y-3 min-h-0">
+      <div
+        ref={listRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto py-4 space-y-3 min-h-0"
+      >
         {isPending ? (
           <Placeholder size="sm">{t('loadingMessages')}</Placeholder>
         ) : messages.length === 0 ? (
@@ -121,7 +144,7 @@ export default function ChannelChatView({ session, onUpdated }: ChannelChatViewP
                   type="button"
                   onClick={handleLoadOlder}
                   disabled={isFetchingNextPage}
-                  className="text-xs text-accent transition-colors hover:text-accent/80 disabled:opacity-50"
+                  className="cursor-pointer text-xs text-accent underline underline-offset-2 transition-colors hover:text-accent/80 disabled:cursor-default disabled:no-underline disabled:opacity-50"
                 >
                   {isFetchingNextPage ? t('loadingMessages') : tCommon('loadOlder')}
                 </button>
