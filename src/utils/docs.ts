@@ -1,5 +1,5 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve, sep } from 'node:path';
 
 /**
  * The documentation loader: plain `.md` files on disk, read and parsed on the
@@ -127,13 +127,33 @@ function docsRoot(locale: string) {
     return join(CONTENT_ROOT, locale);
 }
 
-function readPage(locale: string, slug: string[]): DocPage | null {
+/**
+ * Slug segments arrive from the URL, and `join` resolves `..` — an unchecked
+ * segment walks out of the content directory and turns this route into a reader
+ * of any `.md` file on the host. Next normalises most of that away before
+ * routing, but that is the router's behaviour, not a guarantee this module can
+ * make, and `getDocPage` is an ordinary exported function. Hence two
+ * independent guards: the shape a segment is allowed to have, and containment
+ * of the path it resolves to.
+ */
+const SAFE_SEGMENT = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+function resolveDocFile(locale: string, slug: string[]): string | null {
+    if (!slug.every((segment) => SAFE_SEGMENT.test(segment))) return null;
+
+    const root = resolve(docsRoot(locale));
     // `index.md` for a directory, `<name>.md` for a leaf.
-    const candidates = [
-        join(docsRoot(locale), ...slug, 'index.md'),
-        join(docsRoot(locale), ...slug) + '.md',
-    ];
-    const path = candidates.find((candidate) => existsSync(candidate));
+    const candidates = [join(root, ...slug, 'index.md'), join(root, ...slug) + '.md'];
+
+    for (const candidate of candidates) {
+        const full = resolve(candidate);
+        if (full.startsWith(root + sep) && existsSync(full)) return full;
+    }
+    return null;
+}
+
+function readPage(locale: string, slug: string[]): DocPage | null {
+    const path = resolveDocFile(locale, slug);
     if (!path) return null;
 
     const { data, body } = parseFrontmatter(readFileSync(path, 'utf8'));
