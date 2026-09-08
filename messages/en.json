@@ -1502,5 +1502,11 @@
     "linkDeadTitle": "This link no longer works",
     "linkDeadBody": "It has expired or has already been used. Ask for a new one.",
     "linkDeadAction": "Ask for a new link"
+  },
+  "Docs": {
+    "root": "Documentation",
+    "onThisPage": "On this page",
+    "openScreen": "Open the screen",
+    "toggleSection": "Expand or collapse the {section} section"
   }
 }

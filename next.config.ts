@@ -27,7 +27,15 @@ const nextConfig: NextConfig = {
     // will not boot. Force the directory in until the tracer honours the
     // condition.
     outputFileTracingIncludes: {
-        '**': ['node_modules/.pnpm/@swc+helpers@*/node_modules/@swc/helpers/esm/**'],
+        '**': [
+            'node_modules/.pnpm/@swc+helpers@*/node_modules/@swc/helpers/esm/**',
+            // Documentation sources are read at request time by a computed path,
+            // which the tracer cannot see. Without this the image builds and then
+            // answers 404 for every /docs page. Keyed on '**' rather than the
+            // route glob because escaping `[locale]/docs/[[...slug]]` for
+            // picomatch is a footgun for a payload measured in kilobytes.
+            'content/docs/**/*.md',
+        ],
     },
     env: {
         NEXT_PUBLIC_APP_VERSION: version,
