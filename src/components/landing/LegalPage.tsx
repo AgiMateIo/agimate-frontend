@@ -77,6 +77,7 @@ export default function LegalPage({ namespace }: { namespace: 'Terms' | 'Privacy
         links={[
           { label: tHome('footer.github'), href: 'https://github.com/AgiMateIo', external: true },
           { label: tHome('footer.telegram'), href: 'https://t.me/agimate', external: true },
+          { label: tHome('footer.docs'), href: '/docs', localized: true },
           { label: tHome('footer.terms'), href: '/terms', localized: true },
           { label: tHome('footer.privacy'), href: '/privacy', localized: true },
         ]}

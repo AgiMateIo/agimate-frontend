@@ -491,7 +491,6 @@
       "copyright": "AgiMate © 2025",
       "github": "GitHub",
       "telegram": "Telegram",
-      "telegramChat": "Чат сообщества",
       "docs": "Документация",
       "terms": "Условия использования",
       "privacy": "Конфиденциальность"
@@ -1502,5 +1501,11 @@
     "linkDeadTitle": "Ссылка не годится",
     "linkDeadBody": "Она просрочена или уже использована. Запросите новую.",
     "linkDeadAction": "Запросить новую ссылку"
+  },
+  "Docs": {
+    "root": "Документация",
+    "onThisPage": "На этой странице",
+    "openScreen": "Открыть экран",
+    "toggleSection": "Развернуть или свернуть раздел «{section}»"
   }
 }

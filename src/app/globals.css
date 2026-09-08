@@ -17,6 +17,13 @@
 
 html {
   scroll-behavior: smooth;
+  /* The gutter is reserved whether or not the page scrolls, so a short page and
+     a long one lay out at the same width. Without it the scrollbar appearing on
+     a long page takes ~15px off the viewport and re-centres every `mx-auto`
+     container, which reads as the layout jumping sideways on navigation. A no-op
+     where the OS draws overlay scrollbars (macOS on a trackpad); it earns its
+     keep on Windows, on Linux, and on macOS with a mouse attached. */
+  scrollbar-gutter: stable;
 }
 
 body {

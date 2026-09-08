@@ -575,8 +575,7 @@ export default function HomePage() {
         links={[
           { label: t('footer.github'), href: 'https://github.com/AgiMateIo', external: true },
           { label: t('footer.telegram'), href: 'https://t.me/agimate', external: true },
-          { label: t('footer.telegramChat'), href: 'https://t.me/agimate', external: true },
-          { label: t('footer.docs'), href: 'https://github.com/AgiMateIo', external: true },
+          { label: t('footer.docs'), href: '/docs', localized: true },
           { label: t('footer.terms'), href: '/terms', localized: true },
           { label: t('footer.privacy'), href: '/privacy', localized: true },
         ]}
