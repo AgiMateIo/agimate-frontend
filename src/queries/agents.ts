@@ -7,7 +7,7 @@ import {
 } from '@tanstack/react-query';
 import apiService from '@/services/api';
 import { newestFirst } from '@/utils/date';
-import type { AgentResponse, PagedResponse, PatchAgentRequest } from '@/types';
+import type { AgentResponse, AgentSkillResponse, PagedResponse, PatchAgentRequest } from '@/types';
 
 export const agentKeys = {
   all: ['agents'] as const,
@@ -204,6 +204,16 @@ export function useAgentCacheActions() {
     invalidateAgentAccess: (id: string) => {
       queryClient.invalidateQueries({ queryKey: agentKeys.skills(id) });
       queryClient.invalidateQueries({ queryKey: agentKeys.connections(id) });
+    },
+    // A binding row answered by its own PATCH is the same row the listing
+    // returns, so it goes straight into the list — a refetch would only redraw
+    // the control a second time.
+    replaceAgentSkill: (id: string, row: AgentSkillResponse) => {
+      queryClient.setQueryData<PagedResponse<AgentSkillResponse>>(agentKeys.skills(id), (prev) =>
+        prev
+          ? { ...prev, content: prev.content.map((b) => (b.id === row.id ? row : b)) }
+          : prev,
+      );
     },
     invalidateAll: () =>
       queryClient.invalidateQueries({ queryKey: agentKeys.all }),

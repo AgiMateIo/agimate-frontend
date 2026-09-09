@@ -109,7 +109,7 @@ export default function ConnectionsList({
       if (!query) return true;
       const connectorName = platformByCode.get(connection.connectorCode)?.name ?? '';
       return (
-        connection.name.toLowerCase().includes(query) ||
+        (connection.name ?? '').toLowerCase().includes(query) ||
         connection.fullCode.toLowerCase().includes(query) ||
         (connection.subCode ?? '').toLowerCase().includes(query) ||
         connectorName.toLowerCase().includes(query)

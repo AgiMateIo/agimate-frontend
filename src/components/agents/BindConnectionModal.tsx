@@ -73,7 +73,7 @@ export default function BindConnectionModal({
       if (!query) return true;
       const connectorName = connector?.name ?? c.connectorCode;
       return (
-        c.name.toLowerCase().includes(query) ||
+        (c.name ?? '').toLowerCase().includes(query) ||
         c.fullCode.toLowerCase().includes(query) ||
         (c.subCode ?? '').toLowerCase().includes(query) ||
         connectorName.toLowerCase().includes(query)
@@ -146,7 +146,7 @@ export default function BindConnectionModal({
                         />
                         <ConnectionAvatar
                           connectorCode={conn.connectorCode}
-                          connectorName={conn.name}
+                          connectorName={conn.name || conn.fullCode}
                           size="sm"
                         />
                         <div className="min-w-0">

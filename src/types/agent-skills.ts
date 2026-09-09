@@ -23,6 +23,12 @@ export interface AgentSkillConnectorStatus {
   satisfied: boolean;
 }
 
+// How a skill's body reaches the agent: `EAGER` puts it in the prompt whole,
+// `LAZY` leaves the agent to fetch it when it decides it needs it. Read only for
+// an agent that has the `skill-loader` skill bound — without it every body goes
+// into the prompt whatever this says.
+export type SkillDisclosure = 'EAGER' | 'LAZY';
+
 export interface AgentSkillResponse {
   id: string;
   agentId: string;
@@ -34,6 +40,13 @@ export interface AgentSkillResponse {
   satisfied: boolean;
   // True when the bound public skill was updated by its owner since this binding.
   needsReinstall: boolean;
+  // What is in effect: this binding's override, or the skill's own default.
+  disclosure: SkillDisclosure;
+  // What this binding overrides it with; null = the skill's default is in
+  // effect. The default itself is never returned on its own — when the override
+  // is null it *is* `disclosure`, and with an override set there is no way to
+  // ask what inheriting would give.
+  disclosureOverride: SkillDisclosure | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -45,8 +58,17 @@ export interface CreateAgentSkillRequest {
   // same service are not guessed apart); must be omitted for internal ones and
   // for codes the skill never declared.
   connections?: Record<string, string>;
+  // Absent or null: the binding inherits the skill's own default.
+  disclosure?: SkillDisclosure;
 }
 
 // PUT /manage/agents/{agentId}/skills/{skillId}/connections — replaces the whole
 // map: a code absent from the body is left without an instance.
 export type UpdateAgentSkillConnectionsRequest = Record<string, string>;
+
+// PATCH /manage/agents/{agentId}/skills/{skillId} — the one field, and it is
+// required. `INHERIT` drops the override rather than `null`, which everywhere
+// else in the API means "leave this field alone".
+export interface UpdateAgentSkillDisclosureRequest {
+  disclosure: SkillDisclosure | 'INHERIT';
+}

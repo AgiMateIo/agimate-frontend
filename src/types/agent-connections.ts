@@ -17,7 +17,9 @@ export interface AgentConnectionResponse {
   connectionId: string;
   connectorCode: string;
   fullCode: string;
-  name: string;
+  // The connection's own name, and null for the same reason it is there — a row
+  // the backend created never had one. Fall back to `fullCode`.
+  name: string | null;
   enabled: boolean;
   // Internal connector: exactly one instance per user. Informational only — it
   // no longer blocks unbinding, since skills stopped creating bindings.

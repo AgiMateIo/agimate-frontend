@@ -15,6 +15,7 @@ import type {
   AgentSkillResponse,
   CreateAgentSkillRequest,
   UpdateAgentSkillConnectionsRequest,
+  UpdateAgentSkillDisclosureRequest,
   AgentLlmResponse,
   AgentLlmPurpose,
   CreateAgentLlmRequest,
@@ -109,6 +110,17 @@ export const agentsApi = {
     data: UpdateAgentSkillConnectionsRequest,
   ): Promise<AgentSkillResponse> {
     return httpClient.put<AgentSkillResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/skills/${skillId}/connections`, data);
+  },
+
+  // Whether this agent gets the skill's body in the prompt or fetches it on
+  // demand. `disclosure: 'INHERIT'` clears the override — the skill's own
+  // default is in effect again. Answers the same binding row the listing does.
+  async updateAgentSkillDisclosure(
+    agentId: string,
+    skillId: string,
+    data: UpdateAgentSkillDisclosureRequest,
+  ): Promise<AgentSkillResponse> {
+    return httpClient.patch<AgentSkillResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/skills/${skillId}`, data);
   },
 
   // Marks the agent's skills as installed at their current version — the only

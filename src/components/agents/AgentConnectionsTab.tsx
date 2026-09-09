@@ -95,7 +95,7 @@ export default function AgentConnectionsTab({
                     />
                     <ConnectionAvatar
                       connectorCode={conn.connectorCode}
-                      connectorName={conn.name}
+                      connectorName={conn.name || conn.fullCode}
                       size="sm"
                     />
                     <div className="min-w-0">

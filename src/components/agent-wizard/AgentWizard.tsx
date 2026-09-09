@@ -28,7 +28,9 @@ export interface WizardSkill {
 // exists — bindings need an agent id.
 export interface WizardConnection {
   id: string;
-  name: string;
+  // Null exactly as it comes off the connection — every reader already falls
+  // back to `fullCode`, and laundering it into '' here would only hide that.
+  name: string | null;
   fullCode: string;
   connectorCode: string;
 }

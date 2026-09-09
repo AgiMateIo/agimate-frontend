@@ -10,7 +10,11 @@ export interface ConnectionResponse {
   subCode: string | null;
   // stable per-user instance handle, e.g. `mcp_context7` — used as the instance label in UI.
   fullCode: string;
-  name: string;
+  // Legitimately null: a connection the backend created for the user (an
+  // internal connector's single row, an MCP server that never announced a name)
+  // never had one. Always fall back to `fullCode`, never render the empty
+  // string and never call a string method on it unguarded.
+  name: string | null;
   enabled: boolean;
   authStatus: ConnectionAuthStatus;
   lastUsedAt: string | null;

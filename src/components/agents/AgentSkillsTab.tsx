@@ -5,12 +5,13 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useQueries } from '@tanstack/react-query';
 import { Link } from '@/i18n/navigation';
 import apiService from '@/services/api';
-import { AgentSkillResponse } from '@/types';
+import { AgentSkillResponse, SkillDisclosure } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { RowAction } from '@/components/ui/RowAction';
+import { Select } from '@/components/ui/FormField';
 import {
   PlusIcon,
   TrashIcon,
@@ -29,6 +30,16 @@ import SkillConnectionsModal from './SkillConnectionsModal';
 import SkillConnectorChip, { connectorFix } from './SkillConnectorChip';
 import { Placeholder } from '@/components/ui/Placeholder';
 
+// The loader is a skill like any other, told apart by the connector it declares
+// — its name is the user's to change, that code is not.
+const SKILL_LOADER_CODE = 'skill-loader';
+
+// The three values of the selector: two overrides and the way back to the
+// skill's own default.
+const DISCLOSURE_CHOICES = ['INHERIT', 'EAGER', 'LAZY'] as const;
+
+type DisclosureChoice = (typeof DISCLOSURE_CHOICES)[number];
+
 interface AgentSkillsTabProps {
   agentId: string;
   // CTA for a connector the user owns no instance of — the fix is creating a
@@ -39,7 +50,7 @@ interface AgentSkillsTabProps {
 export default function AgentSkillsTab({ agentId, onCreateConnection }: AgentSkillsTabProps) {
   const t = useTranslations('Agents');
   const locale = useLocale();
-  const { invalidateAgentAccess } = useAgentCacheActions();
+  const { invalidateAgentAccess, replaceAgentSkill } = useAgentCacheActions();
 
   const { data: page, isPending, error: queryError } = useAgentSkillsQuery(agentId);
   const [{ data: userConnections }, { data: catalog }] = useQueries({
@@ -51,6 +62,13 @@ export default function AgentSkillsTab({ agentId, onCreateConnection }: AgentSki
   const [editingBinding, setEditingBinding] = useState<AgentSkillResponse | null>(null);
   // Inline fixes are per connector of per binding, so the spinner has to be too.
   const [pendingFix, setPendingFix] = useState<string | null>(null);
+  // Carries the chosen value, not just the row: the select is controlled off
+  // the cache, and holding only an id would show the old value again until the
+  // answer landed.
+  const [pendingDisclosure, setPendingDisclosure] = useState<{
+    id: string;
+    value: DisclosureChoice;
+  } | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [actionError, setActionError] = useState('');
 
@@ -60,7 +78,24 @@ export default function AgentSkillsTab({ agentId, onCreateConnection }: AgentSki
   const unsatisfied = bindings.filter((b) => b.satisfied === false);
   const needsReinstall = bindings.some((b) => b.needsReinstall);
 
+  // Without the loader skill the axis is not read at all: every body goes into
+  // the prompt whatever the bindings say. Said once, under the table, rather
+  // than on every disabled row.
+  const hasSkillLoader = bindings.some(
+    (b) => b.connectors.length === 1 && b.connectors[0].connectorCode === SKILL_LOADER_CODE,
+  );
+
   const connectorName = (code: string) => catalog?.find((c) => c.code === code)?.name ?? code;
+  const disclosureName = (value: SkillDisclosure) =>
+    value === 'LAZY' ? t('disclosureLazy') : t('disclosureEager');
+  // The skill's default is only nameable while it is the one in effect: with an
+  // override set the backend never says what inheriting would give.
+  const disclosureOption = (choice: DisclosureChoice, binding: AgentSkillResponse) => {
+    if (choice !== 'INHERIT') return disclosureName(choice);
+    return binding.disclosureOverride === null
+      ? t('disclosureInheritKnown', { value: disclosureName(binding.disclosure) })
+      : t('disclosureInherit');
+  };
   const instanceCount = useMemo(() => {
     const counts = new Map<string, number>();
     for (const c of userConnections ?? []) {
@@ -89,6 +124,23 @@ export default function AgentSkillsTab({ agentId, onCreateConnection }: AgentSki
       setActionError(getErrorMessage(err, t('openConnectionFailed')));
     } finally {
       setPendingFix(null);
+    }
+  };
+
+  // Nothing but this row changes, and the answer is that row — no refetch, and
+  // the connections list has no stake in it either.
+  const changeDisclosure = async (binding: AgentSkillResponse, value: DisclosureChoice) => {
+    setPendingDisclosure({ id: binding.id, value });
+    setActionError('');
+    try {
+      const row = await apiService.updateAgentSkillDisclosure(agentId, binding.skillId, {
+        disclosure: value,
+      });
+      replaceAgentSkill(agentId, row);
+    } catch (err) {
+      setActionError(getErrorMessage(err, t('disclosureFailed')));
+    } finally {
+      setPendingDisclosure(null);
     }
   };
 
@@ -161,6 +213,12 @@ export default function AgentSkillsTab({ agentId, onCreateConnection }: AgentSki
                 <tr className="border-b border-border">
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('skillName')}</th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('skillConnectors')}</th>
+                  <th
+                    className="text-left py-3 px-4 text-sm font-medium text-muted"
+                    title={t('disclosureHint')}
+                  >
+                    {t('disclosureColumn')}
+                  </th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('addedAt')}</th>
                   <th className="text-right py-3 px-4 text-sm font-medium text-muted"></th>
                 </tr>
@@ -233,6 +291,37 @@ export default function AgentSkillsTab({ agentId, onCreateConnection }: AgentSki
                           </div>
                         )}
                       </td>
+                      <td className="py-3 px-4 text-sm">
+                        {/* A row from a backend that predates the axis has no
+                            verdict to show — a dash, not a guessed default. */}
+                        {binding.disclosure ? (
+                          <Select
+                            size="xs"
+                            fullWidth={false}
+                            value={
+                              pendingDisclosure?.id === binding.id
+                                ? pendingDisclosure.value
+                                : (binding.disclosureOverride ?? 'INHERIT')
+                            }
+                            disabled={!hasSkillLoader || pendingDisclosure?.id === binding.id}
+                            onChange={(e) =>
+                              changeDisclosure(
+                                binding,
+                                e.target.value as DisclosureChoice,
+                              )
+                            }
+                            className="disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {DISCLOSURE_CHOICES.map((choice) => (
+                              <option key={choice} value={choice}>
+                                {disclosureOption(choice, binding)}
+                              </option>
+                            ))}
+                          </Select>
+                        ) : (
+                          <span className="text-muted">—</span>
+                        )}
+                      </td>
                       <td className="py-3 px-4 text-sm text-muted">
                         {formatDate(binding.createdAt, locale)}
                       </td>
@@ -262,6 +351,12 @@ export default function AgentSkillsTab({ agentId, onCreateConnection }: AgentSki
               </tbody>
             </table>
           </div>
+
+          {/* The switch is inert without the loader — say it once, under the
+              table, instead of on every disabled row. */}
+          {!hasSkillLoader && (
+            <p className="text-xs text-muted">{t('disclosureNoLoaderHint')}</p>
+          )}
 
           {/* One page holds every realistic agent; say so rather than paging. */}
           {page && page.totalElements > bindings.length && (
