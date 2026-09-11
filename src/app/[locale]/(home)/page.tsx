@@ -570,16 +570,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <LandingFooter
-        copyright={t('footer.copyright')}
-        links={[
-          { label: t('footer.github'), href: 'https://github.com/AgiMateIo', external: true },
-          { label: t('footer.telegram'), href: 'https://t.me/agimate', external: true },
-          { label: t('footer.docs'), href: '/docs', localized: true },
-          { label: t('footer.terms'), href: '/terms', localized: true },
-          { label: t('footer.privacy'), href: '/privacy', localized: true },
-        ]}
-      />
+      <LandingFooter />
     </div>
   );
 }

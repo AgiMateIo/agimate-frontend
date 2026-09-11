@@ -486,14 +486,6 @@
       "button": "Create an account",
       "docsLink": "Docs on GitHub",
       "finePrint": "Self-hosted · Your own model key · Every call logged"
-    },
-    "footer": {
-      "copyright": "AgiMate © 2025",
-      "github": "GitHub",
-      "telegram": "Telegram",
-      "docs": "Documentation",
-      "terms": "Terms of Use",
-      "privacy": "Privacy"
     }
   },
   "Terms": {
@@ -617,6 +609,14 @@
     "install": "Get the app"
   },
   "Common": {
+    "copyright": "© 2025–{year} AgiMate",
+    "footer": {
+      "github": "GitHub",
+      "telegram": "Telegram",
+      "docs": "Documentation",
+      "terms": "Terms of Use",
+      "privacy": "Privacy"
+    },
     "loading": "Loading...",
     "cancel": "Cancel",
     "save": "Save",
@@ -897,12 +897,6 @@
         ]
       },
       "github": "GitHub",
-      "docs": "Documentation"
-    },
-    "footer": {
-      "copyright": "AgiMate © 2025",
-      "github": "GitHub",
-      "telegram": "Telegram",
       "docs": "Documentation"
     }
   },
@@ -1220,12 +1214,6 @@
       "downloadButton": "Download",
       "github": "GitHub",
       "docs": "Documentation"
-    },
-    "footer": {
-      "copyright": "AgiMate © 2025",
-      "github": "GitHub",
-      "telegram": "Telegram",
-      "docs": "Documentation"
     }
   },
   "AndroidPage": {
@@ -1439,12 +1427,6 @@
       "subtitle": "Open-source. Free. Full control over your data.",
       "apk": "Download APK",
       "github": "GitHub",
-      "docs": "Documentation"
-    },
-    "footer": {
-      "copyright": "AgiMate © 2025",
-      "github": "GitHub",
-      "telegram": "Telegram",
       "docs": "Documentation"
     }
   },

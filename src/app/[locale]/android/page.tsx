@@ -365,14 +365,7 @@ export default function AndroidPage() {
         </div>
       </section>
 
-      <LandingFooter
-        copyright={t('footer.copyright')}
-        links={[
-          { label: t('footer.github'), href: 'https://github.com/AgiMateIo/android', external: true },
-          { label: t('footer.telegram'), href: 'https://t.me/agimate', external: true },
-          { label: t('footer.docs'), href: '/docs', localized: true },
-        ]}
-      />
+      <LandingFooter githubUrl="https://github.com/AgiMateIo/android" />
     </div>
   );
 }

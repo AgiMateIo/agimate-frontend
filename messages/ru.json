@@ -486,14 +486,6 @@
       "button": "Создать аккаунт",
       "docsLink": "Документация на GitHub",
       "finePrint": "Self-hosted · Свой ключ к модели · Журнал каждого вызова"
-    },
-    "footer": {
-      "copyright": "AgiMate © 2025",
-      "github": "GitHub",
-      "telegram": "Telegram",
-      "docs": "Документация",
-      "terms": "Условия использования",
-      "privacy": "Конфиденциальность"
     }
   },
   "Terms": {
@@ -617,6 +609,14 @@
     "install": "Установить приложение"
   },
   "Common": {
+    "copyright": "© 2025–{year} AgiMate",
+    "footer": {
+      "github": "GitHub",
+      "telegram": "Telegram",
+      "docs": "Документация",
+      "terms": "Условия использования",
+      "privacy": "Конфиденциальность"
+    },
     "loading": "Загрузка...",
     "cancel": "Отмена",
     "save": "Сохранить",
@@ -897,12 +897,6 @@
         ]
       },
       "github": "GitHub",
-      "docs": "Документация"
-    },
-    "footer": {
-      "copyright": "AgiMate © 2025",
-      "github": "GitHub",
-      "telegram": "Telegram",
       "docs": "Документация"
     }
   },
@@ -1220,12 +1214,6 @@
       "downloadButton": "Скачать",
       "github": "GitHub",
       "docs": "Документация"
-    },
-    "footer": {
-      "copyright": "AgiMate © 2025",
-      "github": "GitHub",
-      "telegram": "Telegram",
-      "docs": "Документация"
     }
   },
   "AndroidPage": {
@@ -1439,12 +1427,6 @@
       "subtitle": "Open-source. Бесплатно. Полный контроль над данными.",
       "apk": "Скачать APK",
       "github": "GitHub",
-      "docs": "Документация"
-    },
-    "footer": {
-      "copyright": "AgiMate © 2025",
-      "github": "GitHub",
-      "telegram": "Telegram",
       "docs": "Документация"
     }
   },
