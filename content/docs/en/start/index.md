@@ -4,15 +4,15 @@ description: The first steps after signing up
 order: 1
 ---
 
-Three things to do once: connect a model, create an agent, give it tools.
+Three things to do once: create an agent, give it skills and connect the connectors.
 
-## What you need
+## What you will need
 
-An account and an API key for at least one model provider. The platform's free tier works
-without a key, but limits how many requests you get.
+The platform's free tier works for every new user, with its own limits. To depend on those
+limits less, add your own LLM provider.
 
 ## The order
 
 1. Add an LLM provider.
 2. Create an agent and pick its model.
-3. Add connections — they are what gives an agent its tools.
+3. Connect the connectors — they are what gives the agent its tools.
