@@ -43,10 +43,10 @@ export default function LandingHeader({ navLinks, loginLabel, dashboardLabel }: 
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [menuOpen]);
 
-  // Close menu on resize past mobile breakpoint
+  // Close menu on resize past the breakpoint where the links are in the row (md)
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 640) setMenuOpen(false);
+      if (window.innerWidth >= 768) setMenuOpen(false);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -72,20 +72,21 @@ export default function LandingHeader({ navLinks, loginLabel, dashboardLabel }: 
             <a
               key={link.href}
               href={link.href}
-              className="hidden sm:inline hover:text-foreground transition-colors"
+              className="hidden md:inline hover:text-foreground transition-colors"
             >
               {link.label}
             </a>
           ))}
-          {/* Hidden on a phone, where the row is already at the width the
-              wordmark has to truncate for — the mobile menu below carries it. */}
+          {/* Hidden below md, where the row is already at the width the wordmark
+              has to truncate for — the dropdown below carries the links instead.
+              Six nav labels plus the login button do not fit a tablet row. */}
           <a
             href={GITHUB_URL}
             target="_blank"
             rel="noopener noreferrer"
             aria-label={t('providers.github')}
             title={t('providers.github')}
-            className="hidden sm:flex items-center rounded-lg bg-surface-secondary px-2 py-1 text-muted transition-colors hover:text-foreground"
+            className="hidden md:flex items-center rounded-lg bg-surface-secondary px-2 py-1 text-muted transition-colors hover:text-foreground"
           >
             <ProviderIcon provider="github" className="h-4 w-4" />
           </a>
@@ -109,7 +110,7 @@ export default function LandingHeader({ navLinks, loginLabel, dashboardLabel }: 
           {/* Hamburger button — mobile only */}
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className="sm:hidden flex h-9 w-9 items-center justify-center rounded-lg hover:bg-surface-secondary transition-colors"
+            className="md:hidden flex h-9 w-9 items-center justify-center rounded-lg hover:bg-surface-secondary transition-colors"
             aria-label="Menu"
           >
             {menuOpen ? <XMarkIcon className="h-5 w-5" /> : <Bars3Icon className="h-5 w-5" />}
@@ -121,7 +122,7 @@ export default function LandingHeader({ navLinks, loginLabel, dashboardLabel }: 
       {menuOpen && (
         <div
           ref={menuRef}
-          className="sm:hidden border-t border-border/40 bg-background/95 backdrop-blur-md"
+          className="md:hidden border-t border-border/40 bg-background/95 backdrop-blur-md"
         >
           <div className="mx-auto max-w-6xl px-4 py-3 flex flex-col gap-1">
             {navLinks.map((link) => (
