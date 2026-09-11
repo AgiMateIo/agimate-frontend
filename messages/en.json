@@ -29,12 +29,12 @@
       "plainLabel": "In plain words:",
       "items": [
         {
-          "title": "Hands — the tools",
+          "title": "Hands: the tools",
           "tech": "The concrete calls that connections bring in: MCP servers, your own API behind a key, connectors to Telegram, your phone and your computer. A tool appears for an agent together with the binding.",
           "plain": "What the agent can do at all: send a message, file a task, read a spreadsheet."
         },
         {
-          "title": "Craft — the skills",
+          "title": "Craft: the skills",
           "tech": "A skill is written know-how for using tools: the order of steps, the rules, and the connectors it needs. It is versioned, reused across agents, and picked from a shared catalogue.",
           "plain": "Tools are what an agent can do. A skill is how well it handles them: which one to reach for, in what order, when to stop and ask."
         },
@@ -44,17 +44,17 @@
           "plain": "The agent does not know the passwords to your services. It says \"send the email\", and the harness supplies the connector key, outside the model."
         },
         {
-          "title": "Rails — rules checked before the call",
+          "title": "Rails: rules checked before the call",
           "tech": "Allow or deny an individual tool and its parameters, up to closing a connection entirely.",
-          "plain": "\"Reading is fine, deleting isn't.\" Checked before the agent touches the service, not after."
+          "plain": "\"Reading is fine, deleting isn't.\" Checked before the agent touches the service."
         },
         {
-          "title": "Trail — the log of every action",
+          "title": "Trail: the log of every action",
           "tech": "The run, its steps, every call with parameters and result, token spend per model.",
           "plain": "You can see what the agent actually did and why: a line with the call parameters and the service's answer."
         },
         {
-          "title": "Ground — the platform runs the agent",
+          "title": "Ground: the platform runs the agent",
           "tech": "The agent is executed on the platform side: in the project cloud, or on your own server when self-hosted. Devices attach as companion connectors and never become the place the agent runs.",
           "plain": "So every call has a point where it can still be checked: the platform itself. An agent running on your own machine talks to the system directly, with no such checkpoint on the way."
         }
@@ -62,7 +62,7 @@
       "callout": "An agent can be talked into things — it is a language model, after all. But it cannot hand over a connector key: it does not have one. The most it can do is try to call a tool, and that runs into the rules and stays in the log."
     },
     "agents": {
-      "title": "Specialisation is not a request in the prompt; it is an access boundary",
+      "title": "An agent's specialisation rests on its access",
       "subtitle": "An instruction is a request, and a request can be argued with. A connection binding is a boundary: the agent does not get past it, however it is persuaded. Each agent has its own.",
       "plainLabel": "In plain words:",
       "axes": [
@@ -166,7 +166,7 @@
       "eyebrow": "How it works",
       "lede": "Every call goes through a rule",
       "intro": "A trigger arrives from a connector or a device. The platform checks it against the agent's rules and hands it to one agent. Having done its work, the agent calls a tool back through the core — and that call goes through the same check. Credentials are attached inside the core and never reach the agent, and every trigger and every call lands in its own log: allowed and denied alike.",
-      "sr": "Flow diagram. On the left are the sources: tools and triggers, grouped into connectors and devices. A trigger travels from a connector or a device into the AgiMate core. There it is checked by the Policy block: is it allowed for this agent or not. A denied trigger goes no further and lands in the trigger log. An allowed one passes to Trigger routing, which hands it to one specific agent. Having worked on the trigger, the agent reaches back into the core and calls a tool on a connector or a device. That call is checked by the same rules and lands in the tool call log. Connector credentials stay in the core and are never passed to the agent. The agent's answer returns through the core, surfaces in the User Channel block, and leaves for the messenger the conversation is in — webchat, Telegram, the phone app or an IDE. On the diagram each connector and device carries its own name — Mail, Laptop, Calendar, Android — each agent carries the name it was given, and each packet in flight carries a Greek letter. The trigger log lists the time, the connector or device, the trigger name, the Greek name of the packet that carried it, and the verdict. The tool call log lists the time, the agent that asked, the connector or device it went to, the tool, and the verdict.",
+      "sr": "Flow diagram. On the left are the sources: tools and triggers, grouped into connectors and devices. A trigger travels from a connector or a device into the AgiMate core. There it is checked by the Policy block: is it allowed for this agent or not. A denied trigger goes no further and lands in the trigger log. An allowed one passes to Trigger routing, which hands it to one specific agent. Having worked on the trigger, the agent reaches back into the core and calls a tool on a connector or a device. That call is checked by the same rules and lands in the tool call log. Connector credentials stay in the core and are never passed to the agent. The agent's answer returns through the core, surfaces in the User Channel block, and leaves for the messenger the conversation is in: webchat, Telegram, the phone app or an IDE. On the diagram each connector and device carries its own name (Mail, Laptop, Calendar, Android), each agent carries the name it was given, and each packet in flight carries a Greek letter. The trigger log lists the time, the connector or device, the trigger name, the Greek name of the packet that carried it, and the verdict. The tool call log lists the time, the agent that asked, the connector or device it went to, the tool, and the verdict.",
       "tool": "Tool",
       "trigger": "Trigger",
       "rules": "Policy",
@@ -274,7 +274,7 @@
         },
         "device": {
           "title": "Device",
-          "body": "A companion on your own machine or phone. It raises triggers of its own — a watched file, a geofence — and exposes only the tools built into it."
+          "body": "A companion on your own machine or phone. It raises triggers of its own, such as a watched file or a geofence, and exposes only the tools built into it."
         },
         "rules": {
           "title": "Policy",
@@ -324,7 +324,7 @@
         },
         {
           "title": "An agent on your device",
-          "description": "The Android and desktop apps are connectors to your own hardware, and there is nowhere else to get them. Notifications, calls and device events become triggers, and the agent answers with a push, spoken text or a command carried out on the device.",
+          "description": "The Android and desktop apps are connectors to your own hardware. Notifications, calls and device events become triggers, and the agent answers with a push, spoken text or a command carried out on the device.",
           "flow": [
             "Device event",
             "Android / Desktop",
@@ -427,7 +427,7 @@
       },
       "integrations": {
         "title": "What agents connect to",
-        "subtitle": "MCP servers and your own API already cover almost anything. The catalog of ready-made integrations keeps growing.",
+        "subtitle": "MCP servers and your own API behind a key connect today. The catalog of ready-made integrations keeps growing.",
         "items": [
           "MCP servers",
           "Your API by key",
@@ -448,7 +448,7 @@
       },
       "install": {
         "title": "Your devices as the agent's tools",
-        "subtitle": "The phone and desktop apps are connectors you can't get anywhere else: the agent sees what happens on your hardware and acts on it.",
+        "subtitle": "The phone and desktop apps: the agent sees what happens on your hardware and acts on it.",
         "items": [
           {
             "title": "Android",
@@ -471,7 +471,7 @@
     "openSource": {
       "title": "Self-hosted and open source",
       "description": "All of the code is open: the Java core, the dashboard, the chat app, the Android and desktop connectors, the n8n nodes. The platform deploys on your own server, where your data, model keys and logs stay.",
-      "selfHosted": "Self-hosted — your data and keys stay with you",
+      "selfHosted": "Self-hosted: your data and keys stay with you",
       "license": "All of the code under an open licence",
       "github": "Repositories and instructions on GitHub"
     },
@@ -514,7 +514,7 @@
       }
     ],
     "contactTitle": "Questions",
-    "contactBody": "Write to us in the community chat — we'll answer.",
+    "contactBody": "Write to us in the community chat and we'll answer.",
     "contactLink": "Community chat",
     "backHome": "Back home"
   },
@@ -553,7 +553,7 @@
       }
     ],
     "contactTitle": "Questions",
-    "contactBody": "Write to us in the community chat — we'll answer.",
+    "contactBody": "Write to us in the community chat and we'll answer.",
     "contactLink": "Community chat",
     "backHome": "Back home"
   },
@@ -567,7 +567,7 @@
     "privacyLink": "Privacy Policy",
     "redirecting": "Redirecting...",
     "checkingSession": "Checking whether you are signed in…",
-    "alreadySignedIn": "You are already signed in — opening the dashboard",
+    "alreadySignedIn": "You are already signed in. Opening the dashboard",
     "signInAsAnother": "Sign in with another account",
     "email": "Email",
     "password": "Password",
@@ -679,8 +679,8 @@
       "cta": "Install"
     },
     "nodes": {
-      "title": "Three nodes — one integration",
-      "subtitle": "Each node has its role. Together — full automation.",
+      "title": "Three nodes, one integration",
+      "subtitle": "Each node has its role.",
       "trigger": {
         "title": "AgiMate Trigger",
         "description": "Starts a workflow on device or service events. Works as a webhook — n8n listens and reacts.",
@@ -732,7 +732,7 @@
     },
     "setup": {
       "title": "Install in 3 steps",
-      "subtitle": "From installation to your first workflow — under a minute.",
+      "subtitle": "From installation to your first workflow in under a minute.",
       "steps": [
         {
           "title": "Install the node",
@@ -744,7 +744,7 @@
         },
         {
           "title": "Create a workflow",
-          "description": "Drag the node onto the canvas, pick a method, and run. Done."
+          "description": "Drag the node onto the canvas, pick a method, and run."
         }
       ],
       "npmCommand": "npm install n8n-nodes-agimate",
@@ -877,7 +877,7 @@
     },
     "install": {
       "title": "Get started now",
-      "subtitle": "Two ways to install — pick what works for you",
+      "subtitle": "Two ways to install; pick what works for you",
       "npm": {
         "title": "Via CLI",
         "description": "Run this command in your n8n directory:",
@@ -913,7 +913,7 @@
     "hero": {
       "title": "AgiMate",
       "titleHighlight": "Desktop",
-      "subtitle": "A specialized AI agent on your computer: monitors files, events, and notifications, executes commands. Install once — and forget.",
+      "subtitle": "A specialized AI agent on your computer: monitors files, events, and notifications, executes commands.",
       "cta": "Download for free"
     },
     "howItWorks": {
@@ -948,7 +948,7 @@
     },
     "features": {
       "title": "Built-in capabilities",
-      "subtitle": "Built-in triggers and actions — work right after installation.",
+      "subtitle": "Built-in triggers and actions that work right after installation.",
       "triggersTitle": "Triggers",
       "triggers": {
         "fileWatcher": {
@@ -976,7 +976,7 @@
       "actions": {
         "notifications": {
           "title": "Notifications",
-          "description": "AI sends notifications right to your desktop. System ones — to tray. Important ones — as modal windows.",
+          "description": "AI sends notifications right to your desktop: system ones to the tray, important ones as modal windows.",
           "features": [
             "System notification (background) and modal window",
             "Customizable title, text, and duration",
@@ -1083,7 +1083,7 @@
         },
         {
           "title": "Legacy Software Bridge",
-          "description": "AI interacts with desktop apps without APIs — 1C, Excel, specialized software. Bridge between old and new.",
+          "description": "AI interacts with desktop apps without APIs: 1C, Excel, specialized software.",
           "flow": [
             "AI command",
             "App action",
@@ -1146,7 +1146,7 @@
     },
     "interface": {
       "title": "Simple and unobtrusive",
-      "subtitle": "Lives in the system tray — stays out of your way. All settings in one window.",
+      "subtitle": "Lives in the system tray. All settings in one window.",
       "screens": {
         "tray": {
           "title": "System Tray",
@@ -1205,7 +1205,7 @@
     },
     "download": {
       "title": "Open Source. Free. Extensible.",
-      "subtitle": "Download AgiMate Desktop — add a specialized agent to your computer.",
+      "subtitle": "Download AgiMate Desktop and add a specialized agent to your computer.",
       "downloadButton": "Download",
       "github": "GitHub",
       "docs": "Documentation"
@@ -1236,7 +1236,7 @@
       "title": "Two operating modes",
       "subtitle": "The app works in two directions: sends events from the device and receives commands from the backend.",
       "triggersTitle": "Device triggers",
-      "triggersCaption": "All triggers run in the background — no need to keep the app open.",
+      "triggersCaption": "All triggers run in the background, with no need to keep the app open.",
       "triggers": {
         "wifi": {
           "title": "Wi-Fi connection",
@@ -1310,7 +1310,7 @@
     },
     "interface": {
       "title": "App interface",
-      "subtitle": "Three main screens — simple and intuitive",
+      "subtitle": "Three main screens, simple and intuitive",
       "screens": {
         "triggers": {
           "title": "Triggers screen",
@@ -1382,12 +1382,12 @@
       ],
       "permissionsTitle": "Android permissions",
       "permissions": [
-        "INTERNET — network communication",
-        "ACCESS_NETWORK_STATE — Wi-Fi monitoring",
-        "READ_PHONE_STATE — call information",
-        "RECEIVE_BOOT_COMPLETED — auto-start",
-        "POST_NOTIFICATIONS — sending notifications",
-        "FOREGROUND_SERVICE — background operation"
+        "INTERNET: network communication",
+        "ACCESS_NETWORK_STATE: Wi-Fi monitoring",
+        "READ_PHONE_STATE: call information",
+        "RECEIVE_BOOT_COMPLETED: auto-start",
+        "POST_NOTIFICATIONS: sending notifications",
+        "FOREGROUND_SERVICE: background operation"
       ]
     },
     "install": {
@@ -1413,13 +1413,13 @@
         },
         {
           "title": "Enable the triggers you need",
-          "description": "Select triggers, grant the required permissions — done!"
+          "description": "Select triggers and grant the required permissions."
         }
       ]
     },
     "download": {
       "title": "Download AgiMate for Android",
-      "subtitle": "Open-source. Free. Full control over your data.",
+      "subtitle": "Open source, free, and the APK comes from GitHub Releases.",
       "apk": "Download APK",
       "github": "GitHub",
       "docs": "Documentation"
@@ -1443,7 +1443,7 @@
     "resent": "Email sent",
     "backToSignIn": "Back to sign in",
     "confirmTitle": "Set a password",
-    "confirmSubtitle": "The last step — it signs you in",
+    "confirmSubtitle": "The last step, and it signs you in",
     "confirmSubmit": "Create account",
     "confirmFailed": "Could not finish the registration",
     "linkDeadTitle": "This link no longer works",
