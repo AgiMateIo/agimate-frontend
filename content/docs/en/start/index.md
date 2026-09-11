@@ -15,4 +15,4 @@ limits less, add your own LLM provider.
 
 1. Add an LLM provider.
 2. Create an agent and pick its model.
-3. Connect the connectors — they are what gives the agent its tools.
+3. Connect the connectors: they are what gives the agent its tools.

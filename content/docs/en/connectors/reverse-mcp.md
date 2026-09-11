@@ -28,6 +28,6 @@ expiry, issuer and audience, and each token's owner gets child processes of thei
 ## Worth knowing
 
 The process count grows as owners × servers, so the gateway has its own limits on how many
-processes live and for how long — see
+processes live and for how long, see
 [`config.example.yaml`](https://github.com/AgiMateIo/mcp-reverse-proxy/blob/main/config.example.yaml).
 A full install guide is being prepared.

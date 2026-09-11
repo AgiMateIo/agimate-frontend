@@ -14,25 +14,25 @@ immediately.
 Open Agents and press "Create Agent". The first step is a gallery of ready-made roles; eleven
 of them at the moment.
 
-- **Personal assistant** — remembers what matters about you, answers questions, sets reminders,
+- **Personal assistant**: remembers what matters about you, answers questions, sets reminders,
   works on a schedule.
-- **Platform Admin** — creates and configures other agents, writes skills for them and sets up
+- **Platform Admin**: creates and configures other agents, writes skills for them and sets up
   integrations.
-- **Coder** — works inside your project straight from the IDE: reads the code, makes changes,
+- **Coder**: works inside your project straight from the IDE. Reads the code, makes changes,
   runs the build and the tests.
-- **Visual designer** — draws from scratch, retouches your photos, builds collages and product
+- **Visual designer**: draws from scratch, retouches your photos, builds collages and product
   cards, reviews mockups and screenshots.
-- **Copywriter** — ideas and headlines, posts and newsletters, a content plan and reminders
+- **Copywriter**: ideas and headlines, posts and newsletters, a content plan and reminders
   when things are due.
-- **Team Lead** — takes a goal, breaks it into tasks on the board and assigns them to owners.
-- **Astrologer** — natal chart, numerology, Tarot; calculations from ephemerides.
-- **Home accountant** — logs spending by voice or from a photo of a receipt, totals by category
+- **Team Lead**: takes a goal, breaks it into tasks on the board and assigns them to owners.
+- **Astrologer**: natal chart, numerology, Tarot; calculations from ephemerides.
+- **Home accountant**: logs spending by voice or from a photo of a receipt, totals by category
   and sends a monthly report on its own.
-- **Health diary** — blood pressure, pulse, blood sugar and weight by voice or from a photo of
+- **Health diary**: blood pressure, pulse, blood sugar and weight by voice or from a photo of
   the device, reminders to measure and a chart for the doctor's visit.
-- **External AI** — your own AI (Claude Code, Cursor, a script of yours): it brings its own
-  model and comes to the platform for tools.
-- **Language tutor** — short daily practice, a vocabulary sheet, review and work on mistakes.
+- **External AI**: your own AI, be it Claude Code, Cursor or a script of yours. It brings
+  its own model and comes to the platform for tools.
+- **Language tutor**: short daily practice, a vocabulary sheet, review and work on mistakes.
 
 Next to the roles sits a "Start from scratch" card: an empty form, for when no role fits.
 
@@ -65,7 +65,7 @@ Until you connect your own LLM provider, the agent runs on the free tier's platf
 
 > [!WARNING]
 > The agent key is shown once, under "Advanced: agent key". The dashboard chat does not need
-> it — API calls do. A lost key cannot be recovered; a new one is issued instead, and the old
+> it, but API calls do. A lost key cannot be recovered; a new one is issued instead, and the old
 > one stops working at once.
 
 ## What next

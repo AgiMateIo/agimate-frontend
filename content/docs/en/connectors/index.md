@@ -11,16 +11,16 @@ way whatever the connector is inside.
 
 **Connection** is an instance of a connector holding your credentials. The connector describes
 what the integration can do; the connection says on whose behalf it works. One connector can
-have several connections — two mailboxes, three chats.
+have several connections: two mailboxes, three chats.
 
 ## Where connectors come from
 
-- [Built-in](/docs/connectors/builtin) — part of the platform itself: memory, sheets, the
-  board, time. They need no credentials and come one instance per user.
-- **Integrations** — external services over an API or MCP. These need credentials, and these
+- [Built-in](/docs/connectors/builtin): part of the platform itself, with memory, sheets, the
+  board and time. They need no credentials and come one instance per user.
+- **Integrations**: external services over an API or MCP. These need credentials, and these
   are what live in the dashboard's Connections section. [Telegram](/docs/connectors/telegram),
   for instance.
-- [Apps](/docs/connectors/apps) — programs on your devices that bring the agent the tools and
+- [Apps](/docs/connectors/apps): programs on your devices that bring the agent the tools and
   triggers of that device.
 
 ## Two flags that get confused
@@ -34,4 +34,4 @@ disabled.
 A connection you have not opened to a particular agent does not exist for it: the call is
 refused before anything goes to the external service. Access is opened on the agent's
 connections tab, and inside an open connection it is narrowed with policies on individual
-tools and triggers — see [An agent's connections](/docs/agents/connections).
+tools and triggers; see [An agent's connections](/docs/agents/connections).

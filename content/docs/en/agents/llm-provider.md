@@ -14,18 +14,18 @@ own provider lifts both: tokens go at your own rate with your own provider.
 LLM Providers → "Add Provider". The type is OpenAI, Anthropic, Gemini or OpenAI-compatible;
 the last one also needs a base URL. Then the API key.
 
-The key is stored encrypted on the server and is never returned to the interface again —
-not to you and not to anyone else. You can replace it with "Rotate Key", and the previous one
+The key is stored encrypted on the server and is never returned to the interface again,
+neither to you nor to anyone else. You can replace it with "Rotate Key", and the previous one
 becomes invalid at once.
 
 Right after creation the platform goes to the provider for the list of models. If the list did
-not load, the provider is created all the same — fix the credentials and press refresh in its
+not load, the provider is created all the same; fix the credentials and press refresh in its
 row.
 
 ## Purposes and priorities
 
-A model is assigned not to a whole agent but to a **purpose**: chat is the agent's main model,
-the other purposes (images, vision, audio) are tool models. One model per purpose.
+Every **purpose** carries its own model: chat is the agent's main model, and the other
+purposes (images, vision, audio) are tool models. One model per purpose.
 
 A provider carries priority lists per purpose. A purpose the agent has not set is resolved
 through the list of the provider its chat runs on, and if that is empty too, through the

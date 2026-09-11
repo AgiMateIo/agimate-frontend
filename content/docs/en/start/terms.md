@@ -4,7 +4,7 @@ description: The words you will meet in the dashboard and in this documentation
 order: 2
 ---
 
-The words are laid out by what rests on what. Nothing here needs learning in advance — come
+The words are laid out by what rests on what. Nothing here needs learning in advance; come
 back when a word starts getting in the way.
 
 ## An agent and what it is made of
@@ -16,7 +16,7 @@ it can start itself on an event.
 **Skill** is a description of how an agent should do its work. A skill describes the work; it
 does not widen access. Very often a skill needs tools, and those come from a connector.
 
-**Model**, in our context, is an LLM — a neural network trained on a body of data; a program
+**Model**, in our context, is an LLM: a neural network trained on a body of data, a program
 that generates content. The model is what receives the user's messages and decides what to
 answer or which tool to reach for. Access to models comes from LLM providers.
 
@@ -47,7 +47,7 @@ Telegram bot connected through a connector.
 
 **App** is a companion program on your device, registered with a key: a desktop client, a
 phone, a browser. Once linked, it brings the agent its own tools and triggers. The agent still
-has no direct access to the machine — everything is bounded by what the app can do.
+has no direct access to the machine, and everything is bounded by what the app can do.
 
 ## Who is allowed what
 
@@ -59,7 +59,7 @@ key is what lets the platform address the model itself and run the agent on it.
 before the external service is called, or before the agent is.
 
 A connection you have not opened to a particular agent does not exist for that agent. An open
-one is allowed whole — all of its tools and triggers, until a policy forbids the excess.
+one is allowed whole, with all of its tools and triggers, until a policy forbids the excess.
 
 ## What is left behind after the work
 

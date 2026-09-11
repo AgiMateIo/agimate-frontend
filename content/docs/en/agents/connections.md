@@ -16,18 +16,18 @@ Built-in platform capabilities (memory, the board, sheets) exist in one instance
 are opened along with the skills that need them.
 
 A link alone is not enough for the tools to reach the agent. They enter its context through
-skills, so a connection no skill of the agent points at is marked "Unused" — its tools are not
-handed to the agent.
+skills, so a connection no skill of the agent points at is marked "Unused", and its tools
+are not handed to the agent.
 
 ## What a policy is made of
 
-- **Kind** — tool or trigger. The two are counted separately: a rule about tools says nothing
+- **Kind**: tool or trigger. The two are counted separately: a rule about tools says nothing
   about triggers, and the other way round.
-- **Name** — one specific tool or trigger. An empty name ("All (whole connector)") applies the
+- **Name**: one specific tool or trigger. An empty name ("All (whole connector)") applies the
   rule to the whole connection.
-- **Effect** — `ALLOW` or `DENY`.
-- **Params filter** — an optional flat JSON object, "parameter path → expected value": the
-  rule only fires on a call with those arguments.
+- **Effect**: `ALLOW` or `DENY`.
+- **Params filter**: an optional flat JSON object mapping a parameter path to an expected
+  value. The rule only fires on a call with those arguments.
 
 A rule with an exact name beats a rule on the whole connector. Both of the setups below are
 built on that.
@@ -45,7 +45,7 @@ though: it is not what you forbade.
 
 The reverse order, for when the agent needs a narrow set:
 
-1. Create a rule on the whole connector — name empty, kind Tool, effect `DENY`.
+1. Create a rule on the whole connector: name empty, kind Tool, effect `DENY`.
 2. Add an `ALLOW` for every name the agent actually needs.
 
 An exact name overrides the whole-connector rule, so what you get is a whitelist: nothing but

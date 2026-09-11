@@ -20,23 +20,23 @@ The other three types are one and the same case: the agent's brain is on your si
 your model in your runtime. The platform does not pick a model for it and hands no keys of its
 own outwards. They differ only in the door for incoming events.
 
-- **MCP** — no door at all: the client comes for the tools itself. Claude Code, Cursor or a
+- **MCP**: no door at all, the client comes for the tools itself. Claude Code, Cursor or a
   script of your own connect to the agent's MCP address and authorise with the header
   `Authorization: Bearer <agent key>`.
-- **Centrifugo** — your runtime holds a websocket connection and receives events over it.
-- **Webhook** — events leave as a POST to your HTTPS address. A public URL is required, and an
+- **Centrifugo**: your runtime holds a websocket connection and receives events over it.
+- **Webhook**: events leave as a POST to your HTTPS address. A public URL is required, and an
   authorization header can be set.
 
-An MCP agent has no chat, no channels, no triggers and no models — the platform simply has
+An MCP agent has no chat, no channels, no triggers and no models, because the platform has
 nowhere to deliver to. The client sees tools prefixed by connection; characters outside
 `[a-zA-Z0-9_-]` are replaced with an underscore.
 
 > [!NOTE]
-> An MCP agent's instructions are saved but do not reach the client yet — it receives tools
+> An MCP agent's instructions are saved but do not reach the client yet; it receives tools
 > only. Once MCP prompts arrive the prompt will start working, with no need to recreate the
 > agent.
 
 ## Change the type
 
 The type is changed on the General tab. Moving off Webhook drops the address and the header
-secret by itself — there is nothing to clear by hand.
+secret by itself, so there is nothing to clear by hand.

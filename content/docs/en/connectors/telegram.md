@@ -15,16 +15,16 @@ a token of the form `1234567890:AA…`.
 
 > [!WARNING]
 > The token gives full access to the bot. It is stored encrypted on the platform and is never
-> shown again — if it leaks, revoke it at BotFather.
+> shown again. If it leaks, revoke it at BotFather.
 
 ## 2. Create a connection
 
 On the connections screen pick Telegram and paste the token. The "Test" button makes a real
-request to Telegram and answers with the bot's name — that is your confirmation.
+request to Telegram and answers with the bot's name, which is your confirmation.
 
 ## 3. Point the messages at an agent
 
-A connection only receives messages. For somebody to answer them you need a channel — it links
+A connection only receives messages. For somebody to answer them you need a channel; it links
 the connection to an agent. How to create one is in
 [Telegram channel](/docs/channels/telegram).
 
@@ -34,6 +34,6 @@ the connection to an agent. How to create one is in
 
 ## Common questions
 
-One bot across several agents is not possible — a channel links a connection to a single
-agent. Group chats work, but the bot has to be added to the group with its privacy mode turned
-off.
+One bot across several agents is not possible, because a channel links a connection to a
+single agent. Group chats work, but the bot has to be added to the group with its privacy
+mode turned off.

@@ -22,7 +22,7 @@ name cannot be cleared.
 
 ## The agent key
 
-The key is shown once, at creation, and applies only to external agents — the ones whose brain
+The key is shown once, at creation, and applies only to external agents, the ones whose brain
 lives on your side: `CENTRIFUGO`, `WEBHOOK` and `MCP`. For them it opens calls to the
 platform: an MCP client authorises with the header `Authorization: Bearer <key>`, and a
 websocket or webhook runtime carries the same one.

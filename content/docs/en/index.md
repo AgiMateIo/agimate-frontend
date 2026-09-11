@@ -15,9 +15,8 @@ journalled. Only you set its goals and its access rights.
 
 ## Where to go next
 
-First time here — [Getting started](/docs/start). Need a particular service connected —
-[Connectors](/docs/connectors). Ran into an unfamiliar word —
-[Terms](/docs/start/terms).
+Start with [Getting started](/docs/start). For a particular service, see
+[Connectors](/docs/connectors). For an unfamiliar word, see [Terms](/docs/start/terms).
 
 ## How this section is arranged
 

@@ -5,7 +5,7 @@ order: 2
 screen: /dashboard/agents
 ---
 
-A skill does nothing on its own — it has to be bound to an agent.
+A skill does nothing on its own: it has to be bound to an agent.
 
 ## Bind
 

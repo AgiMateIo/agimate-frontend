@@ -24,9 +24,9 @@ Speech through the computer's speakers.
 Desktop extends through plugins, and that is its main difference from the other apps. A plugin
 is a folder with code and a config, in Python. There are two kinds:
 
-- **Trigger plugin** — watches an event on the computer and sends the data to the agent
+- **Trigger plugin**: watches an event on the computer and sends the data to the agent
   (device → agent).
-- **Action plugin** — receives a command from the agent and performs an action (agent →
+- **Action plugin**: receives a command from the agent and performs an action (agent →
   device).
 
 The details of the plugin interfaces are in

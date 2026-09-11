@@ -6,17 +6,17 @@ screen: /dashboard/channels
 ---
 
 A channel points the bot's messages at a particular agent. By this point you should already
-have a Telegram connection holding the bot's token — if you do not, start with
+have a Telegram connection holding the bot's token. If you do not, start with
 [Connect Telegram](/docs/connectors/telegram).
 
 ## Create
 
 Channels → "New Channel".
 
-- **Name** — for you; it plays no part in the work.
-- **Agent** — who will be answering.
-- **Handler** — `telegram`.
-- **Connector and connection** — that same bot.
+- **Name**: for you; it plays no part in the work.
+- **Agent**: who will be answering.
+- **Handler**: `telegram`.
+- **Connector and connection**: that same bot.
 
 Message parsing needs no separate setup: the `telegram` handler knows the format itself. Text,
 photos and documents are reduced to one incoming message, and the answer goes out through the
@@ -37,8 +37,8 @@ of it: only a particular group, say, or only messages carrying a particular fiel
 ## Check
 
 Write to the bot. If it stays silent, look at the trigger logs: they show whether the message
-reached the platform and which agent took it. An empty log means it never reached the platform
-— the problem is the bot or the token, not the channel.
+reached the platform and which agent took it. An empty log means it never reached the
+platform, so the problem is the bot or the token, not the channel.
 
 > [!TIP]
 > In groups a bot does not see every message by default. Add it to the group and turn its

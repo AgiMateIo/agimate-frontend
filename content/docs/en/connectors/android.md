@@ -17,23 +17,23 @@ Sources and builds: [AgiMateIo/connector-android](https://github.com/AgiMateIo/c
 
 ## Triggers
 
-- `call_incoming`, `call_missed` — an incoming and a missed call.
-- `battery_low` — charge below a threshold.
-- `wifi_connected`, `wifi_disconnected` — joining a network and leaving it.
-- `shake_detected` — the phone was shaken.
-- `location_entered`, `location_exited` — entering and leaving a geofence.
+- `call_incoming`, `call_missed`: an incoming and a missed call.
+- `battery_low`: charge below a threshold.
+- `wifi_connected`, `wifi_disconnected`: joining a network and leaving it.
+- `shake_detected`: the phone was shaken.
+- `location_entered`, `location_exited`: entering and leaving a geofence.
 
 The caller's number is not reported: since Android 9 it is only exposed to apps holding the
 phone or call-screening role.
 
 ## Tools
 
-- `tts_speak` — speak a text.
-- `notification_show`, `notification_ask` — show a notification, ask a question with options.
-- `contacts_search` — search the contacts.
-- `calendar_search`, `calendar_create_event` — read the calendar and create an event.
-- `geofence_add`, `geofence_remove`, `geofence_list` — manage geofences.
-- `camera_capture` — a shot from the camera.
+- `tts_speak`: speak a text.
+- `notification_show`, `notification_ask`: show a notification, ask a question with options.
+- `contacts_search`: search the contacts.
+- `calendar_search`, `calendar_create_event`: read the calendar and create an event.
+- `geofence_add`, `geofence_remove`, `geofence_list`: manage geofences.
+- `camera_capture`: a shot from the camera.
 
 ## Worth knowing
 

@@ -35,8 +35,8 @@ the old version. Re-bind the skill to the agent to pull the fresh one.
 
 The Loading column offers two options per skill:
 
-- **In the prompt** — the skill's text always stands in front of the agent.
-- **On demand** — the agent loads the text when it decides the skill is needed. The prompt is
+- **In the prompt**: the skill's text always stands in front of the agent.
+- **On demand**: the agent loads the text when it decides the skill is needed. The prompt is
   shorter, but a step is added.
 
 The choice only works for an agent with the `skill-loader` skill bound. Without it every skill
