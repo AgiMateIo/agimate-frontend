@@ -1,0 +1,4 @@
+# Working specs: drafts that live here while the docs are being written and are
+# not part of the repository. The directory is kept, its contents are not.
+*
+!.gitignore
