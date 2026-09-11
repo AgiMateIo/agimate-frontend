@@ -1,7 +1,7 @@
 {
   "Metadata": {
     "title": "AgiMate — agents with scoped access",
-    "description": "An agent runs on the platform side, so something stands between it and any external service: it supplies the connector credentials, checks the rule before the call, and writes the log. Access, model, instructions and skills are configured per agent.",
+    "description": "Every agent has its own skills, its own connectors, its own access, and you can add as many as you need: one per task, or a team working a shared board. Agents never see the keys to your services, reach only the connectors you opened for them, and every call goes through a rule and into the log.",
     "ogTitle": "AgiMate — agents with scoped access",
     "ogDescription": "A harness around any language model: tools, connectors to your systems, rules checked before the call, and a log of every action. Every agent has its own access."
   },
@@ -17,9 +17,10 @@
       "security": "Access"
     },
     "hero": {
-      "title": "Agents with",
-      "titleHighlight": "scoped access.",
-      "subtitle": "An agent runs on the platform side, so something stands between it and any external service. It supplies the connector credentials outside the model, checks the rule before the call, and logs every call, allowed or denied. Access is configured on each agent separately.",
+      "title": "Your agents",
+      "titleHighlight": "under your control.",
+      "subtitle": "Agents take a few clicks to put together, and each one has its own skills, its own connectors, its own access. Add as many as you need: one per task, or a team working a shared board. They hold no keys to your services, and they reach only what you opened for them.",
+      "tagline": "A library of ready-made roles, from a personal assistant to a coder. Your first agent is three steps away. And you never have to leave a computer running.",
       "cta": "Build your first agent"
     },
     "harness": {
@@ -55,7 +56,7 @@
         {
           "title": "Ground — the platform runs the agent",
           "tech": "The agent is executed on the platform side: in the project cloud, or on your own server when self-hosted. Devices attach as companion connectors and never become the place the agent runs.",
-          "plain": "That is why there is a third party between the agent and an external service at all, one that gets to check a rule. An agent running on your own machine has no such broker by design."
+          "plain": "So every call has a point where it can still be checked: the platform itself. An agent running on your own machine talks to the system directly, with no such checkpoint on the way."
         }
       ],
       "callout": "An agent can be talked into things — it is a language model, after all. But it cannot hand over a connector key: it does not have one. The most it can do is try to call a tool, and that runs into the rules and stays in the log."

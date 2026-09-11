@@ -33,8 +33,8 @@ import {
 // this — what the agent recalls versus what you can check afterwards.
 // Tools and skills are two cards, not one: a tool is what the agent can do at
 // all, a skill is the written know-how for handling it.
-// The last card is platform-side execution: it is what puts a broker between the
-// agent and an external service, and so what makes every rule above enforceable.
+// The last card is platform-side execution: every call runs through the platform,
+// which is what gives the rules above somewhere to be enforced at all.
 // The team lives on as one use case instead — that headline belongs to others.
 const harnessIcons = [
   WrenchScrewdriverIcon,
@@ -119,6 +119,13 @@ export default function HomePage() {
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted">
           {t('hero.subtitle')}
+        </p>
+        {/* Named ends of a range rather than a count: the preset gallery is built
+            from the API and this page is static, so a number here would go stale
+            the day a preset is added to the seed. The two names still have to
+            exist — check the seed before changing them. */}
+        <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted">
+          {t('hero.tagline')}
         </p>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           {user ? (
