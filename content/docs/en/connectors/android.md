@@ -10,6 +10,11 @@ the agent, reports device events and executes incoming calls delivered over a we
 
 Sources and builds: [AgiMateIo/connector-android](https://github.com/AgiMateIo/connector-android).
 
+> [!NOTE]
+> Not to be confused with the [Android app](/docs/channels/android-app): that one is a
+> messenger for talking to agents, this one is a source of the phone's tools. Two different,
+> independent apps.
+
 ## Triggers
 
 - `call_incoming`, `call_missed` — an incoming and a missed call.

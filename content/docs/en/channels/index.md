@@ -5,8 +5,8 @@ order: 4
 screen: /dashboard/channels
 ---
 
-A channel is what you talk to an agent through: the dashboard chat, a Telegram bot, an IDE. It
-links a connection to one particular agent, and the link goes both ways — incoming messages go
+A channel is what you talk to an agent through: the dashboard chat, the app on your phone, a
+Telegram bot, an IDE. It links a connection to one particular agent, and the link goes both ways — incoming messages go
 to that agent, and answers travel back the same route.
 
 A channel always belongs to one agent. So one bot cannot be shared across several: for a
@@ -32,6 +32,12 @@ The order is the reverse: the connector first, the channel second.
 
 A connection on its own only receives messages. Without a channel there is nobody to hand them
 to, and the bot stays silent.
+
+## The same chat on a phone
+
+The phone needs no channel of its own: the [Android app](/docs/channels/android-app) works
+through the same webchat and the same conversations as the dashboard, and adds push on new
+messages.
 
 ## The handlers there are
 

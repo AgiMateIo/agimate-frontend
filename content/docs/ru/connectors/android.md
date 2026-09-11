@@ -11,6 +11,10 @@ websocket.
 
 Исходники и сборки — [AgiMateIo/connector-android](https://github.com/AgiMateIo/connector-android).
 
+> [!NOTE]
+> Не путайте с [приложением для Android](/docs/channels/android-app): то — мессенджер для
+> разговора с агентами, это — источник инструментов телефона. Приложения разные и независимые.
+
 ## Триггеры
 
 - `call_incoming`, `call_missed` — входящий и пропущенный звонок.
