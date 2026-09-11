@@ -1,7 +1,7 @@
 ---
 title: Каналы
 description: Через что пользователь общается с агентом
-order: 4
+order: 5
 screen: /dashboard/channels
 ---
 

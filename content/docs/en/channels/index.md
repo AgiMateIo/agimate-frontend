@@ -1,7 +1,7 @@
 ---
 title: Channels
 description: What a user talks to an agent through
-order: 4
+order: 5
 screen: /dashboard/channels
 ---
 

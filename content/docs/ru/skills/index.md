@@ -1,7 +1,7 @@
 ---
 title: Навыки
 description: Что агент умеет делать и откуда он это знает
-order: 5
+order: 4
 screen: /dashboard/skills
 ---
 

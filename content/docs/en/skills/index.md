@@ -1,7 +1,7 @@
 ---
 title: Skills
 description: What an agent can do, and where it learns it from
-order: 5
+order: 4
 screen: /dashboard/skills
 ---
 
