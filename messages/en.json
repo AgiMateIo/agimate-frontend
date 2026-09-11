@@ -1,9 +1,9 @@
 {
   "Metadata": {
-    "title": "AgiMate — a multiagent harness",
-    "description": "Not one assistant but a system of agents: each with its own model, its own instructions, its own access and its own skills. Shared between them: the rules, a log of every call, and a board to work on together. Keys and passwords stay in the platform and never reach the model.",
-    "ogTitle": "AgiMate — a multiagent harness",
-    "ogDescription": "The harness around any language model: tools, keys to your systems, rules checked before the call, and a log of every action. As many agents as you need, each with its own settings."
+    "title": "AgiMate — agents with scoped access",
+    "description": "An agent runs on the platform side, so something stands between it and any external service: it supplies the connector credentials, checks the rule before the call, and writes the log. Access, model, instructions and skills are configured per agent.",
+    "ogTitle": "AgiMate — agents with scoped access",
+    "ogDescription": "A harness around any language model: tools, connectors to your systems, rules checked before the call, and a log of every action. Every agent has its own access."
   },
   "HomePage": {
     "nav": {
@@ -11,15 +11,16 @@
       "agents": "Agents",
       "howItWorks": "How it works",
       "useCases": "Use cases",
-      "connections": "Connections",
+      "connections": "Connectors",
       "dashboard": "Dashboard",
-      "login": "Sign in"
+      "login": "Sign in",
+      "security": "Access"
     },
     "hero": {
-      "title": "A multiagent",
-      "titleHighlight": "harness.",
-      "subtitle": "Not an assistant — a system of agents. The harness around any language model gives them tools, keys to your systems, rules and a log. As many agents as you need, each one its own: its own model, its own instructions, its own access, its own skills — and none of them ever sees a key.",
-      "cta": "Build your system free"
+      "title": "Agents with",
+      "titleHighlight": "scoped access.",
+      "subtitle": "An agent runs on the platform side, so something stands between it and any external service. It supplies the connector credentials outside the model, checks the rule before the call, and logs every call, allowed or denied. Access is configured on each agent separately.",
+      "cta": "Build your first agent"
     },
     "harness": {
       "title": "What a harness is",
@@ -29,17 +30,17 @@
         {
           "title": "Hands — the tools",
           "tech": "The concrete calls that connections bring in: MCP servers, your own API behind a key, connectors to Telegram, your phone and your computer. A tool appears for an agent together with the binding.",
-          "plain": "What the agent can do at all: send a message, file a task, read a spreadsheet. The toolbox."
+          "plain": "What the agent can do at all: send a message, file a task, read a spreadsheet."
         },
         {
           "title": "Craft — the skills",
           "tech": "A skill is written know-how for using tools: the order of steps, the rules, and the connectors it needs. It is versioned, reused across agents, and picked from a shared catalogue.",
-          "plain": "Tools are what an agent can do. A skill is how well it handles them: which one to reach for, in what order, when to stop and ask. Without it the agent holds the hammer without knowing what for."
+          "plain": "Tools are what an agent can do. A skill is how well it handles them: which one to reach for, in what order, when to stop and ask."
         },
         {
-          "title": "Keys — held by the harness, not the agent",
-          "tech": "A connection's credentials stay on the platform side. The agent only ever gets tool descriptions and calls them by name — no key, no token, no password reaches the model.",
-          "plain": "The agent doesn't know your passwords. It never sees them: it says \"send the email\", and the harness supplies the key, outside the model."
+          "title": "Connector credentials stay on the platform",
+          "tech": "A connection's credentials are held on the platform side. The agent gets tool descriptions and calls them by name, and the connector key is supplied outside the model. The LLM provider key is a different matter: it is what reaches the model at all, and it goes to the platform worker.",
+          "plain": "The agent does not know the passwords to your services. It says \"send the email\", and the harness supplies the connector key, outside the model."
         },
         {
           "title": "Rails — rules checked before the call",
@@ -49,19 +50,19 @@
         {
           "title": "Trail — the log of every action",
           "tech": "The run, its steps, every call with parameters and result, token spend per model.",
-          "plain": "You can see what the agent actually did and why. Not \"it seems to have broken something\", but a line with the parameters and the answer."
+          "plain": "You can see what the agent actually did and why: a line with the call parameters and the service's answer."
         },
         {
-          "title": "Team — agents in one harness",
-          "tech": "An agentic team over a shared task board, updating live in the dashboard.",
-          "plain": "One agent isn't enough for the job — put a second one beside it. You can see who took what and where it stands."
+          "title": "Ground — the platform runs the agent",
+          "tech": "The agent is executed on the platform side: in the project cloud, or on your own server when self-hosted. Devices attach as companion connectors and never become the place the agent runs.",
+          "plain": "That is why there is a third party between the agent and an external service at all, one that gets to check a rule. An agent running on your own machine has no such broker by design."
         }
       ],
-      "callout": "An agent can be talked into things — it is a language model, after all. But it cannot hand over a key: it doesn't have one. The most it can do is try to call a tool, and that runs into the rules and stays in the log."
+      "callout": "An agent can be talked into things — it is a language model, after all. But it cannot hand over a connector key: it does not have one. The most it can do is try to call a tool, and that runs into the rules and stays in the log."
     },
     "agents": {
-      "title": "Every agent its own",
-      "subtitle": "One agent holding every key and every tool is exactly the all-or-nothing problem. A system of narrow agents is safer, more accurate and cheaper.",
+      "title": "Specialisation is not a request in the prompt; it is an access boundary",
+      "subtitle": "An instruction is a request, and a request can be argued with. A connection binding is a boundary: the agent does not get past it, however it is persuaded. Each agent has its own.",
       "plainLabel": "In plain words:",
       "axes": [
         {
@@ -77,7 +78,7 @@
         {
           "title": "Its own access",
           "tech": "Connections are bound to a specific agent, and inside a binding there are rules for individual tools and their parameters.",
-          "plain": "Like clearances for staff. One holds the keys to email, another to the spreadsheets, and nobody holds keys to everything."
+          "plain": "Like clearances for staff. One has access to email, another to the spreadsheets, and nobody has access to everything."
         },
         {
           "title": "Its own skills",
@@ -131,7 +132,7 @@
           ]
         ]
       },
-      "tableNote": "Five agents, five token bills and five separate sets of keys. What they share is the harness: one set of rules, one log, one board."
+      "tableNote": "Five agents, five token bills and five separate sets of access. What they share is the harness: one set of rules and one log."
     },
     "quickStart": {
       "title": "Three steps to a working agent",
@@ -164,7 +165,7 @@
       "eyebrow": "How it works",
       "lede": "Every call goes through a rule",
       "intro": "A trigger arrives from a connector or a device. The platform checks it against the agent's rules and hands it to one agent. Having done its work, the agent calls a tool back through the core — and that call goes through the same check. Credentials are attached inside the core and never reach the agent, and every trigger and every call lands in its own log: allowed and denied alike.",
-      "sr": "Flow diagram. On the left are the sources: tools and triggers, grouped into connectors and devices. A trigger travels from a connector or a device into the AgiMate core. There it is checked by the Policy block: is it allowed for this agent or not. A denied trigger goes no further and lands in the trigger log. An allowed one passes to Trigger routing, which hands it to one specific agent. Having worked on the trigger, the agent reaches back into the core and calls a tool on a connector or a device. That call is checked by the same rules and lands in the tool call log. Credentials stay in the core and are never passed to the agent. The agent's answer returns through the core, surfaces in the User Channel block, and leaves for the messenger the conversation is in — webchat, Telegram, WhatsApp or Slack. On the diagram each connector and device carries its own name — Mail, Laptop, Calendar, Android — each agent carries the name it was given, and each packet in flight carries a Greek letter. The trigger log lists the time, the connector or device, the trigger name, the Greek name of the packet that carried it, and the verdict. The tool call log lists the time, the agent that asked, the connector or device it went to, the tool, and the verdict.",
+      "sr": "Flow diagram. On the left are the sources: tools and triggers, grouped into connectors and devices. A trigger travels from a connector or a device into the AgiMate core. There it is checked by the Policy block: is it allowed for this agent or not. A denied trigger goes no further and lands in the trigger log. An allowed one passes to Trigger routing, which hands it to one specific agent. Having worked on the trigger, the agent reaches back into the core and calls a tool on a connector or a device. That call is checked by the same rules and lands in the tool call log. Connector credentials stay in the core and are never passed to the agent. The agent's answer returns through the core, surfaces in the User Channel block, and leaves for the messenger the conversation is in — webchat, Telegram, the phone app or an IDE. On the diagram each connector and device carries its own name — Mail, Laptop, Calendar, Android — each agent carries the name it was given, and each packet in flight carries a Greek letter. The trigger log lists the time, the connector or device, the trigger name, the Greek name of the packet that carried it, and the verdict. The tool call log lists the time, the agent that asked, the connector or device it went to, the tool, and the verdict.",
       "tool": "Tool",
       "trigger": "Trigger",
       "rules": "Policy",
@@ -173,9 +174,7 @@
       "channel": "User Channel",
       "webchat": "Webchat",
       "telegram": "Telegram",
-      "whatsapp": "WhatsApp",
-      "slack": "Slack",
-      "keynote": "Credentials stay in the platform",
+      "keynote": "Connector credentials stay in the platform",
       "logTrigger": "Trigger log",
       "logTool": "Tool call log",
       "allowed": "allowed",
@@ -284,7 +283,9 @@
           "title": "User Channel",
           "body": "The one way out to a person. The agent's answer leaves through this channel into whichever messenger the conversation is in."
         }
-      }
+      },
+      "phone": "Phone",
+      "ide": "IDE"
     },
     "useCases": {
       "title": "What you can build today",
@@ -352,7 +353,7 @@
         },
         {
           "title": "A team of agents on a shared board",
-          "description": "One agent is not the ceiling: assemble a team and give it a shared board. Tasks with statuses, an assigned agent, comments in the thread. Changes reach the dashboard in real time.",
+          "description": "Assemble a team of agents and give it a shared board: tasks with statuses, an assigned agent, comments in the thread. Changes reach the dashboard in real time.",
           "flow": [
             "Team",
             "Task board",
@@ -363,7 +364,7 @@
       ]
     },
     "security": {
-      "title": "Security is architecture, not configuration",
+      "title": "Scoped access is built into the architecture",
       "items": [
         {
           "title": "The agent only sees what's bound",
@@ -377,11 +378,12 @@
           "title": "Every action logged",
           "description": "Who called what, when, with what result. Errors and policy denials are collected separately, so you know where to look."
         }
-      ]
+      ],
+      "docsLink": "How the access rules work"
     },
     "models": {
       "title": "Your model, your key",
-      "subtitle": "Tokens are billed by your provider at your rate — no markup from us",
+      "subtitle": "Tokens are billed by your provider at your rate",
       "items": [
         {
           "title": "Your key at your provider",
@@ -439,16 +441,8 @@
         "upcoming": [
           "Gmail",
           "Google Calendar",
-          "Google Drive",
-          "Google Sheets",
-          "Google Docs",
           "Notion",
-          "Slack",
-          "GitHub",
-          "Airtable",
-          "Dropbox",
-          "Discord",
-          "Zapier"
+          "Slack"
         ]
       },
       "install": {
@@ -474,17 +468,17 @@
       }
     },
     "openSource": {
-      "title": "Self-hosted and open code",
-      "description": "The platform can be deployed on your own server: data, model keys and logs stay with you. Repositories and deployment instructions are on GitHub; server-side components are opened up as they pass security review.",
+      "title": "Self-hosted and open source",
+      "description": "All of the code is open: the Java core, the dashboard, the chat app, the Android and desktop connectors, the n8n nodes. The platform deploys on your own server, where your data, model keys and logs stay.",
       "selfHosted": "Self-hosted — your data and keys stay with you",
-      "audit": "Code opened up as it passes security review",
+      "license": "All of the code under an open licence",
       "github": "Repositories and instructions on GitHub"
     },
     "cta": {
       "title": "Start from a ready-made role",
       "subtitle": "Sign in with GitHub, Google or Yandex — the account is created on the first login.",
       "button": "Create an account",
-      "docsLink": "Docs on GitHub",
+      "docsLink": "Documentation",
       "finePrint": "Self-hosted · Your own model key · Every call logged"
     }
   },

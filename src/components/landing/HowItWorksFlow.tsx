@@ -1057,8 +1057,11 @@ export default function HowItWorksFlow() {
 
             {screenNode('s1', 406, t('webchat'))}
             {screenNode('s2', 506, t('telegram'))}
-            {screenNode('s3', 606, t('whatsapp'))}
-            {screenNode('s4', 706, t('slack'))}
+            {/* Four exits that exist. WhatsApp and Slack sat here as labels for
+                channels the platform does not have; on a diagram of a live call
+                path a label reads as a shipped feature. */}
+            {screenNode('s3', 606, t('phone'))}
+            {screenNode('s4', 706, t('ide'))}
 
             {hexAgent('a1', 992, 82)}
             {hexAgent('a2', 1052, 177)}

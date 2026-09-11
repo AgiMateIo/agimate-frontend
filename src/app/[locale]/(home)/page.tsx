@@ -19,7 +19,6 @@ import {
   KeyIcon,
   SparklesIcon,
   ChartBarIcon,
-  UserGroupIcon,
   DocumentTextIcon,
   AcademicCapIcon,
   DevicePhoneMobileIcon,
@@ -28,19 +27,22 @@ import {
   ServerIcon,
 } from '@heroicons/react/24/outline';
 
-// Order mirrors harness.items: tools → skills → keys → rails → trail → team.
+// Order mirrors harness.items: tools → skills → keys → rails → trail → platform.
 // The log card is deliberately not called "memory": agents have memory of their
 // own (the notes mixed into a run's first model call), and it is the opposite of
 // this — what the agent recalls versus what you can check afterwards.
 // Tools and skills are two cards, not one: a tool is what the agent can do at
 // all, a skill is the written know-how for handling it.
+// The last card is platform-side execution: it is what puts a broker between the
+// agent and an external service, and so what makes every rule above enforceable.
+// The team lives on as one use case instead — that headline belongs to others.
 const harnessIcons = [
   WrenchScrewdriverIcon,
   AcademicCapIcon,
   KeyIcon,
   ShieldCheckIcon,
   ClipboardDocumentListIcon,
-  UserGroupIcon,
+  ServerIcon,
 ];
 // Order mirrors agents.axes: model → instructions → access → skills.
 const agentAxisIcons = [SparklesIcon, DocumentTextIcon, KeyIcon, AcademicCapIcon];
@@ -96,6 +98,7 @@ export default function HomePage() {
       {/* Header */}
       <LandingHeader
         navLinks={[
+          { href: '#security', label: t('nav.security') },
           { href: '#harness', label: t('nav.harness') },
           { href: '#agents', label: t('nav.agents') },
           { href: '#how-it-works', label: t('nav.howItWorks') },
@@ -138,10 +141,48 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Access — first section after the hero, because it is the claim the
+          product is positioned on. Everything below explains how it is held up. */}
+      <section id="security" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
+        <h2 className="mb-8 sm:mb-10 md:mb-14 text-center text-2xl sm:text-3xl font-bold tracking-tight">
+          {t('security.title')}
+        </h2>
+        <div className="grid gap-6 sm:grid-cols-3">
+          {securityItems.map((item, i) => {
+            const Icon = securityIcons[i];
+            return (
+              <div
+                key={item.title}
+                className="rounded-2xl border border-accent/20 bg-surface shadow-card p-6"
+              >
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                  <Icon className="h-6 w-6" />
+                </div>
+                <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
+                <p className="text-sm leading-relaxed text-muted">{item.description}</p>
+              </div>
+            );
+          })}
+        </div>
+        {/* The claim above is marketing until the model is written down. The docs
+            page is what a reader comes to check it against, so link it from here
+            the way README and SECURITY.md do. */}
+        <div className="mt-8 text-center">
+          <Link
+            href="/docs/agents/connections"
+            className="inline-flex items-center gap-2 text-sm font-medium text-accent hover:underline"
+          >
+            {t('security.docsLink')}
+            <ArrowRightIcon className="h-4 w-4" />
+          </Link>
+        </div>
+      </section>
+
       {/* Harness — the position itself: the model only talks, everything around it
           does the work. Every card carries the technical line and a plain-language
           one under it; the callout is the claim the rest of the page leans on —
-          credentials stay in the platform, so there is nothing in the model to leak. */}
+          connector credentials stay in the platform, so there is nothing in the
+          model to leak. */}
       <section id="harness" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
         <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">
           {t('harness.title')}
@@ -180,33 +221,10 @@ export default function HomePage() {
           with both logs filling underneath. Ported from the marketing repo. */}
       <HowItWorksFlow />
 
-      {/* Security */}
-      <section id="security" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
-        <h2 className="mb-8 sm:mb-10 md:mb-14 text-center text-2xl sm:text-3xl font-bold tracking-tight">
-          {t('security.title')}
-        </h2>
-        <div className="grid gap-6 sm:grid-cols-3">
-          {securityItems.map((item, i) => {
-            const Icon = securityIcons[i];
-            return (
-              <div
-                key={item.title}
-                className="rounded-2xl border border-accent/20 bg-surface shadow-card p-6"
-              >
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent">
-                  <Icon className="h-6 w-6" />
-                </div>
-                <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
-                <p className="text-sm leading-relaxed text-muted">{item.description}</p>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Agents — the multi-agent half of the position. The table is the proof:
-          "every agent its own" stays a buzzword until three of them sit side by side
-          with different models, rights and bills. */}
+      {/* Agents — specialisation as an access boundary rather than a line in the
+          prompt. The table is the proof: "every agent its own" stays a buzzword
+          until several of them sit side by side with different models, rights and
+          bills. Being many is not the claim here; the boundary is. */}
       <section id="agents" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
         <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">
           {t('agents.title')}
@@ -509,7 +527,7 @@ export default function HomePage() {
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
                 <ShieldCheckIcon className="h-5 w-5" />
               </div>
-              <span className="text-sm font-medium">{t('openSource.audit')}</span>
+              <span className="text-sm font-medium">{t('openSource.license')}</span>
             </li>
             <li className="flex items-center gap-3">
               <a
@@ -556,14 +574,12 @@ export default function HomePage() {
                 <ArrowRightIcon className="h-5 w-5" />
               </Link>
             )}
-            <a
-              href="https://github.com/AgiMateIo"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/docs"
               className="text-sm font-medium text-muted hover:text-accent transition-colors"
             >
               {t('cta.docsLink')}
-            </a>
+            </Link>
           </div>
           <p className="mt-6 text-xs text-muted">{t('cta.finePrint')}</p>
         </div>
