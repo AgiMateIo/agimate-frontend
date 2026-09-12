@@ -110,6 +110,10 @@ export default function AgentGeneralPage() {
           />
         </div>
 
+        {/* The verdict first: whether the agent works is what the page is
+            opened for, and it must not sit below the fold. */}
+        <AgentSetupStatus agentId={agent.id} />
+
         {/* Description */}
         <InlineEditField
           label={t('description')}
@@ -136,41 +140,6 @@ export default function AgentGeneralPage() {
           ) : (
             <p className="text-sm text-muted">{t('noDescription')}</p>
           )}
-        </InlineEditField>
-
-        {/* Prompt */}
-        <InlineEditField
-          label={t('prompt')}
-          value={agent.instructions ?? ''}
-          onSave={(next) => save({ instructions: next })}
-          defaultError={t('updateError')}
-          editor={({ draft, setDraft, disabled, onKeyDown }) => (
-            <TextArea
-              autoFocus
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={onKeyDown}
-              disabled={disabled}
-              placeholder={t('promptPlaceholder')}
-              rows={10}
-              className="font-mono"
-            />
-          )}
-          hint={
-            // Stored, but nothing delivers it to an MCP client yet — it only gets
-            // tools. Saying so beats a prompt that looks silently ignored.
-            isMcpAgent(agent.type) ? (
-              <p className="text-xs text-muted mt-1">{t('mcpPromptHint')}</p>
-            ) : null
-          }
-        >
-          <div className="bg-surface-secondary rounded-lg border border-border/50 p-4">
-            {agent.instructions ? (
-              <pre className="text-sm text-foreground whitespace-pre-wrap font-mono">{agent.instructions}</pre>
-            ) : (
-              <p className="text-sm text-muted">{t('noPrompt')}</p>
-            )}
-          </div>
         </InlineEditField>
 
         {/* Agent type, plus the webhook settings it owns */}
@@ -287,7 +256,10 @@ export default function AgentGeneralPage() {
 
         {/* Key. Not a field — it is never typed in, only replaced — so it keeps
             a button rather than a pencil, and sits by the other read-only facts
-            at the bottom instead of competing with the name for the top row. */}
+            at the bottom instead of competing with the name for the top row.
+            A GENERIC agent never presents it (its loop runs on the platform),
+            so there it is noise with a dangerous button attached. */}
+        {agent.type !== 'GENERIC' && (
         <div>
           <h3 className="text-sm font-medium text-muted mb-2">{t('agentKey')}</h3>
           {rotatedKey ? (
@@ -318,15 +290,15 @@ export default function AgentGeneralPage() {
             </div>
           )}
         </div>
+        )}
 
         {/* Created At */}
         <div>
           <h3 className="text-sm font-medium text-muted mb-2">{t('createdAt')}</h3>
           <p className="text-sm text-foreground">{formatDate(agent.createdAt, locale)}</p>
         </div>
-      </div>
 
-      <UnsatisfiedSkillsNotice agentId={agent.id} />
+      </div>
 
       {isMcpAgent(agent.type) && <McpConnectCard agentId={agent.id} agentKey={rotatedKey} />}
 
@@ -341,32 +313,53 @@ export default function AgentGeneralPage() {
   );
 }
 
-// A skill missing its connections is not handed to the agent at all — the agent
-// simply cannot do what it was hired for. People complain about the agent long
-// before they open its skills section, so the count belongs on the card.
-function UnsatisfiedSkillsNotice({ agentId }: { agentId: string }) {
+// Whether the agent is set up to the end. A skill missing its connections is
+// not handed to the agent at all — the agent simply cannot do what it was
+// hired for, and people complain about it long before they open its skills
+// section. So the verdict sits here, and it is a verdict either way: "all
+// working" is worth a line too, otherwise silence reads as "not checked".
+function AgentSetupStatus({ agentId }: { agentId: string }) {
   const t = useTranslations('Agents');
   const { data } = useAgentSkillsQuery(agentId);
+  if (!data) return null;
 
-  const bindings = data?.content ?? [];
+  const bindings = data.content;
   // `=== false`, not `!`: a backend that has not shipped the verdict yet must
   // read as "nothing to report", not as every skill being broken.
   const broken = bindings.filter((b) => b.satisfied === false).length;
-  if (broken === 0) return null;
+  const href = `/dashboard/agents/${agentId}/skills`;
 
   return (
-    <div className="mt-6">
-      <Alert variant="warning">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <span>{t('skillsUnsatisfiedSummary', { count: broken, total: bindings.length })}</span>
-          <Link
-            href={`/dashboard/agents/${agentId}/skills`}
-            className="font-medium underline whitespace-nowrap"
-          >
-            {t('tabSkills')}
-          </Link>
-        </div>
-      </Alert>
+    <div>
+      <h3 className="text-sm font-medium text-muted mb-2">{t('setupStatus')}</h3>
+      {bindings.length === 0 ? (
+        <Alert variant="info">
+          <SetupLine text={t('setupNoSkills')} href={href} link={t('tabSkills')} />
+        </Alert>
+      ) : broken > 0 ? (
+        <Alert variant="warning">
+          <SetupLine
+            text={t('skillsUnsatisfiedSummary', { count: broken, total: bindings.length })}
+            href={href}
+            link={t('tabSkills')}
+          />
+        </Alert>
+      ) : (
+        <Alert variant="success">
+          <SetupLine text={t('setupComplete', { count: bindings.length })} href={href} link={t('tabSkills')} />
+        </Alert>
+      )}
+    </div>
+  );
+}
+
+function SetupLine({ text, href, link }: { text: string; href: string; link: string }) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <span>{text}</span>
+      <Link href={href} className="font-medium underline whitespace-nowrap">
+        {link}
+      </Link>
     </div>
   );
 }

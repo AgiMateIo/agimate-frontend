@@ -221,7 +221,8 @@ src/
 │       ├── dashboard/
 │       │   ├── page.tsx           # home: overview / work mode (see Dashboard Home)
 │       │   ├── admin/users/       # ADMIN only: user directory, roles, per-user spend
-│       │   ├── agents/            # list, create, [id], [id]/edit, [id]/chat, [id]/files,
+│       │   ├── agents/            # list, create, [id] (facts + setup verdict), [id]/prompt,
+│       │   │                      #   [id]/edit, [id]/chat, [id]/files,
 │       │   │                      #   [id]/runs (same list as /dashboard/runs, agent-scoped), deliveries
 │       │   ├── agentic-teams/     # list, [id], [id]/agents, [id]/board
 │       │   ├── apps/              # list, [id]

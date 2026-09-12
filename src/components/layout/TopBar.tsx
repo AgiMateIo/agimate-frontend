@@ -73,6 +73,7 @@ export default function TopBar({
     skills: t('breadcrumbs.skills'),
     files: t('breadcrumbs.files'),
     general: t('breadcrumbs.general'),
+    prompt: t('breadcrumbs.prompt'),
     models: t('breadcrumbs.models'),
     channels: t('breadcrumbs.channels'),
     'tool-calls': t('breadcrumbs.toolCalls'),

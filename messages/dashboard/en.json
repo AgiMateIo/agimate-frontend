@@ -29,6 +29,7 @@
   },
   "TopBar": {
     "breadcrumbs": {
+      "prompt": "Prompt",
       "dashboard": "Dashboard",
       "chat": "Chat",
       "apps": "Apps",
@@ -585,6 +586,10 @@
     "rowsPerPage": "Rows per page"
   },
   "Agents": {
+    "tabPrompt": "Prompt",
+    "setupStatus": "Setup",
+    "setupNoSkills": "No skills yet — the agent can only talk. Add skills to give it work.",
+    "setupComplete": "{count, plural, one {The skill is} other {All # skills are}} set up and working.",
     "skillStepDone": "Ready",
     "skillStepWillOpen": "Set up on save",
     "skillStepBuiltIn": "Built-in capability — one instance per user, nothing to choose. It is opened to the agent on save.",

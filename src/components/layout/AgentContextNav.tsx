@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import {
   AdjustmentsHorizontalIcon,
+  DocumentTextIcon,
   ChatBubbleOvalLeftEllipsisIcon,
   SparklesIcon,
   ChatBubbleLeftRightIcon,
@@ -23,6 +24,7 @@ import ContextNav from './ContextNav';
 
 type SectionLabelKey =
   | 'tabGeneral'
+  | 'tabPrompt'
   | 'tabChat'
   | 'tabModels'
   | 'tabChannels'
@@ -41,6 +43,7 @@ type Section = {
 
 const SECTIONS: Section[] = [
   { key: 'general', seg: '', labelKey: 'tabGeneral', icon: AdjustmentsHorizontalIcon },
+  { key: 'prompt', seg: 'prompt', labelKey: 'tabPrompt', icon: DocumentTextIcon },
   { key: 'chat', seg: 'chat', labelKey: 'tabChat', icon: ChatBubbleOvalLeftEllipsisIcon },
   { key: 'models', seg: 'models', labelKey: 'tabModels', icon: SparklesIcon },
   { key: 'channels', seg: 'channels', labelKey: 'tabChannels', icon: ChatBubbleLeftRightIcon },
