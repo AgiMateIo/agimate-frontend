@@ -61,6 +61,11 @@ Contributors sign the
 their first pull request, by replying to a bot comment. One signature covers
 every AgiMate repository.
 
+The CLA lets the project be distributed under more than one set of terms — the
+public [FSL-1.1-ALv2](LICENSE) and a commercial licence alongside it. You keep
+full ownership of your contribution either way; where the boundary between free
+and commercial use lies is in [LICENSING.md](LICENSING.md).
+
 ## Reporting bugs
 
 Open an issue with the steps to reproduce, the expected and actual behaviour,

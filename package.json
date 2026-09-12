@@ -3,7 +3,7 @@
   "version": "1.5.3",
   "private": true,
   "description": "Web dashboard for the AgiMate platform: AI agents, skills, connectors, agentic teams and real-time chat.",
-  "license": "Apache-2.0",
+  "license": "SEE LICENSE IN LICENSE",
   "homepage": "https://agimate.io",
   "repository": {
     "type": "git",

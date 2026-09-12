@@ -181,4 +181,7 @@ Every PR must pass `pnpm typecheck`, `pnpm lint` and `pnpm check:i18n`.
 
 ## License
 
-[Apache License 2.0](LICENSE) © AgiMate
+[FSL-1.1-ALv2](LICENSE) — free to use, modify and self-host, including commercially; not free to
+offer to others as a competing product or service. Each release additionally becomes Apache-2.0
+two years after it is published, and releases up to v1.5.3 are Apache-2.0 already.
+[LICENSING.md](LICENSING.md) explains the boundary and how to obtain a commercial licence.
