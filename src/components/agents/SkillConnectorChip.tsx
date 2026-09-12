@@ -15,6 +15,9 @@ import type { AgentSkillConnectorStatus } from '@/types';
 // is not "that telegram isn't open to this agent".
 export type ConnectorFix = 'ok' | 'open' | 'choose' | 'connect';
 
+// `hasInstances` is the fallback for a row without `matches` (a backend that
+// predates the plan); with matches present the row itself says whether
+// anything fits — by identity, which a count by code cannot tell.
 export function connectorFix(
   connector: AgentSkillConnectorStatus,
   hasInstances: boolean,
@@ -24,7 +27,8 @@ export function connectorFix(
   // missing is opening it to the agent, which is one request from here.
   if (connector.connectionId || connector.internal) return 'open';
   // Instances exist but none is picked: the fix is choosing, not connecting.
-  return hasInstances ? 'choose' : 'connect';
+  const fits = connector.matches ? connector.matches.length > 0 : hasInstances;
+  return fits ? 'choose' : 'connect';
 }
 
 const TONE = {
@@ -51,7 +55,8 @@ export default function SkillConnectorChip({
   pending,
 }: {
   connector: AgentSkillConnectorStatus;
-  // Display name from the catalog; falls back to the raw code.
+  // The requirement's caption (its title), falling back to the connector's
+  // catalog name and then the raw code.
   connectorName: string;
   fix: ConnectorFix;
   onClick?: () => void;

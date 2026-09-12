@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
+import { skillRequirements } from '@/utils/skill';
 
 interface EditSkillConnectorsModalProps {
   skill: SkillResponse;
@@ -32,6 +33,11 @@ export default function EditSkillConnectorsModal({
     connectorCatalogOptions(),
   );
 
+  // What the skill declares today, in full: a requirement carries more than
+  // its code (a key, an address to pre-fill, access rules), and this modal
+  // only toggles codes — so an entry whose code stays checked is sent back
+  // untouched, and only a newly checked code becomes a bare requirement.
+  const requirements = skillRequirements(skill);
   const [selected, setSelected] = useState<string[]>(skill.connectorCodes);
   const [search, setSearch] = useState('');
 
@@ -66,9 +72,11 @@ export default function EditSkillConnectorsModal({
 
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, async () => {
-      await apiService.updateSkillConnectors(skill.id, {
-        connectorCodes: selected,
-      });
+      const kept = requirements.filter((r) => selected.includes(r.code));
+      const added = selected
+        .filter((code) => !requirements.some((r) => r.code === code))
+        .map((code) => ({ code, key: code }));
+      await apiService.updateSkillConnectors(skill.id, { connectors: [...kept, ...added] });
     });
 
   return (
@@ -124,6 +132,12 @@ export default function EditSkillConnectorsModal({
             })
           )}
         </div>
+
+        {/* Unchecking a code drops every requirement on it — including the
+            keys, pre-fills and rules the author wrote by hand in SKILL.md. */}
+        {requirements.some((r) => (r.key ?? r.code) !== r.code || r.params || r.tools || r.triggers) && (
+          <Alert variant="warning">{t('connectorsKeyedNote')}</Alert>
+        )}
 
         {/* Re-sync note — connector changes don't propagate to agents automatically. */}
         <Alert variant="info">{t('connectorsResyncNote')}</Alert>

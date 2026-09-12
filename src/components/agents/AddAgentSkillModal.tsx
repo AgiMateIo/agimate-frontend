@@ -1,27 +1,31 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { useQueries } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import apiService from '@/services/api';
-import { SkillResponse } from '@/types';
+import { ConnectionResponse, SkillResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { Alert } from '@/components/ui/Alert';
 import { Chip } from '@/components/ui/Chip';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
-import { FormField, Select } from '@/components/ui/FormField';
-import { Link } from '@/i18n/navigation';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { getErrorMessage } from '@/utils/error';
+import { skillRequirements } from '@/utils/skill';
 import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import { FilterPill, FilterRow } from '@/components/ui/FilterPill';
-import { agentConnectionsOptions } from '@/queries/agents';
-import { connectionsListOptions } from '@/queries/connections';
+import { useAgentSkillPlanQuery } from '@/queries/agents';
 import { connectorCatalogOptions } from '@/queries/connectors';
 import { useSkillPickerQuery, type SkillPickerSource } from '@/queries/skills';
-import { openAgentAccess, splitSkillConnectors } from './skillAccess';
+import SkillRequirementChips from '@/components/skills/SkillRequirementChips';
+import SkillRequirementSteps from './SkillRequirementSteps';
+import {
+  choicesComplete,
+  openRequiredAccess,
+  type CreatedConnections,
+  type RequirementChoices,
+} from './skillAccess';
 import { Placeholder } from '@/components/ui/Placeholder';
 
 // Rows revealed at once; "show more" grows the list in place. Both scopes are
@@ -47,9 +51,11 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
   const debouncedSearch = useDebouncedValue(search);
   const [selectedSkill, setSelectedSkill] = useState<SkillResponse | null>(null);
 
-  // Which instance the skill will work with, per external connector it declares.
-  // Reset with the selection: the codes belong to the skill, not to the modal.
-  const [choice, setChoice] = useState<Record<string, string>>({});
+  // Which instance the skill will work with, per requirement key, and the
+  // connections created from inside the wizard. Reset with the selection: the
+  // keys belong to the skill, not to the modal.
+  const [choice, setChoice] = useState<RequirementChoices>({});
+  const [created, setCreated] = useState<CreatedConnections>({});
 
   const {
     skills,
@@ -58,59 +64,34 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
     truncated,
   } = useSkillPickerQuery(source, debouncedSearch);
 
+  const { data: catalog } = useQuery(connectorCatalogOptions());
+  const connectorName = (code: string) => catalog?.find((c) => c.code === code)?.name ?? code;
+
+  // The plan is the backend's reading of the skill against this agent: what
+  // fits, what is missing, and the rules that will be written.
+  const { data: plan, isPending: planPending, error: planError } = useAgentSkillPlanQuery(
+    agentId,
+    selectedSkill?.id ?? null,
+  );
+
   // How many rows are revealed, tied to the list it was counted for: a new
   // search or source collapses back to one chunk without an effect.
   const listKey = `${source}:${debouncedSearch}`;
   const [reveal, setReveal] = useState({ key: listKey, count: CHUNK });
   const visible = reveal.key === listKey ? reveal.count : CHUNK;
 
-  // The selection is dropped where the source changes rather than in an effect
-  // watching it — the selected skill and its connector choices belong to one
-  // source, so they die with the switch that caused it.
-  const changeSource = (next: SkillPickerSource) => {
-    setSource(next);
-    setSelectedSkill(null);
+  const pickSkill = (skill: SkillResponse | null) => {
+    setSelectedSkill(skill);
     setChoice({});
+    setCreated({});
   };
 
-  const [
-    { data: userConnections },
-    { data: agentConnections, isPending: agentConnectionsPending },
-    { data: catalog },
-  ] = useQueries({
-    queries: [connectionsListOptions(), agentConnectionsOptions(agentId), connectorCatalogOptions()],
-  });
-
-  const { external, internal } = useMemo(
-    () => splitSkillConnectors(selectedSkill?.connectorCodes ?? [], catalog),
-    [selectedSkill, catalog],
-  );
-  const connectorName = (code: string) => catalog?.find((c) => c.code === code)?.name ?? code;
-  const instancesOf = (code: string) =>
-    (userConnections ?? []).filter((c) => c.connectorCode === code);
-
-  const openIds = useMemo(
-    () => new Set((agentConnections ?? []).map((c) => c.connectionId)),
-    [agentConnections],
-  );
-  const openCodes = useMemo(
-    () => new Set((agentConnections ?? []).map((c) => c.connectorCode)),
-    [agentConnections],
-  );
-
-  const pickSkill = (skill: SkillResponse) => {
-    setSelectedSkill(skill);
-    // One instance of a connector is not a choice — preselect it, so the common
-    // case stays a single click.
-    const codes = splitSkillConnectors(skill.connectorCodes, catalog).external;
-    setChoice(
-      Object.fromEntries(
-        codes.map((code) => {
-          const instances = (userConnections ?? []).filter((c) => c.connectorCode === code);
-          return [code, instances.length === 1 ? instances[0].id : ''];
-        }),
-      ),
-    );
+  // The selection is dropped where the source changes rather than in an effect
+  // watching it — the selected skill and its choices belong to one source, so
+  // they die with the switch that caused it.
+  const changeSource = (next: SkillPickerSource) => {
+    setSource(next);
+    pickSkill(null);
   };
 
   const { loading, error, handleSubmit } = useAsyncForm<void>({
@@ -118,48 +99,31 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
     defaultError: 'Failed to bind skill',
   });
 
-  const onSubmit = (e: React.FormEvent) =>
+  const onSubmit = (e: React.SyntheticEvent) =>
     handleSubmit(e, async () => {
-      if (!selectedSkill) return;
-      // Rebuilt from the external list rather than sent as collected: the split
-      // depends on the connector catalog, and a code picked while it was still
-      // loading could have landed in `choice` as external by mistake. Internal
-      // codes must be left out — their instance is not the caller's to name.
-      const connections = Object.fromEntries(
-        external.map((code) => [code, choice[code]]).filter(([, id]) => !!id),
-      );
-      // Connections first: a skill may only point at what the agent can reach.
-      await openAgentAccess(agentId, {
-        connectionIds: Object.values(connections),
-        connectorCodes: internal,
-        openConnectionIds: openIds,
-        openConnectorCodes: openCodes,
-      });
+      if (!selectedSkill || !plan) return;
+      // Connections first: a skill may only point at what the agent can reach,
+      // and the rules are written on the binding at the last step.
+      const connections = await openRequiredAccess(agentId, plan.connectors, choice, created);
       await apiService.bindAgentSkill(agentId, {
         skillId: selectedSkill.id,
         connections: Object.keys(connections).length > 0 ? connections : undefined,
       });
     });
 
-  // Every external connector needs an instance: without one the backend refuses
-  // the binding rather than guessing between two accounts. And until the agent's
-  // own connections are known, opening one would re-open what is already open.
-  const incomplete = external.some((code) => !choice[code]) || agentConnectionsPending;
+  // Every external requirement needs an instance: without one the backend
+  // refuses the binding rather than guessing between two accounts.
+  const incomplete = !plan || !choicesComplete(plan.connectors, choice, created);
 
-  // The search field lives inside this form, and implicit submission would bind
-  // the selected skill (or close the modal having bound nothing) the moment
-  // someone hits Enter while browsing. Only the button submits.
-  const blockImplicitSubmit = (e: React.KeyboardEvent<HTMLFormElement>) => {
-    if (e.key === 'Enter' && (e.target as HTMLElement).tagName === 'INPUT') {
-      e.preventDefault();
-    }
-  };
 
   const shown = skills.slice(0, visible);
 
   return (
     <Modal isOpen={true} onClose={onClose} title={t('addSkill')} size="lg">
-      <form onSubmit={onSubmit} onKeyDown={blockImplicitSubmit} className="space-y-4">
+      {/* Not a <form>: the inline connection form of a step is one, and a form
+          nested in a form submits both — Enter or "Create" in the inner one
+          would also fire the binding. The one button below is the only submit. */}
+      <div className="space-y-4">
         {/* Search, with the source (own skills vs the public catalogue, incl.
             system skills) folded behind the funnel — same as the Skills page. */}
         <SearchToolbar
@@ -222,13 +186,9 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
                     {skill.description && (
                       <p className="text-xs text-muted mt-0.5 line-clamp-1">{skill.description}</p>
                     )}
-                    {skill.connectorCodes.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {skill.connectorCodes.map((code) => (
-                          <Chip key={code} strong tone="accent">{code}</Chip>
-                        ))}
-                      </div>
-                    )}
+                    <div className="mt-1">
+                      <SkillRequirementChips requirements={skillRequirements(skill)} nameOf={connectorName} />
+                    </div>
                   </button>
                 );
               })}
@@ -250,57 +210,28 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
           <p className="pt-1 text-center text-xs text-muted">{tSkills('refineSearch')}</p>
         )}
 
-        {/* Instance selection — the skill cannot be bound without it, so it sits
-            in the same modal rather than behind a second step. */}
-        {selectedSkill && (external.length > 0 || internal.length > 0) && (
+        {/* The plan — the skill cannot be bound without its instances, so the
+            steps sit in the same modal rather than behind a second screen. */}
+        {selectedSkill && (
           <div className="space-y-3 rounded-lg border border-border p-3">
             <p className="text-sm font-medium text-foreground">
               {t('skillConnectionsSubtitle', { skill: selectedSkill.title })}
             </p>
-
-            {external.map((code) => {
-              const instances = instancesOf(code);
-              return (
-                <FormField key={code} label={connectorName(code)} required>
-                  {instances.length === 0 ? (
-                    <Alert variant="warning">
-                      {t('skillConnectorNoInstance', { name: connectorName(code) })}{' '}
-                      <Link href="/dashboard/connections" className="underline">
-                        {t('skillConnectorConnectLink')}
-                      </Link>
-                    </Alert>
-                  ) : (
-                    <Select
-                      value={choice[code] ?? ''}
-                      onChange={(e) => setChoice((prev) => ({ ...prev, [code]: e.target.value }))}
-                    >
-                      <option value="">{t('skillConnectorNotChosen')}</option>
-                      {instances.map((instance) => (
-                        <option key={instance.id} value={instance.id}>
-                          {instance.name || instance.fullCode}
-                          {openIds.has(instance.id) ? '' : ` — ${t('skillConnectorWillOpen')}`}
-                        </option>
-                      ))}
-                    </Select>
-                  )}
-                </FormField>
-              );
-            })}
-
-            {internal.length > 0 && (
-              <div>
-                <p className="text-sm font-medium text-foreground mb-2">
-                  {t('skillConnectorsInternal')}
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {internal.map((code) => (
-                    <Chip key={code} tone={openCodes.has(code) ? 'success' : 'accent'}>
-                      {connectorName(code)}
-                    </Chip>
-                  ))}
-                </div>
-                <p className="text-xs text-muted mt-1.5">{t('skillConnectorsInternalHint')}</p>
-              </div>
+            {planError ? (
+              <ErrorAlert>{getErrorMessage(planError, t('skillPlanLoadError'))}</ErrorAlert>
+            ) : planPending || !plan ? (
+              <Placeholder size="sm">{t('skillPlanLoading')}</Placeholder>
+            ) : (
+              <SkillRequirementSteps
+                connectors={plan.connectors}
+                choice={choice}
+                onChoice={(key, id) => setChoice((prev) => ({ ...prev, [key]: id }))}
+                created={created}
+                onCreated={(key, connection: ConnectionResponse) =>
+                  setCreated((prev) => ({ ...prev, [key]: [...(prev[key] ?? []), connection] }))
+                }
+                disabled={loading}
+              />
             )}
           </div>
         )}
@@ -319,7 +250,8 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
             {tCommon('cancel')}
           </Button>
           <Button
-            type="submit"
+            type="button"
+            onClick={onSubmit}
             disabled={loading || !selectedSkill || incomplete}
             loading={loading}
             className="flex-1"
@@ -327,7 +259,7 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
             {t('addSkill')}
           </Button>
         </div>
-      </form>
+      </div>
     </Modal>
   );
 }

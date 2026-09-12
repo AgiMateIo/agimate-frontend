@@ -22,7 +22,8 @@ import { useUser } from '@/contexts/UserContext';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { formatDate } from '@/utils/date';
-import { buildSkillMd } from '@/utils/skill';
+import { buildSkillMd, skillRequirements } from '@/utils/skill';
+import SkillRequirementChips from '@/components/skills/SkillRequirementChips';
 import SkillAgentsTab from '@/components/skills/SkillAgentsTab';
 import SkillConnectorsTab from '@/components/skills/SkillConnectorsTab';
 import DeleteSkillModal from '@/components/skills/DeleteSkillModal';
@@ -103,11 +104,10 @@ function SkillDetailContent({ skillId }: { skillId: string }) {
           {skill.connectorCodes.length > 0 && (
             <div className="flex flex-wrap items-center gap-1.5 mt-2">
               <span className="text-xs text-muted">{t('connectorsLabel')}:</span>
-              {skill.connectorCodes.map((code) => (
-                <Chip key={code} strong tone="accent" title={code}>
-                  {connectorNameByCode.get(code) ?? code}
-                </Chip>
-              ))}
+              <SkillRequirementChips
+                requirements={skillRequirements(skill)}
+                nameOf={(code) => connectorNameByCode.get(code) ?? code}
+              />
             </div>
           )}
         </div>

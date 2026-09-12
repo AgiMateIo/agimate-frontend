@@ -27,10 +27,14 @@ const isBrokenJson = (spec: CredentialFieldSpec, value: string) => {
 /**
  * Owns the credential values entered for a set of credential fields.
  * `canSubmit` is true once every *required* field has a non-blank value and no
- * JSON field holds something unparseable.
+ * JSON field holds something unparseable. `initial` seeds the values (a skill's
+ * pre-fills for the instance it wants) — read once, on mount.
  */
-export function useCredentialFields(credentialFields: CredentialFieldsMap) {
-  const [credentials, setCredentials] = useState<Record<string, string>>({});
+export function useCredentialFields(
+  credentialFields: CredentialFieldsMap,
+  initial?: Record<string, string> | null,
+) {
+  const [credentials, setCredentials] = useState<Record<string, string>>(() => ({ ...initial }));
 
   const handleFieldChange = (fieldName: string, value: string) => {
     setCredentials((prev) => ({ ...prev, [fieldName]: value }));

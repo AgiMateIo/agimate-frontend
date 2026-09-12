@@ -16,6 +16,7 @@ import type {
   CreateAgentSkillRequest,
   UpdateAgentSkillConnectionsRequest,
   UpdateAgentSkillDisclosureRequest,
+  SkillBindingPlanResponse,
   AgentLlmResponse,
   AgentLlmPurpose,
   CreateAgentLlmRequest,
@@ -94,6 +95,17 @@ export const agentsApi = {
     return httpClient.get<PagedResponse<AgentSkillResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${params.agentId}/skills/?${buildPagedQuery({}, params)}`);
   },
 
+  // What binding this skill to this agent would take: per requirement, the
+  // user's fitting connections (with whether each is already open to the
+  // agent), the create form with the skill's pre-fills, and the access rules
+  // that will be written. Answers for a bound skill too, resolved as if it
+  // were not — the binding row is the truth once it exists.
+  async getAgentSkillPlan(agentId: string, skillId: string): Promise<SkillBindingPlanResponse> {
+    return httpClient.get<SkillBindingPlanResponse>(
+      `${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/skills/plan?skillId=${encodeURIComponent(skillId)}`,
+    );
+  },
+
   async bindAgentSkill(agentId: string, data: CreateAgentSkillRequest): Promise<AgentSkillResponse> {
     return httpClient.post<AgentSkillResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/skills/`, data);
   },
@@ -102,8 +114,9 @@ export const agentsApi = {
     return httpClient.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/skills/${skillId}`);
   },
 
-  // Replaces the binding's whole connector→instance map (a code left out of the
-  // body ends up without an instance).
+  // Replaces the binding's whole key→instance map (a key left out of the body
+  // ends up without an instance) and re-applies the skill's rules to the
+  // bindings the chosen instances have.
   async updateAgentSkillConnections(
     agentId: string,
     skillId: string,
@@ -124,8 +137,9 @@ export const agentsApi = {
   },
 
   // Marks the agent's skills as installed at their current version — the only
-  // way to clear `needsReinstall`. It reconciles nothing else: skills no longer
-  // create connector bindings, so there is nothing to sync.
+  // way to clear `needsReinstall` — and RESETS every skill's access rules to
+  // what its author declared, re-creating rows the user deleted. It still
+  // creates no connector bindings. Confirm before calling.
   async refreshAgentSkills(agentId: string): Promise<void> {
     return httpClient.post<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/skills/refresh`, {});
   },

@@ -1,7 +1,8 @@
 import apiService from '@/services/api';
 import { isInternalConnector } from '@/utils/connector';
+import { skillRequirements } from '@/utils/skill';
 import { splitSkillConnectors } from '@/components/agents/skillAccess';
-import type { AgentCreatedResponse, ConnectorCatalogEntry } from '@/types';
+import type { AgentCreatedResponse, ConnectorCatalogEntry, SkillConnectorRequirement } from '@/types';
 import type { WizardData, WizardFailure } from './AgentWizard';
 
 // The single write of the wizard is no longer single: a skill only reaches the
@@ -34,20 +35,46 @@ export function internalCodesFor(
   });
 }
 
-// Which instance a picked skill will use for one of its external connectors.
+// The open connections that fit one requirement. There is no agent yet to ask
+// a plan for, so the identity match is done here the way the backend does it:
+// a requirement naming an MCP address fits the connection whose `subCode` is
+// that address, and a requirement without one fits every instance of the code.
+export function fittingConnections(data: WizardData, requirement: SkillConnectorRequirement) {
+  const ofCode = data.connections.filter((c) => c.connectorCode === requirement.code);
+  const identity = requirement.params?.url;
+  if (!identity) return ofCode;
+  const same = ofCode.filter((c) => c.subCode === identity);
+  return same.length > 0 ? same : ofCode;
+}
+
+// Which instance a picked skill will use for one of its external requirements.
 // Resolved at the moment it is needed rather than stored at pick time: the user
 // can walk back to the connections step and swap instances, and a choice that
 // points at a connection no longer open to the agent is no choice at all. With
-// exactly one open connection of that type there is nothing to ask about.
+// exactly one fitting connection there is nothing to ask about.
 export function resolveSkillConnection(
   data: WizardData,
   skillId: string,
-  connectorCode: string,
+  requirement: SkillConnectorRequirement,
 ): string {
-  const open = data.connections.filter((c) => c.connectorCode === connectorCode);
-  const chosen = data.skillConnections[skillId]?.[connectorCode];
-  if (chosen && open.some((c) => c.id === chosen)) return chosen;
-  return open.length === 1 ? open[0].id : '';
+  const fitting = fittingConnections(data, requirement);
+  const chosen = data.skillConnections[skillId]?.[requirement.key ?? requirement.code];
+  if (chosen && fitting.some((c) => c.id === chosen)) return chosen;
+  return fitting.length === 1 ? fitting[0].id : '';
+}
+
+// The requirements of a picked skill the user must name an instance for.
+export function externalRequirements(
+  skill: { connectors?: SkillConnectorRequirement[]; connectorCodes?: string[] },
+  catalog: ConnectorCatalogEntry[] | undefined,
+): SkillConnectorRequirement[] {
+  const requirements = skillRequirements({
+    connectorCodes: skill.connectorCodes ?? [],
+    connectors: skill.connectors,
+  });
+  return requirements.filter(
+    (r) => splitSkillConnectors([r.code], catalog).external.length > 0,
+  );
 }
 
 export async function createAgentFromWizard(
@@ -56,10 +83,10 @@ export async function createAgentFromWizard(
   catalog: ConnectorCatalogEntry[] | undefined,
 ): Promise<WizardCreationResult> {
   const internalCodes = internalCodesFor(data, catalog);
-  // Preset skills keep riding along with the create call: their connector codes
+  // Preset skills keep riding along with the create call: their requirements
   // never reach the frontend, so there is nothing to map them by. Skills the
-  // user picked from the library do carry their codes and get an explicit
-  // binding with the instance chosen for each.
+  // user picked from the library do carry theirs and get an explicit binding
+  // with the instance chosen for each, keyed by requirement key.
   const presetSkills = data.skills.filter((s) => s.fromPreset);
   const pickedSkills = data.skills.filter((s) => !s.fromPreset);
 
@@ -94,11 +121,10 @@ export async function createAgentFromWizard(
   const failedSkills: WizardFailure[] = [];
   for (const skill of pickedSkills) {
     try {
-      const { external } = splitSkillConnectors(skill.connectorCodes ?? [], catalog);
       const connections: Record<string, string> = {};
-      for (const code of external) {
-        const connectionId = resolveSkillConnection(data, skill.id, code);
-        if (connectionId) connections[code] = connectionId;
+      for (const requirement of externalRequirements(skill, catalog)) {
+        const connectionId = resolveSkillConnection(data, skill.id, requirement);
+        if (connectionId) connections[requirement.key ?? requirement.code] = connectionId;
       }
       await apiService.bindAgentSkill(agentId, {
         skillId: skill.id,

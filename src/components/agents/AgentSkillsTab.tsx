@@ -5,19 +5,21 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useQueries } from '@tanstack/react-query';
 import { Link } from '@/i18n/navigation';
 import apiService from '@/services/api';
-import { AgentSkillResponse, SkillDisclosure } from '@/types';
+import { AgentSkillConnectorStatus, AgentSkillResponse, SkillDisclosure } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { RowAction } from '@/components/ui/RowAction';
 import { Select } from '@/components/ui/FormField';
+import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
 import {
   PlusIcon,
   TrashIcon,
   ArrowPathIcon,
   ExclamationTriangleIcon,
   LinkIcon,
+  ShieldExclamationIcon,
 } from '@heroicons/react/24/outline';
 import { useAgentCacheActions, useAgentSkillsQuery } from '@/queries/agents';
 import { connectionsListOptions } from '@/queries/connections';
@@ -28,6 +30,7 @@ import AddAgentSkillModal from './AddAgentSkillModal';
 import DeleteAgentSkillModal from './DeleteAgentSkillModal';
 import SkillConnectionsModal from './SkillConnectionsModal';
 import SkillConnectorChip, { connectorFix } from './SkillConnectorChip';
+import { requirementConflicts, requirementKey } from './skillAccess';
 import { Placeholder } from '@/components/ui/Placeholder';
 
 // The loader is a skill like any other, told apart by the connector it declares
@@ -42,13 +45,11 @@ type DisclosureChoice = (typeof DISCLOSURE_CHOICES)[number];
 
 interface AgentSkillsTabProps {
   agentId: string;
-  // CTA for a connector the user owns no instance of — the fix is creating a
-  // connection, not picking one here.
-  onCreateConnection?: (connectorCode: string) => void;
 }
 
-export default function AgentSkillsTab({ agentId, onCreateConnection }: AgentSkillsTabProps) {
+export default function AgentSkillsTab({ agentId }: AgentSkillsTabProps) {
   const t = useTranslations('Agents');
+  const tCommon = useTranslations('Common');
   const locale = useLocale();
   const { invalidateAgentAccess, replaceAgentSkill } = useAgentCacheActions();
 
@@ -69,7 +70,7 @@ export default function AgentSkillsTab({ agentId, onCreateConnection }: AgentSki
     id: string;
     value: DisclosureChoice;
   } | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
+  const [confirmRefresh, setConfirmRefresh] = useState(false);
   const [actionError, setActionError] = useState('');
 
   const bindings = page?.content ?? [];
@@ -86,6 +87,10 @@ export default function AgentSkillsTab({ agentId, onCreateConnection }: AgentSki
   );
 
   const connectorName = (code: string) => catalog?.find((c) => c.code === code)?.name ?? code;
+  // Rules the skill declared that did not land, because a rule of another
+  // origin holds the same (kind, name) — per binding, so the row says it once.
+  const conflictsOf = (binding: AgentSkillResponse) =>
+    binding.connectors.flatMap((c) => requirementConflicts(c).map((label) => `${c.title ?? connectorName(c.connectorCode)}: ${label}`));
   const disclosureName = (value: SkillDisclosure) =>
     value === 'LAZY' ? t('disclosureLazy') : t('disclosureEager');
   // The skill's default is only nameable while it is the one in effect: with an
@@ -106,18 +111,15 @@ export default function AgentSkillsTab({ agentId, onCreateConnection }: AgentSki
 
   // Opening a connection is the fix for most red skills, and it is a single
   // request — done from the chip rather than by sending the user elsewhere.
-  const openConnector = async (
-    binding: AgentSkillResponse,
-    code: string,
-    connectionId: string | null,
-    internal: boolean,
-  ) => {
-    setPendingFix(`${binding.id}:${code}`);
+  const openConnector = async (binding: AgentSkillResponse, c: AgentSkillConnectorStatus) => {
+    setPendingFix(`${binding.id}:${requirementKey(c)}`);
     setActionError('');
     try {
       await apiService.bindAgentConnection(
         agentId,
-        connectionId && !internal ? { connectionId } : { connectorCode: code },
+        c.connectionId && !c.internal
+          ? { connectionId: c.connectionId }
+          : { connectorCode: c.connectorCode },
       );
       invalidateAgentAccess(agentId);
     } catch (err) {
@@ -144,23 +146,16 @@ export default function AgentSkillsTab({ agentId, onCreateConnection }: AgentSki
     }
   };
 
-  const refreshSkills = async () => {
-    setRefreshing(true);
-    setActionError('');
-    try {
-      await apiService.refreshAgentSkills(agentId);
-      invalidateAgentAccess(agentId);
-    } catch (err) {
-      setActionError(getErrorMessage(err, t('refreshSkillsFailed')));
-    } finally {
-      setRefreshing(false);
-    }
-  };
+  // Behind a confirmation: besides clearing `needsReinstall`, a refresh puts
+  // every skill's access rules back to what its author declared — rows the
+  // user deleted come back, and that is not what "refresh" sounds like.
+  const refreshSkills = () => apiService.refreshAgentSkills(agentId);
 
   const handleMutationSuccess = () => {
     setShowAdd(false);
     setDeletingBinding(null);
     setEditingBinding(null);
+    setConfirmRefresh(false);
     invalidateAgentAccess(agentId);
   };
 
@@ -181,9 +176,7 @@ export default function AgentSkillsTab({ agentId, onCreateConnection }: AgentSki
             <RowAction
               icon={ArrowPathIcon}
               label={t('refreshSkills')}
-              onClick={refreshSkills}
-              disabled={refreshing}
-              spinning={refreshing}
+              onClick={() => setConfirmRefresh(true)}
             />
           )}
           <Button onClick={() => setShowAdd(true)} className="flex items-center gap-2">
@@ -225,7 +218,7 @@ export default function AgentSkillsTab({ agentId, onCreateConnection }: AgentSki
               </thead>
               <tbody>
                 {bindings.map((binding) => {
-                  const editable = binding.connectors.some((c) => !c.internal);
+                  const editable = binding.connectors.length > 0;
                   return (
                     <tr
                       key={binding.id}
@@ -257,6 +250,16 @@ export default function AgentSkillsTab({ agentId, onCreateConnection }: AgentSki
                               </Chip>
                             </span>
                           )}
+                          {conflictsOf(binding).length > 0 && (
+                            <Link
+                              href={`/dashboard/agents/${agentId}/connections`}
+                              title={t('skillPolicyConflictsHint', { list: conflictsOf(binding).join(', ') })}
+                            >
+                              <Chip tone="warning" icon={ShieldExclamationIcon}>
+                                {t('skillPolicyConflictsChip', { count: conflictsOf(binding).length })}
+                              </Chip>
+                            </Link>
+                          )}
                         </div>
                       </td>
                       <td className="py-3 px-4 text-sm">
@@ -269,21 +272,23 @@ export default function AgentSkillsTab({ agentId, onCreateConnection }: AgentSki
                                 c,
                                 (instanceCount.get(c.connectorCode) ?? 0) > 0,
                               );
+                              const key = requirementKey(c);
                               return (
                                 <SkillConnectorChip
-                                  key={c.connectorCode}
+                                  key={key}
                                   connector={c}
-                                  connectorName={connectorName(c.connectorCode)}
+                                  connectorName={c.title ?? connectorName(c.connectorCode)}
                                   fix={fix}
-                                  pending={pendingFix === `${binding.id}:${c.connectorCode}`}
+                                  pending={pendingFix === `${binding.id}:${key}`}
+                                  // Choosing and creating are both the
+                                  // connections modal now: it carries the
+                                  // create form with the skill's pre-fills.
                                   onClick={
                                     fix === 'open'
-                                      ? () => openConnector(binding, c.connectorCode, c.connectionId, c.internal)
-                                      : fix === 'choose'
+                                      ? () => openConnector(binding, c)
+                                      : fix === 'choose' || fix === 'connect'
                                         ? () => setEditingBinding(binding)
-                                        : fix === 'connect'
-                                          ? () => onCreateConnection?.(c.connectorCode)
-                                          : undefined
+                                        : undefined
                                   }
                                 />
                               );
@@ -383,6 +388,23 @@ export default function AgentSkillsTab({ agentId, onCreateConnection }: AgentSki
           onClose={() => setEditingBinding(null)}
           onSuccess={handleMutationSuccess}
         />
+      )}
+
+      {confirmRefresh && (
+        <ConfirmDeleteModal
+          title={t('refreshSkillsConfirmTitle')}
+          confirmLabel={t('refreshSkills')}
+          cancelLabel={tCommon('cancel')}
+          confirmVariant="warning"
+          defaultError={t('refreshSkillsFailed')}
+          fullWidthButtons
+          onConfirm={refreshSkills}
+          onClose={() => setConfirmRefresh(false)}
+          onSuccess={handleMutationSuccess}
+        >
+          <p className="text-foreground">{t('refreshSkillsConfirm')}</p>
+          <Alert variant="warning">{t('refreshSkillsConfirmWarning')}</Alert>
+        </ConfirmDeleteModal>
       )}
 
       {deletingBinding && (

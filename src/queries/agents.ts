@@ -18,6 +18,10 @@ export const agentKeys = {
   detail: (id: string) => [...agentKeys.all, 'detail', id] as const,
   connections: (id: string) => [...agentKeys.detail(id), 'connections'] as const,
   skills: (id: string) => [...agentKeys.detail(id), 'skills'] as const,
+  // The binding plan of one skill for this agent — under the agent's detail so
+  // the access invalidation below reaches it.
+  skillPlan: (id: string, skillId: string) =>
+    [...agentKeys.detail(id), 'skill-plan', skillId] as const,
   llms: (id: string) => [...agentKeys.detail(id), 'llms'] as const,
   // Keyed by the agent-connection binding id, not the agent id: policies refine
   // one binding, and the panel only ever has that id to hand.
@@ -95,6 +99,24 @@ export const agentSkillsOptions = (agentId: string) =>
 
 export function useAgentSkillsQuery(agentId: string) {
   return useQuery(agentSkillsOptions(agentId));
+}
+
+// What binding one skill to this agent would take. Not cached across a modal:
+// the user creates and opens connections while looking at it, and a stale
+// "no match" would offer them the create form a second time.
+export const agentSkillPlanOptions = (agentId: string, skillId: string) =>
+  queryOptions({
+    queryKey: agentKeys.skillPlan(agentId, skillId),
+    queryFn: () => apiService.getAgentSkillPlan(agentId, skillId),
+    staleTime: 0,
+    gcTime: 0,
+  });
+
+export function useAgentSkillPlanQuery(agentId: string, skillId: string | null) {
+  return useQuery({
+    ...agentSkillPlanOptions(agentId, skillId ?? ''),
+    enabled: !!skillId,
+  });
 }
 
 // Model bindings of one agent, keyed by purpose. A zero-binding agent gets a
@@ -204,6 +226,7 @@ export function useAgentCacheActions() {
     invalidateAgentAccess: (id: string) => {
       queryClient.invalidateQueries({ queryKey: agentKeys.skills(id) });
       queryClient.invalidateQueries({ queryKey: agentKeys.connections(id) });
+      queryClient.invalidateQueries({ queryKey: [...agentKeys.detail(id), 'skill-plan'] });
     },
     // A binding row answered by its own PATCH is the same row the listing
     // returns, so it goes straight into the list — a refetch would only redraw

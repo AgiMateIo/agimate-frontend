@@ -20,9 +20,15 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { getErrorMessage } from '@/utils/error';
 import { splitSkillConnectors } from '@/components/agents/skillAccess';
 import { Select } from '@/components/ui/FormField';
+import { skillRequirements } from '@/utils/skill';
 import type { SkillResponse } from '@/types';
 import { WizardStepProps } from './AgentWizard';
-import { createAgentFromWizard, resolveSkillConnection } from './createAgent';
+import {
+  createAgentFromWizard,
+  externalRequirements,
+  fittingConnections,
+  resolveSkillConnection,
+} from './createAgent';
 import WizardActions from './WizardActions';
 import { Placeholder } from '@/components/ui/Placeholder';
 
@@ -96,10 +102,6 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
 
   const selectedIds = useMemo(() => new Set(data.skills.map((s) => s.id)), [data.skills]);
 
-  // Connectors an instance must be named for — the same split the create call
-  // uses, so what the step shows is what gets sent.
-  const externalCodesOf = (skill: { connectorCodes?: string[] }) =>
-    splitSkillConnectors(skill.connectorCodes ?? [], catalog).external;
 
   const toggleSkill = (skill: SkillResponse) => {
     if (selectedIds.has(skill.id)) {
@@ -122,16 +124,17 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
           title: skill.title,
           description: skill.description,
           connectorCodes: skill.connectorCodes,
+          connectors: skillRequirements(skill),
         },
       ],
     });
   };
 
-  const setSkillConnection = (skillId: string, code: string, connectionId: string) =>
+  const setSkillConnection = (skillId: string, key: string, connectionId: string) =>
     setData({
       skillConnections: {
         ...data.skillConnections,
-        [skillId]: { ...(data.skillConnections[skillId] ?? {}), [code]: connectionId },
+        [skillId]: { ...(data.skillConnections[skillId] ?? {}), [key]: connectionId },
       },
     });
 
@@ -211,10 +214,11 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
               {shown.map((skill) => {
                 const isSelected = selectedIds.has(skill.id);
                 // Only asked once the skill is taken, and only where there is a
-                // real choice: two accounts of the same service open to the agent.
+                // real choice: two fitting accounts of the same service open to
+                // the agent — the same fit the create call resolves by.
                 const ambiguous = isSelected
-                  ? externalCodesOf(skill).filter(
-                      (code) => (openedByCode.get(code) ?? []).length > 1,
+                  ? externalRequirements(skill, catalog).filter(
+                      (r) => fittingConnections(data, r).length > 1,
                     )
                   : [];
                 return (
@@ -252,12 +256,12 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
                       )}
                       {skill.connectorCodes.length > 0 && (
                         <span className="mt-1.5 flex flex-wrap gap-1">
-                          {skill.connectorCodes.map((code) => {
-                            const state = connectorState(code);
+                          {skillRequirements(skill).map((r) => {
+                            const state = connectorState(r.code);
                             return (
-                              <span key={code} title={t(`connector_${state}`)}>
+                              <span key={r.key ?? r.code} title={t(`connector_${state}`)}>
                                 <Chip tone={CONNECTOR_TONE[state]} icon={CONNECTOR_ICON[state]}>
-                                  {catalogByCode.get(code)?.name ?? code}
+                                  {r.title ?? catalogByCode.get(r.code)?.name ?? r.code}
                                 </Chip>
                               </span>
                             );
@@ -270,17 +274,17 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
                   {ambiguous.length > 0 && (
                     <div className="mt-1.5 ml-7 space-y-2 rounded-lg border border-border bg-surface-secondary/50 p-3">
                       <p className="text-xs text-muted">{t('skillInstanceHint')}</p>
-                      {ambiguous.map((code) => (
-                        <label key={code} className="block">
+                      {ambiguous.map((r) => (
+                        <label key={r.key ?? r.code} className="block">
                           <span className="mb-1 block text-xs font-medium text-foreground">
-                            {catalogByCode.get(code)?.name ?? code}
+                            {r.title ?? catalogByCode.get(r.code)?.name ?? r.code}
                           </span>
                           <Select
-                            value={resolveSkillConnection(data, skill.id, code)}
-                            onChange={(e) => setSkillConnection(skill.id, code, e.target.value)}
+                            value={resolveSkillConnection(data, skill.id, r)}
+                            onChange={(e) => setSkillConnection(skill.id, r.key ?? r.code, e.target.value)}
                           >
                             <option value="">{t('skillInstanceNotChosen')}</option>
-                            {(openedByCode.get(code) ?? []).map((c) => (
+                            {fittingConnections(data, r).map((c) => (
                               <option key={c.id} value={c.id}>
                                 {c.name || c.fullCode}
                               </option>

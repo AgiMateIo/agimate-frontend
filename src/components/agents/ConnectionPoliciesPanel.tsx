@@ -2,25 +2,37 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useQuery } from '@tanstack/react-query';
 import apiService from '@/services/api';
-import { useAgentConnectionPoliciesQuery } from '@/queries/agents';
+import { agentSkillsOptions, useAgentConnectionPoliciesQuery } from '@/queries/agents';
 import { AgentConnectionResponse, AgentConnectionPolicyResponse } from '@/types';
 import { getErrorMessage } from '@/utils/error';
+import { policySkillId } from '@/utils/policy';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { Chip } from '@/components/ui/Chip';
 import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
-import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
 import AddConnectionPolicyModal from './AddConnectionPolicyModal';
 import { Placeholder } from '@/components/ui/Placeholder';
 
 interface ConnectionPoliciesPanelProps {
+  // The agent the binding belongs to — the binding row does not carry it, and
+  // the skill names a rule's origin is rendered with come from its skills.
+  agentId: string;
   connection: AgentConnectionResponse;
 }
 
-export default function ConnectionPoliciesPanel({ connection }: ConnectionPoliciesPanelProps) {
+export default function ConnectionPoliciesPanel({ agentId, connection }: ConnectionPoliciesPanelProps) {
   const t = useTranslations('Agents');
   const { data: policies, isPending: loading, error, refetch } =
     useAgentConnectionPoliciesQuery(connection.id);
+  // Already in the cache whenever the skills tab was opened; a rule from a
+  // skill this agent no longer has (unbound meanwhile) falls back to the id.
+  const { data: skillsPage } = useQuery(agentSkillsOptions(agentId));
+  const skillName = (skillId: string) =>
+    skillsPage?.content.find((b) => b.skillId === skillId)?.skillName ?? skillId;
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState<AgentConnectionPolicyResponse | null>(null);
   const [deleting, setDeleting] = useState<AgentConnectionPolicyResponse | null>(null);
@@ -50,7 +62,9 @@ export default function ConnectionPoliciesPanel({ connection }: ConnectionPolici
         <div className="text-sm text-muted py-2">{t('noPoliciesDefaultAllow')}</div>
       ) : (
         <div className="space-y-1.5">
-          {policies.map((p) => (
+          {policies.map((p) => {
+            const fromSkill = policySkillId(p);
+            return (
             <div
               key={p.id}
               className="flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2"
@@ -61,6 +75,15 @@ export default function ConnectionPoliciesPanel({ connection }: ConnectionPolici
               <span className="text-sm font-mono text-foreground truncate">
                 {p.name ?? t('policyResourceAll')}
               </span>
+              {/* Put there by a skill's declaration: the skill re-applies it on
+                  refresh and removes it on unbind — until it is edited. */}
+              {fromSkill && (
+                <span className="shrink-0" title={t('policySourceSkillHint')}>
+                  <Chip tone="accent" icon={AcademicCapIcon}>
+                    {t('policySourceSkill', { name: skillName(fromSkill) })}
+                  </Chip>
+                </span>
+              )}
               {p.paramsFilter && Object.keys(p.paramsFilter).length > 0 && (
                 <span
                   className="text-[10px] text-muted font-mono truncate max-w-[40%]"
@@ -89,7 +112,8 @@ export default function ConnectionPoliciesPanel({ connection }: ConnectionPolici
                 <TrashIcon className="h-3.5 w-3.5" />
               </button>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -145,6 +169,9 @@ function DeletePolicyModal({
       <div className="text-sm text-muted font-mono">
         {policy.kind} · {policy.name ?? t('policyResourceAll')} · {policy.effect}
       </div>
+      {/* Deleting is not the end of it: the next "refresh skills" puts the
+          author's rule back. */}
+      {policySkillId(policy) && <Alert variant="warning">{t('deleteSkillPolicyWarning')}</Alert>}
     </ConfirmDeleteModal>
   );
 }

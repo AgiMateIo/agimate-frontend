@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { AgentCreatedResponse, AgentType } from '@/types';
+import { AgentCreatedResponse, AgentType, SkillConnectorRequirement } from '@/types';
 import WizardStepper from './WizardStepper';
 import WizardSummary from './WizardSummary';
 import StepRole from './StepRole';
@@ -13,12 +13,15 @@ import StepConnections from './StepConnections';
 import StepExternalDone from './StepExternalDone';
 
 // A skill selected in the wizard. Preset skills arrive without per-skill
-// connector codes (the preset carries the union), library skills carry theirs.
+// requirements (the preset carries the union of codes), library skills carry
+// theirs — `connectors` is what the instance map is built from, `connectorCodes`
+// the display-only union.
 export interface WizardSkill {
   id: string;
   title: string;
   description: string | null;
   connectorCodes?: string[];
+  connectors?: SkillConnectorRequirement[];
   // Came with the preset rather than being picked from the library. Only these
   // ride along inside the create call — see createAgent.ts.
   fromPreset?: boolean;
@@ -33,6 +36,9 @@ export interface WizardConnection {
   name: string | null;
   fullCode: string;
   connectorCode: string;
+  // The instance's identity on the platform (an MCP server's URL) — what a
+  // skill requirement naming an address is matched against.
+  subCode: string | null;
 }
 
 // Something that could not be attached once the agent already existed.
@@ -62,7 +68,8 @@ export interface WizardData {
   // What the agent may reach outwards, opened right after creation. Only the
   // external branch picks these — a GENERIC agent has no connections step.
   connections: WizardConnection[];
-  // Per picked skill: which instance serves each external connector it declares.
+  // Per picked skill: which instance serves each external requirement it
+  // declares, keyed by requirement key.
   skillConnections: Record<string, Record<string, string>>;
   // Attachments that failed once the agent already existed — the agent is real,
   // so these are to-dos on its page rather than a failed creation.

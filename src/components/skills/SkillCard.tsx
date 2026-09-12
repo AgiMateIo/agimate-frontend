@@ -6,6 +6,8 @@ import { Chip } from '@/components/ui/Chip';
 import { SkillResponse } from '@/types';
 import { Link } from '@/i18n/navigation';
 import { formatDate } from '@/utils/date';
+import { skillRequirements } from '@/utils/skill';
+import SkillRequirementChips from './SkillRequirementChips';
 
 interface SkillCardProps {
   skill: SkillResponse;
@@ -56,10 +58,8 @@ export default function SkillCard({
         )}
 
         {showConnectorCodes && skill.connectorCodes.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-2">
-            {skill.connectorCodes.map((code) => (
-              <Chip key={code} strong tone="accent">{code}</Chip>
-            ))}
+          <div className="mt-2">
+            <SkillRequirementChips requirements={skillRequirements(skill)} />
           </div>
         )}
 

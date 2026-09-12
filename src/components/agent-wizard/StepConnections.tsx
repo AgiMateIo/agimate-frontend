@@ -169,6 +169,7 @@ export default function StepConnections({
                         name: conn.name,
                         fullCode: conn.fullCode,
                         connectorCode: conn.connectorCode,
+                        subCode: conn.subCode,
                       })
                     }
                     aria-pressed={isSelected}

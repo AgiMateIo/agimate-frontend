@@ -13,7 +13,9 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input, TextArea } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { Alert } from '@/components/ui/Alert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
+import { policySkillId } from '@/utils/policy';
 
 interface AddConnectionPolicyModalProps {
   connection: AgentConnectionResponse;
@@ -118,6 +120,13 @@ export default function AddConnectionPolicyModal({
   return (
     <Modal isOpen={true} onClose={onClose} title={isEdit ? t('editPolicy') : t('addPolicy')}>
       <form onSubmit={onSubmit} className="space-y-4">
+        {/* A skill's row stops being the skill's the moment it is saved from
+            here: the backend erases its origin, the skill never touches it
+            again, and the next refresh reports its own version as a conflict. */}
+        {policy && policySkillId(policy) && (
+          <Alert variant="info">{t('policySourceSkillEditHint')}</Alert>
+        )}
+
         {/* Kind */}
         <FormField label={t('policyKind')}>
           <div className="flex gap-3">

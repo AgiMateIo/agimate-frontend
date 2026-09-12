@@ -9,6 +9,7 @@ import type {
   ConnectionResponse,
   ConnectorCatalogEntry,
   CreateConnectionResult,
+  CredentialFieldSpec,
 } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input } from '@/components/ui/FormField';
@@ -22,6 +23,17 @@ import CredentialFieldsForm, { useCredentialFields } from './CredentialFieldsFor
 interface ConnectionSetupFormProps {
   connector: ConnectorCatalogEntry;
   initialName?: string;
+  // Pre-filled values (a skill's declared instance — the MCP server's URL);
+  // secrets are never among them. Read once, on mount.
+  initialCredentials?: Record<string, string> | null;
+  // The form to render instead of the catalog entry's — a skill binding plan
+  // carries its own copy, and the two are meant to be the same declaration.
+  credentialFields?: Record<string, CredentialFieldSpec>;
+  // The connector header is redundant where the caller already names the
+  // connector (a wizard step titled after it).
+  hideHeader?: boolean;
+  // No way back from this form (a wizard step that has nothing else to offer).
+  hideCancel?: boolean;
   onSuccess: (connection: ConnectionResponse) => void;
   onCancel: () => void;
   cancelLabel: string;
@@ -42,6 +54,10 @@ function parseConflictSubCode(message: string): string | null {
 export default function ConnectionSetupForm({
   connector,
   initialName = '',
+  initialCredentials,
+  credentialFields: credentialFieldsOverride,
+  hideHeader = false,
+  hideCancel = false,
   onSuccess,
   onCancel,
   cancelLabel,
@@ -59,9 +75,9 @@ export default function ConnectionSetupForm({
   // so send the user to its card rather than have them create a second one
   const [pendingAuth, setPendingAuth] = useState<ConnectionResponse | null>(null);
 
-  const credentialFields = connector.integrationMeta?.credentialFields ?? {};
+  const credentialFields = credentialFieldsOverride ?? connector.integrationMeta?.credentialFields ?? {};
   const { credentials, handleFieldChange, canSubmit, filledCredentials } =
-    useCredentialFields(credentialFields);
+    useCredentialFields(credentialFields, initialCredentials);
 
   // null result = we are leaving the SPA for the consent screen; routing to the
   // connection card now would fight the redirect.
@@ -142,15 +158,17 @@ export default function ConnectionSetupForm({
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-secondary border border-border">
-        <ConnectionAvatar connectorCode={connector.code} connectorName={connector.name} />
-        <div className="min-w-0">
-          <div className="font-medium text-foreground">{connector.name}</div>
-          {connector.description && (
-            <p className="text-xs text-muted mt-0.5">{connector.description}</p>
-          )}
+      {!hideHeader && (
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-secondary border border-border">
+          <ConnectionAvatar connectorCode={connector.code} connectorName={connector.name} />
+          <div className="min-w-0">
+            <div className="font-medium text-foreground">{connector.name}</div>
+            {connector.description && (
+              <p className="text-xs text-muted mt-0.5">{connector.description}</p>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       <FormField label={t('name')}>
         <Input
@@ -193,9 +211,11 @@ export default function ConnectionSetupForm({
       {redirecting && <p className="text-xs text-muted">{t('authorizingHint')}</p>}
 
       <div className="flex gap-3 pt-2">
-        <Button type="button" variant="secondary" onClick={onCancel} disabled={busy}>
-          {cancelLabel}
-        </Button>
+        {!hideCancel && (
+          <Button type="button" variant="secondary" onClick={onCancel} disabled={busy}>
+            {cancelLabel}
+          </Button>
+        )}
         <Button
           type="submit"
           disabled={busy || !canSubmit}

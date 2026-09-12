@@ -138,7 +138,7 @@ export default function AgentConnectionsTab({
                 </div>
                 {expanded && (
                   <div className="border-t border-border bg-surface-secondary/40 px-4 py-3">
-                    <ConnectionPoliciesPanel connection={conn} />
+                    <ConnectionPoliciesPanel agentId={agentId} connection={conn} />
                   </div>
                 )}
               </div>
