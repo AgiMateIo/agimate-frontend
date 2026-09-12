@@ -1,27 +1,33 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
-import { useQueries } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import {
+  AcademicCapIcon,
   CheckCircleIcon,
-  CheckIcon,
   ExclamationTriangleIcon,
+  PlusIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
-import { SearchToolbar } from '@/components/ui/SearchToolbar';
-import { FilterPill, FilterRow } from '@/components/ui/FilterPill';
 import { Button } from '@/components/ui/Button';
 import { Chip, type ChipTone } from '@/components/ui/Chip';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { Select } from '@/components/ui/FormField';
+import { Placeholder } from '@/components/ui/Placeholder';
 import { connectorCatalogOptions } from '@/queries/connectors';
-import { useSkillPickerQuery, type SkillPickerSource } from '@/queries/skills';
+import { useSkillPickerQuery } from '@/queries/skills';
+import {
+  SkillCatalogToolbar,
+  SkillListTail,
+  useRevealedRows,
+  useSkillCatalogFilters,
+} from '@/components/skills/SkillCatalogToolbar';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
-import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { getErrorMessage } from '@/utils/error';
 import { splitSkillConnectors } from '@/components/agents/skillAccess';
-import { Select } from '@/components/ui/FormField';
 import { skillRequirements } from '@/utils/skill';
-import type { SkillResponse } from '@/types';
+import type { SkillConnectorRequirement, SkillResponse } from '@/types';
 import { WizardStepProps } from './AgentWizard';
 import {
   createAgentFromWizard,
@@ -30,13 +36,10 @@ import {
   resolveSkillConnection,
 } from './createAgent';
 import WizardActions from './WizardActions';
-import { Placeholder } from '@/components/ui/Placeholder';
 
 // Rows revealed at once. "Show more" grows the list in place instead of paging,
 // so the step keeps one scroll (the page's) and never nests another.
 const CHUNK = 8;
-
-const SOURCES: SkillPickerSource[] = ['all', 'my', 'public'];
 
 // What the user still has to do about a connector a skill declares. Connections
 // are never required to create the agent — this is a heads-up, not a blocker.
@@ -54,45 +57,91 @@ const CONNECTOR_ICON = {
   builtIn: undefined,
 } as const;
 
+// A skill as the wizard holds it or as the catalog answers it — whichever
+// carries the requirements.
+type RequirementSource = { connectors?: SkillConnectorRequirement[]; connectorCodes?: string[] };
+
+// One skill line, the same in the included block and in the catalog: a mark
+// on the left, title and description, whatever the caller adds below, and an
+// optional control on the right. The block's rows are static with a remove
+// button; the catalog's are one button each, so `onClick` picks the element.
+function SkillRow({
+  icon,
+  title,
+  meta,
+  description,
+  onClick,
+  trailing,
+  children,
+}: {
+  icon: ReactNode;
+  title: string;
+  meta?: ReactNode;
+  description: string | null;
+  onClick?: () => void;
+  trailing?: ReactNode;
+  children?: ReactNode;
+}) {
+  const body = (
+    <>
+      <span className="mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center">{icon}</span>
+      <span className="min-w-0 flex-1">
+        <span className="flex items-baseline gap-2">
+          <span className="truncate text-sm font-medium text-foreground">{title}</span>
+          {meta}
+        </span>
+        {description && (
+          <span className="mt-0.5 line-clamp-1 block text-xs text-muted">{description}</span>
+        )}
+        {children}
+      </span>
+      {trailing}
+    </>
+  );
+  const layout = 'flex w-full items-start gap-2.5 rounded-lg border px-3 py-2.5 text-left';
+  return onClick ? (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`${layout} border-border transition-colors hover:bg-surface-secondary`}
+    >
+      {body}
+    </button>
+  ) : (
+    <div className={`${layout} border-accent/50 bg-accent/5`}>{body}</div>
+  );
+}
+
 export default function StepSkills({ data, setData, goNext, goBack, teamId }: WizardStepProps) {
   const t = useTranslations('AgentWizard');
-
   const tCommon = useTranslations('Common');
-  const [source, setSource] = useState<SkillPickerSource>('all');
-  const [search, setSearch] = useState('');
-  const debouncedSearch = useDebouncedValue(search);
 
-  // How many rows are revealed, tied to the list it was counted for: a new
-  // search or source collapses back to one chunk without an effect.
-  const listKey = `${source}:${debouncedSearch}`;
-  const [reveal, setReveal] = useState({ key: listKey, count: CHUNK });
-  const visible = reveal.key === listKey ? reveal.count : CHUNK;
-
+  const catalogFilters = useSkillCatalogFilters();
   const { skills, isPending, error: skillsError, truncated } = useSkillPickerQuery(
-    source,
-    debouncedSearch,
+    catalogFilters.source,
+    catalogFilters.debouncedSearch,
+    catalogFilters.filters,
   );
+  const { visible, revealMore } = useRevealedRows(catalogFilters.listKey, CHUNK);
 
   // Connector catalog (names, kind) → which connectors need an instance named.
-  const [{ data: catalog }] = useQueries({ queries: [connectorCatalogOptions()] });
-
+  const { data: catalog } = useQuery(connectorCatalogOptions());
   const catalogByCode = useMemo(
     () => new Map((catalog ?? []).map((c) => [c.code, c])),
     [catalog],
   );
+  const requirementLabel = (r: SkillConnectorRequirement) =>
+    r.title ?? catalogByCode.get(r.code)?.name ?? r.code;
+
   // What matters now is not "the user owns a connection of this type" but "this
   // agent will have one open": the skill gate reads the agent's connections, and
   // those were chosen on the previous step.
-  const openedByCode = useMemo(() => {
-    const map = new Map<string, typeof data.connections>();
-    for (const c of data.connections) {
-      map.set(c.connectorCode, [...(map.get(c.connectorCode) ?? []), c]);
-    }
-    return map;
-  }, [data.connections]);
-
+  const openedCodes = useMemo(
+    () => new Set(data.connections.map((c) => c.connectorCode)),
+    [data.connections],
+  );
   const connectorState = (code: string): ConnectorState => {
-    if (openedByCode.has(code)) return 'connected';
+    if (openedCodes.has(code)) return 'connected';
     // Anything with instances of its own (integrations, device apps) needs a
     // connection opened on the previous step; internal ones (time, memory) are
     // opened for the agent automatically at creation.
@@ -100,19 +149,60 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
     return internal.length > 0 ? 'builtIn' : 'needsConnection';
   };
 
-  const selectedIds = useMemo(() => new Set(data.skills.map((s) => s.id)), [data.skills]);
+  // What the agent still has to be given for a skill: one chip per requirement,
+  // green when a connection is open, yellow when one is missing, plain for a
+  // built-in connector.
+  const requirementChips = (requirements: SkillConnectorRequirement[]) =>
+    requirements.length > 0 && (
+      <span className="mt-1.5 flex flex-wrap gap-1">
+        {requirements.map((r) => {
+          const state = connectorState(r.code);
+          return (
+            <span key={r.key ?? r.code} title={t(`connector_${state}`)}>
+              <Chip tone={CONNECTOR_TONE[state]} icon={CONNECTOR_ICON[state]}>
+                {requirementLabel(r)}
+              </Chip>
+            </span>
+          );
+        })}
+      </span>
+    );
 
+  // What the role brought is shown first, as the answer to "what does this
+  // agent already know"; the catalog is one click further, unless there is
+  // nothing to show first — an agent from scratch, or one whose skills were
+  // picked here (walking back must not fold a list with a choice in it).
+  const [pickerOpen, setPickerOpen] = useState(
+    data.skills.length === 0 || data.skills.some((s) => !s.fromPreset),
+  );
+  const included = [
+    ...data.skills.filter((s) => s.fromPreset),
+    ...data.skills.filter((s) => !s.fromPreset),
+  ];
+  const includedIds = new Set(data.skills.map((s) => s.id));
 
-  const toggleSkill = (skill: SkillResponse) => {
-    if (selectedIds.has(skill.id)) {
-      const rest = { ...data.skillConnections };
-      delete rest[skill.id];
-      setData({
-        skills: data.skills.filter((s) => s.id !== skill.id),
-        skillConnections: rest,
-      });
-      return;
-    }
+  // A skill already included lives in the block above; the catalog offers the
+  // rest. Cut here rather than in the request — the listing has no exclusion
+  // parameter, and the picker merges whole scopes client-side anyway.
+  const offered = skills.filter((skill) => !includedIds.has(skill.id));
+
+  // A role's skills arrive without their requirements (the preset carries one
+  // merged code list), so the marks for them are read off the catalog — the
+  // unfiltered set of every scope, which the facets already hold in cache.
+  const { skills: catalogSkills } = useSkillPickerQuery('all', '');
+  const catalogById = useMemo(
+    () => new Map(catalogSkills.map((skill) => [skill.id, skill])),
+    [catalogSkills],
+  );
+  const requirementsOf = (skill: { id: string } & RequirementSource) => {
+    const source = skill.connectorCodes ? skill : catalogById.get(skill.id);
+    return skillRequirements({
+      connectorCodes: source?.connectorCodes ?? [],
+      connectors: source?.connectors,
+    });
+  };
+
+  const addSkill = (skill: SkillResponse) =>
     // No instance map is stored here: it is resolved from the connections that
     // are open at the moment of creation, so walking back and swapping them
     // cannot leave this skill pointing at a connection the agent lost.
@@ -127,6 +217,14 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
           connectors: skillRequirements(skill),
         },
       ],
+    });
+
+  const removeSkill = (id: string) => {
+    const rest = { ...data.skillConnections };
+    delete rest[id];
+    setData({
+      skills: data.skills.filter((s) => s.id !== id),
+      skillConnections: rest,
     });
   };
 
@@ -165,8 +263,6 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
     }
   };
 
-  const shown = skills.slice(0, visible);
-
   return (
     <form onSubmit={onSubmit} onKeyDown={blockImplicitSubmit}>
       <div className="space-y-5 p-6">
@@ -175,109 +271,45 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
           <p className="text-sm text-muted mt-0.5">{t('skillsSubtitle')}</p>
         </div>
 
-        <div className="space-y-3">
-          <SearchToolbar
-            value={search}
-            onChange={setSearch}
-            placeholder={t('searchSkills')}
-            filtersActive={source !== 'all'}
-            filters={
-              <FilterRow label={t('skillsSourceLabel')}>
-                {SOURCES.map((key) => (
-                  <FilterPill
-                    key={key}
-                    active={source === key}
-                    onClick={() => setSource(key)}
-                  >
-                    {t(`skillsSource_${key}`)}
-                  </FilterPill>
-                ))}
-              </FilterRow>
-            }
-          />
-
-          {isPending ? (
-            <div className="space-y-1.5">
-              {[0, 1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="h-16 rounded-lg border border-border bg-surface-secondary animate-pulse"
-                />
-              ))}
-            </div>
-          ) : skillsError ? (
-            <ErrorAlert>{getErrorMessage(skillsError, t('skillsLoadError'))}</ErrorAlert>
-          ) : skills.length === 0 ? (
-            <Placeholder size="sm">{t('noSkillsFound')}</Placeholder>
-          ) : (
-            <div className="space-y-1.5">
-              {shown.map((skill) => {
-                const isSelected = selectedIds.has(skill.id);
-                // Only asked once the skill is taken, and only where there is a
-                // real choice: two fitting accounts of the same service open to
-                // the agent — the same fit the create call resolves by.
-                const ambiguous = isSelected
-                  ? externalRequirements(skill, catalog).filter(
-                      (r) => fittingConnections(data, r).length > 1,
-                    )
-                  : [];
-                return (
-                  <div key={skill.id}>
-                  <button
-                    type="button"
-                    onClick={() => toggleSkill(skill)}
-                    aria-pressed={isSelected}
-                    className={`flex w-full items-start gap-2.5 rounded-lg border px-3 py-2.5 text-left transition-colors ${
-                      isSelected
-                        ? 'border-accent/50 bg-accent/5'
-                        : 'border-border hover:bg-surface-secondary'
-                    }`}
-                  >
-                    <span
-                      className={`mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded border ${
-                        isSelected
-                          ? 'border-accent bg-accent text-accent-foreground'
-                          : 'border-border'
-                      }`}
+        {included.length > 0 && (
+          <div className="space-y-1.5">
+            <h3 className="text-sm font-medium text-foreground">{t('includedSkillsTitle')}</h3>
+            {included.map((skill) => {
+              // Only where there is a real choice: two fitting accounts of the
+              // same service open to the agent — the same fit the create call
+              // resolves by.
+              const ambiguous = externalRequirements(skill, catalog).filter(
+                (r) => fittingConnections(data, r).length > 1,
+              );
+              return (
+                <SkillRow
+                  key={skill.id}
+                  // The skill's own icon, not a checked box: a box reads as a
+                  // toggle, and the one way out of this list is the cross.
+                  icon={<AcademicCapIcon className="h-4 w-4 text-accent" />}
+                  title={skill.title}
+                  meta={skill.fromPreset && <Chip tone="accent">{t('skillFromRole')}</Chip>}
+                  description={skill.description}
+                  trailing={
+                    <button
+                      type="button"
+                      onClick={() => removeSkill(skill.id)}
+                      title={t('removeSkill')}
+                      aria-label={t('removeSkill')}
+                      className="shrink-0 rounded-md p-1 text-muted transition-colors hover:bg-surface-secondary hover:text-foreground"
                     >
-                      {isSelected && <CheckIcon className="h-3 w-3" />}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="flex items-baseline gap-2">
-                        <span className="truncate text-sm font-medium text-foreground">
-                          {skill.title}
-                        </span>
-                        <span className="shrink-0 text-xs text-muted">v{skill.version}</span>
-                      </span>
-                      {skill.description && (
-                        <span className="mt-0.5 line-clamp-1 block text-xs text-muted">
-                          {skill.description}
-                        </span>
-                      )}
-                      {skill.connectorCodes.length > 0 && (
-                        <span className="mt-1.5 flex flex-wrap gap-1">
-                          {skillRequirements(skill).map((r) => {
-                            const state = connectorState(r.code);
-                            return (
-                              <span key={r.key ?? r.code} title={t(`connector_${state}`)}>
-                                <Chip tone={CONNECTOR_TONE[state]} icon={CONNECTOR_ICON[state]}>
-                                  {r.title ?? catalogByCode.get(r.code)?.name ?? r.code}
-                                </Chip>
-                              </span>
-                            );
-                          })}
-                        </span>
-                      )}
-                    </span>
-                  </button>
-
+                      <XMarkIcon className="h-4 w-4" />
+                    </button>
+                  }
+                >
+                  {requirementChips(requirementsOf(skill))}
                   {ambiguous.length > 0 && (
-                    <div className="mt-1.5 ml-7 space-y-2 rounded-lg border border-border bg-surface-secondary/50 p-3">
-                      <p className="text-xs text-muted">{t('skillInstanceHint')}</p>
+                    <span className="mt-2 block space-y-2 rounded-lg border border-border bg-surface p-3">
+                      <span className="block text-xs text-muted">{t('skillInstanceHint')}</span>
                       {ambiguous.map((r) => (
                         <label key={r.key ?? r.code} className="block">
                           <span className="mb-1 block text-xs font-medium text-foreground">
-                            {r.title ?? catalogByCode.get(r.code)?.name ?? r.code}
+                            {requirementLabel(r)}
                           </span>
                           <Select
                             value={resolveSkillConnection(data, skill.id, r)}
@@ -292,28 +324,68 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
                           </Select>
                         </label>
                       ))}
-                    </div>
+                    </span>
                   )}
-                  </div>
-                );
-              })}
+                </SkillRow>
+              );
+            })}
+          </div>
+        )}
 
-              {visible < skills.length && (
-                <button
-                  type="button"
-                  onClick={() => setReveal({ key: listKey, count: visible + CHUNK })}
-                  className="w-full rounded-lg border border-dashed border-border py-2 text-sm font-medium text-muted transition-colors hover:border-accent/50 hover:text-foreground"
-                >
-                  {t('showMore', { count: skills.length - visible })}
-                </button>
-              )}
+        {pickerOpen ? (
+          <div className="space-y-3">
+            <SkillCatalogToolbar state={catalogFilters} placeholder={t('searchSkills')} />
 
-              {truncated && visible >= skills.length && (
-                <p className="pt-1 text-center text-xs text-muted">{t('refineSearch')}</p>
-              )}
-            </div>
-          )}
-        </div>
+            {isPending ? (
+              <div className="space-y-1.5">
+                {[0, 1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="h-16 rounded-lg border border-border bg-surface-secondary animate-pulse"
+                  />
+                ))}
+              </div>
+            ) : skillsError ? (
+              <ErrorAlert>{getErrorMessage(skillsError, t('skillsLoadError'))}</ErrorAlert>
+            ) : offered.length === 0 ? (
+              <Placeholder size="sm">{t('noSkillsFound')}</Placeholder>
+            ) : (
+              <div className="space-y-1.5">
+                {offered.slice(0, visible).map((skill) => (
+                  <SkillRow
+                    key={skill.id}
+                    icon={
+                      <span className="flex h-full w-full items-center justify-center rounded border border-border text-muted">
+                        <PlusIcon className="h-3 w-3" />
+                      </span>
+                    }
+                    title={skill.title}
+                    meta={<span className="shrink-0 text-xs text-muted">v{skill.version}</span>}
+                    description={skill.description}
+                    onClick={() => addSkill(skill)}
+                  >
+                    {requirementChips(skillRequirements(skill))}
+                  </SkillRow>
+                ))}
+                <SkillListTail
+                  total={offered.length}
+                  visible={visible}
+                  truncated={truncated}
+                  onMore={revealMore}
+                />
+              </div>
+            )}
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setPickerOpen(true)}
+            className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-border py-2.5 text-sm font-medium text-muted transition-colors hover:border-accent/50 hover:text-foreground"
+          >
+            <PlusIcon className="h-4 w-4" />
+            {t('addMoreSkills')}
+          </button>
+        )}
 
         {error && <ErrorAlert>{error}</ErrorAlert>}
       </div>
