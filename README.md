@@ -1,5 +1,7 @@
 # AgiMate Frontend
 
+[![License: FSL-1.1-ALv2](https://img.shields.io/badge/license-FSL--1.1--ALv2-blue)](LICENSE)
+
 Web dashboard for the AgiMate platform — create AI agents, give them skills and
 connectors, wire them to channels, and watch them work in real time.
 
