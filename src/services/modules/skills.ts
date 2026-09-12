@@ -16,9 +16,25 @@ export const skillsApi = {
   // ========== SKILLS ==========
 
   // scope: MINE (default) = own skills of any visibility; PUBLIC = all public skills.
-  async getSkills(params?: { search?: string; connectorCode?: string; scope?: SkillScope; page?: number; size?: number }): Promise<PagedResponse<SkillResponse>> {
+  // `category` / `tag` are taxonomy codes (one tag at a time — the endpoint
+  // takes no list), ANDed with the rest.
+  async getSkills(params?: {
+    search?: string;
+    connectorCode?: string;
+    scope?: SkillScope;
+    category?: string;
+    tag?: string;
+    page?: number;
+    size?: number;
+  }): Promise<PagedResponse<SkillResponse>> {
     const query = buildPagedQuery(
-      { search: params?.search, connectorCode: params?.connectorCode, scope: params?.scope },
+      {
+        search: params?.search,
+        connectorCode: params?.connectorCode,
+        scope: params?.scope,
+        category: params?.category,
+        tag: params?.tag,
+      },
       params,
     );
     return httpClient.get<PagedResponse<SkillResponse>>(`${API.ENDPOINTS.CONTROL_API}/manage/skills/?${query}`);

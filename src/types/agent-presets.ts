@@ -31,4 +31,9 @@ export interface AgentPresetResponse {
   skills: AgentPresetSkill[];
   // Union of connector codes across the preset's skills — display only.
   connectorCodes: string[];
+  // Gallery section and filter tags — taxonomy codes, same contract as on a
+  // skill (see `SkillResponse`); the gallery groups and cuts client-side, since
+  // the endpoint has no filter and presets number in the dozens.
+  category?: string;
+  tags?: string[];
 }

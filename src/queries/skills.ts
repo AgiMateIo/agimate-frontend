@@ -19,8 +19,8 @@ export const skillKeys = {
     [...skillKeys.lists(), tab, search, page, size] as const,
   byConnector: (connectorCode: string, scope: SkillScope) =>
     [...skillKeys.lists(), 'by-connector', connectorCode, scope] as const,
-  picker: (scope: SkillScope, search: string) =>
-    [...skillKeys.lists(), 'picker', scope, search] as const,
+  picker: (scope: SkillScope, search: string, category: string, tag: string) =>
+    [...skillKeys.lists(), 'picker', scope, search, category, tag] as const,
   detail: (id: string) => [...skillKeys.all, 'detail', id] as const,
   agents: (id: string, search: string, page: number) =>
     [...skillKeys.detail(id), 'agents', search, page] as const,
@@ -114,13 +114,27 @@ const PICKER_SCOPES: Record<SkillPickerSource, SkillScope[]> = {
 // `truncated` instead of paging.
 const PICKER_SIZE = 100;
 
-export const skillsPickerOptions = (scope: SkillScope, search: string) =>
+// Catalog section and tag, as taxonomy codes. Applied server-side rather than
+// on the merged rows: a page holds the first 100 *of the filtered set*, so a
+// section with more skills than one page shows still starts complete.
+export interface SkillPickerFilters {
+  category?: string | null;
+  tag?: string | null;
+}
+
+export const skillsPickerOptions = (
+  scope: SkillScope,
+  search: string,
+  filters: SkillPickerFilters = {},
+) =>
   queryOptions({
-    queryKey: skillKeys.picker(scope, search),
+    queryKey: skillKeys.picker(scope, search, filters.category ?? '', filters.tag ?? ''),
     queryFn: () =>
       apiService.getSkills({
         search: search || undefined,
         scope,
+        category: filters.category || undefined,
+        tag: filters.tag || undefined,
         size: PICKER_SIZE,
       }),
   });
@@ -148,10 +162,14 @@ function mergePickerPages(
 
 // Non-suspense: the wizard step renders its own inline loading and error states
 // and must not suspend the step it lives in.
-export function useSkillPickerQuery(source: SkillPickerSource, search: string) {
+export function useSkillPickerQuery(
+  source: SkillPickerSource,
+  search: string,
+  filters: SkillPickerFilters = {},
+) {
   const scopes = PICKER_SCOPES[source];
   const results = useQueries({
-    queries: scopes.map((scope) => skillsPickerOptions(scope, search)),
+    queries: scopes.map((scope) => skillsPickerOptions(scope, search, filters)),
   });
 
   return {
@@ -163,10 +181,14 @@ export function useSkillPickerQuery(source: SkillPickerSource, search: string) {
 
 // Suspense variant for the Skills page, which keeps its toolbar outside the
 // ErrorBoundary + Suspense shell so typing never unmounts the search field.
-export function useSkillPickerSuspenseQuery(source: SkillPickerSource, search: string) {
+export function useSkillPickerSuspenseQuery(
+  source: SkillPickerSource,
+  search: string,
+  filters: SkillPickerFilters = {},
+) {
   const scopes = PICKER_SCOPES[source];
   const results = useSuspenseQueries({
-    queries: scopes.map((scope) => skillsPickerOptions(scope, search)),
+    queries: scopes.map((scope) => skillsPickerOptions(scope, search, filters)),
   });
 
   return mergePickerPages(scopes, results.map((r) => r.data));

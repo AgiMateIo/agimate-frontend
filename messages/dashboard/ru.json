@@ -87,16 +87,19 @@
     "skillsSubtitle": "Навыки роли уже включены. Навык работает, только если его подключения открыты агенту — жёлтые и красные метки показывают, чего не хватает.",
     "selectedCount": "Выбрано: {count}",
     "removeSkill": "Убрать навык",
-    "summaryNoSkills": "Не выбраны",
     "skillsSourceLabel": "Источник",
     "skillsSource_all": "Все",
     "skillsSource_my": "Мои",
     "skillsSource_public": "Публичные",
+    "showMore": "Показать ещё {count}",
+    "refineSearch": "Показаны не все навыки — уточните поиск",
+    "includedSkillsTitle": "Включённые навыки",
+    "skillFromRole": "Из роли",
+    "addMoreSkills": "Добавить ещё",
+    "summaryNoSkills": "Не выбраны",
     "searchSkills": "Поиск навыков...",
     "noSkillsFound": "Навыки не найдены",
     "skillsLoadError": "Не удалось загрузить навыки",
-    "showMore": "Показать ещё {count}",
-    "refineSearch": "Показаны не все навыки — уточните поиск",
     "connector_connected": "Подключение открыто агенту",
     "connector_needsConnection": "Подключение агенту не открыто — навык не заработает, пока вы не откроете его на странице агента, во вкладке «Подключения»",
     "connector_builtIn": "Внутренняя возможность — откроется агенту автоматически при создании",
@@ -1228,8 +1231,8 @@
     "isPublic": "Публичный",
     "isPublicHint": "Публичные навыки видны всем пользователям",
     "skillMd": "SKILL.md",
-    "skillMdHint": "Содержимое навыка в Markdown с YAML-заголовком (name, description, connectors)",
-    "skillMdPlaceholder": "---\nname: my-skill\ndescription: Что делает этот навык\nconnectors: [board]\n---\n\nИнструкции навыка здесь...",
+    "skillMdHint": "Содержимое навыка в Markdown с YAML-заголовком (name, description, category, tags, connectors)",
+    "skillMdPlaceholder": "---\nname: my-skill\ndescription: Что делает этот навык\ncategory: finance\ntags: [personal]\nconnectors: [board]\n---\n\nИнструкции навыка здесь...",
     "connectorsLabel": "Коннекторы",
     "noConnectors": "Нет",
     "editConnectors": "Изменить",
@@ -1256,7 +1259,8 @@
     "updatedAt": "Обновлено",
     "create": "Создать",
     "loadingSkill": "Загрузка навыка...",
-    "skillNotFound": "Навык не найден"
+    "skillNotFound": "Навык не найден",
+    "noSkillsInSection": "Под эти фильтры навыков нет"
   },
   "SkillAgents": {
     "planTitle": "Что нужно навыку у «{agent}»",
@@ -1549,5 +1553,12 @@
     "usageScopeOwnKey": "Расход всего ключа — по всем агентам этого пользователя сразу.",
     "usageUtcNote": "Текущие календарные сутки и месяц в UTC — с местным днём они не совпадают. Это токены, а не деньги: вход + выход + запись кэша, чтение кэша не учитывается.",
     "usageNoProviders": "Ни платформенного провайдера, ни своих ключей."
+  },
+  "Taxonomy": {
+    "categories": "Разделы каталога",
+    "allCategories": "Все",
+    "frontmatterReference": "Категории и теги для заголовка",
+    "frontmatterCategories": "Категории",
+    "frontmatterTags": "Теги"
   }
 }

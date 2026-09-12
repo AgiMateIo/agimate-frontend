@@ -8,6 +8,7 @@ import { Link } from '@/i18n/navigation';
 import { formatDate } from '@/utils/date';
 import { skillRequirements } from '@/utils/skill';
 import SkillRequirementChips from './SkillRequirementChips';
+import { TaxonomyChips } from '@/components/taxonomy/TaxonomyChips';
 
 interface SkillCardProps {
   skill: SkillResponse;
@@ -57,11 +58,14 @@ export default function SkillCard({
           </p>
         )}
 
-        {showConnectorCodes && skill.connectorCodes.length > 0 && (
-          <div className="mt-2">
+        {/* Where it sits in the catalog, then what it needs — two rows with
+            two chip styles, so a tag is never read as a connector. */}
+        <div className="mt-2 space-y-1.5 empty:hidden">
+          <TaxonomyChips item={skill} />
+          {showConnectorCodes && skill.connectorCodes.length > 0 && (
             <SkillRequirementChips requirements={skillRequirements(skill)} />
-          </div>
-        )}
+          )}
+        </div>
 
         <div className="text-xs text-muted mt-2">
           <span>{t('updatedAt')}: {formatDate(skill.updatedAt, locale)}</span>

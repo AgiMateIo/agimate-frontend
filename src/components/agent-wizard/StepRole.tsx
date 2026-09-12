@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { CheckIcon } from '@heroicons/react/24/solid';
 import { ChevronDownIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
 import { AgentPresetResponse } from '@/types';
 import { useAgentPresetsQuery } from '@/queries/agent-presets';
+import { useTaxonomyQuery } from '@/queries/taxonomy';
+import { catalogCategory, presentFacets } from '@/utils/taxonomy';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input, TextArea } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
@@ -30,6 +32,20 @@ const GRADIENTS = [
 export default function StepRole({ data, setData, goNext }: WizardStepProps) {
   const t = useTranslations('AgentWizard');
   const { data: presets, isPending, error } = useAgentPresetsQuery();
+  const { data: taxonomy } = useTaxonomyQuery();
+
+  // The gallery comes whole and is grouped here: one section per category in
+  // dictionary order, empty ones left out. Tags are deliberately not offered
+  // on this step — with a few dozen roles the sections are navigation enough,
+  // and a filter row would only push the cards down. The band colour stays
+  // tied to the gallery position, not the position within a section.
+  const sections = useMemo(() => {
+    const indexed = (presets ?? []).map((preset, index) => ({ preset, index }));
+    return presentFacets(taxonomy, presets ?? []).categories.map((c) => ({
+      ...c,
+      presets: indexed.filter((p) => catalogCategory(p.preset) === c.code),
+    }));
+  }, [presets, taxonomy]);
 
   // Which card is highlighted. Restored from wizard state when navigating back.
   const [selectedCard, setSelectedCard] = useState<string | null>(
@@ -88,6 +104,24 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
     });
   };
 
+  const scratchCard = (
+    <button
+      type="button"
+      onClick={applyScratch}
+      className={`flex min-h-32 flex-col items-center justify-center gap-2 rounded-xl border border-dashed p-4 text-center transition-all hover:-translate-y-0.5 hover:shadow-lg ${
+        selectedCard === SCRATCH
+          ? 'border-accent ring-2 ring-accent'
+          : 'border-border hover:border-accent/50'
+      }`}
+    >
+      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-secondary">
+        <PencilSquareIcon className="h-5 w-5 text-muted" />
+      </span>
+      <span className="text-sm font-semibold text-foreground">{t('scratchTitle')}</span>
+      <span className="text-xs text-muted">{t('scratchDesc')}</span>
+    </button>
+  );
+
   const formVisible = selectedCard !== null;
   // The external-AI branch asks for a name and nothing else here: its prompt is
   // the preset's, sent as-is, and there is no model to pick.
@@ -111,78 +145,75 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
           </div>
         ) : null}
 
-        {/* Gallery is built strictly from the API response; nothing hardcoded. */}
-        {!isPending && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {(presets ?? []).map((preset, i) => {
-              const selected = selectedCard === preset.name;
-              return (
-                <button
-                  key={preset.id}
-                  type="button"
-                  onClick={() => applyPreset(preset)}
-                  className={`group relative flex flex-col overflow-hidden rounded-xl border bg-surface text-left transition-all hover:-translate-y-0.5 hover:shadow-lg ${
-                    selected ? 'border-accent ring-2 ring-accent' : 'border-border hover:border-accent/50'
-                  }`}
-                >
-                  {/* Avatar and title share the band in one row: no overlap to
-                      collide, and no dead space left over. */}
-                  <div className={`flex items-center gap-2.5 px-3 py-2.5 bg-gradient-to-br ${GRADIENTS[i % GRADIENTS.length]}`}>
-                    <span className="relative shrink-0">
-                      <img
-                        src={getAgentAvatarUrl(preset.title)}
-                        alt=""
-                        className="h-12 w-12 rounded-xl bg-surface shadow-sm ring-2 ring-white/40"
-                      />
-                      {/* Pinned to the avatar corner so it never steals width from
-                          the title, which is the scarce resource on a narrow card. */}
-                      {selected && (
-                        <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-accent shadow">
-                          <CheckIcon className="h-3 w-3" />
-                        </span>
-                      )}
-                    </span>
-                    <span className="min-w-0 line-clamp-2 text-sm font-semibold leading-tight text-white drop-shadow-sm">
-                      {preset.title}
-                    </span>
-                  </div>
-
-                  <div className="flex flex-1 flex-col px-4 pb-4 pt-3">
-                    <p className="line-clamp-2 text-xs text-muted">{preset.description}</p>
-                    {preset.connectorCodes.length > 0 && (
-                      <div className="mt-auto flex flex-wrap gap-1 pt-2">
-                        {preset.connectorCodes.map((code) => (
-                          <span
-                            key={code}
-                            className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-accent/10 text-accent"
-                          >
-                            {code}
+        {/* Gallery is built strictly from the API response; nothing hardcoded.
+            A single section needs no heading — the title would only repeat
+            what the step already says. */}
+        {!isPending && sections.map((section, s) => (
+          <div key={section.code} className="space-y-2">
+            {sections.length > 1 && (
+              <h3 className="text-sm font-medium text-foreground">{section.label}</h3>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {section.presets.map(({ preset, index: i }) => {
+                const selected = selectedCard === preset.name;
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => applyPreset(preset)}
+                    className={`group relative flex flex-col overflow-hidden rounded-xl border bg-surface text-left transition-all hover:-translate-y-0.5 hover:shadow-lg ${
+                      selected ? 'border-accent ring-2 ring-accent' : 'border-border hover:border-accent/50'
+                    }`}
+                  >
+                    {/* Avatar and title share the band in one row: no overlap to
+                        collide, and no dead space left over. */}
+                    <div className={`flex items-center gap-2.5 px-3 py-2.5 bg-gradient-to-br ${GRADIENTS[i % GRADIENTS.length]}`}>
+                      <span className="relative shrink-0">
+                        <img
+                          src={getAgentAvatarUrl(preset.title)}
+                          alt=""
+                          className="h-12 w-12 rounded-xl bg-surface shadow-sm ring-2 ring-white/40"
+                        />
+                        {/* Pinned to the avatar corner so it never steals width from
+                            the title, which is the scarce resource on a narrow card. */}
+                        {selected && (
+                          <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-accent shadow">
+                            <CheckIcon className="h-3 w-3" />
                           </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-
-            {/* Not a preset: empty prefill, same wizard afterwards. */}
-            <button
-              type="button"
-              onClick={applyScratch}
-              className={`flex min-h-32 flex-col items-center justify-center gap-2 rounded-xl border border-dashed p-4 text-center transition-all hover:-translate-y-0.5 hover:shadow-lg ${
-                selectedCard === SCRATCH
-                  ? 'border-accent ring-2 ring-accent'
-                  : 'border-border hover:border-accent/50'
-              }`}
-            >
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-secondary">
-                <PencilSquareIcon className="h-5 w-5 text-muted" />
-              </span>
-              <span className="text-sm font-semibold text-foreground">{t('scratchTitle')}</span>
-              <span className="text-xs text-muted">{t('scratchDesc')}</span>
-            </button>
+                        )}
+                      </span>
+                      <span className="min-w-0 line-clamp-2 text-sm font-semibold leading-tight text-white drop-shadow-sm">
+                        {preset.title}
+                      </span>
+                    </div>
+  
+                    <div className="flex flex-1 flex-col px-4 pb-4 pt-3">
+                      <p className="line-clamp-2 text-xs text-muted">{preset.description}</p>
+                      {preset.connectorCodes.length > 0 && (
+                        <div className="mt-auto flex flex-wrap gap-1 pt-2">
+                          {preset.connectorCodes.map((code) => (
+                            <span
+                              key={code}
+                              className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-accent/10 text-accent"
+                            >
+                              {code}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+  
+              {/* Not a preset: empty prefill, same wizard afterwards. Closes the
+                  last section's grid, so it reads as the way out of the gallery. */}
+              {s === sections.length - 1 && scratchCard}
+            </div>
           </div>
+        ))}
+        {!isPending && sections.length === 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">{scratchCard}</div>
         )}
 
         {formVisible && (

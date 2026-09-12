@@ -24,6 +24,8 @@ import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { formatDate } from '@/utils/date';
 import { buildSkillMd, skillRequirements } from '@/utils/skill';
 import SkillRequirementChips from '@/components/skills/SkillRequirementChips';
+import SkillFrontmatterReference from '@/components/skills/SkillFrontmatterReference';
+import { TaxonomyChips } from '@/components/taxonomy/TaxonomyChips';
 import SkillAgentsTab from '@/components/skills/SkillAgentsTab';
 import SkillConnectorsTab from '@/components/skills/SkillConnectorsTab';
 import DeleteSkillModal from '@/components/skills/DeleteSkillModal';
@@ -101,6 +103,9 @@ function SkillDetailContent({ skillId }: { skillId: string }) {
           {skill.description && (
             <p className="text-muted mt-1">{skill.description}</p>
           )}
+          <div className="mt-2 empty:hidden">
+            <TaxonomyChips item={skill} />
+          </div>
           {skill.connectorCodes.length > 0 && (
             <div className="flex flex-wrap items-center gap-1.5 mt-2">
               <span className="text-xs text-muted">{t('connectorsLabel')}:</span>
@@ -152,13 +157,16 @@ function SkillDetailContent({ skillId }: { skillId: string }) {
                 <div>
                   <h3 className="text-sm font-medium text-muted mb-2">{t('skillMd')}</h3>
                   {isEditable ? (
-                    <TextArea
-                      value={editSkillMd}
-                      onChange={(e) => setEditSkillMd(e.target.value)}
-                      placeholder={t('skillMdPlaceholder')}
-                      rows={16}
-                      className="font-mono text-sm"
-                    />
+                    <div className="space-y-2">
+                      <TextArea
+                        value={editSkillMd}
+                        onChange={(e) => setEditSkillMd(e.target.value)}
+                        placeholder={t('skillMdPlaceholder')}
+                        rows={16}
+                        className="font-mono text-sm"
+                      />
+                      <SkillFrontmatterReference />
+                    </div>
                   ) : (
                     <div className="bg-surface-secondary rounded-lg border border-border/50 p-4">
                       <pre className="text-sm text-foreground whitespace-pre-wrap font-mono">

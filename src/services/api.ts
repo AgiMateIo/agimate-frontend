@@ -22,6 +22,7 @@ import { logsApi } from './modules/logs';
 import { miscApi } from './modules/misc';
 import { runsApi } from './modules/runs';
 import { sessionsApi } from './modules/sessions';
+import { taxonomyApi } from './modules/taxonomy';
 import { webchatApi } from './modules/webchat';
 
 const apiService = {
@@ -43,6 +44,7 @@ const apiService = {
   ...miscApi,
   ...runsApi,
   ...sessionsApi,
+  ...taxonomyApi,
   ...webchatApi,
   // Generic transport methods were public on the former ApiService class; keep them
   // exposed for surface compatibility. Delegate via arrow funcs so `this` binds to

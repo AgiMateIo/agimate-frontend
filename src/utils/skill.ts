@@ -1,4 +1,5 @@
 import type { SkillConnectorRequirement, SkillDetailResponse, SkillResponse } from '@/types';
+import { OTHER_CATEGORY, frontmatterCode } from './taxonomy';
 
 // The requirements a skill declares, in declaration order. A backend that
 // predates requirements answers with codes alone, and a bare code is the short
@@ -72,14 +73,25 @@ function requirementLines(r: SkillConnectorRequirement): string[] {
 // canonical frontmatter block here from those fields. Canonical matters twice:
 // the detail page's dirty check compares against this output, and a keyed or
 // parameterised requirement must survive a body edit — writing codes alone
-// would silently strip the author's keys, pre-fills and access rules.
+// would silently strip the author's keys, pre-fills and access rules. The same
+// goes for the category and the tags: left out, a body edit would quietly
+// file the skill back under "other".
 export function buildSkillMd(
   skill: Pick<SkillDetailResponse, 'name' | 'title' | 'description' | 'connectorCodes' | 'mdContent'> & {
     connectors?: SkillConnectorRequirement[];
+    category?: string;
+    tags?: string[];
   },
 ): string {
   const lines = ['---', `name: ${skill.name}`, `title: ${skill.title}`];
   if (skill.description) lines.push(`description: ${skill.description}`);
+  // `OTHER` is what an absent category means, so it is not written out.
+  if (skill.category && skill.category !== OTHER_CATEGORY) {
+    lines.push(`category: ${scalar(frontmatterCode(skill.category))}`);
+  }
+  if (skill.tags && skill.tags.length > 0) {
+    lines.push(`tags: [${skill.tags.map((tag) => scalar(frontmatterCode(tag))).join(', ')}]`);
+  }
   const requirements = skillRequirements(skill);
   if (requirements.length > 0) {
     if (requirements.every(isBareRequirement)) {

@@ -10,15 +10,18 @@ import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
-import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { getErrorMessage } from '@/utils/error';
 import { skillRequirements } from '@/utils/skill';
-import { SearchToolbar } from '@/components/ui/SearchToolbar';
-import { FilterPill, FilterRow } from '@/components/ui/FilterPill';
 import { useAgentSkillPlanQuery } from '@/queries/agents';
 import { connectorCatalogOptions } from '@/queries/connectors';
-import { useSkillPickerQuery, type SkillPickerSource } from '@/queries/skills';
+import { useSkillPickerQuery } from '@/queries/skills';
 import SkillRequirementChips from '@/components/skills/SkillRequirementChips';
+import {
+  SkillCatalogToolbar,
+  SkillListTail,
+  useRevealedRows,
+  useSkillCatalogFilters,
+} from '@/components/skills/SkillCatalogToolbar';
 import SkillRequirementSteps from './SkillRequirementSteps';
 import {
   choicesComplete,
@@ -32,8 +35,6 @@ import { Placeholder } from '@/components/ui/Placeholder';
 // merged client-side, so there is no server page to walk (see the query module).
 const CHUNK = 8;
 
-const SOURCES: SkillPickerSource[] = ['all', 'my', 'public'];
-
 interface AddAgentSkillModalProps {
   agentId: string;
   boundSkillIds: Set<string>;
@@ -46,9 +47,6 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
   const tCommon = useTranslations('Common');
   const tSkills = useTranslations('Skills');
 
-  const [source, setSource] = useState<SkillPickerSource>('all');
-  const [search, setSearch] = useState('');
-  const debouncedSearch = useDebouncedValue(search);
   const [selectedSkill, setSelectedSkill] = useState<SkillResponse | null>(null);
 
   // Which instance the skill will work with, per requirement key, and the
@@ -57,12 +55,23 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
   const [choice, setChoice] = useState<RequirementChoices>({});
   const [created, setCreated] = useState<CreatedConnections>({});
 
+  const pickSkill = (skill: SkillResponse | null) => {
+    setSelectedSkill(skill);
+    setChoice({});
+    setCreated({});
+  };
+
+  // The selection is dropped where the source changes rather than in an effect
+  // watching it — the selected skill and its choices belong to one source, so
+  // they die with the switch that caused it.
+  const catalogFilters = useSkillCatalogFilters({ onSourceChange: () => pickSkill(null) });
+
   const {
     skills,
     isPending: skillsLoading,
     error: skillsError,
     truncated,
-  } = useSkillPickerQuery(source, debouncedSearch);
+  } = useSkillPickerQuery(catalogFilters.source, catalogFilters.debouncedSearch, catalogFilters.filters);
 
   const { data: catalog } = useQuery(connectorCatalogOptions());
   const connectorName = (code: string) => catalog?.find((c) => c.code === code)?.name ?? code;
@@ -74,25 +83,7 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
     selectedSkill?.id ?? null,
   );
 
-  // How many rows are revealed, tied to the list it was counted for: a new
-  // search or source collapses back to one chunk without an effect.
-  const listKey = `${source}:${debouncedSearch}`;
-  const [reveal, setReveal] = useState({ key: listKey, count: CHUNK });
-  const visible = reveal.key === listKey ? reveal.count : CHUNK;
-
-  const pickSkill = (skill: SkillResponse | null) => {
-    setSelectedSkill(skill);
-    setChoice({});
-    setCreated({});
-  };
-
-  // The selection is dropped where the source changes rather than in an effect
-  // watching it — the selected skill and its choices belong to one source, so
-  // they die with the switch that caused it.
-  const changeSource = (next: SkillPickerSource) => {
-    setSource(next);
-    pickSkill(null);
-  };
+  const { visible, revealMore } = useRevealedRows(catalogFilters.listKey, CHUNK);
 
   const { loading, error, handleSubmit } = useAsyncForm<void>({
     onSuccess,
@@ -124,28 +115,9 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
           nested in a form submits both — Enter or "Create" in the inner one
           would also fire the binding. The one button below is the only submit. */}
       <div className="space-y-4">
-        {/* Search, with the source (own skills vs the public catalogue, incl.
-            system skills) folded behind the funnel — same as the Skills page. */}
-        <SearchToolbar
-          value={search}
-          onChange={setSearch}
-          placeholder={t('searchSkills')}
-          size="sm"
-          filtersActive={source !== 'all'}
-          filters={
-            <FilterRow label={tSkills('sourceLabel')}>
-              {SOURCES.map((key) => (
-                <FilterPill
-                  key={key}
-                  active={source === key}
-                  onClick={() => changeSource(key)}
-                >
-                  {tSkills(`source_${key}`)}
-                </FilterPill>
-              ))}
-            </FilterRow>
-          }
-        />
+        {/* Same toolbar as the Skills page: source and tags behind the funnel,
+            the catalog's sections in the open. */}
+        <SkillCatalogToolbar state={catalogFilters} placeholder={t('searchSkills')} size="sm" />
 
         {/* Skills list */}
         <div className="min-h-[280px]">
@@ -196,19 +168,7 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
           )}
         </div>
 
-        {visible < skills.length && (
-          <button
-            type="button"
-            onClick={() => setReveal({ key: listKey, count: visible + CHUNK })}
-            className="w-full rounded-lg border border-dashed border-border py-2 text-sm font-medium text-muted transition-colors hover:border-accent/50 hover:text-foreground"
-          >
-            {tSkills('showMore', { count: skills.length - visible })}
-          </button>
-        )}
-
-        {truncated && visible >= skills.length && (
-          <p className="pt-1 text-center text-xs text-muted">{tSkills('refineSearch')}</p>
-        )}
+        <SkillListTail total={skills.length} visible={visible} truncated={truncated} onMore={revealMore} />
 
         {/* The plan — the skill cannot be bound without its instances, so the
             steps sit in the same modal rather than behind a second screen. */}

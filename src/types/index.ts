@@ -30,3 +30,4 @@ export * from './admin';
 export * from './referral';
 export * from './sessions';
 export * from './auth';
+export * from './taxonomy';

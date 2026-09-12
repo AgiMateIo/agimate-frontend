@@ -87,16 +87,19 @@
     "skillsSubtitle": "The role’s skills are already included. A skill only works when its connections are open to the agent — the yellow and red marks show what is missing.",
     "selectedCount": "{count} selected",
     "removeSkill": "Remove skill",
-    "summaryNoSkills": "None selected",
     "skillsSourceLabel": "Source",
     "skillsSource_all": "All",
     "skillsSource_my": "Mine",
     "skillsSource_public": "Public",
+    "showMore": "Show {count} more",
+    "refineSearch": "Not every skill is listed — narrow the search",
+    "includedSkillsTitle": "Included skills",
+    "skillFromRole": "From the role",
+    "addMoreSkills": "Add more skills",
+    "summaryNoSkills": "None selected",
     "searchSkills": "Search skills...",
     "noSkillsFound": "No skills found",
     "skillsLoadError": "Failed to load skills",
-    "showMore": "Show {count} more",
-    "refineSearch": "Not every skill is listed — narrow the search",
     "connector_connected": "Connection open to the agent",
     "connector_needsConnection": "Not open to the agent — the skill stays broken until you open it on the agent’s Connections page",
     "connector_builtIn": "Built-in capability — opened to the agent automatically at creation",
@@ -1228,8 +1231,8 @@
     "isPublic": "Public",
     "isPublicHint": "Public skills are visible to all users",
     "skillMd": "SKILL.md",
-    "skillMdHint": "Skill content in Markdown with YAML frontmatter (name, description, connectors)",
-    "skillMdPlaceholder": "---\nname: my-skill\ndescription: What this skill does\nconnectors: [board]\n---\n\nSkill instructions here...",
+    "skillMdHint": "Skill content in Markdown with YAML frontmatter (name, description, category, tags, connectors)",
+    "skillMdPlaceholder": "---\nname: my-skill\ndescription: What this skill does\ncategory: finance\ntags: [personal]\nconnectors: [board]\n---\n\nSkill instructions here...",
     "connectorsLabel": "Connectors",
     "noConnectors": "None",
     "editConnectors": "Edit",
@@ -1256,7 +1259,8 @@
     "updatedAt": "Updated",
     "create": "Create",
     "loadingSkill": "Loading skill...",
-    "skillNotFound": "Skill not found"
+    "skillNotFound": "Skill not found",
+    "noSkillsInSection": "No skills match these filters"
   },
   "SkillAgents": {
     "planTitle": "What the skill needs on “{agent}”",
@@ -1549,5 +1553,12 @@
     "usageScopeOwnKey": "Spend of the whole key — every agent of this user together.",
     "usageUtcNote": "The current calendar day and month in UTC, so they do not line up with your local day. Tokens, not money: input + output + cache writes, cache reads excluded.",
     "usageNoProviders": "Neither the platform provider nor a key of their own."
+  },
+  "Taxonomy": {
+    "categories": "Catalog sections",
+    "allCategories": "All",
+    "frontmatterReference": "Categories and tags for the frontmatter",
+    "frontmatterCategories": "Categories",
+    "frontmatterTags": "Tags"
   }
 }

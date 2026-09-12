@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { FormField, TextArea } from '@/components/ui/FormField';
 import { Toggle } from '@/components/ui/Toggle';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import SkillFrontmatterReference from './SkillFrontmatterReference';
 
 interface SkillFormProps {
   initialSkillMd?: string;
@@ -78,6 +79,7 @@ export default function SkillForm({
           className="font-mono text-sm"
         />
       </FormField>
+      <SkillFrontmatterReference />
 
       {error && <ErrorAlert>{error}</ErrorAlert>}
 

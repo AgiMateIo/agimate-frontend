@@ -1,25 +1,27 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { Suspense } from 'react';
 import { useTranslations } from 'next-intl';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { SearchToolbar } from '@/components/ui/SearchToolbar';
-import { FilterPill, FilterRow } from '@/components/ui/FilterPill';
-import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import {
   useSkillPickerSuspenseQuery,
   useSkillCacheActions,
+  type SkillPickerFilters,
   type SkillPickerSource,
 } from '@/queries/skills';
 import { Link } from '@/i18n/navigation';
 import SkillsList from '@/components/skills/SkillsList';
+import {
+  SkillCatalogToolbar,
+  SkillListTail,
+  useRevealedRows,
+  useSkillCatalogFilters,
+} from '@/components/skills/SkillCatalogToolbar';
 import { Placeholder } from '@/components/ui/Placeholder';
 
 // Rows revealed at once; "show more" grows the list in place. Both scopes are
 // merged client-side, so there is no server page to walk (see the query module).
 const CHUNK = 12;
-
-const SOURCES: SkillPickerSource[] = ['all', 'my', 'public'];
 
 const EMPTY_KEY = {
   all: 'noSkillsFound',
@@ -30,47 +32,37 @@ const EMPTY_KEY = {
 function SkillsContent({
   source,
   search,
+  filters,
+  listKey,
 }: {
   source: SkillPickerSource;
   search: string;
+  filters: SkillPickerFilters;
+  listKey: string;
 }) {
   const t = useTranslations('Skills');
-  const { skills, truncated } = useSkillPickerSuspenseQuery(source, search);
+  const { skills, truncated } = useSkillPickerSuspenseQuery(source, search, filters);
   const { removeSkillFromLists } = useSkillCacheActions();
-  // Remounted by the caller's key whenever the source or search changes, which
-  // collapses the list back to one chunk.
-  const [visible, setVisible] = useState(CHUNK);
+  const { visible, revealMore } = useRevealedRows(listKey, CHUNK);
+  // A section or a tag is in effect: the empty state is about the filters,
+  // not about the source having nothing.
+  const narrowed = !!(filters.category || filters.tag);
 
   return (
     <div className="space-y-3">
       <SkillsList
         skills={skills.slice(0, visible)}
-        emptyText={t(EMPTY_KEY[source])}
+        emptyText={t(narrowed ? 'noSkillsInSection' : EMPTY_KEY[source])}
         onDeleteSuccess={removeSkillFromLists}
       />
-
-      {visible < skills.length && (
-        <button
-          type="button"
-          onClick={() => setVisible((v) => v + CHUNK)}
-          className="w-full rounded-lg border border-dashed border-border py-2 text-sm font-medium text-muted transition-colors hover:border-accent/50 hover:text-foreground"
-        >
-          {t('showMore', { count: skills.length - visible })}
-        </button>
-      )}
-
-      {truncated && visible >= skills.length && (
-        <p className="pt-1 text-center text-xs text-muted">{t('refineSearch')}</p>
-      )}
+      <SkillListTail total={skills.length} visible={visible} truncated={truncated} onMore={revealMore} />
     </div>
   );
 }
 
 export default function SkillsPage() {
   const t = useTranslations('Skills');
-  const [source, setSource] = useState<SkillPickerSource>('all');
-  const [search, setSearch] = useState('');
-  const debouncedSearch = useDebouncedValue(search);
+  const catalog = useSkillCatalogFilters();
 
   return (
     <div className="space-y-6">
@@ -88,30 +80,15 @@ export default function SkillsPage() {
       </div>
 
       {/* Outside the Suspense boundary: typing must never unmount the field. */}
-      <SearchToolbar
-        value={search}
-        onChange={setSearch}
-        placeholder={t('searchPlaceholder')}
-        filtersActive={source !== 'all'}
-        filters={
-          <FilterRow label={t('sourceLabel')}>
-            {SOURCES.map((key) => (
-              <FilterPill key={key} active={source === key} onClick={() => setSource(key)}>
-                {t(`source_${key}`)}
-              </FilterPill>
-            ))}
-          </FilterRow>
-        }
-      />
+      <SkillCatalogToolbar state={catalog} />
 
       <ErrorBoundary>
-        <Suspense
-          fallback={<Placeholder>{t('loading')}</Placeholder>}
-        >
+        <Suspense fallback={<Placeholder>{t('loading')}</Placeholder>}>
           <SkillsContent
-            key={`${source}:${debouncedSearch}`}
-            source={source}
-            search={debouncedSearch}
+            source={catalog.source}
+            search={catalog.debouncedSearch}
+            filters={catalog.filters}
+            listKey={catalog.listKey}
           />
         </Suspense>
       </ErrorBoundary>

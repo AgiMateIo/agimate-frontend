@@ -55,6 +55,14 @@ export interface SkillResponse {
   // backend that predates requirements may still answer — read through
   // `skillRequirements()` in `src/utils/skill.ts`.
   connectors?: SkillConnectorRequirement[];
+  // Catalog section — a code of the taxonomy dictionary (`category:` in the
+  // SKILL.md frontmatter, lowercase there); `OTHER` = not sorted yet. Optional
+  // only while a backend that predates the taxonomy may still answer — read
+  // through `catalogCategory()` in `src/utils/taxonomy.ts`.
+  category?: string;
+  // Flat tag codes for the filters; empty is the normal state, not lost data.
+  // Read through `catalogTags()`.
+  tags?: string[];
   version: number;
   isPublic: boolean;
   userId: string;
