@@ -1,6 +1,6 @@
 {
   "name": "agimate-frontend",
-  "version": "1.5.3",
+  "version": "1.6.0",
   "private": true,
   "description": "Web dashboard for the AgiMate platform: AI agents, skills, connectors, agentic teams and real-time chat.",
   "license": "FSL-1.1-ALv2",
