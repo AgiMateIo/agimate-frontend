@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import LandingHeader from '@/components/landing/LandingHeader';
 import LandingBackground from '@/components/landing/LandingBackground';
 import LandingFooter from '@/components/landing/LandingFooter';
@@ -339,7 +340,7 @@ export default function AndroidPage() {
           <p className="mx-auto mb-10 max-w-md text-muted">{t('download.subtitle')}</p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <a
-              href="https://github.com/AgiMateIo/android/releases/latest"
+              href="https://github.com/AgiMateIo/connector-android/releases/latest"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-lg bg-accent px-7 py-3.5 font-medium text-accent-foreground shadow-lg shadow-accent/25 hover:bg-accent/90 transition-colors w-full sm:w-auto justify-center"
@@ -348,24 +349,24 @@ export default function AndroidPage() {
               <ArrowRightIcon className="h-4 w-4" />
             </a>
             <a
-              href="https://github.com/AgiMateIo/android"
+              href="https://github.com/AgiMateIo/connector-android"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-lg border border-border px-7 py-3.5 font-medium text-foreground hover:bg-surface-secondary transition-colors w-full sm:w-auto justify-center"
             >
               {t('download.github')}
             </a>
-            <a
-              href="#"
+            <Link
+              href="/docs/connectors/android"
               className="inline-flex items-center gap-2 rounded-lg border border-border px-7 py-3.5 font-medium text-foreground hover:bg-surface-secondary transition-colors w-full sm:w-auto justify-center"
             >
               {t('download.docs')}
-            </a>
+            </Link>
           </div>
         </div>
       </section>
 
-      <LandingFooter githubUrl="https://github.com/AgiMateIo/android" />
+      <LandingFooter githubUrl="https://github.com/AgiMateIo/connector-android" />
     </div>
   );
 }
