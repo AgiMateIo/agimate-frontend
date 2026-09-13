@@ -31,9 +31,9 @@ So for local dev against a custom gateway, set in `.env.local`:
 ```bash
 NEXT_PUBLIC_API_BASE_URL=http://api.agimate.lc:8000/
 ```
-The `NEXT_PUBLIC_` prefix exposes the variable to client-side code. There is no `.env.example` checked in.
+The `NEXT_PUBLIC_` prefix exposes the variable to client-side code. See `.env.example`.
 
-A deployed instance also needs `APP_CONNECTORS_MCP_OAUTH_CLIENT_ID` and `APP_CONNECTORS_MCP_OAUTH_REDIRECT_URI` (server-side, read per request) — see **MCP OAuth connections** below. Local dev needs neither.
+A deployed instance on any domain other than `https://agimate.io` also needs `APP_PUBLIC_ORIGIN` (server-side, read per request, defaults to that origin; derives both MCP OAuth addresses, each overridable by `APP_CONNECTORS_MCP_OAUTH_CLIENT_ID` / `APP_CONNECTORS_MCP_OAUTH_REDIRECT_URI`) — see **MCP OAuth connections** below. Local dev needs neither.
 
 The base URL points to the API gateway root; service-specific prefixes are added in code (see below).
 
@@ -147,7 +147,7 @@ Gone with this design: the ticket endpoint (`POST /auth/methods/link/{provider}`
 
 Some MCP servers (Notion, Linear, Atlassian, Sentry…) refuse a hand-written token. The user enters only the server URL; the backend finds out that OAuth is needed and creates the connection in `PENDING_AUTH`, and the frontend walks the user through the provider's consent screen. **No token ever reaches the frontend.**
 
-- `src/app/connections/oauth/client.json/route.ts` — outside `[locale]`, served as `application/json` without auth: the *provider's server* fetches it to learn the app name and the allowed return addresses. `client_id` and `redirect_uris` come from `APP_CONNECTORS_MCP_OAUTH_CLIENT_ID` / `APP_CONNECTORS_MCP_OAUTH_REDIRECT_URI` (read per request, `force-dynamic`) and must equal the backend's settings byte for byte — never derived from `window.location` or `Host`. Missing config answers `503` rather than serving wrong addresses. The middleware matcher already skips dotted paths, so no locale prefix is added.
+- `src/app/connections/oauth/client.json/route.ts` — outside `[locale]`, served as `application/json` without auth: the *provider's server* fetches it to learn the app name and the allowed return addresses. `client_id` and `redirect_uris` are `APP_PUBLIC_ORIGIN` (default `https://agimate.io`) + the fixed route paths, or `APP_CONNECTORS_MCP_OAUTH_CLIENT_ID` / `APP_CONNECTORS_MCP_OAUTH_REDIRECT_URI` when set (read per request, `force-dynamic`) and must equal the backend's settings byte for byte — never derived from `window.location` or `Host`. An unparseable origin answers `503` rather than falling back to the default. The middleware matcher already skips dotted paths, so no locale prefix is added.
 - `src/app/[locale]/connections/oauth/callback/page.tsx` — the return address. Forwards `state`/`code`/`error`/`iss` to `POST /connections/oauth/complete` verbatim and **exactly once** (a module-level `Set` of spent states, so StrictMode's second mount doesn't turn a success into "already been used"; no automatic retry). `error_description` from the URL is never rendered — until the backend has matched `iss`, anything in that query is attacker-supplied.
 - `src/components/connections/ConnectionAuth.tsx` — the shared badge, panel and "Подключить/Переподключить" button; `window.location.assign` on the minted URL (never `fetch`, never an iframe — consent screens send `X-Frame-Options`).
 

@@ -14,6 +14,12 @@
  * the redirect URI have to match the backend's `APP_CONNECTORS_MCP_OAUTH_*`
  * settings. A trailing slash or a `www.` that only one side has reads to the
  * provider as `invalid_client`, so guessing from `Host` is not an option.
+ *
+ * The paths are fixed by the route layout, so the origin alone is enough:
+ * `APP_PUBLIC_ORIGIN` (default `https://agimate.io`) yields both addresses,
+ * and an explicit `APP_CONNECTORS_MCP_OAUTH_*` still wins over what it derives.
+ * Any other domain must set it: the default would hand the provider the main
+ * installation's addresses.
  */
 
 // Read the environment per request: the standalone server is built once and
@@ -22,9 +28,30 @@ export const dynamic = 'force-dynamic';
 
 const CLIENT_NAME = 'AgiMate';
 
+const DEFAULT_PUBLIC_ORIGIN = 'https://agimate.io';
+
+const CLIENT_ID_PATH = '/connections/oauth/client.json';
+const REDIRECT_PATH = '/connections/oauth/callback';
+
+// `new URL().origin` drops a trailing slash and any path pasted along with the
+// origin, the likeliest typos. Unparseable reads as unset rather than falling
+// back to the default: a 503 with the message below beats a 500 on every
+// provider fetch, and beats silently serving another domain's addresses.
+function publicOrigin(): string | undefined {
+  const raw = process.env.APP_PUBLIC_ORIGIN || DEFAULT_PUBLIC_ORIGIN;
+  try {
+    return new URL(raw).origin;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function GET() {
-  const clientId = process.env.APP_CONNECTORS_MCP_OAUTH_CLIENT_ID;
-  const redirectUri = process.env.APP_CONNECTORS_MCP_OAUTH_REDIRECT_URI;
+  const origin = publicOrigin();
+  const clientId =
+    process.env.APP_CONNECTORS_MCP_OAUTH_CLIENT_ID || (origin && `${origin}${CLIENT_ID_PATH}`);
+  const redirectUri =
+    process.env.APP_CONNECTORS_MCP_OAUTH_REDIRECT_URI || (origin && `${origin}${REDIRECT_PATH}`);
 
   if (!clientId || !redirectUri) {
     // Serving a plausible-looking document with wrong addresses would fail far
@@ -33,8 +60,9 @@ export async function GET() {
       {
         error: {
           message:
-            'MCP OAuth is not configured: set APP_CONNECTORS_MCP_OAUTH_CLIENT_ID and ' +
-            'APP_CONNECTORS_MCP_OAUTH_REDIRECT_URI to the same values as the backend.',
+            'MCP OAuth is not configured: set APP_PUBLIC_ORIGIN (or ' +
+            'APP_CONNECTORS_MCP_OAUTH_CLIENT_ID and APP_CONNECTORS_MCP_OAUTH_REDIRECT_URI) ' +
+            'so the addresses equal the backend settings.',
         },
       },
       { status: 503, headers: { 'Cache-Control': 'no-store' } },

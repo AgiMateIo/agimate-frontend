@@ -68,14 +68,18 @@ environment at runtime and **must equal the backend's
 
 | Variable | Value |
 | --- | --- |
-| `APP_CONNECTORS_MCP_OAUTH_CLIENT_ID` | `https://<frontend>/connections/oauth/client.json` — the address the document is served from, and the client identity |
-| `APP_CONNECTORS_MCP_OAUTH_REDIRECT_URI` | `https://<frontend>/connections/oauth/callback` |
+| `APP_PUBLIC_ORIGIN` | `https://<frontend>`, default `https://agimate.io` — enough on its own: both addresses below are derived from it |
+| `APP_CONNECTORS_MCP_OAUTH_CLIENT_ID` | `https://<frontend>/connections/oauth/client.json` — the address the document is served from, and the client identity. Overrides the derived value |
+| `APP_CONNECTORS_MCP_OAUTH_REDIRECT_URI` | `https://<frontend>/connections/oauth/callback`. Overrides the derived value |
 
 Both live on the same public origin as the frontend: the consent screen shows
 the app name from the document next to the host of the return address, and two
-different hosts read as two unrelated applications. Unset, the document answers
-`503` rather than serving plausible-looking wrong addresses. Local development
-needs neither variable — the handshake requires a public HTTPS origin anyway.
+different hosts read as two unrelated applications. With nothing set, the
+document serves `https://agimate.io` addresses — so **any other domain must set
+`APP_PUBLIC_ORIGIN`**, or its providers are sent to the main installation and the
+handshake fails there. An unparseable value answers `503` instead of falling
+back. Local development needs none of these variables — the handshake requires
+a public HTTPS origin anyway.
 
 ### Crawlers
 
