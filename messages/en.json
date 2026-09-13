@@ -472,7 +472,7 @@
       "title": "Self-hosted, with the source open",
       "description": "The source is open in full: the core, the dashboard, the chat app, the connectors and the n8n nodes. Running it yourself is free, company use included; a licence is only needed to sell AgiMate as a service to others. Your data, model keys and logs stay with you.",
       "selfHosted": "Self-hosted — your data and keys stay with you",
-      "license": "Source-available: every release turns Apache-2.0 two years after it ships",
+      "license": "Every release becomes Apache-2.0 two years after it ships",
       "github": "Repositories and instructions on GitHub"
     },
     "cta": {
