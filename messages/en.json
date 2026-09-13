@@ -469,10 +469,10 @@
       }
     },
     "openSource": {
-      "title": "Self-hosted and open source",
-      "description": "All of the code is open: the Java core, the dashboard, the chat app, the Android and desktop connectors, the n8n nodes. The platform deploys on your own server, where your data, model keys and logs stay.",
-      "selfHosted": "Self-hosted: your data and keys stay with you",
-      "license": "All of the code under an open licence",
+      "title": "Self-hosted, with the source open",
+      "description": "The source is open in full: the core, the dashboard, the chat app, the connectors and the n8n nodes. Running it yourself is free, company use included; a licence is only needed to sell AgiMate as a service to others. Your data, model keys and logs stay with you.",
+      "selfHosted": "Self-hosted — your data and keys stay with you",
+      "license": "Source-available: every release turns Apache-2.0 two years after it ships",
       "github": "Repositories and instructions on GitHub"
     },
     "cta": {
@@ -1198,7 +1198,7 @@
         }
       ],
       "platforms": {
-        "macos": "macOS (.app)",
+        "macos": "macOS (.dmg)",
         "windows": "Windows (.exe)",
         "linux": "Linux (.AppImage)"
       }
