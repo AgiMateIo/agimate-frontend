@@ -33,7 +33,7 @@ NEXT_PUBLIC_API_BASE_URL=http://api.agimate.lc:8000/
 ```
 The `NEXT_PUBLIC_` prefix exposes the variable to client-side code. See `.env.example`.
 
-A deployed instance on any domain other than `https://agimate.io` also needs `APP_PUBLIC_ORIGIN` (server-side, read per request, defaults to that origin; derives both MCP OAuth addresses, each overridable by `APP_CONNECTORS_MCP_OAUTH_CLIENT_ID` / `APP_CONNECTORS_MCP_OAUTH_REDIRECT_URI`) — see **MCP OAuth connections** below. Local dev needs neither.
+A deployed instance on any domain other than `https://agimate.io` also needs `APP_PUBLIC_ORIGIN` (server-side, read per request, defaults to that origin; derives both MCP OAuth addresses, each overridable by `APP_CONNECTORS_MCP_OAUTH_CLIENT_ID` / `APP_CONNECTORS_MCP_OAUTH_REDIRECT_URI`) — see **MCP OAuth connections** below. **Set explicitly, it also switches on the primary-host redirect** (see **One host for sessions**); the default does not, so production sets it too. Local dev needs neither.
 
 The base URL points to the API gateway root; service-specific prefixes are added in code (see below).
 
@@ -123,6 +123,14 @@ Never store the actual refresh token in JavaScript-accessible storage.
 
 ### Returning to an interrupted page after sign-in
 `/login` accepts `?next=<locale-less in-app path>` and threads it through as `redirect_to=<origin>/login-check?next=…`; `/login-check` navigates there instead of `/dashboard`. Values pass through `safeNextPath` (`src/utils/next-path.ts`) — in-app paths only, no absolute or protocol-relative URLs. It exists for the MCP OAuth callback, whose single-use `code`/`state` must survive the sign-in round trip **in the URL** rather than in storage.
+
+## One host for sessions
+
+A session lives in host-bound storage (`refresh_token_id` in localStorage), so `agimate.io`, `www.agimate.io` and `agimate.ru` are three separate sign-ins to the browser — and the backend's and the MCP providers' return addresses name `agimate.io` alone. Nothing moves a person there after the fact (a password sign-in has no redirect; a provider sign-in returns to the host that built `redirect_to`), so the move happens **before** sign-in:
+
+- **`src/proxy.ts`** answers `307` (never permanent — a cached 301/308 can't be taken back) to `APP_PUBLIC_ORIGIN` + the same path and query, before the locale middleware. `www.` of the primary host moves entirely; any other host (the `.ru` mirror) keeps its public pages and gives up only the private prefixes in `src/utils/primary-origin.ts` — `/login`, `/login-check`, `/logout`, `/register`, `/password`, `/dashboard`, `/connections`, `/llm-providers`, with or without a locale. **A new page that needs a session goes into that list.** Host = `x-forwarded-host` ?? `host`, port stripped; off unless `APP_PUBLIC_ORIGIN` is set explicitly. Exclusions are the matcher's: `/app/auth` (the Android return address, must answer `200` on `www.agimate.io`) and everything dotted (`/.well-known/*`, `client.json`, `robots.txt`, `sitemap.xml`, the manifest, static files).
+- **Landing buttons** ("sign in", "dashboard" — `LandingHeader`, the home page) take their href from `usePrimaryHref` (`src/contexts/PrimaryOriginContext.tsx`, origin handed down by the locale layout): the in-app path on the primary host, `https://agimate.io/<locale>/login?ref=<code>` elsewhere. The referral code rides in the URL because the mirror's storage is unreadable from the primary host; `/login` and `/register` read `?ref=` before storage (`currentReferralCode`).
+- The backend may drop the old hosts from its allow-list **only after** the redirect is live — a sign-in started on `.ru` breaks otherwise.
 
 ## Linking a provider
 
@@ -267,7 +275,7 @@ src/
 │                                  #   ErrorAlert, ErrorBoundary, LocaleSwitcher
 ├── config/constants.ts            # UI, API.ENDPOINTS
 ├── config/authProviders.ts        # which providers are offered, and where
-├── contexts/                      # UserContext, BreadcrumbContext, QueryProvider
+├── contexts/                      # UserContext, BreadcrumbContext, QueryProvider, PrimaryOriginContext
 ├── hooks/                         # useAsyncForm, useClipboard, useDebouncedValue
 ├── i18n/                          # routing.ts, request.ts
 ├── queries/                       # React Query per domain: key factories, queryOptions,

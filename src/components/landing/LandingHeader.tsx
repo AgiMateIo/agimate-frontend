@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useUser } from '@/contexts/UserContext';
+import { usePrimaryHref } from '@/contexts/PrimaryOriginContext';
 import { ProviderIcon } from '@/components/auth/ProviderIcon';
 import LocaleSwitcher from '@/components/ui/LocaleSwitcher';
 import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
@@ -28,6 +29,8 @@ interface LandingHeaderProps {
 export default function LandingHeader({ navLinks, loginLabel, dashboardLabel }: LandingHeaderProps) {
   const t = useTranslations('Common');
   const { user, loading } = useUser();
+  const loginHref = usePrimaryHref('/login');
+  const dashboardHref = usePrimaryHref('/dashboard');
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -94,14 +97,14 @@ export default function LandingHeader({ navLinks, loginLabel, dashboardLabel }: 
           <LocaleSwitcher />
           {!loading && user ? (
             <Link
-              href="/dashboard"
+              href={dashboardHref}
               className="whitespace-nowrap rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent/90 transition-colors"
             >
               {dashboardLabel}
             </Link>
           ) : (
             <Link
-              href="/login"
+              href={loginHref}
               className="whitespace-nowrap rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent/90 transition-colors"
             >
               {loginLabel}

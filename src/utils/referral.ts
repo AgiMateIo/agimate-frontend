@@ -49,6 +49,19 @@ export function readReferralCode(): string | null {
   return code && CODE_PATTERN.test(code) ? code : null;
 }
 
+/**
+ * The code in the current URL, falling back to the remembered one.
+ *
+ * The URL comes first because storage is per host: a visitor sent from the
+ * mirror to the primary address brings the code along as `?ref=`, and the page
+ * reading it renders before `ReferralCapture` has had a chance to store it.
+ */
+export function currentReferralCode(): string | null {
+  if (typeof window === 'undefined') return null;
+  const code = new URLSearchParams(window.location.search).get('ref');
+  return code && CODE_PATTERN.test(code) ? code : readReferralCode();
+}
+
 /** Called once sign-in succeeded: the code has done its only job. */
 export function clearReferralCode(): void {
   if (typeof window === 'undefined') return;

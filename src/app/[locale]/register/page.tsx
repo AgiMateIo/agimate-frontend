@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { safeNextPath } from '@/utils/next-path';
-import { readReferralCode } from '@/utils/referral';
+import { currentReferralCode } from '@/utils/referral';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import AuthShell from '@/components/landing/AuthShell';
 import AuthCard from '@/components/auth/AuthCard';
@@ -16,7 +16,7 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { EnvelopeIcon } from '@heroicons/react/24/outline';
 
 const subscribe = () => () => {};
-const getReferralSnapshot = () => readReferralCode();
+const getReferralSnapshot = () => currentReferralCode();
 const getReferralServerSnapshot = (): string | null => null;
 
 function RegisterContent() {

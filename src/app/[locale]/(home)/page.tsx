@@ -2,6 +2,7 @@
 
 import { Link } from '@/i18n/navigation';
 import { useUser } from '@/contexts/UserContext';
+import { usePrimaryHref } from '@/contexts/PrimaryOriginContext';
 import { useTranslations } from 'next-intl';
 import LandingHeader from '@/components/landing/LandingHeader';
 import LandingBackground from '@/components/landing/LandingBackground';
@@ -52,6 +53,8 @@ const modelIcons = [KeyIcon, SparklesIcon, ChartBarIcon];
 
 export default function HomePage() {
   const { user } = useUser();
+  const loginHref = usePrimaryHref('/login');
+  const dashboardHref = usePrimaryHref('/dashboard');
   const t = useTranslations('HomePage');
 
   const harnessItems = t.raw('harness.items') as PlainItem[];
@@ -130,7 +133,7 @@ export default function HomePage() {
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           {user ? (
             <Link
-              href="/dashboard"
+              href={dashboardHref}
               className="w-full sm:w-auto justify-center inline-flex items-center gap-2 rounded-lg bg-accent px-7 py-3.5 font-medium text-accent-foreground shadow-lg shadow-accent/25 hover:bg-accent/90 transition-colors"
             >
               {t('nav.dashboard')}
@@ -138,7 +141,7 @@ export default function HomePage() {
             </Link>
           ) : (
             <Link
-              href="/login"
+              href={loginHref}
               className="w-full sm:w-auto justify-center inline-flex items-center gap-2 rounded-lg bg-accent px-7 py-3.5 font-medium text-accent-foreground shadow-lg shadow-accent/25 hover:bg-accent/90 transition-colors"
             >
               {t('hero.cta')}
@@ -566,7 +569,7 @@ export default function HomePage() {
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             {user ? (
               <Link
-                href="/dashboard"
+                href={dashboardHref}
                 className="inline-flex items-center gap-2 rounded-lg bg-accent px-8 py-4 text-lg font-medium text-accent-foreground shadow-lg shadow-accent/25 hover:bg-accent/90 transition-colors"
               >
                 {t('nav.dashboard')}
@@ -574,7 +577,7 @@ export default function HomePage() {
               </Link>
             ) : (
               <Link
-                href="/login"
+                href={loginHref}
                 className="inline-flex items-center gap-2 rounded-lg bg-accent px-8 py-4 text-lg font-medium text-accent-foreground shadow-lg shadow-accent/25 hover:bg-accent/90 transition-colors"
               >
                 {t('cta.button')}

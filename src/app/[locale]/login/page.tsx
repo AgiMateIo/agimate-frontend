@@ -9,7 +9,7 @@ import apiService, { ApiError, hasStoredSession } from '@/services/api';
 import { API } from '@/config/constants';
 import { getApiBaseUrl } from '@/utils/api-url';
 import { safeNextPath } from '@/utils/next-path';
-import { readReferralCode } from '@/utils/referral';
+import { currentReferralCode } from '@/utils/referral';
 import { providersForOrigin, type OfferedProvider } from '@/config/authProviders';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import AuthShell from '@/components/landing/AuthShell';
@@ -25,9 +25,9 @@ const subscribe = () => () => {};
 const getSnapshot = () => window.location.origin;
 const getServerSnapshot = () => '';
 
-// Same shape for the stored referral code: read on the client only, absent
+// Same shape for the referral code (URL, then storage): read on the client only, absent
 // during SSR. Both snapshots are primitives, so re-reading per render is free.
-const getReferralSnapshot = () => readReferralCode();
+const getReferralSnapshot = () => currentReferralCode();
 const getReferralServerSnapshot = (): string | null => null;
 
 // Whether a sign-in might already be restorable. The server knows nothing about

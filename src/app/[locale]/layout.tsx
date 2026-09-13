@@ -3,10 +3,12 @@ import { getMessages, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { resolveLocale, routing } from '@/i18n/routing';
 import { UserProvider } from '@/contexts/UserContext';
+import { PrimaryOriginProvider } from '@/contexts/PrimaryOriginContext';
 import { QueryProvider } from '@/contexts/QueryProvider';
 import { YandexMetrika } from '@/components/analytics/YandexMetrika';
 import ReferralCapture from '@/components/referral/ReferralCapture';
 import { getSiteOrigin, YANDEX_VERIFICATION } from '@/utils/seo';
+import { configuredPrimaryOrigin } from '@/utils/primary-origin';
 import { brandFontVariables } from '@/app/fonts';
 import { THEME_BOOT_SCRIPT, THEME_COLORS } from '@/utils/theme';
 import '../globals.css';
@@ -107,7 +109,9 @@ export default async function LocaleLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <NextIntlClientProvider locale={locale} messages={messages}>
           <QueryProvider>
-            <UserProvider>{children}</UserProvider>
+            <UserProvider>
+              <PrimaryOriginProvider origin={configuredPrimaryOrigin() ?? null}>{children}</PrimaryOriginProvider>
+            </UserProvider>
           </QueryProvider>
         </NextIntlClientProvider>
         {/* An invite link can land on any page, and the code has to outlive the
