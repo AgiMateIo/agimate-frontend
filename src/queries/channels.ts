@@ -16,8 +16,6 @@ export const channelKeys = {
   lists: () => [...channelKeys.all, 'list'] as const,
   list: (agentId?: string) => [...channelKeys.lists(), agentId ?? 'all'] as const,
   sessions: (channelId: string) => [...channelKeys.all, 'sessions', channelId] as const,
-  sessionMessages: (sessionId: string) =>
-    [...channelKeys.all, 'session-messages', sessionId] as const,
 };
 
 // Without an agentId this is every channel the user owns (the Channels page);
@@ -38,10 +36,9 @@ export function useAgentChannelsQuery(agentId: string) {
 //
 // Conversations of every channel live in one resource (`/manage/sessions`), so a
 // channel's own list is that resource filtered by `channelId` — the rows are the
-// same shape a webchat row has, minus the three webchat-only fields
-// (`unreadCount`, `lastMessage`, `isRunning`), which arrive empty here.
+// same shape a webchat row has, minus the two webchat-only fields
+// (`unreadCount`, `lastMessage`), which arrive empty here.
 const SESSIONS_PAGE_SIZE = 50;
-const MESSAGES_PAGE_SIZE = 50;
 
 export const channelSessionsOptions = (channelId: string) =>
   infiniteQueryOptions({
@@ -59,29 +56,6 @@ export function useChannelSessionsQuery(channelId: string) {
     [query.data],
   );
   return { ...query, sessions };
-}
-
-export const channelSessionMessagesOptions = (sessionId: string) =>
-  infiniteQueryOptions({
-    queryKey: channelKeys.sessionMessages(sessionId),
-    queryFn: ({ pageParam }) =>
-      apiService.getChatSessionMessages(sessionId, {
-        page: pageParam,
-        size: MESSAGES_PAGE_SIZE,
-      }),
-    initialPageParam: 0,
-    getNextPageParam: nextPageParam,
-  });
-
-// History comes newest-first (page 0 = the latest messages), so the flattened
-// pages are reversed once here and every consumer reads a transcript.
-export function useChannelSessionMessagesQuery(sessionId: string) {
-  const query = useInfiniteQuery(channelSessionMessagesOptions(sessionId));
-  const messages = useMemo(
-    () => dedupeById(query.data?.pages.flatMap((p) => p.content) ?? [], (m) => m.id).reverse(),
-    [query.data],
-  );
-  return { ...query, messages };
 }
 
 export function useChannelCacheActions() {
