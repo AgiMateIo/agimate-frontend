@@ -34,7 +34,7 @@ import { useMarkWebchatSessionRead } from '@/queries/webchat';
 import { useInvalidateSubagentSessions } from '@/queries/chat-sessions';
 import { useWebchatThread, ThreadMessage } from './useWebchatThread';
 import { ChatMessageText } from './ChatMessageText';
-import { ChatMessageAttachments } from './ChatMessageAttachments';
+import { ChatMessageAttachments, type RefreshParts } from './ChatMessageAttachments';
 import { ComposerAttachments } from './ComposerAttachments';
 import FilePickerModal from '@/components/files/FilePickerModal';
 import RenameSessionModal from '@/components/sessions/RenameSessionModal';
@@ -71,7 +71,7 @@ function MessageRow({
   onExpired,
 }: {
   message: ThreadMessage;
-  onExpired: () => Promise<void>;
+  onExpired: RefreshParts;
 }) {
   if (isProgressRow(message)) {
     return (
@@ -104,7 +104,11 @@ function MessageRow({
         )}
         {message.parts.length > 0 && (
           <div className={message.text ? 'mt-2' : ''}>
-            <ChatMessageAttachments parts={message.parts} onExpired={onExpired} />
+            <ChatMessageAttachments
+              parts={message.parts}
+              messageId={message.messageId}
+              onExpired={onExpired}
+            />
           </div>
         )}
         <div

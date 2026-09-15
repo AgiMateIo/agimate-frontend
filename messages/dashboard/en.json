@@ -193,7 +193,12 @@
     "dropToAttach": "Drop files to attach",
     "dropHint": "Up to {max} files, agents can see images",
     "pickFromFiles": "Pick from my files",
-    "uploadFromDevice": "Upload from device"
+    "uploadFromDevice": "Upload from device",
+    "viewPage": "View",
+    "previewLoading": "Loading the page...",
+    "previewUnavailable": "The page could not be shown. The file is still downloadable.",
+    "fileGone": "The file is no longer available",
+    "fileVersion": "version {version}"
   },
   "Files": {
     "title": "My files",

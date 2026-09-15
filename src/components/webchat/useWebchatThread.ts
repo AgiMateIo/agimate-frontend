@@ -180,8 +180,15 @@ export function useWebchatThread(sessionId: string | null, running = false) {
   // already-rendered message (matched by messageId). Signed `part.url`s expire
   // after ~15 min; an <img> that 403s on an expired link calls this to swap in
   // freshly-signed URLs. Best-effort — failures leave the stale link in place.
-  const refreshParts = useCallback(async () => {
-    if (!sessionId) return;
+  //
+  // Images need nothing back: the new `url` reaches them as a prop and the
+  // browser reloads the <img> itself. A preview fetched by hand has no such
+  // reload, and reading the refreshed prop straight after `await` is a race
+  // against React's render — so the fresh parts are also *returned*, by
+  // messageId, and the caller retries with the URL it was handed. `null` says
+  // the re-read itself failed.
+  const refreshParts = useCallback(async (): Promise<Map<string, ChatPart[]> | null> => {
+    if (!sessionId) return null;
     try {
       const page = await apiService.getChatSessionMessages(sessionId, { page: 0, size: PAGE_SIZE });
       const freshById = new Map(page.content.map((m) => [historyMessageId(m), m.parts ?? []]));
@@ -192,8 +199,10 @@ export function useWebchatThread(sessionId: string | null, running = false) {
             : m
         )
       );
+      return freshById;
     } catch {
       // Swallow — the attachment falls back to a placeholder on repeated failure.
+      return null;
     }
   }, [sessionId]);
 

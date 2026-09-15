@@ -193,7 +193,12 @@
     "dropToAttach": "Отпустите файлы, чтобы прикрепить",
     "dropHint": "До {max} файлов, изображения агент видит",
     "pickFromFiles": "Выбрать из моих файлов",
-    "uploadFromDevice": "Загрузить с устройства"
+    "uploadFromDevice": "Загрузить с устройства",
+    "viewPage": "Посмотреть",
+    "previewLoading": "Загрузка страницы...",
+    "previewUnavailable": "Страницу не удалось показать. Файл можно скачать.",
+    "fileGone": "Файл больше недоступен",
+    "fileVersion": "версия {version}"
   },
   "Files": {
     "title": "Мои файлы",

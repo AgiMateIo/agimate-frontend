@@ -18,14 +18,29 @@ export type ChatPartType = 'image' | 'video' | 'audio' | 'file';
 // is the file layer's `agf_…` id; the row itself lives in `/manage/files/` and
 // outlives the message. `url` is a signed, short-lived (~15 min) link — either
 // relative to the control context path or an absolute storage URL — so do not
-// persist it; re-read history for a fresh one (dedupe/cache by `fileId`).
+// persist it; re-read history for a fresh one (cache by `fileId` **and
+// `version`**, never by the id alone — see below).
 // Optimistic USER messages temporarily carry a local `blob:` URL here instead.
 export interface ChatPart {
+  // What to render, and *not* what the file is: an agent's HTML report, a CSV
+  // and a PDF are all `file` here. Anything that depends on the format reads
+  // `mime` through `mediaType()` instead — it can arrive with parameters
+  // (`text/html; charset=utf-8`) whenever a person uploaded the file.
   type: ChatPartType;
   fileId: string;
   mime: string;
   size: number;
   url: string;
+  // Absent on an optimistic part until its echo lands; null wherever a name
+  // never existed (a messenger photo). Files an agent writes always have one.
+  name?: string | null;
+  // Which version of the file this message sent. A file can be rewritten and
+  // keeps its `agf_` id, so two messages in one conversation can carry the same
+  // `fileId` with different versions — each must show its own, which is why
+  // anything cached per attachment is keyed by both. `url` is already signed
+  // for this version. Absent only on an optimistic part (a fresh upload's
+  // version is the backend's to state); read it as 1.
+  version?: number;
 }
 
 // Preview of a session's newest message, for a list row. `text` is cut to 160

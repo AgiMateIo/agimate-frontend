@@ -240,6 +240,10 @@ export function useComposerAttachments(sessionId: string) {
           mime: a.uploaded!.mime,
           size: a.uploaded!.size,
           url: a.previewUrl,
+          name: a.uploaded!.name,
+          // No `version` on purpose: a file picked out of "my files" may have
+          // been rewritten since, and guessing 1 here would show the wrong
+          // number for the second it takes the echo to arrive with the real one.
         })),
     []
   );

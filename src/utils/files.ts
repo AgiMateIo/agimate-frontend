@@ -7,6 +7,14 @@ export function formatBytes(bytes: number): string {
   return `${i === 0 ? value : value.toFixed(1)} ${units[i]}`;
 }
 
+// The bare media type, without the parameters a browser or an uploader may have
+// appended (`text/html; charset=utf-8`). Every format decision goes through
+// this — comparing the raw `mime` string misses exactly the files a person
+// uploaded, which are the ones most likely to carry a charset.
+export function mediaType(mime: string): string {
+  return mime.split(';')[0]!.trim().toLowerCase();
+}
+
 // Subtypes whose own text is not a usable label (the xlsx one is a 60-character
 // `vnd.openxmlformats-…` string).
 const MIME_LABELS: Record<string, string> = {
@@ -26,15 +34,16 @@ const MIME_LABELS: Record<string, string> = {
 // Short format badge for a file without a preview ("PDF", "XLSX", "PNG").
 // The name's extension is what the user recognises, so it wins over the MIME
 // whenever the MIME is not one of the known long ones.
-export function fileFormatLabel(file: { name: string | null; mime: string }): string {
-  const known = MIME_LABELS[file.mime];
+export function fileFormatLabel(file: { name?: string | null; mime: string }): string {
+  const type = mediaType(file.mime);
+  const known = MIME_LABELS[type];
   if (known) return known;
   const dot = file.name?.lastIndexOf('.') ?? -1;
   const ext = dot > 0 ? file.name!.slice(dot + 1) : '';
   if (ext && ext.length <= 5) return ext.toUpperCase();
-  const subtype = file.mime.split('/')[1]?.replace(/^x-/, '') ?? '';
+  const subtype = type.split('/')[1]?.replace(/^x-/, '') ?? '';
   if (subtype && subtype.length <= 5) return subtype.toUpperCase();
-  return file.mime.split('/')[0]?.toUpperCase() || 'FILE';
+  return type.split('/')[0]?.toUpperCase() || 'FILE';
 }
 
 const HOUR_MS = 60 * 60 * 1000;
