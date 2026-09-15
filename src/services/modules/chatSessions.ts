@@ -17,14 +17,22 @@ export const chatSessionsApi = {
   // concatenated pages have to be deduped by `id`.
   //
   // **Every filter is optional, and without one this is every conversation the
-  // user has**, not just their chats: a connection's channel-less event stream
-  // and every messenger thread are in there too. A chat list means
-  // `connectorCode: 'webchat'`; one agent's conversations across all channels
-  // mean `agentId` alone.
+  // user has**, not just their chats: a connection's channel-less event stream,
+  // every messenger thread and every subagent's errand are in there too. A chat
+  // list means `connectorCode: 'webchat'`; one agent's conversations across all
+  // channels mean `agentId` alone. An unfiltered listing would have to drop the
+  // rows with a `parentSessionId` by hand — no caller asks for one, and a new
+  // one should reach for a filter before it reaches for that.
+  //
+  // `parentSessionId` is the opposite question: the subagents working for one
+  // conversation, which is the only way to list them (they carry
+  // `connectorCode: 'subagents'`, but that code spans every conversation of the
+  // agent).
   async getChatSessions(params?: {
     agentId?: string;
     channelId?: string;
     connectorCode?: string;
+    parentSessionId?: string;
     page?: number;
     size?: number;
   }): Promise<PagedResponse<ChatSessionResponse>> {
@@ -33,6 +41,7 @@ export const chatSessionsApi = {
         agentId: params?.agentId,
         channelId: params?.channelId,
         connectorCode: params?.connectorCode,
+        parentSessionId: params?.parentSessionId,
       },
       params,
     );

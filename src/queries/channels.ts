@@ -38,6 +38,11 @@ export function useAgentChannelsQuery(agentId: string) {
 // channel's own list is that resource filtered by `channelId` — the rows are the
 // same shape a webchat row has, minus the two webchat-only fields
 // (`unreadCount`, `lastMessage`), which arrive empty here.
+//
+// The `Subagents: <agent>` channel is a channel like any other, so this is also
+// where an agent's errands to copies of itself are read: those rows carry a
+// `parentSessionId` and a live `isRunning`, and their first message is a
+// `<subagent_request>` block, which the transcript knows how to render.
 const SESSIONS_PAGE_SIZE = 50;
 
 export const channelSessionsOptions = (channelId: string) =>

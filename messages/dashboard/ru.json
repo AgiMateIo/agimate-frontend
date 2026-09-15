@@ -532,7 +532,12 @@
     "usageOutput": "сгенерировано: {value}",
     "usageCacheRead": "прочитано из кэша: {value}",
     "usageCacheWrite": "записано в кэш: {value}",
-    "runNotFound": "Прогон не найден"
+    "runNotFound": "Прогон не найден",
+    "originScopeNotice": "Прогоны, которые породил один прогон",
+    "originRunLink": "Прогон, который его породил",
+    "spawnedRuns": "{count, plural, one {породил # прогон} few {породил # прогона} many {породил # прогонов} other {породил # прогона}}",
+    "reportFinal": "последний отчёт — в чат уходит сводный ответ",
+    "reportWaiting": "{count, plural, one {ждёт ещё # отчёт} few {ждёт ещё # отчёта} many {ждёт ещё # отчётов} other {ждёт ещё # отчёта}}"
   },
   "ConnectorJobs": {
     "title": "Задания коннекторов",
@@ -1554,5 +1559,15 @@
     "frontmatterReference": "Категории и теги для заголовка",
     "frontmatterCategories": "Категории",
     "frontmatterTags": "Теги"
+  },
+  "Subagents": {
+    "count": "{count, plural, one {# субагент} few {# субагента} many {# субагентов} other {# субагента}}",
+    "runningCount": "{count, plural, one {# работает} few {# работают} many {# работают} other {# работают}}",
+    "working": "работает…",
+    "untitledErrand": "Поручение без названия",
+    "viewRuns": "Прогоны",
+    "requestLabel": "Поручение",
+    "contextShow": "Показать контекст",
+    "contextHide": "Скрыть контекст"
   }
 }

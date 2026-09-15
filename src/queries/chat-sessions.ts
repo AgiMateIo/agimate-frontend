@@ -1,14 +1,22 @@
-import { useMemo } from 'react';
-import { infiniteQueryOptions, useInfiniteQuery } from '@tanstack/react-query';
+import { useCallback, useMemo } from 'react';
+import {
+  infiniteQueryOptions,
+  queryOptions,
+  useInfiniteQuery,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import apiService from '@/services/api';
 import { dedupeById, nextPageParam } from '@/utils/paging';
 
 // The `/manage/sessions` resource where it is not webchat's: the history of any
-// conversation, whatever carries it. Webchat's own lists and their caches live
-// in `./webchat`.
+// conversation whatever carries it, and the subagents working for one of them.
+// Webchat's own lists and their caches live in `./webchat`.
 export const chatSessionKeys = {
   all: ['chat-sessions'] as const,
   messages: (sessionId: string) => [...chatSessionKeys.all, 'messages', sessionId] as const,
+  subagents: (parentSessionId: string) =>
+    [...chatSessionKeys.all, 'subagents', parentSessionId] as const,
 };
 
 const MESSAGES_PAGE_SIZE = 50;
@@ -32,4 +40,50 @@ export function useSessionMessagesQuery(sessionId: string) {
     [query.data],
   );
   return { ...query, messages };
+}
+
+// Every subagent an agent has ever sent off for one conversation, freshest
+// first. One page and no paging: a single errand fans out to a handful of
+// subagents, not to a list somebody scrolls.
+const SUBAGENTS_PAGE_SIZE = 50;
+
+// How often the list is re-read while one of them is working. They report in
+// the background with nothing to announce them — the parent chat's own events
+// only fire once the agent answers, which is after the last of them is done.
+const RUNNING_POLL_MS = 5_000;
+
+export const subagentSessionsOptions = (parentSessionId: string) =>
+  queryOptions({
+    queryKey: chatSessionKeys.subagents(parentSessionId),
+    queryFn: () =>
+      apiService.getChatSessions({
+        parentSessionId,
+        page: 0,
+        size: SUBAGENTS_PAGE_SIZE,
+      }),
+    select: (page) => page.content,
+    // A subagent that died quietly keeps `isRunning` for up to 15 minutes, so
+    // this can poll a conversation nobody is waiting on any more. It costs one
+    // request per five seconds on an open chat only — the panel unmounts with
+    // the conversation.
+    refetchInterval: (query) =>
+      query.state.data?.content.some((s) => s.isRunning) ? RUNNING_POLL_MS : false,
+  });
+
+export function useSubagentSessionsQuery(parentSessionId: string) {
+  return useQuery(subagentSessionsOptions(parentSessionId));
+}
+
+// Re-reads the subagents of one conversation. The chat calls it on every
+// non-progress event: a subagent that has just reported turns the agent's
+// answer into an event here, and that is the moment the list stops being
+// "three working" — the poll above would otherwise carry the stale row for up
+// to five seconds under an answer that is already on screen.
+export function useInvalidateSubagentSessions() {
+  const queryClient = useQueryClient();
+  return useCallback(
+    (parentSessionId: string) =>
+      queryClient.invalidateQueries({ queryKey: chatSessionKeys.subagents(parentSessionId) }),
+    [queryClient],
+  );
 }

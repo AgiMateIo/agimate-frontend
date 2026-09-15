@@ -47,8 +47,14 @@ export interface ChatSessionResponse {
   // The channel this conversation arrived through; null for a webchat session
   // and for a connection's channel-less event stream.
   channelId: string | null;
-  // What carries the conversation: `webchat`, `telegram`, `acp`, …
+  // What carries the conversation: `webchat`, `telegram`, `acp`, `subagents`, …
   connectorCode: string;
+  // The conversation this session works *for*: set on a subagent's session
+  // (`connectorCode: 'subagents'`), null on everything a person talks to
+  // directly. A subagent is a copy of the agent working on one errand in the
+  // background, so its session is a child of the chat the errand came from —
+  // never a conversation in its own right, and never a row of a chat list.
+  parentSessionId: string | null;
   title: string | null;
   lastActivityAt: string;
   closedAt: string | null;
@@ -62,10 +68,17 @@ export interface ChatSessionResponse {
   unreadCount: number;
   // Null until the session has a message — and outside webchat, always.
   lastMessage: ChatLastMessage | null;
-  // An agent run for this session is executing or queued — "working…". Only for
-  // restoring the state when a screen opens: it goes out live with the
+  // An agent run for this session is executing or queued — "working…". Mostly
+  // for restoring the state when a screen opens: it goes out live with the
   // answer/error event, and a run stuck in the queue stops counting after 15 min.
-  // False outside webchat, like the two fields above.
+  //
+  // Unlike the two fields above this one is *not* webchat-only: a subagent's
+  // session carries it too, and it is the whole point of its row — the chat
+  // stays silent until the last subagent has reported. Messenger rows are still
+  // always false. A subagent that died quietly (the router refused, the queue
+  // failed, somebody cancelled its run directly) keeps saying true for up to 15
+  // minutes; nothing announces that, and the conversation's summary answer only
+  // arrives when the user writes again.
   isRunning: boolean;
 }
 

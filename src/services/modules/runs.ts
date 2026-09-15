@@ -20,6 +20,7 @@ export const runsApi = {
         agentId: params?.agentId,
         sessionId: params?.sessionId,
         triggerLogId: params?.triggerLogId,
+        originRunId: params?.originRunId,
         connectorCode: params?.connectorCode,
         connectionId: params?.connectionId,
         name: params?.name,

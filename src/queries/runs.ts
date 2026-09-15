@@ -17,6 +17,7 @@ export const runKeys = {
   turns: (runId: string, page: number, size: number) =>
     [...runKeys.detail(runId), 'turns', page, size] as const,
   prompt: (runId: string) => [...runKeys.detail(runId), 'prompt'] as const,
+  children: (runId: string) => [...runKeys.detail(runId), 'children'] as const,
 };
 
 // A run's row can be had two ways: the list already holds it, and
@@ -67,6 +68,26 @@ export function useRunSummary(runId: string) {
     loading: query.isPending,
     error: query.error ? getErrorMessage(query.error, '') : '',
   };
+}
+
+// How many runs this one set off: the subagents it delegated to, the reports
+// they came back with, a deferred tool result. There is no count on the row and
+// no "children" field — the list answers it, and one row is enough to read
+// `totalElements` off.
+//
+// Asked on every run's page, because nothing on the row says whether the answer
+// is zero. It is one cheap request, and the answer is written once: a finished
+// run never spawns anything else.
+export const runChildrenCountOptions = (runId: string) =>
+  queryOptions({
+    queryKey: runKeys.children(runId),
+    queryFn: () => apiService.getRuns({ originRunId: runId, page: 0, size: 1 }),
+    select: (page) => page.totalElements,
+    staleTime: 60_000,
+  });
+
+export function useRunChildrenCount(runId: string) {
+  return useQuery(runChildrenCountOptions(runId));
 }
 
 // The journal of one run. Both of these are read-only history of a finished (or

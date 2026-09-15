@@ -54,18 +54,21 @@ function waitedSeconds(createdAt: string, steeredAt: string) {
 // Standalone on /dashboard/runs, where the agent is one more filter; scoped to
 // one agent on the agent's Runs section, where the connector/connection
 // selectors then offer only that agent's bindings. `sessionId` narrows it to one
-// conversation — it arrives from the URL (the chat links here) and has no
-// control of its own, so it announces itself in a notice with a way out.
+// conversation and `originRunId` to what one run set off (its subagents, their
+// reports) — both arrive from the URL and have no control of their own, so each
+// announces itself in a notice with a way out.
 export default function RunsList({
   agentId,
   sessionId,
-  clearSessionHref,
+  originRunId,
+  clearScopeHref,
 }: {
   agentId?: string;
   sessionId?: string;
-  // Where "show all runs" leads — the same list without the conversation, on
+  originRunId?: string;
+  // Where "show all runs" leads — the same list without the URL scope, on
   // whichever of the two routes this one is.
-  clearSessionHref?: string;
+  clearScopeHref?: string;
 }) {
   const t = useTranslations('Runs');
   const usageTooltip = useUsageTooltip();
@@ -150,6 +153,7 @@ export default function RunsList({
     [
       agentId ?? agentFilter,
       sessionId ?? 'all',
+      originRunId ?? 'all',
       debouncedSearch,
       statusFilter,
       connectorFilter,
@@ -160,6 +164,7 @@ export default function RunsList({
         ...params,
         agentId: agentId ?? (agentFilter === 'ALL' ? undefined : agentFilter),
         sessionId,
+        originRunId,
         name: debouncedSearch || undefined,
         status: statusFilter === 'ALL' ? undefined : statusFilter,
         connectorCode: connectorFilter === 'ALL' ? undefined : connectorFilter,
@@ -340,12 +345,12 @@ export default function RunsList({
 
   return (
     <div className="space-y-4">
-      {sessionId && (
+      {(sessionId || originRunId) && (
         <div className="flex flex-wrap items-center gap-2 rounded-lg bg-accent/10 px-3 py-2 text-sm text-accent">
-          <span>{t('sessionScopeNotice')}</span>
-          {clearSessionHref && (
+          <span>{sessionId ? t('sessionScopeNotice') : t('originScopeNotice')}</span>
+          {clearScopeHref && (
             <Link
-              href={clearSessionHref}
+              href={clearScopeHref}
               className="ml-auto flex items-center gap-1 text-xs transition-opacity hover:opacity-80"
             >
               <XMarkIcon className="h-3.5 w-3.5" />

@@ -2,7 +2,12 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { ExclamationTriangleIcon, StopIcon } from '@heroicons/react/24/outline';
+import {
+  ArrowUturnUpIcon,
+  ExclamationTriangleIcon,
+  StopIcon,
+  UserGroupIcon,
+} from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
 import { Link } from '@/i18n/navigation';
 import { Chip } from '@/components/ui/Chip';
@@ -11,10 +16,71 @@ import { Tabs } from '@/components/ui/Tabs';
 import { formatDateTimeFull } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
 import type { RunResponse } from '@/types';
+import { useRunChildrenCount } from '@/queries/runs';
 import { RunStatusBadge, STOPPABLE } from './RunStatusBadge';
 import RunTurnsList from './RunTurnsList';
 import RunPromptView from './RunPromptView';
 import { Collapsible, TextBlock, formatTokens, previewOf, useUsageTooltip } from './RunBlocks';
+
+// The name a report run carries. Its payload says how many of the conversation's
+// subagents are still out, which is the difference between the agent's short
+// "got it, waiting for the rest" and the answer that sums everything up.
+const REPORT_RUN = 'report_received';
+
+function remainingReports(run: RunResponse): number | null {
+  if (run.name !== REPORT_RUN) return null;
+  const remaining = run.input?.remaining;
+  return typeof remaining === 'number' ? remaining : null;
+}
+
+// Where this run sits in a delegation chain: what set it off, and what it set
+// off in turn. An agent can hand parts of a task to copies of itself, and each
+// of those is a run of its own — following the chain is the only way to read
+// what actually happened to a question that was answered by five runs.
+//
+// Renders nothing for a run that neither came from another nor spawned any,
+// which is most of them.
+function RunChain({ run, runsHref }: { run: RunResponse; runsHref: string }) {
+  const t = useTranslations('Runs');
+  // A count, not a list: the rows are one click away in the list that can filter
+  // and page them, and there is no endpoint that would give them any cheaper.
+  const { data: childrenCount } = useRunChildrenCount(run.id);
+  const remaining = remainingReports(run);
+
+  if (!run.originRunId && !childrenCount && remaining === null) return null;
+
+  return (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-lg bg-surface-secondary px-2 py-1.5 text-xs">
+      {run.originRunId && (
+        <Link
+          href={`${runsHref}/${run.originRunId}`}
+          className="flex items-center gap-1 text-accent transition-colors hover:text-accent/80"
+        >
+          <ArrowUturnUpIcon className="h-3.5 w-3.5 shrink-0" />
+          {t('originRunLink')}
+        </Link>
+      )}
+      {!!childrenCount && (
+        <Link
+          href={`${runsHref}?originRunId=${run.id}`}
+          className="flex items-center gap-1 text-accent transition-colors hover:text-accent/80"
+        >
+          <UserGroupIcon className="h-3.5 w-3.5 shrink-0" />
+          {t('spawnedRuns', { count: childrenCount })}
+        </Link>
+      )}
+      {/* Which of the two answers this report got: the last one in is the one
+          the agent sums up in the chat, every earlier one gets a line saying it
+          is still waiting. A count that never reaches zero is a subagent that
+          died without reporting — the summary then waits for the next message. */}
+      {remaining !== null && (
+        <span className="text-muted">
+          {remaining === 0 ? t('reportFinal') : t('reportWaiting', { count: remaining })}
+        </span>
+      )}
+    </div>
+  );
+}
 
 // The outcome of the run: status, times, how much work and how many tokens it
 // took, the event payload, the result or the error — and a stop button while it
@@ -112,6 +178,8 @@ function RunSummary({ run, runsHref }: { run: RunResponse; runsHref: string }) {
           {run.steeredAt && <span>{t('steeredAtSuffix', { at: formatDateTimeFull(run.steeredAt) })}</span>}
         </div>
       )}
+
+      <RunChain run={run} runsHref={runsHref} />
 
       <dl className="grid gap-x-6 gap-y-1 text-xs sm:grid-cols-2">
         <div className="flex gap-2">

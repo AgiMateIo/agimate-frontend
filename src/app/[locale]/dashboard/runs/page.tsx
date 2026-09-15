@@ -6,12 +6,19 @@ import { useTranslations } from 'next-intl';
 import RunsList from '@/components/runs/RunsList';
 
 // `?sessionId=` scopes the list to one conversation — how a chat outside an
-// agent's own section would link at the work behind what was said. The list
-// owns the notice that says so.
+// agent's own section would link at the work behind what was said.
+// `?originRunId=` scopes it to what one run set off: the subagents it sent out
+// and the reports they came back with. The list owns the notice that says so.
 function Runs() {
-  const sessionId = useSearchParams().get('sessionId') ?? undefined;
+  const params = useSearchParams();
 
-  return <RunsList sessionId={sessionId} clearSessionHref="/dashboard/runs" />;
+  return (
+    <RunsList
+      sessionId={params.get('sessionId') ?? undefined}
+      originRunId={params.get('originRunId') ?? undefined}
+      clearScopeHref="/dashboard/runs"
+    />
+  );
 }
 
 export default function RunsPage() {

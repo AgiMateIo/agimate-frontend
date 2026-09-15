@@ -54,6 +54,13 @@ export interface RunResponse {
   error: string | null;
   // channel session the run writes to; null — direct run (WEBHOOK/CENTRIFUGO)
   sessionId: string | null;
+  // The run whose action produced this one, linking a delegation chain end to
+  // end: a subagent's run points at the conversation run that gave it the
+  // errand, its report run points at the subagent's run, and a deferred tool
+  // result points at the run that made the call. Null for a run started by a
+  // person or an external event. There is no "children" field — ask the list
+  // for them with `originRunId`.
+  originRunId: string | null;
   // `false` = the turn journal of this run is incomplete, and the one practical
   // consequence is worth surfacing: later runs of the same session don't see it,
   // so the agent doesn't remember it. Rare — if it isn't, that's a backend bug.
@@ -85,6 +92,8 @@ export interface RunFilters {
   agentId?: string;
   sessionId?: string;
   triggerLogId?: string;
+  // What one run spawned — the other half of `originRunId`, one level deep.
+  originRunId?: string;
   connectorCode?: string;
   connectionId?: string;
   // case-insensitive substring match on the trigger name

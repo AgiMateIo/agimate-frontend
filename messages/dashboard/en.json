@@ -532,7 +532,12 @@
     "usageOutput": "generated: {value}",
     "usageCacheRead": "read from cache: {value}",
     "usageCacheWrite": "written to cache: {value}",
-    "runNotFound": "This run was not found"
+    "runNotFound": "This run was not found",
+    "originScopeNotice": "Runs set off by one run",
+    "originRunLink": "The run that set this one off",
+    "spawnedRuns": "{count, plural, one {set off # run} other {set off # runs}}",
+    "reportFinal": "last report in — the summary answer goes to the chat",
+    "reportWaiting": "{count, plural, one {waiting for # more report} other {waiting for # more reports}}"
   },
   "ConnectorJobs": {
     "title": "Connector Jobs",
@@ -1554,5 +1559,15 @@
     "frontmatterReference": "Categories and tags for the frontmatter",
     "frontmatterCategories": "Categories",
     "frontmatterTags": "Tags"
+  },
+  "Subagents": {
+    "count": "{count, plural, one {# subagent} other {# subagents}}",
+    "runningCount": "{count, plural, one {# working} other {# working}}",
+    "working": "working…",
+    "untitledErrand": "Untitled errand",
+    "viewRuns": "Runs",
+    "requestLabel": "Errand",
+    "contextShow": "Show context",
+    "contextHide": "Hide context"
   }
 }

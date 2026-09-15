@@ -7,9 +7,11 @@ import { Placeholder } from '@/components/ui/Placeholder';
 import { useSessionMessagesQuery } from '@/queries/chat-sessions';
 import { formatDate } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
+import { parseSubagentRequest } from '@/utils/subagent';
+import { SubagentRequestCard } from './SubagentRequestCard';
 
-// The read-only history of one conversation, whatever carries it — a messenger
-// thread on a channel's page, say. Webchat has its
+// The read-only history of one conversation, whatever carries it: a messenger
+// thread on a channel's page, an errand a subagent was sent on. Webchat has its
 // own view (`WebchatConversation`) because it also writes — this one only reads,
 // so it works for every connector, including the ones with no transport behind
 // them at all.
@@ -100,6 +102,22 @@ export default function SessionTranscript({ sessionId }: { sessionId: string }) 
               </div>
             )}
             {messages.map((m) => {
+              // An errand handed to a subagent arrives as the USER side of its
+              // session, but it is a block the agent wrote for the model — it
+              // gets a card of its own, and falls back to the bubble below when
+              // it doesn't parse.
+              const request = m.direction === 'USER' ? parseSubagentRequest(m.text) : null;
+              if (request) {
+                return (
+                  <div key={m.id}>
+                    <SubagentRequestCard request={request} />
+                    <div className="mt-1 text-[10px] text-muted">
+                      {formatDate(m.createdAt, locale)}
+                    </div>
+                  </div>
+                );
+              }
+
               // The agent's side of an external conversation is the outgoing one
               // — it keeps the right-hand accent bubble the old IN/OUT rendering
               // gave it. `text` is null on a message that was only attachments,

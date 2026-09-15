@@ -9,15 +9,17 @@ import { isMcpAgent } from '@/utils/agent';
 
 // `?sessionId=` is what the agent's chat links at: the runs behind one
 // conversation, without leaving the agent — its sections come from the path, so
-// the global /dashboard/runs would swap the sidebar mid-task.
+// the global /dashboard/runs would swap the sidebar mid-task. `?originRunId=`
+// is the delegation chain, one level at a time: what this run sent off.
 function AgentRuns({ agentId }: { agentId: string }) {
-  const sessionId = useSearchParams().get('sessionId') ?? undefined;
+  const params = useSearchParams();
 
   return (
     <RunsList
       agentId={agentId}
-      sessionId={sessionId}
-      clearSessionHref={`/dashboard/agents/${agentId}/runs`}
+      sessionId={params.get('sessionId') ?? undefined}
+      originRunId={params.get('originRunId') ?? undefined}
+      clearScopeHref={`/dashboard/agents/${agentId}/runs`}
     />
   );
 }
