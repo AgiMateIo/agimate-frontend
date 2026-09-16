@@ -16,6 +16,7 @@ import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Select } from '@/components/ui/FormField';
 import { Placeholder } from '@/components/ui/Placeholder';
 import { connectorCatalogOptions } from '@/queries/connectors';
+import { connectorNameOf } from '@/utils/connector';
 import { useSkillPickerQuery } from '@/queries/skills';
 import {
   SkillCatalogToolbar,
@@ -126,12 +127,8 @@ export default function StepSkills({ data, setData, goNext, goBack, teamId }: Wi
 
   // Connector catalog (names, kind) → which connectors need an instance named.
   const { data: catalog } = useQuery(connectorCatalogOptions());
-  const catalogByCode = useMemo(
-    () => new Map((catalog ?? []).map((c) => [c.code, c])),
-    [catalog],
-  );
   const requirementLabel = (r: SkillConnectorRequirement) =>
-    r.title ?? catalogByCode.get(r.code)?.name ?? r.code;
+    r.title ?? connectorNameOf(catalog, r.code);
 
   // What matters now is not "the user owns a connection of this type" but "this
   // agent will have one open": the skill gate reads the agent's connections, and

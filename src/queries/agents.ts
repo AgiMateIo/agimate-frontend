@@ -23,6 +23,12 @@ export const agentKeys = {
   skillPlan: (id: string, skillId: string) =>
     [...agentKeys.detail(id), 'skill-plan', skillId] as const,
   llms: (id: string) => [...agentKeys.detail(id), 'llms'] as const,
+  // The pages this agent's connections offer, and one such page's body. The
+  // body is keyed by connection+uri because two connections of one skill share
+  // a connector code and differ only by the instance they point at.
+  views: (id: string) => [...agentKeys.detail(id), 'views'] as const,
+  viewContent: (id: string, connectionId: string, uri: string) =>
+    [...agentKeys.views(id), 'content', connectionId, uri] as const,
   // Keyed by the agent-connection binding id, not the agent id: policies refine
   // one binding, and the panel only ever has that id to hand.
   connectionPolicies: (agentConnectionId: string) =>
@@ -126,6 +132,45 @@ export const agentLlmsOptions = (agentId: string) =>
     queryKey: agentKeys.llms(agentId),
     queryFn: () => apiService.getAgentLlms(agentId),
   });
+
+// The views of one agent. A plain cached list: it is built from what the
+// backend already knows about the connections' tools, so nothing external is
+// touched and a re-read costs one request.
+export const agentViewsOptions = (agentId: string) =>
+  queryOptions({
+    queryKey: agentKeys.views(agentId),
+    queryFn: () => apiService.getAgentViews(agentId),
+  });
+
+
+// One view's page. Deliberately uncached, like the skill plan above: the page
+// comes off the MCP server at open time and a server that rewrote it must not
+// be answered with yesterday's markup. `gcTime: 0` also keeps the body — tens
+// to hundreds of kilobytes of it — out of the cache once the view is closed.
+export const agentViewContentOptions = (agentId: string, connectionId: string, uri: string) =>
+  queryOptions({
+    queryKey: agentKeys.viewContent(agentId, connectionId, uri),
+    queryFn: () => apiService.getAgentViewContent(agentId, connectionId, uri),
+    staleTime: 0,
+    gcTime: 0,
+    // A page is fetched per *opening*, and only per opening. With `staleTime: 0`
+    // the background refetches would each be a request to somebody else's MCP
+    // server — and a single hiccup there sets `error` while `data` stands, which
+    // is how a working view gets replaced by "could not load the page". The
+    // focus one is already off globally; the reconnect one is not.
+    refetchOnReconnect: false,
+    // A page that failed to load is re-opened by the user, not by us: the
+    // failure is usually the far server being down, and a retry storm behind a
+    // spinner tells them nothing.
+    retry: false,
+  });
+
+export function useAgentViewContentQuery(view: { connectionId: string; uri: string } | null, agentId: string) {
+  return useQuery({
+    ...agentViewContentOptions(agentId, view?.connectionId ?? '', view?.uri ?? ''),
+    enabled: !!view,
+  });
+}
 
 // A large single page used to build id→agent lookup maps.
 export const allAgentsOptions = () =>

@@ -31,3 +31,4 @@ export * from './referral';
 export * from './sessions';
 export * from './auth';
 export * from './taxonomy';
+export * from './agent-views';

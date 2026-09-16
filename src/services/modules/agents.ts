@@ -21,6 +21,10 @@ import type {
   AgentLlmPurpose,
   CreateAgentLlmRequest,
   UpdateAgentLlmRequest,
+  AgentViewResponse,
+  AgentViewContentResponse,
+  CallViewToolRequest,
+  CallToolResult,
 } from '@/types';
 
 export const agentsApi = {
@@ -160,5 +164,32 @@ export const agentsApi = {
 
   async deleteAgentLlm(agentId: string, purpose: AgentLlmPurpose): Promise<void> {
     return httpClient.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/llms/${purpose}`);
+  },
+
+  // Views (MCP Apps) — the pages this agent's connections offer.
+  //
+  // Built from what is already known about the connections' tools, so the call
+  // touches no external server: a connection created before views existed shows
+  // none until its tools are re-read (a connection test, or a re-save). A view
+  // whose every tool the agent's rules deny is left out entirely.
+  async getAgentViews(agentId: string): Promise<AgentViewResponse[]> {
+    return httpClient.get<AgentViewResponse[]>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/views/`);
+  },
+
+  // One page, fetched from the MCP server at the moment it is opened — never
+  // cached, since the server may have rewritten it. 404 = the agent has no such
+  // view any more (connection unbound, tool denied, uri gone), 502 = the server
+  // did not answer; both carry a message worth showing.
+  async getAgentViewContent(agentId: string, connectionId: string, uri: string): Promise<AgentViewContentResponse> {
+    const query = `connectionId=${encodeURIComponent(connectionId)}&uri=${encodeURIComponent(uri)}`;
+    return httpClient.get<AgentViewContentResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/views/content?${query}`);
+  },
+
+  // A tool call made from inside an open view, run under the agent. A tool that
+  // fails still answers 200 with `isError: true` — the page renders that itself.
+  // The HTTP errors are ours to translate: 404 the agent has no such tool here,
+  // 403 the server does not expose it to views, 429 the page is calling too fast.
+  async callAgentViewTool(agentId: string, data: CallViewToolRequest): Promise<CallToolResult> {
+    return httpClient.post<CallToolResult>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/views/tools/call`, data);
   },
 };

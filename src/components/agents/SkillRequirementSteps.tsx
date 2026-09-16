@@ -11,6 +11,7 @@ import { FormField, Select } from '@/components/ui/FormField';
 import { Link } from '@/i18n/navigation';
 import ConnectionSetupForm from '@/components/connections/ConnectionSetupForm';
 import { connectorCatalogOptions } from '@/queries/connectors';
+import { findConnector } from '@/utils/connector';
 import type {
   AgentSkillConnectorStatus,
   ConnectionResponse,
@@ -64,21 +65,24 @@ export default function SkillRequirementSteps({
 
   return (
     <ol className="space-y-3">
-      {connectors.map((c, index) => (
-        <RequirementStep
-          key={requirementKey(c)}
-          index={index}
-          agentId={agentId}
-          connector={c}
-          connectorName={catalog?.find((e) => e.code === c.connectorCode)?.name ?? c.connectorCode}
-          catalogEntry={catalog?.find((e) => e.code === c.connectorCode)}
-          value={resolveChoice(c, choice, created)}
-          onChoice={(id) => onChoice(requirementKey(c), id)}
-          created={created[requirementKey(c)] ?? []}
-          onCreated={(connection) => onCreated(requirementKey(c), connection)}
-          disabled={disabled}
-        />
-      ))}
+      {connectors.map((c, index) => {
+        const entry = findConnector(catalog, c.connectorCode);
+        return (
+          <RequirementStep
+            key={requirementKey(c)}
+            index={index}
+            agentId={agentId}
+            connector={c}
+            connectorName={entry?.name ?? c.connectorCode}
+            catalogEntry={entry}
+            value={resolveChoice(c, choice, created)}
+            onChoice={(id) => onChoice(requirementKey(c), id)}
+            created={created[requirementKey(c)] ?? []}
+            onCreated={(connection) => onCreated(requirementKey(c), connection)}
+            disabled={disabled}
+          />
+        );
+      })}
     </ol>
   );
 }

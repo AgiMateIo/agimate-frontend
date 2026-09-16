@@ -82,6 +82,11 @@ export interface ConnectorToolSpec {
   inputSchema: ToolJsonSchema; // { type: 'object' } for tools without parameters
   outputSchema?: ToolJsonSchema;
   annotations?: ToolAnnotations;
+  // The view this tool draws into, when it draws into one. `resourceUri` is
+  // present only for a tool bound to a view; `visibility` says who may call it
+  // (`model`, `app`) and our own connectors always declare it, while an MCP
+  // server's tools carry it only if the server said so.
+  ui?: { resourceUri?: string; visibility?: string[] };
   _meta?: Record<string, string>;
 }
 
