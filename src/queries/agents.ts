@@ -142,9 +142,6 @@ export const agentViewsOptions = (agentId: string) =>
     queryFn: () => apiService.getAgentViews(agentId),
   });
 
-export function useAgentViewsQuery(agentId: string) {
-  return useSuspenseQuery(agentViewsOptions(agentId));
-}
 
 // One view's page. Deliberately uncached, like the skill plan above: the page
 // comes off the MCP server at open time and a server that rewrote it must not

@@ -1,12 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import apiService from '@/services/api';
 import { useTheme } from '@/hooks/useTheme';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { getErrorMessage } from '@/utils/error';
-import { theme as tokens } from '@/generated/tokens';
+import { theme as tokens, scale } from '@/generated/tokens';
 import {
   decodeViewMessage,
   errorReply,
@@ -38,17 +38,28 @@ const styleVariables = (scheme: 'light' | 'dark'): Record<string, string> => {
     '--color-text-secondary': t.muted,
     '--color-border-primary': t.border,
     '--color-accent-primary': t.accent,
+    // What a panel paints its buttons and its errors with. We have no "info"
+    // colour of our own — the accent is the one thing here that reads as
+    // "act on this", so it plays both parts.
+    '--color-text-info': t.accent,
+    '--color-text-danger': t.error,
     '--font-sans': 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
+    '--border-radius-md': scale['radius-control'],
   };
 };
 
 export default function AgentViewFrame({
   agentId,
   view,
+  title,
   content,
 }: {
   agentId: string;
   view: AgentViewResponse;
+  // The name the launcher settled on — the connector's catalogue name for our
+  // own panels, the connection's for an MCP server. Worked out once there so
+  // the frame and the heading above it cannot disagree.
+  title: string;
   content: AgentViewContentResponse;
 }) {
   const t = useTranslations('AgentViews');
@@ -58,6 +69,7 @@ export default function AgentViewFrame({
   const { theme } = useTheme();
   const prefersDark = useMediaQuery('(prefers-color-scheme: dark)');
   const scheme: 'light' | 'dark' = theme === 'system' ? (prefersDark ? 'dark' : 'light') : theme;
+  const locale = useLocale();
 
   // What the listener reads instead of closing over props: it is registered
   // once, at mount, and rebuilding it under a running page would mean tearing
@@ -67,14 +79,18 @@ export default function AgentViewFrame({
   // notification to revise it, so a theme switch while a view is open reaches
   // the next opening. Re-keying the iframe on it would reload the page and
   // throw away whatever the user had done inside — the wrong trade for a colour.
-  const hostRef = useRef<ViewHostContext>({ theme: scheme, styles: { variables: styleVariables(scheme) } });
+  const hostRef = useRef<ViewHostContext>({
+    theme: scheme,
+    locale,
+    styles: { variables: styleVariables(scheme) },
+  });
   const targetRef = useRef({ agentId, connectionId: view.connectionId });
 
   // Refs are written after the render that changed them, never during one.
   // Declared above the listener effect so that at mount they are current before
   // the first message can arrive.
   useEffect(() => {
-    hostRef.current = { theme: scheme, styles: { variables: styleVariables(scheme) } };
+    hostRef.current = { theme: scheme, locale, styles: { variables: styleVariables(scheme) } };
     targetRef.current = { agentId, connectionId: view.connectionId };
   });
 
@@ -155,7 +171,7 @@ export default function AgentViewFrame({
   return (
     <iframe
       ref={frameRef}
-      title={view.connectionName ?? view.uri}
+      title={title}
       // `srcDoc` and not `src`: the page came to us as markup, and the `ui://`
       // uri is an identifier, not an address anything can be pointed at. It is
       // a prop rather than a later assignment so that the attribute is on the

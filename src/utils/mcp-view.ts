@@ -113,6 +113,11 @@ export const resultReply = (id: JsonRpcId, result: unknown): JsonRpcReply => ({
 // there is no fullscreen or picture-in-picture to switch to.
 export interface ViewHostContext {
   theme: 'light' | 'dark';
+  // The language the dashboard itself is in, as a BCP 47 tag — our own `ru` /
+  // `en`, no region invented to look like the spec's examples. A panel that
+  // shows text to the user picks its language off this; without the field it
+  // would fall back to the browser's, which is not the same question.
+  locale: string;
   styles: { variables: Record<string, string> };
 }
 
@@ -127,6 +132,7 @@ export function initializeResult(protocolVersion: unknown, host: ViewHostContext
     hostCapabilities: { serverTools: {} },
     hostContext: {
       theme: host.theme,
+      locale: host.locale,
       displayMode: 'inline',
       availableDisplayModes: ['inline'],
       styles: host.styles,

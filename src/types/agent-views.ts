@@ -11,13 +11,16 @@ export interface AgentViewResponse {
   // The connection that serves the view — carried back into the content and
   // tool-call requests, since a view only means anything next to its instance.
   connectionId: string;
-  // Only `mcp` for now; kept as a string because the backend owns the list.
+  // `mcp` for a page an MCP server hands out, or an internal connector's own
+  // code (`persist-memory`, later `sheets`) — the backend owns the list.
   connectorCode: string;
-  // The connection's own name, null for a row that never had one — the same
-  // fallback as everywhere else (`connectorCode`, then the uri).
+  // The connection's own name, null for a row that never had one. Worth showing
+  // for `mcp`, where the user named the instance themselves; an internal
+  // connector's is a technical English label, so the launcher titles those from
+  // the connector catalogue instead.
   connectionName: string | null;
-  // The view's identity, `ui://…`. NOT a network address: never a link target,
-  // never an iframe `src`.
+  // The view's identity, `ui://…` — `ui://<connectorCode>/<name>` for our own
+  // panels. NOT a network address: never a link target, never an iframe `src`.
   uri: string;
   // Which of the connection's tools draw into this view.
   tools: string[];
