@@ -757,6 +757,7 @@
     "needsReinstall": "Update available",
     "needsReinstallHint": "The skill was updated by its author. Re-add it to this agent to get the latest version.",
     "tabConnections": "Connections",
+    "tabViews": "Views",
     "tabFiles": "Files",
     "tabToolCalls": "Tool Calls",
     "tabRuns": "Runs",
@@ -1574,5 +1575,15 @@
     "requestLabel": "Errand",
     "contextShow": "Show context",
     "contextHide": "Hide context"
+  },
+  "AgentViews": {
+    "hint": "Pages the agent's MCP connections offer. A page runs isolated and its buttons call the connection's tools as the agent — under its bindings and access rules.",
+    "empty": "No views. They come from an MCP connection bound to this agent that offers them; a connection created earlier shows its views after you test it, which re-reads its tools.",
+    "open": "Open",
+    "reload": "Reload",
+    "backToList": "All views",
+    "loading": "Loading the page…",
+    "loadError": "Could not load the page",
+    "toolCallFailed": "The tool call failed"
   }
 }
