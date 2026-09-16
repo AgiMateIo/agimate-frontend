@@ -24,6 +24,7 @@ import {
 import { useAgentCacheActions, useAgentSkillsQuery } from '@/queries/agents';
 import { connectionsListOptions } from '@/queries/connections';
 import { connectorCatalogOptions } from '@/queries/connectors';
+import { connectorNameOf } from '@/utils/connector';
 import { formatDate } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
 import AddAgentSkillModal from './AddAgentSkillModal';
@@ -86,7 +87,7 @@ export default function AgentSkillsTab({ agentId }: AgentSkillsTabProps) {
     (b) => b.connectors.length === 1 && b.connectors[0].connectorCode === SKILL_LOADER_CODE,
   );
 
-  const connectorName = (code: string) => catalog?.find((c) => c.code === code)?.name ?? code;
+  const connectorName = (code: string) => connectorNameOf(catalog, code);
   // Rules the skill declared that did not land, because a rule of another
   // origin holds the same (kind, name) — per binding, so the row says it once.
   const conflictsOf = (binding: AgentSkillResponse) =>

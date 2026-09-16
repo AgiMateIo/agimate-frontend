@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import { useParams } from 'next/navigation';
 import { Chip } from '@/components/ui/Chip';
 import { useTranslations } from 'next-intl';
@@ -12,6 +12,7 @@ import apiService from '@/services/api';
 import { SkillDetailResponse } from '@/types';
 import { useSkillDetailSuspenseQuery, useSkillCacheActions } from '@/queries/skills';
 import { connectorCatalogOptions } from '@/queries/connectors';
+import { connectorNameOf } from '@/utils/connector';
 import { Button } from '@/components/ui/Button';
 import { FormField, TextArea } from '@/components/ui/FormField';
 import { Toggle } from '@/components/ui/Toggle';
@@ -47,10 +48,6 @@ function SkillDetailContent({ skillId }: { skillId: string }) {
 
   // Connector catalog → friendly names for the header code chips (session-cached).
   const { data: catalog } = useQuery(connectorCatalogOptions());
-  const connectorNameByCode = useMemo(
-    () => new Map((catalog ?? []).map((c) => [c.code, c.name])),
-    [catalog],
-  );
 
   // Inline edit state, re-seeded whenever fresh skill data arrives.
   const [editSkillMd, setEditSkillMd] = useState('');
@@ -111,7 +108,7 @@ function SkillDetailContent({ skillId }: { skillId: string }) {
               <span className="text-xs text-muted">{t('connectorsLabel')}:</span>
               <SkillRequirementChips
                 requirements={skillRequirements(skill)}
-                nameOf={(code) => connectorNameByCode.get(code) ?? code}
+                nameOf={(code) => connectorNameOf(catalog, code)}
               />
             </div>
           )}

@@ -30,3 +30,26 @@ export function isInternalConnector(
 ): boolean {
   return getConnectorKind(c) === 'SERVICE';
 }
+
+// One place that answers "which catalogue row is this code". Every caller had
+// grown its own `find`, and with it its own answer for a code the catalogue
+// does not carry — the platform grows connectors faster than a shipped client
+// learns them, so that case is the rule's, not each caller's, to state.
+export function findConnector(
+  catalog: ConnectorCatalogEntry[] | undefined,
+  code: string,
+): ConnectorCatalogEntry | undefined {
+  return catalog?.find((c) => c.code === code);
+}
+
+// A connector's human name. The catalogue is the only place one exists, so an
+// unknown code reads as itself: a bare code says something to the reader, an
+// empty space says nothing. The catalogue is a few dozen rows cached for the
+// session, so scanning it per call is cheaper than the index a caller would
+// otherwise memoize.
+export function connectorNameOf(
+  catalog: ConnectorCatalogEntry[] | undefined,
+  code: string,
+): string {
+  return findConnector(catalog, code)?.name ?? code;
+}

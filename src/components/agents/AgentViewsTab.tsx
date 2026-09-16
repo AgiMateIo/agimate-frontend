@@ -11,20 +11,26 @@ import { Placeholder } from '@/components/ui/Placeholder';
 import { agentViewsOptions, useAgentViewContentQuery } from '@/queries/agents';
 import { connectorCatalogOptions } from '@/queries/connectors';
 import { getErrorMessage } from '@/utils/error';
+import { findConnector, isInternalConnector } from '@/utils/connector';
 import AgentViewFrame from './AgentViewFrame';
 import type { AgentViewResponse, ConnectorCatalogEntry } from '@/types';
 
-// What to call a page. An MCP server's view is named after the instance it came
-// from: the user has several of them and told them apart by naming them. Our own
-// connectors have one instance per agent and a technical English
-// `connectionName` ("Persistent Memory"), so there the catalogue's name — the
-// same one the connectors page shows — is what a reader recognises.
-const viewTitle = (view: AgentViewResponse, catalog: ConnectorCatalogEntry[]) =>
-  view.connectorCode === 'mcp'
-    ? view.connectionName ?? view.connectorCode
-    : catalog.find((entry) => entry.code === view.connectorCode)?.name
-      ?? view.connectionName
-      ?? view.connectorCode;
+// What to call a page. An internal connector has exactly one instance per user
+// and a technical English `connectionName` ("Persistent Memory"), so there the
+// catalogue's name — the one the connectors page shows — is what a reader
+// recognises. An integration's view is named after the instance instead: the
+// user has several of those and told them apart by naming them.
+//
+// The question is "is this one of ours", not "is this `mcp`" — the two agree
+// only for as long as MCP is the only integration serving views. A code the
+// catalogue does not know counts as external, which is how `splitSkillConnectors`
+// already reads an unknown code, and leaves the instance name to answer.
+const viewTitle = (view: AgentViewResponse, catalog: ConnectorCatalogEntry[]) => {
+  const entry = findConnector(catalog, view.connectorCode);
+  return entry && isInternalConnector(entry)
+    ? entry.name
+    : view.connectionName ?? entry?.name ?? view.connectorCode;
+};
 
 function ViewCard({ view, title, onOpen }: { view: AgentViewResponse; title: string; onOpen: () => void }) {
   const t = useTranslations('AgentViews');

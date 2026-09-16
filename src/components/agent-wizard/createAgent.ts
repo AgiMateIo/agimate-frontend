@@ -1,5 +1,5 @@
 import apiService from '@/services/api';
-import { isInternalConnector } from '@/utils/connector';
+import { findConnector, isInternalConnector } from '@/utils/connector';
 import { skillRequirements } from '@/utils/skill';
 import { splitSkillConnectors } from '@/components/agents/skillAccess';
 import type { AgentCreatedResponse, ConnectorCatalogEntry, SkillConnectorRequirement } from '@/types';
@@ -30,7 +30,7 @@ export function internalCodesFor(
     ...data.skills.flatMap((s) => s.connectorCodes ?? []),
   ]);
   return [...codes].filter((code) => {
-    const entry = catalog?.find((c) => c.code === code);
+    const entry = findConnector(catalog, code);
     return !!entry && isInternalConnector(entry);
   });
 }

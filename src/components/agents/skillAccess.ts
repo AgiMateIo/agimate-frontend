@@ -1,5 +1,5 @@
 import apiService from '@/services/api';
-import { isInternalConnector } from '@/utils/connector';
+import { findConnector, isInternalConnector } from '@/utils/connector';
 import type {
   AgentSkillConnectorStatus,
   ConnectionResponse,
@@ -24,7 +24,7 @@ export function splitSkillConnectors(
   const external: string[] = [];
   const internal: string[] = [];
   for (const code of codes) {
-    const entry = catalog?.find((c) => c.code === code);
+    const entry = findConnector(catalog, code);
     (entry && isInternalConnector(entry) ? internal : external).push(code);
   }
   return { external, internal };

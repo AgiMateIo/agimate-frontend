@@ -9,6 +9,7 @@ import type { ConnectionResponse } from '@/types';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { integrationPlatformsOptions } from '@/queries/connectors';
+import { findConnector } from '@/utils/connector';
 import { useConnectionCacheActions } from '@/queries/connections';
 import ConnectionSetupForm from '@/components/connections/ConnectionSetupForm';
 import { Placeholder } from '@/components/ui/Placeholder';
@@ -28,7 +29,7 @@ function CreateConnectionContent() {
 
   // Only integration connectors are in `platforms` — anything else has no
   // credentials to collect, so there is no form to show.
-  const connector = platforms.find((p) => p.code === connectorCode);
+  const connector = findConnector(platforms, connectorCode);
 
   const handleSuccess = (connection: ConnectionResponse) => {
     invalidateLists();

@@ -14,6 +14,7 @@ import { getErrorMessage } from '@/utils/error';
 import { skillRequirements } from '@/utils/skill';
 import { useAgentSkillPlanQuery } from '@/queries/agents';
 import { connectorCatalogOptions } from '@/queries/connectors';
+import { connectorNameOf } from '@/utils/connector';
 import { useSkillPickerQuery } from '@/queries/skills';
 import SkillRequirementChips from '@/components/skills/SkillRequirementChips';
 import {
@@ -74,7 +75,7 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
   } = useSkillPickerQuery(catalogFilters.source, catalogFilters.debouncedSearch, catalogFilters.filters);
 
   const { data: catalog } = useQuery(connectorCatalogOptions());
-  const connectorName = (code: string) => catalog?.find((c) => c.code === code)?.name ?? code;
+  const connectorName = (code: string) => connectorNameOf(catalog, code);
 
   // The plan is the backend's reading of the skill against this agent: what
   // fits, what is missing, and the rules that will be written.
