@@ -168,6 +168,14 @@ export default function AgentViewFrame({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // A border is drawn inside the declared height (`box-sizing: border-box`,
+  // Tailwind's preflight, iframes included), so the page would get 2px less
+  // room than the number it asked for — enough for a permanent scrollbar with a
+  // full-length thumb. The border is added to the height rather than the box
+  // switched to `content-box`, which would make `w-full` mean `100% + 2px` and
+  // trade the inner scrollbar for a horizontal one on the page.
+  const bordered = content.prefersBorder !== false;
+
   return (
     <iframe
       ref={frameRef}
@@ -186,10 +194,11 @@ export default function AgentViewFrame({
       // talk to the user around the page they think they are on.
       sandbox="allow-scripts"
       referrerPolicy="no-referrer"
-      style={{ height }}
-      className={`w-full rounded-lg bg-surface transition-[height] ${
-        content.prefersBorder === false ? '' : 'border border-border'
-      }`}
+      style={{ height: bordered ? height + 2 : height }}
+      // `block` and not the default `inline`: an inline frame sits on a text
+      // baseline, and the descender space left under it reads as a stray gap at
+      // the bottom of the card.
+      className={`block w-full rounded-lg bg-surface transition-[height] ${bordered ? 'border border-border' : ''}`}
     />
   );
 }
