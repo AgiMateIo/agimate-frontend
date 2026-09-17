@@ -57,12 +57,15 @@ export default function AgentDetailLayout({ children }: { children: React.ReactN
   const pathname = usePathname();
 
   // Chat stretches to the bottom of the viewport instead of sitting in the
-  // section rhythm: `h-full` hands the page the canvas height so its composer
-  // lands on the viewport floor, with no hardcoded chrome offset to keep in sync.
+  // section rhythm: the layout's height, minus the gap every page leaves under
+  // itself, hands the page its canvas so the composer lands on the viewport
+  // floor — with no hardcoded chrome offset to keep in sync. Full height alone
+  // would put the chat and that gap one after the other and scroll the page by
+  // exactly the gap.
   const isChat = pathname.endsWith('/chat');
 
   return (
-    <div className={isChat ? 'h-full' : 'space-y-6'}>
+    <div className={isChat ? 'h-[calc(100%-var(--page-gap))]' : 'space-y-6'}>
       <ErrorBoundary resetKeys={[agentId]}>
         <Suspense fallback={<Placeholder>{t('loadingAgents')}</Placeholder>}>
           <AgentShellHeader agentId={agentId} breadcrumbOnly={isChat} />

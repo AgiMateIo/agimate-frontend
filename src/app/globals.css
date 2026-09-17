@@ -26,6 +26,16 @@ html {
   scrollbar-gutter: stable;
 }
 
+/* Except under the dashboard, which is a fixed-height shell (`h-screen` with its
+   own scrolling <main>): the document there can never overflow, so the reserved
+   gutter is an empty scrollbar track drawn down the right edge of every page and
+   nothing else. The gutter moves to the element that actually scrolls — see the
+   <main> in the dashboard layout, which keeps it for the same reason the rule
+   above exists. */
+html:has([data-shell="dashboard"]) {
+  scrollbar-gutter: auto;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

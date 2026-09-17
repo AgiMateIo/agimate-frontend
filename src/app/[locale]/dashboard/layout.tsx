@@ -66,7 +66,7 @@ export default function DashboardLayout({
   // for activation) keeps the current UI and shows its own inline spinner.
   if (loading && !user) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background">
+      <div data-shell="dashboard" className="flex h-screen items-center justify-center bg-background">
         <div className="text-muted">{t('loading')}</div>
       </div>
     );
@@ -78,7 +78,7 @@ export default function DashboardLayout({
 
   return (
     <BreadcrumbProvider>
-      <div className="flex h-screen bg-background">
+      <div data-shell="dashboard" className="flex h-screen bg-background">
         {navOpen && (
           <div
             className="fixed inset-0 z-40 bg-black/50 lg:hidden"
@@ -92,7 +92,15 @@ export default function DashboardLayout({
           {/* A guest account has access to almost no dashboard route, so the
               notice replaces the page instead of rendering alongside it —
               except on the routes it is explicitly allowed to open. */}
-          <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+          {/* The bottom gap is deliberately not this element's `padding-bottom`.
+              A scroll container's end padding is not laid out after content that
+              overflows it, and the wrapper below is `h-full` — exactly this box —
+              so a long page overflows the wrapper rather than lengthening it, and
+              the padding stayed above the fold while the last block ran flush into
+              the bottom edge. The gap is a box in the flow instead (see below),
+              which the scroll extent has to cover wherever it ends up. Its size
+              lives here, in `--page-gap`, because the chat reads it too. */}
+          <main className="flex-1 overflow-y-auto p-4 pb-0 [--page-gap:1rem] [scrollbar-gutter:stable] sm:p-6 sm:pb-0 sm:[--page-gap:1.5rem]">
             {/* Capped and centred: on a 27" monitor a log table stretched past
                 2000px, and a row that wide is no longer scannable. `h-full`
                 keeps the percentage-height chain unbroken through this extra
@@ -100,6 +108,12 @@ export default function DashboardLayout({
                 the composer on the viewport floor. */}
             <div className="mx-auto h-full w-full max-w-[1600px]">
               {guestBlocked ? <PendingActivationNotice /> : children}
+              {/* The bottom gap, as the last box in the page's own flow: it
+                  follows the content wherever it ends, below the fold included.
+                  A page that fills the height rather than flowing (the chat) has
+                  to leave room for it — hence `--page-gap` rather than a number
+                  repeated in two files. */}
+              <div aria-hidden className="h-[var(--page-gap)]" />
             </div>
           </main>
         </div>
