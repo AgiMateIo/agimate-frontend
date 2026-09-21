@@ -253,8 +253,8 @@ src/
 │       │   │                      #   [id]/views (MCP Apps pages, see Views in an iframe),
 │       │   │                      #   [id]/runs (same list as /dashboard/runs, agent-scoped), deliveries
 │       │   ├── agentic-teams/     # list, [id], [id]/agents, [id]/board,
-│       │   │                      #   [id]/requests ("agent dialogues" in the UI:
-│       │   │                      #     what the agents handed each other)
+│       │   │                      #   [id]/requests (what the agents of the team
+│       │   │                      #     handed each other)
 │       │   ├── apps/              # list, [id]
 │       │   ├── channels/
 │       │   ├── connections/       # list, [id]
