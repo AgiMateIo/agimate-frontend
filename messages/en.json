@@ -14,7 +14,8 @@
       "connections": "Connectors",
       "dashboard": "Dashboard",
       "login": "Sign in",
-      "security": "Access"
+      "security": "Access",
+      "business": "For business"
     },
     "hero": {
       "title": "Your agents",
@@ -656,6 +657,128 @@
   "LocaleSwitcher": {
     "ru": "RU",
     "en": "EN"
+  },
+  "BusinessPage": {
+    "meta": {
+      "title": "AgiMate for companies — an agent platform under your brand",
+      "description": "White label AgiMate: the platform runs inside your perimeter, on your domain and under your brand. For inference providers, integrators and SaaS vendors — a finished agent dashboard, connectors, channels and logs instead of building one.",
+      "ogTitle": "An agent platform for your customers",
+      "ogDescription": "White label AgiMate: your brand, your perimeter, your models. The agent dashboard, connectors, channels and logs are already there."
+    },
+    "nav": {
+      "audience": "Who it's for",
+      "whiteLabel": "White label",
+      "included": "What's ready",
+      "how": "How it works",
+      "license": "Licence",
+      "login": "Sign in",
+      "dashboard": "Dashboard"
+    },
+    "hero": {
+      "title": "An agent platform",
+      "titleHighlight": "for your customers",
+      "subtitle": "AgiMate comes up inside your perimeter, on your own domain. The agent dashboard, connectors, channels and logs already run in production — what's left to you is the brand, your models and your economics.",
+      "cta": "Talk to us about integration",
+      "note": "Terms depend on the scenario — we agree them case by case."
+    },
+    "audience": {
+      "title": "Who it's for",
+      "subtitle": "Three situations where an agent platform is cheaper to take than to build.",
+      "labels": {
+        "have": "What you have",
+        "missing": "What's missing",
+        "gain": "What AgiMate adds"
+      },
+      "items": [
+        {
+          "title": "Inference providers, clouds and hosting",
+          "have": "Models, compute and tokens you already bill for, and a customer base of your own.",
+          "missing": "A product to spend it in. A bare API only sells itself to developers.",
+          "gain": "The customer comes for the agents and stays for the inference. The split between a platform pool and the customer's own key is already in the product, and so is per-user spend."
+        },
+        {
+          "title": "Integrators and automation studios",
+          "have": "A flow of clients, the expertise, and scenarios assembled by hand.",
+          "missing": "Every project starts from scratch, and keeping a zoo of bots alive eats the margin.",
+          "gain": "One platform under your brand, with a separate perimeter per client. Instead of building from scratch — configuring agents, connectors and access rules."
+        },
+        {
+          "title": "SaaS vendors",
+          "have": "A product, subscribers, and data worth pointing an agent at.",
+          "missing": "The agent layer inside it. Writing one yourself means running a second product instead of your own.",
+          "gain": "Agents inside your product rather than a second dashboard next to it. Connectors, app keys and channels come ready."
+        }
+      ]
+    },
+    "whiteLabel": {
+      "title": "What white label means here",
+      "subtitle": "The core stays shared and keeps updating; the storefront is yours.",
+      "items": [
+        {
+          "title": "A frontend of your own",
+          "description": "The branded interface is built on top of our open dashboard: the domain, the name and the navigation are yours. The core stays shared and keeps receiving updates."
+        },
+        {
+          "title": "Your models",
+          "description": "Any OpenAI-compatible provider, or your own inference. Keys and traffic never leave your perimeter."
+        },
+        {
+          "title": "Your economics",
+          "description": "A shared pool with a free allowance, the customer's own key, or both. Token spend is counted per user — there is something to put into your billing."
+        },
+        {
+          "title": "Your perimeter",
+          "description": "Self-hosted: data, keys and logs stay on your side. Not a single call goes through us."
+        }
+      ]
+    },
+    "included": {
+      "title": "What you get ready-made",
+      "subtitle": "Everything listed runs in production on agimate.io.",
+      "items": [
+        "Dashboard for agents, skills and connectors",
+        "MCP connections with OAuth",
+        "Channels: messengers, web chat, IDE, Android",
+        "n8n nodes and a desktop connector",
+        "Access checked before the tool call",
+        "A log of every call and every denial",
+        "Agent teams with task boards",
+        "Per-user token spend",
+        "Russian and English interface"
+      ]
+    },
+    "how": {
+      "title": "How it works",
+      "subtitle": "Three steps to launch.",
+      "steps": [
+        {
+          "title": "Deploy it",
+          "description": "AgiMate installs into your cloud or onto your own hardware. The source is open, so nothing has to be taken on trust."
+        },
+        {
+          "title": "Put your brand on it",
+          "description": "The branded frontend is built on top of the current dashboard: already translated, already debugged, already in production."
+        },
+        {
+          "title": "Plug in your own",
+          "description": "Your models, connectors, limits and pricing. Core updates arrive from upstream — you are not left alone with a fork."
+        }
+      ],
+      "callout": "The traffic, the data and the customer relationship stay yours."
+    },
+    "license": {
+      "title": "Licence",
+      "description": "Running AgiMate inside your own company is free, commercial work included. A commercial licence is needed by whoever offers the platform to their customers as a product or a service; the terms are something we agree case by case. Every release additionally becomes Apache-2.0 two years after it ships, and that grant is in the licence text itself.",
+      "link": "Full licensing terms"
+    },
+    "cta": {
+      "title": "Tell us what you want to launch",
+      "subtitle": "A couple of lines about the scenario and the audience — we'll say what already works and what would need building.",
+      "email": "Send an email",
+      "telegram": "Telegram",
+      "mailSubject": "AgiMate white label — integration enquiry",
+      "finePrint": "Self-hosted · Your models · Your brand · Open source"
+    }
   },
   "N8nPage": {
     "meta": {

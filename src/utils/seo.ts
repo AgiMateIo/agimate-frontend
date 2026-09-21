@@ -10,6 +10,9 @@ export const PUBLIC_PAGES = [
     // The home page keeps its title and description at the root of `Metadata`;
     // every other page nests them under `meta`, hence the prefix.
     { path: '', namespace: 'Metadata', metaPrefix: '', priority: 1, changeFrequency: 'weekly' },
+    // The partner-facing page: linked from the landing header, and the one page
+    // an inference provider or an integrator is meant to find by search.
+    { path: '/business', namespace: 'BusinessPage', metaPrefix: 'meta.', priority: 0.9, changeFrequency: 'monthly' },
     { path: '/n8n', namespace: 'N8nPage', metaPrefix: 'meta.', priority: 0.8, changeFrequency: 'monthly' },
     { path: '/desktop', namespace: 'DesktopPage', metaPrefix: 'meta.', priority: 0.8, changeFrequency: 'monthly' },
     { path: '/android', namespace: 'AndroidPage', metaPrefix: 'meta.', priority: 0.8, changeFrequency: 'monthly' },
