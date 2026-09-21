@@ -33,6 +33,15 @@ function remainingReports(run: RunResponse): number | null {
   return typeof remaining === 'number' ? remaining : null;
 }
 
+// Who reported. Only a report from another agent of the team carries a name —
+// a subagent is a copy of the agent whose run this is, and its payload names an
+// id nobody would recognise.
+function reportingAgent(run: RunResponse): string | null {
+  if (run.name !== REPORT_RUN) return null;
+  const name = run.input?.agentName;
+  return typeof name === 'string' && name ? name : null;
+}
+
 // Where this run sits in a delegation chain: what set it off, and what it set
 // off in turn. An agent can hand parts of a task to copies of itself, and each
 // of those is a run of its own — following the chain is the only way to read
@@ -46,6 +55,7 @@ function RunChain({ run, runsHref }: { run: RunResponse; runsHref: string }) {
   // and page them, and there is no endpoint that would give them any cheaper.
   const { data: childrenCount } = useRunChildrenCount(run.id);
   const remaining = remainingReports(run);
+  const reporter = reportingAgent(run);
 
   if (!run.originRunId && !childrenCount && remaining === null) return null;
 
@@ -75,6 +85,11 @@ function RunChain({ run, runsHref }: { run: RunResponse; runsHref: string }) {
           died without reporting — the summary then waits for the next message. */}
       {remaining !== null && (
         <span className="text-muted">
+          {/* Whose report it was, where that is another agent of the team —
+              without it a run named after an errand says nothing about who ran
+              it. The count spans both kinds of worker: copies of the agent and
+              the agents it delegated to are waited for together. */}
+          {reporter && <span className="text-foreground">{reporter}: </span>}
           {remaining === 0 ? t('reportFinal') : t('reportWaiting', { count: remaining })}
         </span>
       )}
