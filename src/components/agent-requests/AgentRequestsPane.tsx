@@ -140,9 +140,6 @@ export default function AgentRequestsPane({
                   </span>
                 )}
               </div>
-              {r.lastReport?.preview && (
-                <p className="mt-1 line-clamp-2 text-xs text-muted">{r.lastReport.preview}</p>
-              )}
             </button>
           ))
         )}
