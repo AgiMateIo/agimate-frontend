@@ -154,7 +154,10 @@ export default function LandingHeader({ navLinks, loginLabel, dashboardLabel }: 
           ref={menuRef}
           className="xl:hidden border-t border-border/40 bg-background/95 backdrop-blur-md"
         >
-          <div className="mx-auto max-w-6xl px-4 py-3 flex flex-col gap-1">
+          {/* Right-aligned, and padded like the header row: the dropdown hangs
+              under the hamburger that opened it, instead of starting at the
+              opposite edge of the screen. */}
+          <div className="mx-auto flex max-w-6xl flex-col items-end gap-1 px-4 py-3 text-right sm:px-6">
             {navLinks.map((link) => {
               // A priority link is already in the row from `md` up, so the menu
               // stops listing it there rather than showing it twice.
