@@ -4,13 +4,12 @@ import { useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { ArrowsRightLeftIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { ArrowsRightLeftIcon } from '@heroicons/react/24/outline';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Placeholder } from '@/components/ui/Placeholder';
 import AgentRequestsPane from '@/components/agent-requests/AgentRequestsPane';
 import AgentRequestThreadView from '@/components/agent-requests/AgentRequestThreadView';
-import AgentRequestOrigin from '@/components/agent-requests/AgentRequestOrigin';
 import { agentsListOptions } from '@/queries/agents';
 import { useAgentRequestCacheActions, useAgentRequestsQuery } from '@/queries/agent-requests';
 import { useAgentRequestsSubscription } from '@/realtime/useAgentRequestsSubscription';
@@ -20,11 +19,11 @@ import type { AgentRequestStatus } from '@/types';
 /**
  * What the agents of a team have handed to each other.
  *
- * Three panes: the branches on the left, the correspondence of the open one in
- * the middle, and the conversation it came out of on the right — the question
- * "why was this asked at all" is answered by the sender's chat and nowhere
- * else. The third column only exists from `xl` up; below that it folds into a
- * block above the exchange, and below `md` the list and the thread take turns.
+ * Two panes: the branches on the left, the correspondence of the open one on
+ * the right; below `md` they take turns. The conversation the errand came out
+ * of had a column of its own here and it cost more than it gave — three
+ * scrolling columns of somebody else's text read as noise — so the thread now
+ * names it in one line and links to where it can be read in full.
  */
 export default function TeamRequestsPage() {
   const t = useTranslations('AgentRequests');
@@ -40,7 +39,6 @@ export default function TeamRequestsPage() {
   const [activeId, setActiveId] = useState<string | null>(null);
   // Below `md` the two panes don't fit side by side, so one is shown at a time.
   const [mobilePane, setMobilePane] = useState<'list' | 'thread'>('thread');
-  const [originOpen, setOriginOpen] = useState(false);
 
   const filters = useMemo(() => (agentId ? { agentId } : {}), [agentId]);
   const query = useAgentRequestsQuery(teamId, filters);
@@ -111,39 +109,13 @@ export default function TeamRequestsPage() {
           className={`${mobilePane === 'thread' ? 'flex' : 'hidden'} min-w-0 flex-1 flex-col md:flex`}
         >
           {active ? (
-            <>
-              {/* The origin below `xl`, where there is no room for a column of
-                  it — folded away, because the correspondence is what the
-                  screen is opened for. */}
-              <div className="shrink-0 border-b border-border xl:hidden">
-                <button
-                  type="button"
-                  onClick={() => setOriginOpen((v) => !v)}
-                  aria-expanded={originOpen}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-muted transition-colors hover:bg-surface-secondary"
-                >
-                  <span className="min-w-0 flex-1 truncate">
-                    {t('originOf', { agent: active.from.agentName })}
-                  </span>
-                  <ChevronDownIcon
-                    className={`h-4 w-4 shrink-0 transition-transform ${originOpen ? 'rotate-180' : ''}`}
-                  />
-                </button>
-                {originOpen && (
-                  <div className="h-80 border-t border-border">
-                    <AgentRequestOrigin key={active.id} request={active} />
-                  </div>
-                )}
-              </div>
-
-              <AgentRequestThreadView
-                key={active.id}
-                teamId={teamId}
-                threadId={active.id}
-                fallbackRow={active}
-                onBack={() => setMobilePane('list')}
-              />
-            </>
+            <AgentRequestThreadView
+              key={active.id}
+              teamId={teamId}
+              threadId={active.id}
+              fallbackRow={active}
+              onBack={() => setMobilePane('list')}
+            />
           ) : query.isPending ? (
             <Placeholder>{tCommon('loading')}</Placeholder>
           ) : requests.length > 0 ? (
@@ -158,12 +130,6 @@ export default function TeamRequestsPage() {
             </div>
           )}
         </div>
-
-        {active && (
-          <div className="hidden w-96 shrink-0 flex-col border-l border-border xl:flex">
-            <AgentRequestOrigin key={active.id} request={active} />
-          </div>
-        )}
       </div>
     </div>
   );

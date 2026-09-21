@@ -1,13 +1,21 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
-import { ArrowLeftIcon, ArrowLongRightIcon, QueueListIcon } from '@heroicons/react/24/outline';
+import { useQuery } from '@tanstack/react-query';
+import {
+  ArrowLeftIcon,
+  ArrowLongRightIcon,
+  ChatBubbleLeftRightIcon,
+  QueueListIcon,
+} from '@heroicons/react/24/outline';
 import { Link } from '@/i18n/navigation';
 import { Chip } from '@/components/ui/Chip';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Placeholder } from '@/components/ui/Placeholder';
 import { ErrandRequestCard } from '@/components/sessions/ErrandRequestCard';
 import { useAgentRequestThreadQuery } from '@/queries/agent-requests';
+import { connectorCatalogOptions } from '@/queries/connectors';
+import { connectorNameOf } from '@/utils/connector';
 import { formatDate } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
 import type {
@@ -112,6 +120,34 @@ function RunLink({ runId }: { runId: string }) {
   );
 }
 
+// Where the errand came from, in one line: the sender's own conversation, what
+// carried it, and the way to what the sender was doing when it delegated. It
+// had a column of its own once — a third scrolling transcript beside two others
+// buried the correspondence the screen is for.
+function OriginLine({ request }: { request: AgentRequestRow }) {
+  const t = useTranslations('AgentRequests');
+  const { data: catalog } = useQuery(connectorCatalogOptions());
+  const { origin } = request;
+
+  return (
+    <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
+      <ChatBubbleLeftRightIcon className="h-3.5 w-3.5 shrink-0" />
+      <span className="min-w-0 truncate">
+        {t('originOf', { agent: request.from.agentName })}: {origin.title || t('originUntitled')}
+      </span>
+      <span className="shrink-0 font-mono text-[10px]">
+        {connectorNameOf(catalog, origin.connectorCode)}
+      </span>
+      <Link
+        href={`/dashboard/agents/${request.from.agentId}/runs?sessionId=${origin.sessionId}`}
+        className="shrink-0 text-accent transition-colors hover:text-accent/80"
+      >
+        {t('originRuns')}
+      </Link>
+    </div>
+  );
+}
+
 function ExchangeItem({
   item,
   request,
@@ -186,6 +222,7 @@ export default function AgentRequestThreadView({
           <AgentRequestStatusChip status={request.status} />
           {isReportUndelivered(request) && <UndeliveredReportChip />}
         </div>
+        <OriginLine request={request} />
       </div>
 
       <div className="flex-1 space-y-3 overflow-y-auto px-3 py-4 sm:px-4">
