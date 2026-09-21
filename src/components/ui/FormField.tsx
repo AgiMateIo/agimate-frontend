@@ -1,5 +1,7 @@
 'use client';
 
+import { ChevronDownIcon } from '@heroicons/react/24/outline';
+
 interface FormFieldProps {
   label: string;
   required?: boolean;
@@ -75,10 +77,24 @@ export function TextArea({ className = '', ...props }: TextAreaProps) {
 // `text-base … sm:text-sm` on sm is 16px on mobile — iOS Safari zooms the page
 // when a focused control's font is smaller — and 14px from the breakpoint up. md
 // deliberately sets no size: it inherits the body's 16px and is already safe.
+//
+// The right padding is larger than the left on every size, and that asymmetry
+// is the chevron's room: the native arrow is drawn by the platform wherever the
+// platform likes — in the middle of the padding on one browser, tight against
+// the border on the next — so it is turned off (`appearance-none`) and one is
+// drawn here instead, at a fixed inset and in our own muted colour.
 const SELECT_SIZES = {
-  md: 'px-4 py-2.5 rounded-lg',
-  sm: 'px-3 py-2 rounded-lg text-base sm:text-sm',
-  xs: 'px-2 py-1 rounded-md text-xs',
+  md: 'pl-4 pr-10 py-2.5 rounded-lg',
+  sm: 'pl-3 pr-9 py-2 rounded-lg text-base sm:text-sm',
+  xs: 'pl-2 pr-7 py-1 rounded-md text-xs',
+} as const;
+
+// Matches the right padding above, so the chevron sits inside it rather than on
+// the border.
+const CHEVRON = {
+  md: 'right-3 h-4 w-4',
+  sm: 'right-2.5 h-4 w-4',
+  xs: 'right-1.5 h-3.5 w-3.5',
 } as const;
 
 export type SelectSize = keyof typeof SELECT_SIZES;
@@ -98,9 +114,18 @@ export function Select({
   ...props
 }: SelectProps) {
   return (
-    <select
-      className={`${fullWidth ? 'w-full ' : ''}${SELECT_SIZES[size]} bg-surface-secondary border border-border text-foreground ${className}`}
-      {...props}
-    />
+    // The wrapper exists only to position the chevron; it takes the element's
+    // width so a `fullWidth` select still fills its row and an inline one still
+    // sits in a flex line.
+    <span className={`relative inline-flex items-center ${fullWidth ? 'w-full' : ''}`}>
+      <select
+        className={`${fullWidth ? 'w-full ' : ''}${SELECT_SIZES[size]} appearance-none bg-surface-secondary border border-border text-foreground ${className}`}
+        {...props}
+      />
+      <ChevronDownIcon
+        aria-hidden
+        className={`pointer-events-none absolute text-muted ${CHEVRON[size]}`}
+      />
+    </span>
   );
 }

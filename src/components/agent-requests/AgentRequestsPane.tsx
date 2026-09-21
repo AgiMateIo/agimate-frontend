@@ -76,15 +76,27 @@ export default function AgentRequestsPane({
     <div
       className={`${className} w-full shrink-0 flex-col min-h-0 overflow-hidden border-border md:flex md:w-80 md:border-r`}
     >
-      <div className="space-y-2 border-b border-border p-3">
-        <Select value={agentId} onChange={(e) => onAgentChange(e.target.value)}>
-          <option value="">{t('filterAllAgents')}</option>
-          {agents.map((a) => (
-            <option key={a.id} value={a.id}>
-              {a.name}
-            </option>
-          ))}
-        </Select>
+      <div className="space-y-2.5 border-b border-border p-3">
+        <div>
+          <label className="mb-1 block text-xs text-muted" htmlFor="agent-request-agent-filter">
+            {t('filterAgent')}
+          </label>
+          {/* `sm` — the filter size of the kit. `md` is a form field: in a pane
+              this narrow it stands a head taller than everything under it. */}
+          <Select
+            id="agent-request-agent-filter"
+            size="sm"
+            value={agentId}
+            onChange={(e) => onAgentChange(e.target.value)}
+          >
+            <option value="">{t('filterAllAgents')}</option>
+            {agents.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.name}
+              </option>
+            ))}
+          </Select>
+        </div>
         <FilterRow label={t('filterStatus')}>
           <FilterPill active={status === null} onClick={() => onStatusChange(null)}>
             {t('filterAllStatuses')}

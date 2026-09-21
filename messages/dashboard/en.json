@@ -1601,6 +1601,7 @@
     "emptyTitle": "The agents have handed nothing to each other yet",
     "emptyHint": "An agent with the “Team agents” skill can hand part of its work to another agent of this team — the correspondence shows up here.",
     "emptyExchange": "Nothing in this branch yet",
+    "filterAgent": "Agent",
     "filterAllAgents": "All agents",
     "filterStatus": "Status",
     "filterAllStatuses": "All",
