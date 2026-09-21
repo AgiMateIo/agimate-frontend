@@ -58,8 +58,9 @@ function ExchangeRequest({
   );
 }
 
-// What came back. The sender's side of the correspondence, so it sits opposite
-// the errand — and a failed report is still a report, not an error of ours.
+// What came back. Drawn opposite the errand because it is the other direction
+// of the correspondence — the run behind it is still the addressee's — and a
+// failed report is a report, not an error of ours.
 function ExchangeReport({ item }: { item: AgentRequestExchangeReport }) {
   const t = useTranslations('AgentRequests');
   const locale = useLocale();
@@ -96,8 +97,9 @@ function ExchangeReport({ item }: { item: AgentRequestExchangeReport }) {
   );
 }
 
-// Both ends of the correspondence link into runs, and the two belong to
-// different agents — so the global runs route, which needs no owner.
+// Either item links into the run that did the work — the addressee's, on both
+// sides of the correspondence. The global runs route, which needs no owner in
+// its path, is what keeps that from having to be restated here.
 function RunLink({ runId }: { runId: string }) {
   const t = useTranslations('AgentRequests');
   return (
