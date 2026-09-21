@@ -107,6 +107,7 @@ export default function HomePage() {
           { href: '#how-it-works', label: t('nav.howItWorks') },
           { href: '#use-cases', label: t('nav.useCases') },
           { href: '#connections', label: t('nav.connections') },
+          { href: '/business', label: t('nav.business'), internal: true, priority: true },
         ]}
         loginLabel={t('nav.login')}
         dashboardLabel={t('nav.dashboard')}
