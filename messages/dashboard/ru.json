@@ -1035,7 +1035,8 @@
     "switchTeam": "Сменить команду",
     "comingSoon": "Этот раздел скоро появится.",
     "updated": "Обновлено",
-    "tasksTotal": "Задачи"
+    "tasksTotal": "Задачи",
+    "agentRequests": "Поручения"
   },
   "Connections": {
     "title": "Подключения",
@@ -1589,5 +1590,36 @@
     "requestFrom": "Поручение от {agent}",
     "contextShow": "Показать контекст",
     "contextHide": "Скрыть контекст"
+  },
+  "AgentRequests": {
+    "title": "Поручения",
+    "loadError": "Не удалось загрузить поручения команды",
+    "threadLoadError": "Не удалось загрузить переписку",
+    "untitled": "Поручение без названия",
+    "empty": "Поручений пока нет",
+    "emptyFiltered": "Под фильтр ничего не подходит",
+    "emptyTitle": "Агенты ещё ничего друг другу не поручали",
+    "emptyHint": "Агент с навыком «Агенты команды» может передать часть работы другому агенту этой команды — переписка появится здесь.",
+    "emptyExchange": "В этой ветке пока ничего нет",
+    "filterAllAgents": "Все агенты",
+    "filterStatus": "Статус",
+    "filterAllStatuses": "Все",
+    "statusWorking": "В работе",
+    "statusDone": "Готово",
+    "statusFailed": "Ошибка",
+    "statusCancelled": "Отменено",
+    "statusStalled": "Не запустилось",
+    "statusStalledHint": "Поручение передано, но прогон не попал в очередь: работа не идёт и сама не начнётся.",
+    "reportUndelivered": "Отчёт не дошёл",
+    "reportUndeliveredHint": "Исполнитель ответил, но отчёт не дошёл в разговор поручившего.",
+    "reportDone": "Отчёт",
+    "reportFailed": "Отчёт об ошибке",
+    "requestsCount": "{count, plural, one {# поручение} few {# поручения} many {# поручений} other {# поручения}}",
+    "absorbed": "Дописано в идущую работу",
+    "viewRun": "Прогон",
+    "viewBranchRuns": "Прогоны исполнителя",
+    "originOf": "Из разговора агента {agent}",
+    "originUntitled": "Разговор без названия",
+    "originRuns": "Прогоны разговора"
   }
 }

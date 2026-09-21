@@ -1,9 +1,13 @@
 // modules/agenticTeams.ts
-import { httpClient } from '../httpClient';
+import { httpClient, buildPagedQuery } from '../httpClient';
 import { API } from '@/config/constants';
 import type {
   AgenticTeam,
+  AgentRequestFilters,
+  AgentRequestRow,
+  AgentRequestThread,
   CreateAgenticTeamRequest,
+  PagedResponse,
   PatchAgenticTeamRequest,
 } from '@/types';
 
@@ -30,5 +34,36 @@ export const agenticTeamsApi = {
 
   async deleteAgenticTeam(id: string): Promise<void> {
     return httpClient.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agentic-teams/${id}`);
+  },
+
+  // The team's correspondence: one row per branch an agent opened at another,
+  // by last activity, newest first. Every filter is optional and ANDed —
+  // `agentId` matches either end, the other two one end each. There is no
+  // status filter: the status is computed off the branch's runs, so filtering
+  // by it happens over the loaded page (see AgentRequestStatus).
+  async getAgentRequests(
+    teamId: string,
+    params?: AgentRequestFilters & { page?: number; size?: number },
+  ): Promise<PagedResponse<AgentRequestRow>> {
+    const query = buildPagedQuery(
+      {
+        agentId: params?.agentId,
+        fromAgentId: params?.fromAgentId,
+        toAgentId: params?.toAgentId,
+        since: params?.since,
+      },
+      params,
+    );
+    return httpClient.get<PagedResponse<AgentRequestRow>>(
+      `${API.ENDPOINTS.CONTROL_API}/manage/agentic-teams/${teamId}/requests/?${query}`,
+    );
+  },
+
+  // One branch: the same row the listing answers, plus the errands and the
+  // reports in time order.
+  async getAgentRequest(teamId: string, threadId: string): Promise<AgentRequestThread> {
+    return httpClient.get<AgentRequestThread>(
+      `${API.ENDPOINTS.CONTROL_API}/manage/agentic-teams/${teamId}/requests/${threadId}`,
+    );
   },
 };

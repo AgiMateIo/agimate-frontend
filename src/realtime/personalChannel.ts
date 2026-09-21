@@ -17,6 +17,11 @@ import { initCentrifuge, getChannelToken } from './centrifugoClient';
 export interface PersonalEvent {
   type: string;
   payload: unknown;
+  // What the publication was tagged with server-side. The one place a scope
+  // lives that the payload itself doesn't carry (a team's requests are tagged
+  // `teamId`), so it is passed through rather than dropped — the filtering
+  // still happens here, not as a `tagsFilter` (see above).
+  tags?: Record<string, string>;
 }
 
 type Listener = (event: PersonalEvent) => void;
@@ -55,10 +60,10 @@ async function setup(): Promise<void> {
     });
   });
 
-  sub.on('publication', (ctx: { data: unknown }) => {
+  sub.on('publication', (ctx: { data: unknown; tags?: Record<string, string> }) => {
     const data = ctx.data as { type?: string; payload?: unknown } | undefined;
     if (!data || typeof data.type !== 'string') return;
-    const event: PersonalEvent = { type: data.type, payload: data.payload };
+    const event: PersonalEvent = { type: data.type, payload: data.payload, tags: ctx.tags };
     listeners.forEach((listener) => listener(event));
   });
 

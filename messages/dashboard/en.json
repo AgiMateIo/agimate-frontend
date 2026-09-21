@@ -1035,7 +1035,8 @@
     "switchTeam": "Switch team",
     "comingSoon": "This section is coming soon.",
     "updated": "Updated",
-    "tasksTotal": "Tasks"
+    "tasksTotal": "Tasks",
+    "agentRequests": "Requests"
   },
   "Connections": {
     "title": "Connections",
@@ -1589,5 +1590,36 @@
     "requestFrom": "Errand from {agent}",
     "contextShow": "Show context",
     "contextHide": "Hide context"
+  },
+  "AgentRequests": {
+    "title": "Requests",
+    "loadError": "Could not load the team's requests",
+    "threadLoadError": "Could not load the correspondence",
+    "untitled": "Untitled request",
+    "empty": "No requests yet",
+    "emptyFiltered": "Nothing matches the filter",
+    "emptyTitle": "The agents have handed nothing to each other yet",
+    "emptyHint": "An agent with the “Team agents” skill can hand part of its work to another agent of this team — the correspondence shows up here.",
+    "emptyExchange": "Nothing in this branch yet",
+    "filterAllAgents": "All agents",
+    "filterStatus": "Status",
+    "filterAllStatuses": "All",
+    "statusWorking": "Working",
+    "statusDone": "Done",
+    "statusFailed": "Failed",
+    "statusCancelled": "Cancelled",
+    "statusStalled": "Never started",
+    "statusStalledHint": "The request was handed over but its run never reached the queue: nothing is running, and nothing will start on its own.",
+    "reportUndelivered": "Report undelivered",
+    "reportUndeliveredHint": "The addressee answered, but the report never reached the sender's conversation.",
+    "reportDone": "Report",
+    "reportFailed": "Failure report",
+    "requestsCount": "{count, plural, one {# request} other {# requests}}",
+    "absorbed": "Appended to the run already working",
+    "viewRun": "Run",
+    "viewBranchRuns": "Addressee's runs",
+    "originOf": "From {agent}'s conversation",
+    "originUntitled": "Untitled conversation",
+    "originRuns": "Conversation runs"
   }
 }
