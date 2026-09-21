@@ -1,7 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { ArrowLongRightIcon } from '@heroicons/react/24/outline';
+import { ArrowLongRightIcon, FunnelIcon } from '@heroicons/react/24/outline';
 import { Select } from '@/components/ui/FormField';
 import { Placeholder } from '@/components/ui/Placeholder';
 import { formatDateTimeShort } from '@/utils/date';
@@ -67,6 +68,14 @@ export default function AgentRequestsPane({
 }: AgentRequestsPaneProps) {
   const t = useTranslations('AgentRequests');
   const tCommon = useTranslations('Common');
+  // Folded away by default. Most of the time there is one team, a handful of
+  // agents and no reason to narrow anything — the filters were two rows of
+  // chrome over the list they filter.
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  // In effect while folded: the funnel is then the only thing on screen saying
+  // that the list is not everything.
+  const filtersActive = agentId !== '' || status !== null;
 
   return (
     // A definite width in both modes — full screen on a phone, a fixed column
@@ -75,16 +84,36 @@ export default function AgentRequestsPane({
     <div
       className={`${className} w-full shrink-0 flex-col min-h-0 overflow-hidden border-border md:flex md:w-80 md:border-r`}
     >
-      {/* Two filters, no labels: each says what it is while it is unset ("all
-          agents", "all statuses"), and a labelled pair cost four rows of chrome
-          above a list that is the point of the pane. `sm` is the kit's filter
-          size — `md` is a form field and stands a head taller than everything
-          under it.
+      {/* One row: what the pane is, how much is in it, and the funnel. The
+          count is what is on screen — the list grows by pages, so it is not a
+          total and must not read as one. */}
+      <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2.5">
+        <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+          {t('title')}
+          {requests.length > 0 && <span className="text-muted"> · {requests.length}</span>}
+        </span>
+        <button
+          type="button"
+          onClick={() => setFiltersOpen((v) => !v)}
+          aria-label={tCommon('filters')}
+          aria-pressed={filtersOpen}
+          className={`shrink-0 rounded-md p-1.5 transition-colors ${
+            filtersOpen || filtersActive
+              ? 'bg-accent/10 text-accent'
+              : 'text-muted hover:text-foreground'
+          }`}
+        >
+          <FunnelIcon className="h-4 w-4" />
+        </button>
+      </div>
 
-          The statuses were six pills before, which wrapped to three rows here
-          and pushed the list under the fold. They are on every row as an icon
-          anyway, so this control is for narrowing, not for reading. */}
-      <div className="space-y-2 border-b border-border p-3">
+      {/* Two filters, no labels: each says what it is while it is unset ("all
+          agents", "all statuses"). The statuses were six pills before, which
+          wrapped to three rows in a pane this narrow — and they are on every
+          row as an icon anyway, so this control is for narrowing, not for
+          reading. `sm` is the kit's filter size; `md` is a form field and
+          stands a head taller than everything under it. */}
+      <div className={`${filtersOpen ? '' : 'hidden '}shrink-0 space-y-2 border-b border-border p-3`}>
         <Select size="sm" value={agentId} onChange={(e) => onAgentChange(e.target.value)}>
           <option value="">{t('filterAllAgents')}</option>
           {agents.map((a) => (
