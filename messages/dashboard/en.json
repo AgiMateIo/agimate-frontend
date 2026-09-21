@@ -1566,16 +1566,6 @@
     "frontmatterCategories": "Categories",
     "frontmatterTags": "Tags"
   },
-  "Subagents": {
-    "count": "{count, plural, one {# subagent} other {# subagents}}",
-    "runningCount": "{count, plural, one {# working} other {# working}}",
-    "working": "working…",
-    "untitledErrand": "Untitled errand",
-    "viewRuns": "Runs",
-    "requestLabel": "Errand",
-    "contextShow": "Show context",
-    "contextHide": "Hide context"
-  },
   "AgentViews": {
     "hint": "Pages the agent's connections offer — its own tools' panels and the apps an MCP server hands out. A page runs isolated and its buttons call the connection's tools as the agent — under its bindings and access rules.",
     "empty": "No views. They come from a connection bound to this agent that offers them; an MCP connection created earlier shows its views after you test it, which re-reads its tools.",
@@ -1585,5 +1575,16 @@
     "loading": "Loading the page…",
     "loadError": "Could not load the page",
     "toolCallFailed": "The tool call failed"
+  },
+  "Errands": {
+    "count": "{count, plural, one {# errand} other {# errands}}",
+    "runningCount": "{count, plural, one {# working} other {# working}}",
+    "working": "working…",
+    "untitledErrand": "Untitled errand",
+    "viewRuns": "Runs",
+    "requestLabel": "Errand",
+    "requestFrom": "Errand from {agent}",
+    "contextShow": "Show context",
+    "contextHide": "Hide context"
   }
 }
