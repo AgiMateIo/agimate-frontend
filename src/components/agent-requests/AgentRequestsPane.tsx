@@ -8,7 +8,7 @@ import { Placeholder } from '@/components/ui/Placeholder';
 import { formatDateTimeShort } from '@/utils/date';
 import type { AgentRequestRow, AgentRequestStatus } from '@/types';
 import {
-  AgentRequestStatusChip,
+  AgentRequestStatusIcon,
   STATUS_LABEL_KEYS,
   UndeliveredReportChip,
   isReportUndelivered,
@@ -117,6 +117,9 @@ export default function AgentRequestsPane({
               }`}
             >
               <div className="flex items-center gap-2">
+                {/* The status leads the row: it is what the eye runs down the
+                    list for, and as an icon it costs no line of its own. */}
+                <AgentRequestStatusIcon status={r.status} />
                 <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
                   {r.title || t('untitled')}
                 </span>
@@ -131,15 +134,19 @@ export default function AgentRequestsPane({
                 <ArrowLongRightIcon className="h-3.5 w-3.5 shrink-0" />
                 <span className="min-w-0 truncate text-foreground">{r.to.agentName}</span>
               </div>
-              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                <AgentRequestStatusChip status={r.status} />
-                {isReportUndelivered(r) && <UndeliveredReportChip />}
-                {r.requestsCount > 1 && (
-                  <span className="text-[11px] text-muted">
-                    {t('requestsCount', { count: r.requestsCount })}
-                  </span>
-                )}
-              </div>
+              {/* What the icon above cannot say: a finished branch whose report
+                  never reached the sender, and a branch that took more than one
+                  errand. Both are absent from most rows. */}
+              {(isReportUndelivered(r) || r.requestsCount > 1) && (
+                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                  {isReportUndelivered(r) && <UndeliveredReportChip />}
+                  {r.requestsCount > 1 && (
+                    <span className="text-[11px] text-muted">
+                      {t('requestsCount', { count: r.requestsCount })}
+                    </span>
+                  )}
+                </div>
+              )}
             </button>
           ))
         )}

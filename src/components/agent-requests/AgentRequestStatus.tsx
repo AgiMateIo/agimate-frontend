@@ -41,6 +41,36 @@ export const STATUS_LABEL_KEYS = {
   STALLED: 'statusStalled',
 } as const satisfies Record<AgentRequestStatus, string>;
 
+// The same five states as a bare icon, for a list row where the status is one
+// glance among many and a pill would push the title around. Colour carries it,
+// the shape tells the two warnings apart, and the label is on the tooltip —
+// plus `sr-only` text, because colour is not a name.
+const ICON_COLOURS: Record<AgentRequestStatus, string> = {
+  WORKING: 'text-accent',
+  DONE: 'text-success',
+  FAILED: 'text-error',
+  CANCELLED: 'text-muted',
+  STALLED: 'text-warning',
+};
+
+export function AgentRequestStatusIcon({ status }: { status: AgentRequestStatus }) {
+  const t = useTranslations('AgentRequests');
+  const Icon = ICONS[status];
+  const label = t(STATUS_LABEL_KEYS[status]);
+
+  return (
+    <span
+      title={status === 'STALLED' ? `${label} — ${t('statusStalledHint')}` : label}
+      className={`shrink-0 ${ICON_COLOURS[status]}`}
+    >
+      {/* Slow enough to read as "still going" rather than as a spinner the
+          page is waiting on — a list can hold a dozen of these at once. */}
+      <Icon className={`h-4 w-4 ${status === 'WORKING' ? 'animate-spin [animation-duration:3s]' : ''}`} />
+      <span className="sr-only">{label}</span>
+    </span>
+  );
+}
+
 export function AgentRequestStatusChip({ status }: { status: AgentRequestStatus }) {
   const t = useTranslations('AgentRequests');
   return (
