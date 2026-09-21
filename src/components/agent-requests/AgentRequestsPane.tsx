@@ -3,7 +3,6 @@
 import { useTranslations } from 'next-intl';
 import { ArrowLongRightIcon } from '@heroicons/react/24/outline';
 import { Select } from '@/components/ui/FormField';
-import { FilterPill, FilterRow } from '@/components/ui/FilterPill';
 import { Placeholder } from '@/components/ui/Placeholder';
 import { formatDateTimeShort } from '@/utils/date';
 import type { AgentRequestRow, AgentRequestStatus } from '@/types';
@@ -16,7 +15,7 @@ import {
 
 // The statuses in the order they mean something to a reader: what is happening,
 // what went wrong, what finished.
-export const STATUS_FILTERS: AgentRequestStatus[] = [
+const STATUS_FILTERS: AgentRequestStatus[] = [
   'WORKING',
   'STALLED',
   'FAILED',
@@ -76,41 +75,36 @@ export default function AgentRequestsPane({
     <div
       className={`${className} w-full shrink-0 flex-col min-h-0 overflow-hidden border-border md:flex md:w-80 md:border-r`}
     >
-      <div className="space-y-2.5 border-b border-border p-3">
-        <div>
-          <label className="mb-1 block text-xs text-muted" htmlFor="agent-request-agent-filter">
-            {t('filterAgent')}
-          </label>
-          {/* `sm` — the filter size of the kit. `md` is a form field: in a pane
-              this narrow it stands a head taller than everything under it. */}
-          <Select
-            id="agent-request-agent-filter"
-            size="sm"
-            value={agentId}
-            onChange={(e) => onAgentChange(e.target.value)}
-          >
-            <option value="">{t('filterAllAgents')}</option>
-            {agents.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.name}
-              </option>
-            ))}
-          </Select>
-        </div>
-        <FilterRow label={t('filterStatus')}>
-          <FilterPill active={status === null} onClick={() => onStatusChange(null)}>
-            {t('filterAllStatuses')}
-          </FilterPill>
-          {STATUS_FILTERS.map((s) => (
-            <FilterPill
-              key={s}
-              active={status === s}
-              onClick={() => onStatusChange(status === s ? null : s)}
-            >
-              {t(STATUS_LABEL_KEYS[s])}
-            </FilterPill>
+      {/* Two filters, no labels: each says what it is while it is unset ("all
+          agents", "all statuses"), and a labelled pair cost four rows of chrome
+          above a list that is the point of the pane. `sm` is the kit's filter
+          size — `md` is a form field and stands a head taller than everything
+          under it.
+
+          The statuses were six pills before, which wrapped to three rows here
+          and pushed the list under the fold. They are on every row as an icon
+          anyway, so this control is for narrowing, not for reading. */}
+      <div className="space-y-2 border-b border-border p-3">
+        <Select size="sm" value={agentId} onChange={(e) => onAgentChange(e.target.value)}>
+          <option value="">{t('filterAllAgents')}</option>
+          {agents.map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.name}
+            </option>
           ))}
-        </FilterRow>
+        </Select>
+        <Select
+          size="sm"
+          value={status ?? ''}
+          onChange={(e) => onStatusChange((e.target.value || null) as AgentRequestStatus | null)}
+        >
+          <option value="">{t('filterAllStatuses')}</option>
+          {STATUS_FILTERS.map((s) => (
+            <option key={s} value={s}>
+              {t(STATUS_LABEL_KEYS[s])}
+            </option>
+          ))}
+        </Select>
       </div>
 
       <div className="flex-1 overflow-y-auto">
