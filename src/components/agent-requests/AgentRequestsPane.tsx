@@ -25,7 +25,12 @@ export const STATUS_FILTERS: AgentRequestStatus[] = [
 ];
 
 interface AgentRequestsPaneProps {
+  // Already narrowed by the status pills — the page filters, because the open
+  // thread is picked out of the same visible set.
   requests: AgentRequestRow[];
+  // Whether the pills are hiding anything, which is the difference between
+  // "nothing here" and "nothing matched".
+  filtered: boolean;
   loading: boolean;
   activeId: string | null;
   onSelect: (id: string) => void;
@@ -47,6 +52,7 @@ interface AgentRequestsPaneProps {
 
 export default function AgentRequestsPane({
   requests,
+  filtered,
   loading,
   activeId,
   onSelect,
@@ -62,8 +68,6 @@ export default function AgentRequestsPane({
 }: AgentRequestsPaneProps) {
   const t = useTranslations('AgentRequests');
   const tCommon = useTranslations('Common');
-
-  const shown = status ? requests.filter((r) => r.status === status) : requests;
 
   return (
     // A definite width in both modes — full screen on a phone, a fixed column
@@ -100,12 +104,10 @@ export default function AgentRequestsPane({
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <Placeholder size="sm">{tCommon('loading')}</Placeholder>
-        ) : shown.length === 0 ? (
-          <Placeholder size="sm">
-            {requests.length === 0 ? t('empty') : t('emptyFiltered')}
-          </Placeholder>
+        ) : requests.length === 0 ? (
+          <Placeholder size="sm">{filtered ? t('emptyFiltered') : t('empty')}</Placeholder>
         ) : (
-          shown.map((r) => (
+          requests.map((r) => (
             <button
               key={r.id}
               type="button"

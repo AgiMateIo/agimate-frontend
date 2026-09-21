@@ -26,7 +26,10 @@ export default function AgentRequestOrigin({ request }: { request: AgentRequestR
   const { origin } = request;
 
   return (
-    <div className="flex min-h-0 flex-col">
+    // `h-full`, not `flex-1`: this column is given its height by whatever holds
+    // it — a pane at `xl`, a fixed box above the exchange below it — and the
+    // transcript inside has to have a definite one to scroll in.
+    <div className="flex h-full min-h-0 flex-col">
       <div className="shrink-0 space-y-1.5 border-b border-border px-3 py-3">
         <div className="flex items-center gap-2">
           <h3 className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">

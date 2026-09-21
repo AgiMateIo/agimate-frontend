@@ -50,6 +50,18 @@ export default function TeamRequestsPage() {
   // list fails must not take the correspondence down with it.
   const { data: agentsPage } = useQuery(agentsListOptions(teamId));
 
+  // The pills narrow what is on screen, and the open thread is picked out of
+  // that same set: filtering to "never started" and landing in a branch that is
+  // not in the list reads as the filter having done nothing.
+  const visible = useMemo(
+    () => (status ? requests.filter((r) => r.status === status) : requests),
+    [requests, status],
+  );
+
+  // Land in the freshest branch rather than an empty frame — derived, so a row
+  // that drops out of the visible set falls back to the newest on its own.
+  const active = visible.find((r) => r.id === activeId) ?? visible[0] ?? null;
+
   const { patchRequest, invalidateLists, invalidateThread } = useAgentRequestCacheActions(teamId);
   // A branch the user has loaded is updated from the event itself; one that has
   // just started is a row nobody has, so the list is re-read instead. The open
@@ -58,13 +70,11 @@ export default function TeamRequestsPage() {
     onRequest: (kind, row) => {
       if (kind === 'started') invalidateLists();
       else patchRequest(row);
-      if (row.id === activeId) invalidateThread(row.id);
+      // Against what is on screen, not against what was clicked: the open
+      // thread is usually the one nobody selected — the freshest row.
+      if (row.id === active?.id) invalidateThread(row.id);
     },
   });
-
-  // Land in the freshest branch rather than an empty frame — derived, so a row
-  // that drops out of a filtered list falls back to the newest on its own.
-  const active = requests.find((r) => r.id === activeId) ?? requests[0] ?? null;
 
   const error = query.error ? getErrorMessage(query.error, t('loadError')) : '';
 
@@ -76,7 +86,8 @@ export default function TeamRequestsPage() {
         {/* Both panes stay mounted; below `md` only one is displayed. */}
         <AgentRequestsPane
           className={mobilePane === 'list' ? 'flex' : 'hidden'}
-          requests={requests}
+          requests={visible}
+          filtered={status !== null}
           loading={query.isPending}
           activeId={active?.id ?? null}
           onSelect={(id) => {
@@ -135,6 +146,10 @@ export default function TeamRequestsPage() {
             </>
           ) : query.isPending ? (
             <Placeholder>{tCommon('loading')}</Placeholder>
+          ) : requests.length > 0 ? (
+            // Filtered down to nothing — the team has correspondence, just not
+            // of the status that is selected.
+            <Placeholder>{t('emptyFiltered')}</Placeholder>
           ) : (
             <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
               <ArrowsRightLeftIcon className="h-12 w-12 text-muted/50" />
