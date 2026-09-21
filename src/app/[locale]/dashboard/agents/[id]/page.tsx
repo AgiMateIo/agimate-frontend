@@ -122,6 +122,10 @@ export default function AgentGeneralPage() {
           // read as "leave it alone".
           onSave={(next) => save({ description: next.trim() })}
           defaultError={t('updateError')}
+          // The description is not decoration: the other agents of the team
+          // read it when they decide whom to hand a piece of work to, and it is
+          // the only thing they read about this one.
+          hint={t('descriptionHint')}
           editor={({ draft, setDraft, disabled, onKeyDown }) => (
             <TextArea
               autoFocus

@@ -142,7 +142,8 @@
     "renamedNotice": "The name “{requested}” was taken, so the agent was created as “{actual}”.",
     "skillInstanceHint": "The agent has several connections of this type open — pick the one this skill works with.",
     "skillInstanceNotChosen": "Not chosen",
-    "skillBindFailed": "Could not bind these skills: {names}. The agent exists — bind them from its page."
+    "skillBindFailed": "Could not bind these skills: {names}. The agent exists — bind them from its page.",
+    "descriptionHint": "This is what the other agents of the team go by when they decide whom to hand a piece of work to."
   },
   "Chat": {
     "pageTitle": "Chat",
@@ -858,7 +859,9 @@
     "bindSectionInstances": "My connections",
     "bindSectionInternal": "Built-in capabilities",
     "bindConnectionHint": "Built-in capabilities (memory, board, sheets) are opened like any integration — and removed the same way.",
-    "deleteAgentWarning": "This action cannot be undone. The agent will stop processing triggers immediately."
+    "deleteAgentWarning": "This action cannot be undone. The agent will stop processing triggers immediately.",
+    "descriptionHint": "The other agents of the team read this description when they decide whom to hand a piece of work to — say what to come to this agent with.",
+    "teamSkillNeedsTeam": "The agent is in no team, and work can only be handed to members of one. The skill binds, but does nothing until the agent joins a team."
   },
   "LlmProviders": {
     "title": "LLM Providers",
