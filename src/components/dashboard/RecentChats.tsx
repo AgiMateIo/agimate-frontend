@@ -8,6 +8,7 @@ import { allAgentsOptions } from '@/queries/agents';
 import { webchatSessionsOptions } from '@/queries/webchat';
 import { formatDateTimeFull, formatDateTimeShort } from '@/utils/date';
 import { Placeholder } from '@/components/ui/Placeholder';
+import { UnreadBadge } from '@/components/ui/UnreadBadge';
 
 const RECENT_SIZE = 5;
 
@@ -72,14 +73,7 @@ export default function RecentChats() {
                     )}
                   </span>
                 </span>
-                {session.unreadCount > 0 && (
-                  <span
-                    aria-label={tChat('unreadCount', { count: session.unreadCount })}
-                    className="min-w-[1.25rem] shrink-0 rounded-full bg-accent px-1.5 py-0.5 text-center text-[10px] font-semibold leading-none tabular-nums text-accent-foreground"
-                  >
-                    {session.unreadCount > 99 ? '99+' : session.unreadCount}
-                  </span>
-                )}
+                <UnreadBadge count={session.unreadCount} />
                 <span
                   className="shrink-0 whitespace-nowrap text-xs tabular-nums text-muted"
                   title={formatDateTimeFull(session.lastActivityAt)}

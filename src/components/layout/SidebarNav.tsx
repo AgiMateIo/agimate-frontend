@@ -23,6 +23,8 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import Logo from '@/components/ui/Logo';
+import { UnreadBadge } from '@/components/ui/UnreadBadge';
+import { useTotalUnread } from '@/queries/webchat';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useIsDesktop } from '@/hooks/useMediaQuery';
 import { usePersistentValue } from '@/hooks/usePersistentValue';
@@ -71,6 +73,7 @@ type NavItem = {
   href: string;
   createHref?: string; // renders an inline "+" action (e.g. Agents → wizard)
   createLabel?: string;
+  badge?: number; // unread count; 0 or absent shows nothing
 };
 
 type NavGroup = {
@@ -98,7 +101,10 @@ const matchedLength = (pathname: string, href: string): number => {
   return -1;
 };
 
-const getNavGroups = (t: ReturnType<typeof useTranslations>): NavGroup[] => [
+const getNavGroups = (
+  t: ReturnType<typeof useTranslations>,
+  counts: { agentsUnread: number },
+): NavGroup[] => [
   {
     label: t('workspace'),
     items: [
@@ -109,6 +115,7 @@ const getNavGroups = (t: ReturnType<typeof useTranslations>): NavGroup[] => [
         href: '/dashboard/agents',
         createHref: '/dashboard/agents/create',
         createLabel: t('createAgent'),
+        badge: counts.agentsUnread,
       },
       { label: t('skills'), icon: AcademicCapIcon, href: '/dashboard/skills' },
       {
@@ -157,6 +164,7 @@ export default function SidebarNav({
   const pathname = usePathname();
   const t = useTranslations('Sidebar');
   const tCommon = useTranslations('Common');
+  const agentsUnread = useTotalUnread();
   const isAdmin = useIsAdmin();
   const isDesktop = useIsDesktop();
 
@@ -189,7 +197,7 @@ export default function SidebarNav({
     setNavSlide({ mode: navMode, id: navId, slide: slideClass });
   }
 
-  const groups = getNavGroups(t);
+  const groups = getNavGroups(t, { agentsUnread });
 
   // Resolve the single most-specific active leaf across every group.
   let activeHref: string | null = null;
@@ -302,10 +310,24 @@ export default function SidebarNav({
                               ? 'bg-accent text-accent-foreground'
                               : 'text-muted hover:bg-surface-secondary hover:text-foreground'
                         }`;
+                const badge = disabled ? 0 : (item.badge ?? 0);
                 const itemBody = (
                   <>
                     <item.icon className="h-5 w-5 shrink-0" />
                     {!iconOnly && <span className="truncate">{item.label}</span>}
+                    {/* Shares the right edge with "+": hides on hover, shifts when active. */}
+                    {!iconOnly && (
+                      <UnreadBadge
+                        count={badge}
+                        inverse={isActive}
+                        className={`ml-auto ${
+                          item.createHref ? (isActive ? 'mr-7' : 'group-hover/item:opacity-0') : ''
+                        }`}
+                      />
+                    )}
+                    {iconOnly && (
+                      <UnreadBadge count={badge} dot ring inverse={isActive} className="absolute right-1.5 top-1.5" />
+                    )}
                   </>
                 );
 

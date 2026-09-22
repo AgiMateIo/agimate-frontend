@@ -2,14 +2,23 @@
 //
 // The conversation itself (listing, history, read pointer, close, rename) moved
 // to the channel-agnostic `/manage/sessions` — see modules/chatSessions.ts.
-import { httpClient } from '../httpClient';
+import { httpClient, buildPagedQuery } from '../httpClient';
 import { API } from '@/config/constants';
 import type {
   ChatSessionResponse,
+  PagedResponse,
+  WebchatContactResponse,
   WebchatSendMessageResponse,
 } from '@/types';
 
 export const webchatApi = {
+  // Freshest first; the source of per-agent unread counts. `size` ≤ 100.
+  async getWebchatContacts(params?: { page?: number; size?: number }): Promise<PagedResponse<WebchatContactResponse>> {
+    return httpClient.get<PagedResponse<WebchatContactResponse>>(
+      `${API.ENDPOINTS.CONTROL_API}/manage/webchat/contacts/?${buildPagedQuery({}, params)}`,
+    );
+  },
+
   // Every call creates a new session; the first POST for an agent lazily
   // wires webchat to it on the backend. Answers the same row the sessions
   // listing returns.

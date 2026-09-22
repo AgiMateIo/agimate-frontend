@@ -19,6 +19,7 @@ import {
   UserCircleIcon,
 } from '@heroicons/react/24/outline';
 import { useAgentDetailQuery, allAgentsOptions, agentsListOptions } from '@/queries/agents';
+import { useAgentUnread, useUnreadByAgent } from '@/queries/webchat';
 import { getAgentAvatarUrl } from '@/utils/avatar';
 import { isMcpAgent } from '@/utils/agent';
 import ContextNav from './ContextNav';
@@ -76,6 +77,8 @@ export default function AgentContextNav({
 
   // Non-suspense: the sidebar must never blank out or throw while the agent loads.
   const { data: agent } = useAgentDetailQuery(agentId);
+  const chatUnread = useAgentUnread(agentId);
+  const unreadByAgent = useUnreadByAgent();
 
   // Team-owned agents "live" in their team, so back/create target the team's agents
   // section instead of the global list, and the switcher offers only teammates.
@@ -127,6 +130,8 @@ export default function AgentContextNav({
         href: hrefFor(agentId, seg),
         label: t(labelKey),
         icon,
+        // Hidden in the open chat: replies are marked read as they arrive.
+        badge: key === 'chat' && currentSection !== 'chat' ? chatUnread : undefined,
       }))}
       currentSection={currentSection}
       switcher={{
@@ -137,6 +142,7 @@ export default function AgentContextNav({
           id: a.id,
           name: a.name,
           avatarUrl: getAgentAvatarUrl(a.name),
+          badge: unreadByAgent?.get(a.id),
         })),
         currentId: agentId,
         onSelect: (id) => {

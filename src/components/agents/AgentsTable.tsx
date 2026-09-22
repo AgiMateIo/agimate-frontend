@@ -4,6 +4,8 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { Chip } from '@/components/ui/Chip';
 import { getAgentAvatarUrl } from '@/utils/avatar';
+import { UnreadBadge } from '@/components/ui/UnreadBadge';
+import { useAgentUnread } from '@/queries/webchat';
 import { formatDateTimeFull, formatDateTimeShort } from '@/utils/date';
 import type { AgentResponse } from '@/types';
 import { TYPE_META, agentHref, agentPreview, previewTooltip } from './agentMeta';
@@ -16,6 +18,7 @@ function AgentRow({ agent }: { agent: AgentResponse }) {
   const t = useTranslations('Agents');
 
   const typeMeta = TYPE_META[agent.type];
+  const unread = useAgentUnread(agent.id);
   const preview = agentPreview(agent);
   const extraSkills = agent.skills.length - MAX_SKILLS;
 
@@ -23,12 +26,13 @@ function AgentRow({ agent }: { agent: AgentResponse }) {
     <tr className={`border-b border-border transition-colors last:border-b-0 hover:bg-surface-secondary ${agent.enabled ? '' : 'opacity-60'}`}>
       <td className="py-2 pr-2">
         {/* The portrait navigates too — in the other two views the whole item does. */}
-        <Link href={agentHref(agent)} tabIndex={-1} aria-hidden>
+        <Link href={agentHref(agent)} tabIndex={-1} aria-hidden className="relative block w-10">
           <img
             src={getAgentAvatarUrl(agent.name)}
             alt=""
             className="h-10 w-10 shrink-0 rounded-md bg-surface-secondary"
           />
+          <UnreadBadge count={unread} ring className="absolute -right-2 -top-1.5" />
         </Link>
       </td>
       <td className="max-w-0 py-2 px-2">
@@ -38,6 +42,8 @@ function AgentRow({ agent }: { agent: AgentResponse }) {
           title={agent.name}
         >
           {agent.name}
+          {/* The portrait link is aria-hidden, so the count is read here. */}
+          <UnreadBadge count={unread} srOnly />
         </Link>
         {/* The prompt stands in for a missing description, in mono as on the
             card — it is the agent's text, not a sentence someone wrote about it. */}
