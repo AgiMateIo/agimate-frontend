@@ -229,6 +229,10 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
                 ? purposeState(chatProvider.purposePriority, purpose)
                 : 'unset';
               const inherited = inheritedState === 'list' ? inheritedModel(purpose) : undefined;
+              // ROUTINE is the one purpose that never fails: without a model of
+              // its own or on the chat provider's list it runs on the chat model.
+              const onChatModel = unbound && purpose === 'ROUTINE' && !inherited;
+              const chatModel = chatBinding?.model ?? platformRow?.model;
 
               return (
                 <tr
@@ -236,8 +240,8 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
                   className="border-b border-border last:border-b-0 hover:bg-surface-secondary transition-colors"
                 >
                   <td className="py-3 px-4 text-sm">
-                    {/* Tool purposes stand out; CHAT (the norm) stays neutral. */}
-                    <Chip tone={purpose === 'CHAT' ? 'default' : 'accent'}>
+                    {/* Tool purposes stand out; the text ones (the norm) stay neutral. */}
+                    <Chip tone={purpose === 'CHAT' || purpose === 'ROUTINE' ? 'default' : 'accent'}>
                       {tp(purposeLabelKey[purpose])}
                     </Chip>
                   </td>
@@ -271,6 +275,10 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
                         <span className="text-muted" title={t('inheritedModelHint')}>
                           {t('inheritedFromProvider', { provider: chatProvider!.name })}
                         </span>
+                      ) : onChatModel ? (
+                        <span className="text-muted" title={t('routineOnChatModelHint')}>
+                          {t('routineOnChatModel')}
+                        </span>
                       ) : inheritedState === 'off' ? (
                         <Chip icon={ExclamationTriangleIcon} tone="warning" title={t('purposeOffHint', { provider: chatProvider!.name })}>
                           {t('purposeOff')}
@@ -287,7 +295,9 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
                       {binding?.model ?? platform?.model ?? (
                         inherited
                           ? <span className="text-muted">{inherited}</span>
-                          : <span className="text-muted font-sans">—</span>
+                          : onChatModel && chatModel
+                            ? <span className="text-muted">{chatModel}</span>
+                            : <span className="text-muted font-sans">—</span>
                       )}
                       {binding && isModelUnfit(binding) && (
                         <Chip icon={ExclamationTriangleIcon} tone="warning" title={tp(purposeRequirementLabelKey[binding.purpose])}>

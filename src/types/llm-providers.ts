@@ -173,17 +173,22 @@ export interface UpdateModelExtraBodyRequest {
 // (llmProviderId is null) and not persisted, so it must not be edited/deleted.
 export type AgentLlmSource = 'USER' | 'PLATFORM';
 
-// CHAT — the agent's main conversation model; the rest are tool models for the
-// media connector (image generation / vision / speech-to-text / text-to-speech).
+// CHAT — the agent's main conversation model; ROUTINE — the platform's own
+// housekeeping over the agent's conversations (compressing a long one into a
+// summary, naming it), where a cheap fast model beats a clever one; the rest are
+// tool models for the media connector (image generation / vision /
+// speech-to-text / text-to-speech).
 // The purpose IS the binding's identity: one model per purpose per agent, and
 // the value travels in the PUT/DELETE path (uppercase — lowercase gives 400).
 // Resolution order, with no guessing at any step: the agent's own binding →
 // `purposePriority` of the provider carrying the agent's CHAT binding → the
 // platform provider's. Nothing found = the tool call fails, and the user reads
-// the reason verbatim in the chat.
+// the reason verbatim in the chat. ROUTINE is the exception: it never fails —
+// with nothing bound it takes a model of the CHAT provider and, failing that,
+// the chat model itself.
 // AUDIO_IN/AUDIO_OUT are accepted and stored everywhere, but no speech tools
 // exist yet — bindings on them do nothing so far.
-export type AgentLlmPurpose = 'CHAT' | 'IMAGE' | 'VISION' | 'AUDIO_IN' | 'AUDIO_OUT';
+export type AgentLlmPurpose = 'CHAT' | 'ROUTINE' | 'IMAGE' | 'VISION' | 'AUDIO_IN' | 'AUDIO_OUT';
 
 export interface AgentLlmResponse {
   model: string;

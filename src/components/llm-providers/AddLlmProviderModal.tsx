@@ -28,7 +28,7 @@ import {
   providerTypeOptions,
   suggestMediaTransport,
 } from './providerTypes';
-import { LLM_PURPOSES, purposeLabelKey, unusableSeededModels } from './llmPurpose';
+import { LLM_PURPOSES, isKnownPurpose, purposeLabelKey, unusableSeededModels } from './llmPurpose';
 import { LlmProviderCatalogPicker } from './LlmProviderCatalogPicker';
 import { MediaTransportField, type MediaTransportChoice } from './MediaTransportField';
 import { ExtraBodyField } from './ExtraBodyField';
@@ -256,7 +256,9 @@ export default function AddLlmProviderModal({ onClose, onSuccess, prefill }: Add
           <ul className="border border-border rounded-lg divide-y divide-border/50">
             {seedMismatch.unusable.map(({ purpose, model }) => (
               <li key={`${purpose}:${model}`} className="flex items-center gap-2 px-3 py-2">
-                <Chip tone={purpose === 'CHAT' ? 'default' : 'accent'}>{t(purposeLabelKey[purpose])}</Chip>
+                <Chip tone={purpose === 'CHAT' ? 'default' : 'accent'}>
+                  {isKnownPurpose(purpose) ? t(purposeLabelKey[purpose]) : purpose}
+                </Chip>
                 <span className="text-sm font-mono text-foreground truncate">{model}</span>
               </li>
             ))}
