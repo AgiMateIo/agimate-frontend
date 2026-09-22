@@ -6,7 +6,6 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { allAgentsOptions } from '@/queries/agents';
 import { webchatSessionsOptions } from '@/queries/webchat';
-import { useLiveSessionRows } from '@/queries/chat-sessions';
 import { formatDateTimeFull, formatDateTimeShort } from '@/utils/date';
 import { Placeholder } from '@/components/ui/Placeholder';
 
@@ -18,7 +17,6 @@ export default function RecentChats() {
   // Same key as the dashboard counters — no second request.
   const { data: sessions, isPending } = useQuery(webchatSessionsOptions());
   const { data: agents } = useQuery(allAgentsOptions());
-  useLiveSessionRows();
 
   const agentNames = useMemo(() => {
     const map = new Map<string, string>();

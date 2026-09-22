@@ -99,6 +99,22 @@ async function setup(): Promise<void> {
 }
 
 /**
+ * Subscribes to the personal channel unless that is done or under way. Called
+ * by the dashboard shell up front, so nothing published between sign-in and
+ * the first screen that listens is lost.
+ */
+export function openPersonalChannel(): void {
+  if (subscription || setupInFlight) return;
+  setupInFlight = setup()
+    .catch((err) => {
+      console.error('[centrifugo] personal subscription failed:', err);
+    })
+    .finally(() => {
+      setupInFlight = null;
+    });
+}
+
+/**
  * Adds a listener for personal-channel events, subscribing on the first one.
  *
  * The subscription outlives its listeners on purpose: it is one channel per
@@ -108,15 +124,7 @@ async function setup(): Promise<void> {
  */
 export function subscribePersonalChannel(listener: Listener): () => void {
   listeners.add(listener);
-  if (!subscription && !setupInFlight) {
-    setupInFlight = setup()
-      .catch((err) => {
-        console.error('[centrifugo] personal subscription failed:', err);
-      })
-      .finally(() => {
-        setupInFlight = null;
-      });
-  }
+  openPersonalChannel();
   return () => {
     listeners.delete(listener);
   };

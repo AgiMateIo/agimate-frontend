@@ -19,6 +19,12 @@ export const LLM_PURPOSES: readonly AgentLlmPurpose[] = ['CHAT', 'ROUTINE', 'IMA
 // there would configure nothing — keep it out of the UI until one does.
 export const PROVIDER_PURPOSES: readonly AgentLlmPurpose[] = ['CHAT', 'ROUTINE', 'VISION', 'IMAGE'];
 
+// The text purposes — the conversation and the platform's housekeeping over
+// it — read as the norm; the media tools are what stands out in a list.
+export function isTextPurpose(purpose: string): boolean {
+  return purpose === 'CHAT' || purpose === 'ROUTINE';
+}
+
 export const purposeLabelKey = {
   CHAT: 'purposeChat',
   ROUTINE: 'purposeRoutine',
@@ -75,13 +81,13 @@ export function purposeState(priority: LlmPurposePriority | null | undefined, pu
 export function unusableSeededModels(
   priority: LlmPurposePriority | null | undefined,
   models: LlmProviderModelResponse[]
-): { purpose: AgentLlmPurpose; model: string }[] {
+): { purpose: string; model: string }[] {
   if (models.length === 0) return [];
   const usable = new Set(models.filter((m) => m.status === 'AVAILABLE').map((m) => m.model));
   return Object.entries(priority ?? {}).flatMap(([purpose, list]) =>
     (list ?? [])
       .filter((model) => !usable.has(model))
-      .map((model) => ({ purpose: purpose as AgentLlmPurpose, model }))
+      .map((model) => ({ purpose, model }))
   );
 }
 

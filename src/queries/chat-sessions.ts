@@ -6,6 +6,7 @@ import {
   useQuery,
   useQueryClient,
   type InfiniteData,
+  type QueryClient,
   type QueryKey,
 } from '@tanstack/react-query';
 import apiService from '@/services/api';
@@ -56,10 +57,11 @@ export function useSessionMessagesQuery(sessionId: string) {
 // workers, not to a list somebody scrolls.
 const ERRANDS_PAGE_SIZE = 50;
 
-// How often the list is re-read while one of them is working. They report in
-// the background with nothing to announce them — the parent chat's own events
-// only fire once the agent answers, which is after the last of them is done.
-const RUNNING_POLL_MS = 5_000;
+// How often the list is re-read while one of them is working. The rows are
+// live (`session.updated` flips `isRunning`), so this is only the backstop for
+// a lost event and for a worker that died quietly — its row keeps saying
+// "running" for up to 15 minutes and no event announces the end of that.
+const RUNNING_POLL_MS = 30_000;
 
 export const errandSessionsOptions = (parentSessionId: string) =>
   queryOptions({
@@ -71,30 +73,14 @@ export const errandSessionsOptions = (parentSessionId: string) =>
         size: ERRANDS_PAGE_SIZE,
       }),
     select: (page) => page.content,
-    // A worker that died quietly keeps `isRunning` for up to 15 minutes, so
-    // this can poll a conversation nobody is waiting on any more. It costs one
-    // request per five seconds on an open chat only — the panel unmounts with
-    // the conversation.
+    // Costs one request per thirty seconds on an open chat only — the panel
+    // unmounts with the conversation.
     refetchInterval: (query) =>
       query.state.data?.content.some((s) => s.isRunning) ? RUNNING_POLL_MS : false,
   });
 
 export function useErrandSessionsQuery(parentSessionId: string) {
   return useQuery(errandSessionsOptions(parentSessionId));
-}
-
-// Re-reads the errands of one conversation. The chat calls it on every
-// non-progress event: a worker that has just reported turns the agent's
-// answer into an event here, and that is the moment the list stops being
-// "three working" — the poll above would otherwise carry the stale row for up
-// to five seconds under an answer that is already on screen.
-export function useInvalidateErrandSessions() {
-  const queryClient = useQueryClient();
-  return useCallback(
-    (parentSessionId: string) =>
-      queryClient.invalidateQueries({ queryKey: chatSessionKeys.errands(parentSessionId) }),
-    [queryClient],
-  );
 }
 
 type SessionPage = PagedResponse<ChatSessionResponse>;
@@ -157,54 +143,65 @@ function placeInPages(
 }
 
 /**
- * Keeps every cached session list in step with the personal channel's
- * `session.created` / `session.updated`: the webchat lists (chat pane, recent
- * chats, the dashboard counter), a channel's conversations and a
- * conversation's errands. Each event is the listing's row in full, so it
- * replaces the cached one — a repeat is the same row again, and nothing is
- * ever counted up locally. A list is touched only if the row belongs to it by
- * that list's own filter, which is what keeps a Telegram thread out of the
- * chat pane and an errand out of everything but its parent's panel.
- *
- * Mounted by each screen that shows such a list; two mounted at once apply the
- * same replacement twice, which changes nothing.
+ * Puts one session row into every cached list it belongs to — by that list's
+ * own filter, which is what keeps a Telegram thread out of the chat pane and an
+ * errand out of everything but its parent's panel. The one way a session row
+ * enters the cache: a live `session.*` event and a REST answer (a chat just
+ * started, a rename, a close) both come through here, since both are the
+ * listing's row in full. Replacing is idempotent, so the event that follows a
+ * local write changes nothing.
  */
-export function useLiveSessionRows() {
+export function applySessionRow(
+  queryClient: QueryClient,
+  row: ChatSessionResponse,
+  isNew = false,
+) {
+  const pages = (queryKey: QueryKey) =>
+    queryClient.setQueryData<InfiniteData<SessionPage>>(
+      queryKey,
+      (old) => old && placeInPages(old, row, isNew),
+    );
+  const page = (queryKey: QueryKey) =>
+    queryClient.setQueryData<SessionPage>(queryKey, (old) => {
+      const content = old && placeRow(old.content, row, isNew);
+      if (!old || !content) return old;
+      const grew = isNew && !old.content.some((s) => s.id === row.id);
+      return { ...old, content, totalElements: old.totalElements + (grew ? 1 : 0) };
+    });
+
+
+  if (row.connectorCode === 'webchat' && row.parentSessionId === null) {
+    for (const agentId of [undefined, row.agentId]) {
+      pages(webchatKeys.sessionsPages(agentId));
+      page(webchatKeys.sessionsList(agentId));
+    }
+  }
+  if (row.channelId) pages(channelKeys.sessions(row.channelId));
+  if (row.parentSessionId) page(chatSessionKeys.errands(row.parentSessionId));
+}
+
+export function useApplySessionRow() {
   const queryClient = useQueryClient();
-
-  const apply = useCallback(
-    ({ type, session: row }: SessionEvent) => {
-      const isNew = type === 'session.created';
-
-      const pages = (queryKey: QueryKey) =>
-        queryClient.setQueryData<InfiniteData<SessionPage>>(
-          queryKey,
-          (old) => old && placeInPages(old, row, isNew),
-        );
-      const page = (queryKey: QueryKey) =>
-        queryClient.setQueryData<SessionPage>(queryKey, (old) => {
-          const content = old && placeRow(old.content, row, isNew);
-          if (!old || !content) return old;
-          const grew = isNew && !old.content.some((s) => s.id === row.id);
-          return { ...old, content, totalElements: old.totalElements + (grew ? 1 : 0) };
-        });
-
-      if (row.connectorCode === 'webchat' && row.parentSessionId === null) {
-        for (const agentId of [undefined, row.agentId]) {
-          pages(webchatKeys.sessionsPages(agentId));
-          page(webchatKeys.sessionsList(agentId));
-        }
-      }
-      if (row.channelId) pages(channelKeys.sessions(row.channelId));
-      if (row.parentSessionId) {
-        queryClient.setQueryData<SessionPage>(chatSessionKeys.errands(row.parentSessionId), (old) => {
-          const content = old && placeRow(old.content, row, isNew);
-          return old && content ? { ...old, content } : old;
-        });
-      }
-    },
+  return useCallback(
+    (row: ChatSessionResponse, isNew = false) => applySessionRow(queryClient, row, isNew),
     [queryClient],
   );
+}
 
-  useSessionEventsSubscription(apply);
+/**
+ * Keeps every cached session list in step with the personal channel's
+ * `session.created` / `session.updated`. Mounted once, with the dashboard
+ * shell — a screen showing sessions needs nothing of its own. Each event is
+ * the listing's row in full: nothing is ever counted up locally, the badge is
+ * the server's `unreadCount`.
+ */
+export function useLiveSessionRows(enabled: boolean) {
+  const apply = useApplySessionRow();
+  useSessionEventsSubscription(
+    enabled,
+    useCallback(
+      ({ type, session }: SessionEvent) => apply(session, type === 'session.created'),
+      [apply],
+    ),
+  );
 }

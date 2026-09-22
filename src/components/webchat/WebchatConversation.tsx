@@ -31,7 +31,6 @@ import { formatDateTimeShort } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
 import { useWebchatSubscription } from '@/realtime/useWebchatSubscription';
 import { useMarkWebchatSessionRead } from '@/queries/webchat';
-import { useInvalidateErrandSessions } from '@/queries/chat-sessions';
 import { useWebchatThread, ThreadMessage } from './useWebchatThread';
 import { ChatMessageText } from './ChatMessageText';
 import { ChatMessageAttachments, type RefreshParts } from './ChatMessageAttachments';
@@ -50,9 +49,6 @@ interface WebchatConversationProps {
   // Closing and renaming both answer the enriched row — one handler puts either
   // back into the sessions list.
   onSessionUpdated: (updated: ChatSessionResponse) => void;
-  // Title/lastActivityAt change server-side as messages flow — the parent
-  // refreshes the sessions list on non-progress events.
-  onActivity: () => void;
   // Returns to the sessions list where the two panes can't share the screen
   // (below `md`); the button that calls it is hidden from `md` up.
   onBack?: () => void;
@@ -127,7 +123,6 @@ export default function WebchatConversation({
   session,
   agentName,
   onSessionUpdated,
-  onActivity,
   onBack,
 }: WebchatConversationProps) {
   const t = useTranslations('Chat');
@@ -137,7 +132,6 @@ export default function WebchatConversation({
   const sessionId = session.id;
   const thread = useWebchatThread(sessionId, session.isRunning);
   const markRead = useMarkWebchatSessionRead();
-  const invalidateErrands = useInvalidateErrandSessions();
   // Text, tray and the in-flight send live above this component: switching
   // sessions remounts it (`key={sessionId}` — the thread is built on that), and
   // a draft is not something to lose over a click on another conversation.
@@ -166,10 +160,6 @@ export default function WebchatConversation({
   const anchoringRef = useRef(false);
 
   const { handleEvent } = thread;
-  const onActivityRef = useRef(onActivity);
-  useEffect(() => {
-    onActivityRef.current = onActivity;
-  }, [onActivity]);
 
   // Opening a conversation is reading it — the pointer goes to the end, with no
   // body, and the badge on the row behind it drops to zero. Sending a message
@@ -185,10 +175,6 @@ export default function WebchatConversation({
     onMessage: (p: WebchatMessagePayload) => {
       handleEvent(p);
       if (p.stream === 'progress') return;
-      onActivityRef.current();
-      // The agent only speaks once every errand has reported, so an answer is
-      // also the news that the panel above has nothing running any more.
-      void invalidateErrands(sessionId);
       // A reply that lands while the user is looking at it is read on arrival:
       // otherwise leaving the chat would leave a badge for a message they
       // watched being written.

@@ -7,7 +7,6 @@ import apiService from '@/services/api';
 import { useRouter } from '@/i18n/navigation';
 import { useLlmProviderCatalogQuery, useLlmProviderCacheActions } from '@/queries/llm-providers';
 import {
-  AgentLlmPurpose,
   CreateLlmProviderRequest,
   LlmProviderCatalogEntry,
   LlmProviderType,
@@ -28,7 +27,7 @@ import {
   providerTypeOptions,
   suggestMediaTransport,
 } from './providerTypes';
-import { LLM_PURPOSES, isKnownPurpose, purposeLabelKey, unusableSeededModels } from './llmPurpose';
+import { LLM_PURPOSES, isKnownPurpose, isTextPurpose, purposeLabelKey, unusableSeededModels } from './llmPurpose';
 import { LlmProviderCatalogPicker } from './LlmProviderCatalogPicker';
 import { MediaTransportField, type MediaTransportChoice } from './MediaTransportField';
 import { ExtraBodyField } from './ExtraBodyField';
@@ -97,7 +96,7 @@ export default function AddLlmProviderModal({ onClose, onSuccess, prefill }: Add
   const [refreshError, setRefreshError] = useState<string | null>(null);
   // Set when the provider was created and its seeded models turned out unusable.
   const [seedMismatch, setSeedMismatch] = useState<
-    { providerId: string; unusable: { purpose: AgentLlmPurpose; model: string }[] } | null
+    { providerId: string; unusable: { purpose: string; model: string }[] } | null
   >(null);
 
   const isCompatible = providerType === 'OPENAI_COMPATIBLE';
@@ -256,7 +255,7 @@ export default function AddLlmProviderModal({ onClose, onSuccess, prefill }: Add
           <ul className="border border-border rounded-lg divide-y divide-border/50">
             {seedMismatch.unusable.map(({ purpose, model }) => (
               <li key={`${purpose}:${model}`} className="flex items-center gap-2 px-3 py-2">
-                <Chip tone={purpose === 'CHAT' ? 'default' : 'accent'}>
+                <Chip tone={isTextPurpose(purpose) ? 'default' : 'accent'}>
                   {isKnownPurpose(purpose) ? t(purposeLabelKey[purpose]) : purpose}
                 </Chip>
                 <span className="text-sm font-mono text-foreground truncate">{model}</span>
@@ -363,7 +362,7 @@ export default function AddLlmProviderModal({ onClose, onSuccess, prefill }: Add
             <ul className="space-y-1.5">
               {seededRows.map(({ purpose, models }) => (
                 <li key={purpose} className="flex items-start gap-2">
-                  <Chip tone={purpose === 'CHAT' ? 'default' : 'accent'}>{t(purposeLabelKey[purpose])}</Chip>
+                  <Chip tone={isTextPurpose(purpose) ? 'default' : 'accent'}>{t(purposeLabelKey[purpose])}</Chip>
                   <span className="text-xs text-muted min-w-0 pt-0.5">
                     {models.length > 0 ? (
                       <span className="font-mono break-all">{models.join(' → ')}</span>

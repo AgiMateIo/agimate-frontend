@@ -2,7 +2,7 @@
 
 import { useEffect, useSyncExternalStore } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { getResyncEpoch, subscribePersonalChannel, subscribeResync } from './personalChannel';
+import { getResyncEpoch, openPersonalChannel, subscribeResync } from './personalChannel';
 
 /**
  * Opens the personal channel as soon as the dashboard shell mounts, before any
@@ -15,14 +15,10 @@ export function usePersonalChannel(enabled: boolean) {
 
   useEffect(() => {
     if (!enabled) return;
-    const stop = subscribePersonalChannel(() => {});
-    const stopResync = subscribeResync(() => {
+    openPersonalChannel();
+    return subscribeResync(() => {
       void queryClient.invalidateQueries();
     });
-    return () => {
-      stop();
-      stopResync();
-    };
   }, [enabled, queryClient]);
 }
 

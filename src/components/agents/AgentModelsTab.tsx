@@ -23,6 +23,7 @@ import { matchCapabilityFilter } from '@/components/llm-providers/modelRegistry'
 import { Placeholder } from '@/components/ui/Placeholder';
 import {
   LLM_PURPOSES,
+  isTextPurpose,
   purposeLabelKey,
   purposeRequirement,
   purposeRequirementLabelKey,
@@ -241,7 +242,7 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
                 >
                   <td className="py-3 px-4 text-sm">
                     {/* Tool purposes stand out; the text ones (the norm) stay neutral. */}
-                    <Chip tone={purpose === 'CHAT' || purpose === 'ROUTINE' ? 'default' : 'accent'}>
+                    <Chip tone={isTextPurpose(purpose) ? 'default' : 'accent'}>
                       {tp(purposeLabelKey[purpose])}
                     </Chip>
                   </td>

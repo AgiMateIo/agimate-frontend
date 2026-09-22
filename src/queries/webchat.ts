@@ -115,9 +115,9 @@ export function useMarkWebchatSessionRead() {
       clear();
       try {
         await apiService.markChatSessionRead(sessionId, lastReadMessageId);
-        // Again after the round trip: the same message that triggered this also
-        // refetches the sessions list, and a response the server prepared before
-        // the pointer moved brings the count back.
+        // Again after the round trip: a `session.updated` carrying the message
+        // that triggered this can land after the first clear, with the count
+        // from before the pointer moved.
         clear();
       } catch {
         // Swallowed on purpose — see above.
@@ -125,55 +125,4 @@ export function useMarkWebchatSessionRead() {
     },
     [queryClient],
   );
-}
-
-export function useWebchatCacheActions() {
-  const queryClient = useQueryClient();
-
-  return {
-    // Prepend a freshly created session into the lists it belongs to.
-    addSession: (session: ChatSessionResponse) => {
-      for (const key of [
-        webchatKeys.sessionsPages(undefined),
-        webchatKeys.sessionsPages(session.agentId),
-      ]) {
-        queryClient.setQueryData<SessionPages>(key, (old) => {
-          if (!old) return old;
-          const pages = old.pages.map((p) => ({
-            ...p,
-            content: p.content.filter((s) => s.id !== session.id),
-          }));
-          return {
-            ...old,
-            pages: [{ ...pages[0], content: [session, ...pages[0].content] }, ...pages.slice(1)],
-          };
-        });
-      }
-      // The counting caller lives on another page — a refetch there is cheaper
-      // than teaching this about `totalElements`.
-      queryClient.invalidateQueries({ queryKey: webchatKeys.sessionsLists() });
-    },
-    // Replace a session in-place across every cached page (e.g. after close).
-    patchSession: (session: ChatSessionResponse) => {
-      queryClient.setQueriesData<SessionPages>(
-        { queryKey: webchatKeys.sessionsPagesAll() },
-        (old) =>
-          old && {
-            ...old,
-            pages: old.pages.map((p) => ({
-              ...p,
-              content: p.content.map((s) => (s.id === session.id ? session : s)),
-            })),
-          },
-      );
-      queryClient.invalidateQueries({ queryKey: webchatKeys.sessionsLists() });
-    },
-    // Called on chat activity in the open conversation — the repair for a
-    // `session.updated` that was lost (those are best-effort; see
-    // `useLiveSessionRows`). It costs one request per page the user has loaded,
-    // so paging deep into the sessions while an agent is answering is the
-    // expensive combination — rare enough to leave alone.
-    invalidateSessions: () =>
-      queryClient.invalidateQueries({ queryKey: webchatKeys.sessions() }),
-  };
 }

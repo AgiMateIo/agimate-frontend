@@ -7,7 +7,7 @@ import { ChevronDownIcon, QueueListIcon, UserGroupIcon } from '@heroicons/react/
 import { Link } from '@/i18n/navigation';
 import { Modal } from '@/components/ui/Modal';
 import SessionTranscript from '@/components/sessions/SessionTranscript';
-import { useErrandSessionsQuery, useLiveSessionRows } from '@/queries/chat-sessions';
+import { useErrandSessionsQuery } from '@/queries/chat-sessions';
 import { agentDetailOptions } from '@/queries/agents';
 import { formatDateTimeShort } from '@/utils/date';
 import type { ChatSessionResponse } from '@/types';
@@ -83,9 +83,6 @@ export default function ErrandsPanel({
   const [openSession, setOpenSession] = useState<ChatSessionResponse | null>(null);
 
   const { data: sessions } = useErrandSessionsQuery(sessionId);
-  // A worker finishing is a `session.updated` with `isRunning: false` — the
-  // row settles on that rather than on the next poll.
-  useLiveSessionRows();
 
   // One request per *other* agent in the list, and none at all for the common
   // case of an agent delegating only to itself. The rows come back with an

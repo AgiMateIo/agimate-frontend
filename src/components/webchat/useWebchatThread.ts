@@ -102,9 +102,8 @@ export function useWebchatThread(sessionId: string | null, running = false) {
   // session selection (the echo swap to signed URLs happens inside a state
   // updater, which must stay pure) and revoked when the thread resets.
   const localPreviewUrlsRef = useRef<string[]>([]);
-  // Read inside the reset effect instead of as a dependency: `isRunning` flips
-  // on every sessions refetch, and re-running that effect would re-fetch the
-  // whole history behind it.
+  // The previous `running`, to tell a rise (a run started elsewhere) from the
+  // value simply being true.
   const runningRef = useRef(running);
   // Whether the indicator currently showing came from that seed and not from
   // anything this thread saw itself.

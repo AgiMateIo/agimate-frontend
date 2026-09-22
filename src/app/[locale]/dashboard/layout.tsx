@@ -10,6 +10,7 @@ import PendingActivationNotice from '@/components/dashboard/PendingActivationNot
 import { BreadcrumbProvider } from '@/contexts/BreadcrumbContext';
 import { useIsGuest } from '@/hooks/useIsGuest';
 import { usePersonalChannel } from '@/realtime/usePersonalChannel';
+import { useLiveSessionRows } from '@/queries/chat-sessions';
 // Side effect only: starts listening for the browser's install offer as soon as
 // the dashboard loads. It fires once per page load, and the settings card that
 // shows it may mount much later.
@@ -48,9 +49,12 @@ export default function DashboardLayout({
   const guestBlocked = isGuest && !GUEST_ALLOWED_ROUTES.includes(pathname);
   const setNavOpen = (open: boolean) => setNav({ open, pathname });
 
-  // One live subscription for the whole app, opened with the shell. A guest
-  // sees nothing that moves, and never asked for a channel token before either.
-  usePersonalChannel(!!user && !isGuest);
+  // One live subscription for the whole app, opened with the shell, and the
+  // session rows it carries applied to whatever list is cached. A guest sees
+  // nothing that moves, and never asked for a channel token before either.
+  const live = !!user && !isGuest;
+  usePersonalChannel(live);
+  useLiveSessionRows(live);
 
   useEffect(() => {
     if (!loading && !user) {

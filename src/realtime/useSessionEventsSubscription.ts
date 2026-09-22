@@ -15,20 +15,22 @@ import type { ChatSessionResponse, SessionEvent } from '@/types';
  * channel and is left alone here: the dashboard has no contacts screen, and a
  * per-agent total is never summed from session rows either.
  */
-export function useSessionEventsSubscription(onEvent: (event: SessionEvent) => void) {
+export function useSessionEventsSubscription(
+  enabled: boolean,
+  onEvent: (event: SessionEvent) => void,
+) {
   const handlerRef = useRef(onEvent);
   useEffect(() => {
     handlerRef.current = onEvent;
   }, [onEvent]);
 
-  useEffect(
-    () =>
-      subscribePersonalChannel(({ type, payload }) => {
-        if (type !== 'session.created' && type !== 'session.updated') return;
-        const session = payload as ChatSessionResponse | undefined;
-        if (!session?.id) return;
-        handlerRef.current({ type, session });
-      }),
-    [],
-  );
+  useEffect(() => {
+    if (!enabled) return;
+    return subscribePersonalChannel(({ type, payload }) => {
+      if (type !== 'session.created' && type !== 'session.updated') return;
+      const session = payload as ChatSessionResponse | undefined;
+      if (!session?.id) return;
+      handlerRef.current({ type, session });
+    });
+  }, [enabled]);
 }

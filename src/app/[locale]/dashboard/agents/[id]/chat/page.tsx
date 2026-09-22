@@ -12,8 +12,9 @@ import WebchatConversation from '@/components/webchat/WebchatConversation';
 import { WebchatComposerProvider } from '@/components/webchat/composerStore';
 import AgentMcpUnavailable from '@/components/agents/AgentMcpUnavailable';
 import { useAgentDetailSuspenseQuery } from '@/queries/agents';
-import { useWebchatCacheActions, useWebchatSessionsQuery } from '@/queries/webchat';
-import { useLiveSessionRows } from '@/queries/chat-sessions';
+import { useWebchatSessionsQuery } from '@/queries/webchat';
+import { useApplySessionRow } from '@/queries/chat-sessions';
+import { usePinnedSelection } from '@/hooks/usePinnedSelection';
 import { useResyncEpoch } from '@/realtime/usePersonalChannel';
 import { getErrorMessage } from '@/utils/error';
 import { isMcpAgent } from '@/utils/agent';
@@ -36,7 +37,6 @@ function AgentChatView({ agent }: { agent: AgentResponse }) {
   const t = useTranslations('Chat');
   const agentId = agent.id;
 
-  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [actionError, setActionError] = useState('');
   // Below `md` the two panes don't fit side by side, so one is shown at a time.
@@ -45,24 +45,15 @@ function AgentChatView({ agent }: { agent: AgentResponse }) {
   const [mobilePane, setMobilePane] = useState<'list' | 'conversation'>('conversation');
 
   const sessionsQuery = useWebchatSessionsQuery(agentId);
-  const { addSession, patchSession, invalidateSessions } = useWebchatCacheActions();
+  const applySessionRow = useApplySessionRow();
 
   const agentsById = useMemo(() => ({ [agent.id]: agent }), [agent]);
   const sessions = sessionsQuery.sessions;
   // Land straight in the newest conversation rather than an empty frame — the
-  // backend sorts by lastActivityAt desc, so sessions[0] is where the user left off.
-  // The choice is then pinned (a state update during render, not an effect):
-  // live rows reorder the list, and a chat started on another device arrives
-  // on top — neither may swap the open conversation. One that disappears from
-  // the list still falls back to the newest.
-  const activeSession =
-    sessions.find((s) => s.id === activeSessionId) ?? sessions[0] ?? null;
-  if (activeSession && activeSession.id !== activeSessionId) setActiveSessionId(activeSession.id);
-
-  // Titles, badges, previews and "working…" of every row, live. The server
-  // counts the unread itself, and the open conversation marks its messages
-  // read on arrival, so the row on screen needs no special case here.
-  useLiveSessionRows();
+  // backend sorts by lastActivityAt desc, so sessions[0] is where the user left
+  // off — and stay there while live rows reorder the list or a chat started on
+  // another device arrives on top.
+  const [activeSession, setActiveSessionId] = usePinnedSelection(sessions);
   const resyncEpoch = useResyncEpoch();
 
   const error =
@@ -75,7 +66,7 @@ function AgentChatView({ agent }: { agent: AgentResponse }) {
     setActionError('');
     try {
       const session = await apiService.createWebchatSession(agentId);
-      addSession(session);
+      applySessionRow(session, true);
       setActiveSessionId(session.id);
       setMobilePane('conversation');
     } catch (err) {
@@ -126,8 +117,7 @@ function AgentChatView({ agent }: { agent: AgentResponse }) {
                 key={`${activeSession.id}:${resyncEpoch}`}
                 session={activeSession}
                 agentName={agent.name}
-                onSessionUpdated={patchSession}
-                onActivity={invalidateSessions}
+                onSessionUpdated={applySessionRow}
                 onBack={() => setMobilePane('list')}
               />
             ) : sessionsQuery.isPending ? (
