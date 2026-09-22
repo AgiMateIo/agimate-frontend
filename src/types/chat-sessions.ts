@@ -70,6 +70,11 @@ export interface ChatSessionResponse {
   // background, so its session is a child of the chat the errand came from —
   // never a conversation in its own right, and never a row of a chat list.
   parentSessionId: string | null;
+  // Named by the platform as the conversation goes (for agents with the
+  // `sessions` skill) and renamed again once it grows long, so it changes with
+  // nobody touching it — read it from the live `session.updated` row, not from
+  // the moment the list was opened. A rename by the user is final: the platform
+  // never touches that title again. Null on a fresh session with no messages.
   title: string | null;
   lastActivityAt: string;
   closedAt: string | null;
@@ -102,7 +107,7 @@ export interface ChatSessionResponse {
 export interface ChatSessionMessageResponse {
   // The row's own id — what the read pointer is addressed by.
   id: string;
-  // Delivery key, shared with the live `webchat_message` event and what dedupes
+  // Delivery key, shared with the live `webchat.message` event and what dedupes
   // against it. **Null outside webchat**: an external channel has no such id, so
   // dedupe those by `id`.
   messageId: string | null;
@@ -114,4 +119,20 @@ export interface ChatSessionMessageResponse {
   // webchat, where attachments don't exist in this shape.
   parts: ChatPart[] | null;
   createdAt: string;
+}
+
+// Events of the personal `user:{userId}` channel that carry a session row —
+// **the whole row**, exactly as the listing returns it, gathered after the write.
+// Applied by replacing the cached row, never by merging fields: the values are
+// absolute, so a duplicate (delivery is at-least-once) is harmless. Sent on a
+// new title, close, read (the badge drops on every device), a message (the
+// agent's answer, or the user's own from another device — never `progress`) and
+// `isRunning` flipping either way. Every connector's sessions go out here,
+// errands included (`parentSessionId` set) — a screen filters out what it
+// doesn't show. Best-effort: a lost one is repaired by the next listing.
+export type SessionEventType = 'session.created' | 'session.updated';
+
+export interface SessionEvent {
+  type: SessionEventType;
+  session: ChatSessionResponse;
 }

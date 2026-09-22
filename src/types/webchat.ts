@@ -5,22 +5,8 @@
 
 import type { ChatDirection, ChatPart, ChatStream } from './chat-sessions';
 
-// Payload of the `webchat_activity` event published to the personal
-// user:{userId} channel — the thin twin of `webchat_message` that keeps unread
-// badges alive while no conversation is open. Published for `answer` and
-// `error` only, never for `progress` or for an echo of the user's own message.
-// Best-effort: a failed publish is simply lost and the next listing fixes the
-// count, so it must never be the only source of truth for a badge.
-export interface WebchatActivityPayload {
-  agentId: string;
-  sessionId: string;
-  messageId: string;
-  stream: Extract<ChatStream, 'answer' | 'error'>;
-  preview: string | null;
-  createdAt: string;
-}
-
-// Payload of the `webchat_message` event published to webchat:{sessionId}.
+// Payload of the `webchat.message` event on the personal user:{userId} channel
+// (it used to be `webchat_message` on webchat:{sessionId}; same payload).
 // Delivery is at-least-once — consumers must dedupe by messageId.
 export interface WebchatMessagePayload {
   sessionId: string;

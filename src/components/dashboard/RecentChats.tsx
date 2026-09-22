@@ -5,8 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { allAgentsOptions } from '@/queries/agents';
-import { useWebchatCacheActions, webchatSessionsOptions } from '@/queries/webchat';
-import { useWebchatActivitySubscription } from '@/realtime/useWebchatActivitySubscription';
+import { webchatSessionsOptions } from '@/queries/webchat';
+import { useLiveSessionRows } from '@/queries/chat-sessions';
 import { formatDateTimeFull, formatDateTimeShort } from '@/utils/date';
 import { Placeholder } from '@/components/ui/Placeholder';
 
@@ -18,11 +18,7 @@ export default function RecentChats() {
   // Same key as the dashboard counters — no second request.
   const { data: sessions, isPending } = useQuery(webchatSessionsOptions());
   const { data: agents } = useQuery(allAgentsOptions());
-  const { applyActivity } = useWebchatCacheActions();
-
-  // No conversation is open here, so every delivered agent message counts —
-  // this card is exactly the case the personal-channel event exists for.
-  useWebchatActivitySubscription(applyActivity);
+  useLiveSessionRows();
 
   const agentNames = useMemo(() => {
     const map = new Map<string, string>();

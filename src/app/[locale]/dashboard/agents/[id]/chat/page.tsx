@@ -13,7 +13,8 @@ import { WebchatComposerProvider } from '@/components/webchat/composerStore';
 import AgentMcpUnavailable from '@/components/agents/AgentMcpUnavailable';
 import { useAgentDetailSuspenseQuery } from '@/queries/agents';
 import { useWebchatCacheActions, useWebchatSessionsQuery } from '@/queries/webchat';
-import { useWebchatActivitySubscription } from '@/realtime/useWebchatActivitySubscription';
+import { useLiveSessionRows } from '@/queries/chat-sessions';
+import { useResyncEpoch } from '@/realtime/usePersonalChannel';
 import { getErrorMessage } from '@/utils/error';
 import { isMcpAgent } from '@/utils/agent';
 import type { AgentResponse } from '@/types';
@@ -44,24 +45,25 @@ function AgentChatView({ agent }: { agent: AgentResponse }) {
   const [mobilePane, setMobilePane] = useState<'list' | 'conversation'>('conversation');
 
   const sessionsQuery = useWebchatSessionsQuery(agentId);
-  const { addSession, patchSession, invalidateSessions, applyActivity } = useWebchatCacheActions();
+  const { addSession, patchSession, invalidateSessions } = useWebchatCacheActions();
 
   const agentsById = useMemo(() => ({ [agent.id]: agent }), [agent]);
   const sessions = sessionsQuery.sessions;
   // Land straight in the newest conversation rather than an empty frame — the
   // backend sorts by lastActivityAt desc, so sessions[0] is where the user left off.
-  // Derived instead of an effect: nothing to sync, and a session that disappears
-  // from the list falls back to the newest on its own.
+  // The choice is then pinned (a state update during render, not an effect):
+  // live rows reorder the list, and a chat started on another device arrives
+  // on top — neither may swap the open conversation. One that disappears from
+  // the list still falls back to the newest.
   const activeSession =
     sessions.find((s) => s.id === activeSessionId) ?? sessions[0] ?? null;
+  if (activeSession && activeSession.id !== activeSessionId) setActiveSessionId(activeSession.id);
 
-  // Badges for the conversations the user is *not* in. The open one has its own
-  // per-session subscription, renders the message itself and marks it read on
-  // arrival — counting it here would raise a badge for a message on screen.
-  useWebchatActivitySubscription((p) => {
-    if (p.sessionId === activeSession?.id) return;
-    applyActivity(p);
-  });
+  // Titles, badges, previews and "working…" of every row, live. The server
+  // counts the unread itself, and the open conversation marks its messages
+  // read on arrival, so the row on screen needs no special case here.
+  useLiveSessionRows();
+  const resyncEpoch = useResyncEpoch();
 
   const error =
     actionError ||
@@ -119,7 +121,9 @@ function AgentChatView({ agent }: { agent: AgentResponse }) {
           >
             {activeSession ? (
               <WebchatConversation
-                key={activeSession.id}
+                // The epoch rebuilds the thread from history after a reconnect
+                // that could not recover the messages it missed.
+                key={`${activeSession.id}:${resyncEpoch}`}
                 session={activeSession}
                 agentName={agent.name}
                 onSessionUpdated={patchSession}

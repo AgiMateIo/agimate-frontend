@@ -5,6 +5,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { ChatSessionResponse } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useChannelCacheActions, useChannelSessionsQuery } from '@/queries/channels';
+import { useLiveSessionRows } from '@/queries/chat-sessions';
 import { formatDate, parseBackendDate } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
 import ChannelChatView from './ChannelChatView';
@@ -31,12 +32,17 @@ export default function ChannelSessionsList({ channelId }: ChannelSessionsListPr
   const { sessions, isPending, error, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useChannelSessionsQuery(channelId);
   const { patchSession } = useChannelCacheActions();
+  // Titles and "working…" move while the list is open.
+  useLiveSessionRows();
 
   if (error) return <ErrorAlert>{getErrorMessage(error, 'Failed to load sessions')}</ErrorAlert>;
 
-  // Derived rather than an effect: switching channels lands on the freshest
-  // session of the new list on its own, and so does a selection that paged away.
+  // Switching channels lands on the freshest session of the new list on its
+  // own, and so does a selection that went away. The fallback is then pinned
+  // (a state update during render, not an effect), so a live row climbing to
+  // the top doesn't swap the conversation being read.
   const selected = sessions.find((s) => s.id === selectedId) ?? sessions[0] ?? null;
+  if (selected && selected.id !== selectedId) setSelectedId(selected.id);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 min-h-0 h-[600px]">

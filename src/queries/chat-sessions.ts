@@ -5,9 +5,15 @@ import {
   useInfiniteQuery,
   useQuery,
   useQueryClient,
+  type InfiniteData,
+  type QueryKey,
 } from '@tanstack/react-query';
 import apiService from '@/services/api';
+import { useSessionEventsSubscription } from '@/realtime/useSessionEventsSubscription';
 import { dedupeById, nextPageParam } from '@/utils/paging';
+import type { ChatSessionResponse, PagedResponse, SessionEvent } from '@/types';
+import { channelKeys } from './channels';
+import { webchatKeys } from './webchat';
 
 // The `/manage/sessions` resource where it is not webchat's: the history of any
 // conversation whatever carries it, and the errands running for one of them.
@@ -89,4 +95,116 @@ export function useInvalidateErrandSessions() {
       queryClient.invalidateQueries({ queryKey: chatSessionKeys.errands(parentSessionId) }),
     [queryClient],
   );
+}
+
+type SessionPage = PagedResponse<ChatSessionResponse>;
+
+// Where a live row lands in one freshest-first list. Present: replaced whole,
+// in place — unless its activity moved, and then it goes to the top. Absent: a
+// new session goes to the top, and so does a known one fresher than the head
+// (it was on a page not loaded yet, and the list would otherwise miss it until
+// the next read); anything older is left for whoever scrolls to its page.
+// `undefined` = this list is not touched.
+function placeRow(
+  rows: ChatSessionResponse[],
+  row: ChatSessionResponse,
+  isNew: boolean,
+): ChatSessionResponse[] | undefined {
+  const at = rows.findIndex((s) => s.id === row.id);
+  if (at >= 0) {
+    if (rows[at].lastActivityAt === row.lastActivityAt) {
+      const next = [...rows];
+      next[at] = row;
+      return next;
+    }
+    return [row, ...rows.filter((s) => s.id !== row.id)];
+  }
+  const head = rows[0];
+  if (isNew || !head || row.lastActivityAt > head.lastActivityAt) return [row, ...rows];
+  return undefined;
+}
+
+// The same over a grown-on-demand list: a row found on page 3 either stays
+// there (nothing moved) or is lifted onto page 0 — never left in both.
+function placeInPages(
+  data: InfiniteData<SessionPage>,
+  row: ChatSessionResponse,
+  isNew: boolean,
+): InfiniteData<SessionPage> {
+  const [first, ...rest] = data.pages;
+  if (!first) return data;
+  const found = data.pages.findIndex((p) => p.content.some((s) => s.id === row.id));
+  if (found < 0) {
+    const content = placeRow(first.content, row, isNew);
+    if (!content) return data;
+    const totalElements = first.totalElements + (isNew ? 1 : 0);
+    return { ...data, pages: [{ ...first, content, totalElements }, ...rest] };
+  }
+  const moved =
+    data.pages[found].content.find((s) => s.id === row.id)!.lastActivityAt !== row.lastActivityAt;
+  const pages = data.pages.map((p, i) =>
+    i !== found
+      ? p
+      : {
+          ...p,
+          content: moved
+            ? p.content.filter((s) => s.id !== row.id)
+            : p.content.map((s) => (s.id === row.id ? row : s)),
+        },
+  );
+  if (moved) pages[0] = { ...pages[0], content: [row, ...pages[0].content] };
+  return { ...data, pages };
+}
+
+/**
+ * Keeps every cached session list in step with the personal channel's
+ * `session.created` / `session.updated`: the webchat lists (chat pane, recent
+ * chats, the dashboard counter), a channel's conversations and a
+ * conversation's errands. Each event is the listing's row in full, so it
+ * replaces the cached one — a repeat is the same row again, and nothing is
+ * ever counted up locally. A list is touched only if the row belongs to it by
+ * that list's own filter, which is what keeps a Telegram thread out of the
+ * chat pane and an errand out of everything but its parent's panel.
+ *
+ * Mounted by each screen that shows such a list; two mounted at once apply the
+ * same replacement twice, which changes nothing.
+ */
+export function useLiveSessionRows() {
+  const queryClient = useQueryClient();
+
+  const apply = useCallback(
+    ({ type, session: row }: SessionEvent) => {
+      const isNew = type === 'session.created';
+
+      const pages = (queryKey: QueryKey) =>
+        queryClient.setQueryData<InfiniteData<SessionPage>>(
+          queryKey,
+          (old) => old && placeInPages(old, row, isNew),
+        );
+      const page = (queryKey: QueryKey) =>
+        queryClient.setQueryData<SessionPage>(queryKey, (old) => {
+          const content = old && placeRow(old.content, row, isNew);
+          if (!old || !content) return old;
+          const grew = isNew && !old.content.some((s) => s.id === row.id);
+          return { ...old, content, totalElements: old.totalElements + (grew ? 1 : 0) };
+        });
+
+      if (row.connectorCode === 'webchat' && row.parentSessionId === null) {
+        for (const agentId of [undefined, row.agentId]) {
+          pages(webchatKeys.sessionsPages(agentId));
+          page(webchatKeys.sessionsList(agentId));
+        }
+      }
+      if (row.channelId) pages(channelKeys.sessions(row.channelId));
+      if (row.parentSessionId) {
+        queryClient.setQueryData<SessionPage>(chatSessionKeys.errands(row.parentSessionId), (old) => {
+          const content = old && placeRow(old.content, row, isNew);
+          return old && content ? { ...old, content } : old;
+        });
+      }
+    },
+    [queryClient],
+  );
+
+  useSessionEventsSubscription(apply);
 }

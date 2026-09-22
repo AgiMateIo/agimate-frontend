@@ -5,7 +5,6 @@
 import { httpClient } from '../httpClient';
 import { API } from '@/config/constants';
 import type {
-  CentrifugoTokenResponse,
   ChatSessionResponse,
   WebchatSendMessageResponse,
 } from '@/types';
@@ -18,14 +17,6 @@ export const webchatApi = {
     return httpClient.post<ChatSessionResponse>(
       `${API.ENDPOINTS.CONTROL_API}/manage/webchat/sessions`,
       { agentId },
-    );
-  },
-
-  // Per-session Centrifugo tokens, TTL ~1h — getToken callbacks re-fetch.
-  async getWebchatSessionToken(sessionId: string): Promise<CentrifugoTokenResponse> {
-    return httpClient.post<CentrifugoTokenResponse>(
-      `${API.ENDPOINTS.CONTROL_API}/manage/webchat/sessions/${sessionId}/token`,
-      {},
     );
   },
 
