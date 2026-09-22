@@ -1,93 +1,46 @@
 'use client';
 
-import type { ComponentType, SVGProps } from 'react';
 import { useTranslations } from 'next-intl';
-import {
-  BoltIcon,
-  ArrowsRightLeftIcon,
-  CpuChipIcon,
-  PuzzlePieceIcon,
-} from '@heroicons/react/24/outline';
-import { AgentResponse, AgentType } from '@/types';
-import { Link } from '@/i18n/navigation';
-import { getAgentAvatarUrl } from '@/utils/avatar';
-import { Chip } from '@/components/ui/Chip';
+import { AgentResponse } from '@/types';
+import type { ViewMode } from '@/utils/viewMode';
 import { Placeholder } from '@/components/ui/Placeholder';
+import { AgentCard } from './AgentCard';
+import { AgentTile } from './AgentTile';
+import { AgentsTable } from './AgentsTable';
 
 interface AgentsListProps {
   agents: AgentResponse[];
+  mode: ViewMode;
 }
 
-// Glyph + i18n label key per delivery type — realtime, HTTP callback, in-platform.
-const TYPE_META: Record<AgentType, { icon: ComponentType<SVGProps<SVGSVGElement>>; labelKey: 'centrifugo' | 'webhook' | 'generic' | 'mcp' }> = {
-  CENTRIFUGO: { icon: BoltIcon, labelKey: 'centrifugo' },
-  WEBHOOK: { icon: ArrowsRightLeftIcon, labelKey: 'webhook' },
-  GENERIC: { icon: CpuChipIcon, labelKey: 'generic' },
-  MCP: { icon: PuzzlePieceIcon, labelKey: 'mcp' },
-};
-
-// Cap the skill chips so a heavily-bound agent doesn't blow up the card height.
-const MAX_SKILLS = 4;
-
-export default function AgentsList({ agents }: AgentsListProps) {
+export default function AgentsList({ agents, mode }: AgentsListProps) {
   const t = useTranslations('Agents');
 
   if (agents.length === 0) {
     return <Placeholder size="sm">{t('noAgents')}</Placeholder>;
   }
 
+  if (mode === 'table') {
+    return <AgentsTable agents={agents} />;
+  }
+
+  if (mode === 'compact') {
+    // Eight per row on a wide screen, fewer as it narrows — a portrait under
+    // ~90px stops being recognisable.
+    return (
+      <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8">
+        {agents.map((agent) => (
+          <AgentTile key={agent.id} agent={agent} />
+        ))}
+      </div>
+    );
+  }
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-      {agents.map((agent) => {
-        const typeMeta = TYPE_META[agent.type];
-        const preview = agent.description || agent.instructions;
-        const extraSkills = agent.skills.length - MAX_SKILLS;
-
-        return (
-          <Link
-            key={agent.id}
-            // An MCP agent has no chat to open — its card leads to the page that
-            // does carry its point: the connection details.
-            href={
-              agent.type === 'MCP'
-                ? `/dashboard/agents/${agent.id}`
-                : `/dashboard/agents/${agent.id}/chat`
-            }
-            className={`group relative flex flex-col items-center text-center bg-surface-secondary rounded-lg border border-border hover:border-accent/50 transition-colors p-5 ${agent.enabled ? '' : 'opacity-60'}`}
-          >
-            <div className="absolute top-3 left-3">
-              <Chip icon={typeMeta.icon} tone="accent">{t(typeMeta.labelKey)}</Chip>
-            </div>
-            <span
-              className={`absolute top-3 right-3 h-2.5 w-2.5 rounded-full ${agent.enabled ? 'bg-success' : 'bg-muted'}`}
-              title={agent.enabled ? t('enabled') : t('disabled')}
-            />
-
-            <img
-              src={getAgentAvatarUrl(agent.name)}
-              alt={agent.name}
-              className="w-40 h-40 rounded-2xl mt-4"
-            />
-            <h3 className="w-full truncate font-semibold text-foreground mt-3 group-hover:text-accent transition-colors">
-              {agent.name}
-            </h3>
-            {preview && (
-              <p className={`w-full text-sm text-muted mt-1 line-clamp-2 ${agent.description ? '' : 'font-mono'}`}>
-                {preview}
-              </p>
-            )}
-
-            {agent.skills.length > 0 && (
-              <div className="w-full mt-4 pt-3 border-t border-border flex flex-wrap justify-center gap-1.5">
-                {agent.skills.slice(0, MAX_SKILLS).map((skill) => (
-                  <Chip key={skill.id}>{skill.name}</Chip>
-                ))}
-                {extraSkills > 0 && <Chip>+{extraSkills}</Chip>}
-              </div>
-            )}
-          </Link>
-        );
-      })}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      {agents.map((agent) => (
+        <AgentCard key={agent.id} agent={agent} />
+      ))}
     </div>
   );
 }

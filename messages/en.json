@@ -644,6 +644,10 @@
       "SERVER_ERROR": "Server error, please try again later"
     },
     "filters": "Filters",
+    "viewModeLabel": "View",
+    "viewTable": "Table",
+    "viewCompact": "Small tiles",
+    "viewCards": "Large cards",
     "theme": "Theme",
     "theme_system": "System",
     "theme_light": "Light",
