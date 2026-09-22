@@ -1621,5 +1621,13 @@
     "originOf": "From {agent}'s conversation",
     "originUntitled": "Untitled conversation",
     "originRuns": "Conversation runs"
+  },
+  "Notifications": {
+    "replied": "{agent} replied",
+    "failed": "{agent}: error",
+    "moreReplies": "{count, plural, one {# new message} other {# new messages}}",
+    "attachment": "Sent an attachment",
+    "agentFallback": "Agent",
+    "dismiss": "Dismiss"
   }
 }

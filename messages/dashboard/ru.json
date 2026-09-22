@@ -1621,5 +1621,13 @@
     "originOf": "Из разговора агента {agent}",
     "originUntitled": "Разговор без названия",
     "originRuns": "Запуски разговора"
+  },
+  "Notifications": {
+    "replied": "{agent} ответил",
+    "failed": "{agent}: ошибка",
+    "moreReplies": "{count, plural, one {# новое сообщение} few {# новых сообщения} many {# новых сообщений} other {# новых сообщения}}",
+    "attachment": "Прислал вложение",
+    "agentFallback": "Агент",
+    "dismiss": "Закрыть"
   }
 }

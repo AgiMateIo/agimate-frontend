@@ -3,13 +3,18 @@ import {
   infiniteQueryOptions,
   queryOptions,
   useInfiniteQuery,
+  useQuery,
   useQueryClient,
   type InfiniteData,
   type QueryClient,
 } from '@tanstack/react-query';
 import apiService from '@/services/api';
 import { dedupeById, nextPageParam } from '@/utils/paging';
-import type { PagedResponse, ChatSessionResponse } from '@/types';
+import { placeRow } from '@/utils/liveRows';
+import { useIsGuest } from '@/hooks/useIsGuest';
+import { usePersonalEvent } from '@/realtime/usePersonalEvent';
+import type { AgentResponse, PagedResponse, ChatSessionResponse, WebchatContactResponse } from '@/types';
+import { agentKeys } from './agents';
 
 export const webchatKeys = {
   all: ['webchat'] as const,
@@ -21,6 +26,7 @@ export const webchatKeys = {
   sessionsPagesAll: () => [...webchatKeys.sessions(), 'pages'] as const,
   sessionsPages: (agentId?: string) =>
     [...webchatKeys.sessionsPagesAll(), agentId ?? 'all'] as const,
+  contacts: () => [...webchatKeys.all, 'contacts'] as const,
 };
 
 const SESSIONS_PAGE_SIZE = 50;
@@ -125,4 +131,68 @@ export function useMarkWebchatSessionRead() {
     },
     [queryClient],
   );
+}
+
+// One page: agents with unread messages are the freshest ones.
+const CONTACTS_PAGE_SIZE = 100;
+
+type ContactsPage = PagedResponse<WebchatContactResponse>;
+
+const CONTACT_EVENTS = ['webchat.agent.updated'] as const;
+
+export const webchatContactsOptions = () =>
+  queryOptions({
+    queryKey: webchatKeys.contacts(),
+    queryFn: () => apiService.getWebchatContacts({ page: 0, size: CONTACTS_PAGE_SIZE }),
+  });
+
+// All badges share one cached page through `select`.
+function useContactsSelect<T>(select: (page: ContactsPage) => T) {
+  const isGuest = useIsGuest();
+  return useQuery({ ...webchatContactsOptions(), select, enabled: !isGuest }).data;
+}
+
+export function useAgentUnread(agentId: string): number {
+  const select = useCallback(
+    (page: ContactsPage) => page.content.find((c) => c.agentId === agentId)?.unreadCount ?? 0,
+    [agentId],
+  );
+  return useContactsSelect(select) ?? 0;
+}
+
+const sumUnread = (page: ContactsPage) => page.content.reduce((sum, c) => sum + c.unreadCount, 0);
+
+export function useTotalUnread(): number {
+  return useContactsSelect(sumUnread) ?? 0;
+}
+
+const unreadByAgent = (page: ContactsPage) =>
+  new Map(page.content.map((c) => [c.agentId, c.unreadCount]));
+
+export function useUnreadByAgent(): Map<string, number> | undefined {
+  return useContactsSelect(unreadByAgent);
+}
+
+
+// An agent's name from the cache, without a request.
+export function cachedAgentName(queryClient: QueryClient, agentId: string): string | null {
+  return (
+    queryClient.getQueryData<ContactsPage>(webchatKeys.contacts())?.content.find((c) => c.agentId === agentId)
+      ?.name ??
+    queryClient.getQueryData<AgentResponse>(agentKeys.detail(agentId))?.name ??
+    null
+  );
+}
+
+// Applies `webchat.agent.updated` to the cached contacts page.
+export function useLiveContacts(enabled: boolean) {
+  const queryClient = useQueryClient();
+  usePersonalEvent(enabled, CONTACT_EVENTS, (_type, payload) => {
+    const row = payload as WebchatContactResponse | undefined;
+    if (!row?.agentId) return;
+    queryClient.setQueryData<ContactsPage>(
+      webchatKeys.contacts(),
+      (old) => old && { ...old, content: placeRow(old.content, row, (c) => c.agentId, true)! },
+    );
+  });
 }

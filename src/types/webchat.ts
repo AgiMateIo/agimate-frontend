@@ -3,7 +3,21 @@
 // history, read pointer, close, rename) is not webchat's any more: it lives in
 // `./chat-sessions` under `/manage/sessions`, one resource for every channel.
 
-import type { ChatDirection, ChatPart, ChatStream } from './chat-sessions';
+import type { ChatDirection, ChatLastMessage, ChatPart, ChatStream } from './chat-sessions';
+
+// A row of GET /manage/webchat/contacts/ and the `webchat.agent.updated` payload.
+// `unreadCount` is the server's total across the agent's chats — never sum it locally.
+export interface WebchatContactResponse {
+  agentId: string;
+  name: string;
+  description: string | null;
+  enabled: boolean;
+  unreadCount: number;
+  lastMessage: ChatLastMessage | null;
+  lastSessionId: string | null;
+  lastActivityAt: string | null;
+  isRunning: boolean;
+}
 
 // Payload of the `webchat.message` event on the personal user:{userId} channel
 // (it used to be `webchat_message` on webchat:{sessionId}; same payload).

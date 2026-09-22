@@ -3,6 +3,8 @@
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { getAgentAvatarUrl } from '@/utils/avatar';
+import { UnreadBadge } from '@/components/ui/UnreadBadge';
+import { useAgentUnread } from '@/queries/webchat';
 import type { AgentResponse } from '@/types';
 import { TYPE_META, agentHref, previewTooltip } from './agentMeta';
 
@@ -13,6 +15,7 @@ export function AgentTile({ agent }: { agent: AgentResponse }) {
   const t = useTranslations('Agents');
 
   const typeMeta = TYPE_META[agent.type];
+  const unread = useAgentUnread(agent.id);
   const TypeIcon = typeMeta.icon;
   const tooltip = [
     agent.name,
@@ -35,8 +38,9 @@ export function AgentTile({ agent }: { agent: AgentResponse }) {
           <TypeIcon className="h-3 w-3" />
         </span>
         <span
-          className={`absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full ring-2 ring-background ${agent.enabled ? 'bg-success' : 'bg-muted'}`}
+          className={`absolute bottom-1.5 left-1.5 h-2.5 w-2.5 rounded-full ring-2 ring-background ${agent.enabled ? 'bg-success' : 'bg-muted'}`}
         />
+        <UnreadBadge count={unread} ring className="absolute right-1.5 top-1.5" />
       </div>
 
       <div className="mt-1 truncate text-xs text-foreground group-hover:text-accent">{agent.name}</div>

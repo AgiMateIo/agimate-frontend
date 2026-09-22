@@ -10,9 +10,10 @@ import {
   type QueryKey,
 } from '@tanstack/react-query';
 import apiService from '@/services/api';
-import { useSessionEventsSubscription } from '@/realtime/useSessionEventsSubscription';
+import { usePersonalEvent } from '@/realtime/usePersonalEvent';
 import { dedupeById, nextPageParam } from '@/utils/paging';
-import type { ChatSessionResponse, PagedResponse, SessionEvent } from '@/types';
+import { placeRow } from '@/utils/liveRows';
+import type { ChatSessionResponse, PagedResponse, SessionEventType } from '@/types';
 import { channelKeys } from './channels';
 import { webchatKeys } from './webchat';
 
@@ -85,30 +86,9 @@ export function useErrandSessionsQuery(parentSessionId: string) {
 
 type SessionPage = PagedResponse<ChatSessionResponse>;
 
-// Where a live row lands in one freshest-first list. Present: replaced whole,
-// in place — unless its activity moved, and then it goes to the top. Absent: a
-// new session goes to the top, and so does a known one fresher than the head
-// (it was on a page not loaded yet, and the list would otherwise miss it until
-// the next read); anything older is left for whoever scrolls to its page.
-// `undefined` = this list is not touched.
-function placeRow(
-  rows: ChatSessionResponse[],
-  row: ChatSessionResponse,
-  isNew: boolean,
-): ChatSessionResponse[] | undefined {
-  const at = rows.findIndex((s) => s.id === row.id);
-  if (at >= 0) {
-    if (rows[at].lastActivityAt === row.lastActivityAt) {
-      const next = [...rows];
-      next[at] = row;
-      return next;
-    }
-    return [row, ...rows.filter((s) => s.id !== row.id)];
-  }
-  const head = rows[0];
-  if (isNew || !head || row.lastActivityAt > head.lastActivityAt) return [row, ...rows];
-  return undefined;
-}
+const SESSION_EVENTS: readonly SessionEventType[] = ['session.created', 'session.updated'];
+
+const sessionKey = (s: ChatSessionResponse) => s.id;
 
 // The same over a grown-on-demand list: a row found on page 3 either stays
 // there (nothing moved) or is lifted onto page 0 — never left in both.
@@ -121,7 +101,7 @@ function placeInPages(
   if (!first) return data;
   const found = data.pages.findIndex((p) => p.content.some((s) => s.id === row.id));
   if (found < 0) {
-    const content = placeRow(first.content, row, isNew);
+    const content = placeRow(first.content, row, sessionKey, isNew);
     if (!content) return data;
     const totalElements = first.totalElements + (isNew ? 1 : 0);
     return { ...data, pages: [{ ...first, content, totalElements }, ...rest] };
@@ -163,7 +143,7 @@ export function applySessionRow(
     );
   const page = (queryKey: QueryKey) =>
     queryClient.setQueryData<SessionPage>(queryKey, (old) => {
-      const content = old && placeRow(old.content, row, isNew);
+      const content = old && placeRow(old.content, row, sessionKey, isNew);
       if (!old || !content) return old;
       const grew = isNew && !old.content.some((s) => s.id === row.id);
       return { ...old, content, totalElements: old.totalElements + (grew ? 1 : 0) };
@@ -197,11 +177,8 @@ export function useApplySessionRow() {
  */
 export function useLiveSessionRows(enabled: boolean) {
   const apply = useApplySessionRow();
-  useSessionEventsSubscription(
-    enabled,
-    useCallback(
-      ({ type, session }: SessionEvent) => apply(session, type === 'session.created'),
-      [apply],
-    ),
-  );
+  usePersonalEvent(enabled, SESSION_EVENTS, (type, payload) => {
+    const row = payload as ChatSessionResponse | undefined;
+    if (row?.id) apply(row, type === 'session.created');
+  });
 }

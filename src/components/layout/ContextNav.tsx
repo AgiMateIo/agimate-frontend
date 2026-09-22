@@ -7,6 +7,7 @@ import {
   CheckIcon,
   PlusIcon,
 } from '@heroicons/react/24/outline';
+import { UnreadBadge } from '@/components/ui/UnreadBadge';
 
 type IconComponent = React.ComponentType<React.SVGProps<SVGSVGElement>>;
 
@@ -15,12 +16,14 @@ export type ContextSection = {
   href: string;
   label: string;
   icon: IconComponent;
+  badge?: number;
 };
 
 export type ContextSwitcherItem = {
   id: string;
   name: string;
   avatarUrl?: string;
+  badge?: number;
 };
 
 // Entity avatar: image when the entity has one, otherwise the section's fallback icon.
@@ -122,7 +125,7 @@ export default function ContextNav({
 
   const sectionLinks = (
     <div className="space-y-0.5">
-      {sections.map(({ key, href, label, icon: Icon }) => {
+      {sections.map(({ key, href, label, icon: Icon, badge = 0 }) => {
         const isActive = currentSection === key;
         return (
           <Link
@@ -135,6 +138,10 @@ export default function ContextNav({
           >
             <Icon className="h-5 w-5 shrink-0" />
             {!collapsed && <span className="truncate">{label}</span>}
+            {!collapsed && <UnreadBadge count={badge} inverse={isActive} className="ml-auto" />}
+            {collapsed && (
+              <UnreadBadge count={badge} dot ring inverse={isActive} className="absolute right-1.5 top-1.5" />
+            )}
             {collapsed && (
               <span className="pointer-events-none absolute left-full z-20 ml-2 hidden whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background shadow-lg group-hover/item:block">
                 {label}
@@ -250,6 +257,7 @@ export default function ContextNav({
                       roundedClass="rounded"
                     />
                     <span className="min-w-0 flex-1 truncate">{item.name}</span>
+                    <UnreadBadge count={item.badge ?? 0} />
                     {isCurrent && <CheckIcon className="h-4 w-4 shrink-0 text-accent" />}
                   </button>
                 );

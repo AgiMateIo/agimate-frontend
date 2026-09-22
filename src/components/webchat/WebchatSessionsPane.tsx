@@ -7,6 +7,7 @@ import { Select } from '@/components/ui/FormField';
 import { formatDateTimeShort } from '@/utils/date';
 import type { AgentResponse, ChatSessionResponse } from '@/types';
 import { Placeholder } from '@/components/ui/Placeholder';
+import { UnreadBadge } from '@/components/ui/UnreadBadge';
 
 interface WebchatSessionsPaneProps {
   agents: AgentResponse[];
@@ -177,14 +178,7 @@ export default function WebchatSessionsPane({
                           {t('closedBadge')}
                         </span>
                       )}
-                      {unread && (
-                        <span
-                          aria-label={t('unreadCount', { count: s.unreadCount })}
-                          className="min-w-[1.25rem] rounded-full bg-accent px-1.5 py-0.5 text-center text-[10px] font-semibold leading-none tabular-nums text-accent-foreground"
-                        >
-                          {s.unreadCount > 99 ? '99+' : s.unreadCount}
-                        </span>
-                      )}
+                      <UnreadBadge count={unread ? s.unreadCount : 0} />
                     </span>
                   </div>
                   {!hideAgentFilter && (

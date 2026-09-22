@@ -131,8 +131,3 @@ export interface ChatSessionMessageResponse {
 // errands included (`parentSessionId` set) — a screen filters out what it
 // doesn't show. Best-effort: a lost one is repaired by the next listing.
 export type SessionEventType = 'session.created' | 'session.updated';
-
-export interface SessionEvent {
-  type: SessionEventType;
-  session: ChatSessionResponse;
-}
