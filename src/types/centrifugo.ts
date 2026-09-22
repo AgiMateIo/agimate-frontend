@@ -26,6 +26,14 @@ export interface BoardTaskStatusChangedPayload {
   newStatus: TaskStatus;
 }
 
+// Fields of the task changed (not its status — that is `statusChanged`). The
+// values themselves are not in the event: re-read the board's tasks.
+export interface BoardTaskUpdatedPayload {
+  boardId: string;
+  taskId: string;
+  changedFields: string[];
+}
+
 export interface BoardTaskCommentCreatedPayload {
   boardId: string;
   taskId: string;

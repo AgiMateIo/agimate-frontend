@@ -26,6 +26,7 @@ import { ModelPickerList } from './ModelPickerList';
 import { matchCapabilityFilter } from './modelRegistry';
 import {
   PROVIDER_PURPOSES,
+  isTextPurpose,
   PurposeState,
   purposeLabelKey,
   purposeRequirement,
@@ -166,7 +167,7 @@ export default function ProviderPurposesSection({ provider, models, onSaved }: P
             <div key={purpose} className="border border-border rounded-lg p-4 space-y-3">
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <div className="min-w-0">
-                  <Chip tone={purpose === 'CHAT' ? 'default' : 'accent'}>{t(purposeLabelKey[purpose])}</Chip>
+                  <Chip tone={isTextPurpose(purpose) ? 'default' : 'accent'}>{t(purposeLabelKey[purpose])}</Chip>
                   <p className="text-xs text-muted mt-1.5">{t(purposeRequirementLabelKey[purpose])}</p>
                 </div>
                 <div className="w-56 shrink-0">

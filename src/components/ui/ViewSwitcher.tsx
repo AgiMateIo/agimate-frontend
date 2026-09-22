@@ -6,10 +6,10 @@ import {
   Squares2X2Icon,
   TableCellsIcon,
 } from '@heroicons/react/24/outline';
-import type { FilesViewMode } from './filesViewMode';
+import type { ViewMode } from '@/utils/viewMode';
 
 const MODES: {
-  value: FilesViewMode;
+  value: ViewMode;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   labelKey: 'viewTable' | 'viewCompact' | 'viewCards';
 }[] = [
@@ -20,14 +20,14 @@ const MODES: {
 
 // Segmented icon control. Icon-only on purpose: it sits next to the page title
 // and the mode is obvious from the layout it produces.
-export function FilesViewSwitcher({
+export function ViewSwitcher({
   mode,
   onChange,
 }: {
-  mode: FilesViewMode;
-  onChange: (mode: FilesViewMode) => void;
+  mode: ViewMode;
+  onChange: (mode: ViewMode) => void;
 }) {
-  const t = useTranslations('Files');
+  const t = useTranslations('Common');
 
   return (
     <div

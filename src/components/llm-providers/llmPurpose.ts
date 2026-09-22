@@ -10,17 +10,24 @@ import type { CapabilityFilter } from './modelRegistry';
 // provider's `purposePriority` map, so the vocabulary lives here rather than
 // under components/agents. All labels below are `LlmProviders` message keys.
 
-// Row order in the agent's models table — CHAT first, being the one purpose
-// that is not a media tool.
-export const LLM_PURPOSES: readonly AgentLlmPurpose[] = ['CHAT', 'IMAGE', 'VISION', 'AUDIO_IN', 'AUDIO_OUT'];
+// Row order in the agent's models table — the two text purposes first (the
+// conversation, then the platform's housekeeping over it), the media tools after.
+export const LLM_PURPOSES: readonly AgentLlmPurpose[] = ['CHAT', 'ROUTINE', 'IMAGE', 'VISION', 'AUDIO_IN', 'AUDIO_OUT'];
 
 // Purposes the provider-level priority editor exposes. The backend stores audio
 // lists happily, but no speech-to-text/text-to-speech tool exists yet, so a list
 // there would configure nothing — keep it out of the UI until one does.
-export const PROVIDER_PURPOSES: readonly AgentLlmPurpose[] = ['CHAT', 'VISION', 'IMAGE'];
+export const PROVIDER_PURPOSES: readonly AgentLlmPurpose[] = ['CHAT', 'ROUTINE', 'VISION', 'IMAGE'];
+
+// The text purposes — the conversation and the platform's housekeeping over
+// it — read as the norm; the media tools are what stands out in a list.
+export function isTextPurpose(purpose: string): boolean {
+  return purpose === 'CHAT' || purpose === 'ROUTINE';
+}
 
 export const purposeLabelKey = {
   CHAT: 'purposeChat',
+  ROUTINE: 'purposeRoutine',
   IMAGE: 'purposeImage',
   VISION: 'purposeVision',
   AUDIO_IN: 'purposeAudioIn',
@@ -31,10 +38,13 @@ export const purposeLabelKey = {
 // metadata says it cannot do the job is folded away in the picker (still
 // reachable, since provider listings are often incomplete). CHAT is soft: tool
 // support is desirable, and a text model without it still holds a conversation.
+// ROUTINE asks for nothing checkable — any text model will do, and the point is
+// that it is a cheap one, which no metadata here says.
 // The backend never applies this filter itself — it is a drafting aid for a
 // choice the human confirms.
 export const purposeRequirement: Record<AgentLlmPurpose, { filter: CapabilityFilter; hard: boolean }> = {
   CHAT: { filter: { input: [], output: [], params: ['tools'] }, hard: false },
+  ROUTINE: { filter: { input: [], output: [], params: [] }, hard: false },
   IMAGE: { filter: { input: [], output: ['image'], params: [] }, hard: true },
   VISION: { filter: { input: ['image'], output: [], params: [] }, hard: true },
   AUDIO_IN: { filter: { input: ['audio'], output: [], params: [] }, hard: true },
@@ -45,6 +55,7 @@ export const purposeRequirement: Record<AgentLlmPurpose, { filter: CapabilityFil
 // model field's hint (free text has no metadata to check against).
 export const purposeRequirementLabelKey = {
   CHAT: 'requirementChat',
+  ROUTINE: 'requirementRoutine',
   IMAGE: 'requirementImage',
   VISION: 'requirementVision',
   AUDIO_IN: 'requirementAudioIn',
@@ -70,13 +81,13 @@ export function purposeState(priority: LlmPurposePriority | null | undefined, pu
 export function unusableSeededModels(
   priority: LlmPurposePriority | null | undefined,
   models: LlmProviderModelResponse[]
-): { purpose: AgentLlmPurpose; model: string }[] {
+): { purpose: string; model: string }[] {
   if (models.length === 0) return [];
   const usable = new Set(models.filter((m) => m.status === 'AVAILABLE').map((m) => m.model));
   return Object.entries(priority ?? {}).flatMap(([purpose, list]) =>
     (list ?? [])
       .filter((model) => !usable.has(model))
-      .map((model) => ({ purpose: purpose as AgentLlmPurpose, model }))
+      .map((model) => ({ purpose, model }))
   );
 }
 
@@ -84,4 +95,11 @@ export function unusableSeededModels(
 // there is room for one name only. null when the purpose is unset or switched off.
 export function firstPurposeModel(provider: LlmProviderResponse, purpose: AgentLlmPurpose): string | null {
   return provider.purposePriority?.[purpose]?.[0] ?? null;
+}
+
+// A purpose the backend added before this list learnt it — shown by its code
+// rather than crashing the row. The agent's table iterates `LLM_PURPOSES` and
+// never meets one; lists read off a provider's `purposePriority` can.
+export function isKnownPurpose(purpose: string): purpose is AgentLlmPurpose {
+  return purpose in purposeLabelKey;
 }

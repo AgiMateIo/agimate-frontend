@@ -5,11 +5,10 @@ import {
   useInfiniteQuery,
   useQuery,
   useQueryClient,
-  type InfiniteData,
 } from '@tanstack/react-query';
 import apiService from '@/services/api';
 import { dedupeById, nextPageParam } from '@/utils/paging';
-import type { ChannelResponse, ChatSessionResponse, PagedResponse } from '@/types';
+import type { ChannelResponse } from '@/types';
 
 export const channelKeys = {
   all: ['channels'] as const,
@@ -85,21 +84,6 @@ export function useChannelCacheActions() {
         old?.filter((c) => c.id !== id),
       );
       queryClient.invalidateQueries({ queryKey: channelKeys.lists() });
-    },
-    // Replace a session in place across the loaded pages (e.g. after closing it),
-    // instead of refetching pages the user has already scrolled past.
-    patchSession: (channelId: string, session: ChatSessionResponse) => {
-      queryClient.setQueryData<InfiniteData<PagedResponse<ChatSessionResponse>>>(
-        channelKeys.sessions(channelId),
-        (old) =>
-          old && {
-            ...old,
-            pages: old.pages.map((page) => ({
-              ...page,
-              content: page.content.map((s) => (s.id === session.id ? session : s)),
-            })),
-          },
-      );
     },
   };
 }

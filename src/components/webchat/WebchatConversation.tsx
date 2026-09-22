@@ -31,14 +31,13 @@ import { formatDateTimeShort } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
 import { useWebchatSubscription } from '@/realtime/useWebchatSubscription';
 import { useMarkWebchatSessionRead } from '@/queries/webchat';
-import { useInvalidateSubagentSessions } from '@/queries/chat-sessions';
 import { useWebchatThread, ThreadMessage } from './useWebchatThread';
 import { ChatMessageText } from './ChatMessageText';
 import { ChatMessageAttachments, type RefreshParts } from './ChatMessageAttachments';
 import { ComposerAttachments } from './ComposerAttachments';
 import FilePickerModal from '@/components/files/FilePickerModal';
 import RenameSessionModal from '@/components/sessions/RenameSessionModal';
-import SubagentsPanel from './SubagentsPanel';
+import ErrandsPanel from './ErrandsPanel';
 import { useComposerAttachments, MAX_ATTACHMENTS } from './useComposerAttachments';
 import { useComposerSending, useComposerStore, useComposerText } from './composerStore';
 import type { WebchatMessagePayload, ChatSessionResponse } from '@/types';
@@ -50,9 +49,6 @@ interface WebchatConversationProps {
   // Closing and renaming both answer the enriched row — one handler puts either
   // back into the sessions list.
   onSessionUpdated: (updated: ChatSessionResponse) => void;
-  // Title/lastActivityAt change server-side as messages flow — the parent
-  // refreshes the sessions list on non-progress events.
-  onActivity: () => void;
   // Returns to the sessions list where the two panes can't share the screen
   // (below `md`); the button that calls it is hidden from `md` up.
   onBack?: () => void;
@@ -127,7 +123,6 @@ export default function WebchatConversation({
   session,
   agentName,
   onSessionUpdated,
-  onActivity,
   onBack,
 }: WebchatConversationProps) {
   const t = useTranslations('Chat');
@@ -137,7 +132,6 @@ export default function WebchatConversation({
   const sessionId = session.id;
   const thread = useWebchatThread(sessionId, session.isRunning);
   const markRead = useMarkWebchatSessionRead();
-  const invalidateSubagents = useInvalidateSubagentSessions();
   // Text, tray and the in-flight send live above this component: switching
   // sessions remounts it (`key={sessionId}` — the thread is built on that), and
   // a draft is not something to lose over a click on another conversation.
@@ -166,10 +160,6 @@ export default function WebchatConversation({
   const anchoringRef = useRef(false);
 
   const { handleEvent } = thread;
-  const onActivityRef = useRef(onActivity);
-  useEffect(() => {
-    onActivityRef.current = onActivity;
-  }, [onActivity]);
 
   // Opening a conversation is reading it — the pointer goes to the end, with no
   // body, and the badge on the row behind it drops to zero. Sending a message
@@ -185,10 +175,6 @@ export default function WebchatConversation({
     onMessage: (p: WebchatMessagePayload) => {
       handleEvent(p);
       if (p.stream === 'progress') return;
-      onActivityRef.current();
-      // The agent only speaks once every subagent has reported, so an answer is
-      // also the news that the panel above has nothing running any more.
-      void invalidateSubagents(sessionId);
       // A reply that lands while the user is looking at it is read on arrival:
       // otherwise leaving the chat would leave a badge for a message they
       // watched being written.
@@ -435,10 +421,11 @@ export default function WebchatConversation({
         />
       </div>
 
-      {/* Whoever the agent sent off for this conversation, and whether any of
-          them is still out. Renders nothing when it delegated nothing — which
-          is every chat with an agent that has no subagents skill. */}
-      <SubagentsPanel sessionId={sessionId} />
+      {/* Whoever is working on this conversation besides the agent itself —
+          its own copies and the agents of its team it handed work to — and
+          whether any of them is still out. Renders nothing when it delegated
+          nothing, which is every chat with an agent that has neither skill. */}
+      <ErrandsPanel sessionId={sessionId} agentId={session.agentId} />
 
       {/* Messages. `scrollbar-gutter: stable both-edges` keeps the reading
           column centred against the *pane*, not against the pane minus a

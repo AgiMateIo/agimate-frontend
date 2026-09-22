@@ -237,7 +237,9 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
               </div>
             </FormField>
 
-            <FormField label={t('descriptionLabel')}>
+            {/* Says what the field is for rather than how to fill it: an agent
+                in a team is picked for a job by this text alone. */}
+            <FormField label={t('descriptionLabel')} hint={t('descriptionHint')}>
               <TextArea
                 value={data.description}
                 onChange={(e) => setData({ description: e.target.value })}

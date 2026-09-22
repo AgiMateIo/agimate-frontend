@@ -15,7 +15,12 @@ import {
 import { agenticTeamOptions, agenticTeamsListOptions } from '@/queries/agentic-teams';
 import ContextNav from './ContextNav';
 
-type SectionLabelKey = 'tabGeneral' | 'agents' | 'taskBoard' | 'knowledgeBase' | 'agentChat';
+type SectionLabelKey =
+  | 'tabGeneral'
+  | 'agents'
+  | 'agentRequests'
+  | 'taskBoard'
+  | 'knowledgeBase';
 
 type Section = {
   key: string;
@@ -27,9 +32,9 @@ type Section = {
 const SECTIONS: Section[] = [
   { key: 'general', seg: '', labelKey: 'tabGeneral', icon: AdjustmentsHorizontalIcon },
   { key: 'agents', seg: 'agents', labelKey: 'agents', icon: UserCircleIcon },
+  { key: 'requests', seg: 'requests', labelKey: 'agentRequests', icon: ChatBubbleLeftRightIcon },
   { key: 'board', seg: 'board', labelKey: 'taskBoard', icon: ClipboardDocumentListIcon },
   { key: 'knowledge-base', seg: 'knowledge-base', labelKey: 'knowledgeBase', icon: BookOpenIcon },
-  { key: 'chat', seg: 'chat', labelKey: 'agentChat', icon: ChatBubbleLeftRightIcon },
 ];
 
 const hrefFor = (teamId: string, seg: string) =>

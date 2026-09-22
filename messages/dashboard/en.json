@@ -142,7 +142,8 @@
     "renamedNotice": "The name “{requested}” was taken, so the agent was created as “{actual}”.",
     "skillInstanceHint": "The agent has several connections of this type open — pick the one this skill works with.",
     "skillInstanceNotChosen": "Not chosen",
-    "skillBindFailed": "Could not bind these skills: {names}. The agent exists — bind them from its page."
+    "skillBindFailed": "Could not bind these skills: {names}. The agent exists — bind them from its page.",
+    "descriptionHint": "This is what the other agents of the team go by when they decide whom to hand a piece of work to."
   },
   "Chat": {
     "pageTitle": "Chat",
@@ -214,10 +215,6 @@
     "uploadedByYou": "Uploaded by you",
     "unknownAgent": "Unknown agent",
     "agentFilesHint": "Files related to this agent - the ones it produced and the ones it was sent",
-    "viewModeLabel": "View",
-    "viewTable": "Table",
-    "viewCompact": "Small tiles",
-    "viewCards": "Large cards",
     "columnName": "File",
     "columnFormat": "Format",
     "columnSize": "Size",
@@ -702,6 +699,7 @@
     "enabled": "Enabled",
     "disabled": "Disabled",
     "createdAt": "Created",
+    "columnTeam": "Team",
     "connectorCode": "Connector",
     "effect": "Effect",
     "effectAllow": "ALLOW",
@@ -724,8 +722,10 @@
     "purposeOffHint": "The purpose is switched off on provider {provider} (empty list) — calls for it will fail.",
     "unsetModel": "Not set",
     "unsetModelHint": "Neither the agent nor its chat provider has a model for this purpose. Only the platform provider's list is left; if that one is empty too, the call fails and the agent says so in the chat.",
+    "routineOnChatModel": "Chat model",
+    "routineOnChatModelHint": "No model of its own and none on the chat provider's list — this work runs on the agent's chat model. It never fails for lack of a model.",
     "purpose": "Purpose",
-    "purposeHint": "Chat is the agent's main model; the other purposes are tool models (images, vision, audio). One model per purpose — a purpose left unset is served by the provider's priority list, never guessed.",
+    "purposeHint": "Chat is the agent's main model; routine is the platform's housekeeping over its conversations (titles, compression); the rest are tool models (images, vision, audio). One model per purpose — a purpose left unset is served by the provider's priority list, never guessed; routine falls back to the chat model.",
     "provider": "Provider",
     "model": "Model",
     "providerDisabled": "Provider disabled",
@@ -738,6 +738,7 @@
     "removeBindingConfirm": "Are you sure you want to clear the model for this purpose?",
     "removeBindingWarning": "The purpose goes back to the priority list of the provider that serves the chat model. The provider itself will not be affected.",
     "removeChatBindingWarning": "The agent will be left without a chat model — the platform fallback only kicks in when the agent has no models at all.",
+    "removeRoutineBindingWarning": "Titles and conversation compression go back to the chat provider's list, or to the chat model itself if that list is empty. Nothing stops working.",
     "removeLastBindingWarning": "This is the agent's last model. Clearing it switches the agent to the platform fallback model.",
     "manageProviders": "Manage providers",
     "loadingSkills": "Loading skills...",
@@ -858,7 +859,9 @@
     "bindSectionInstances": "My connections",
     "bindSectionInternal": "Built-in capabilities",
     "bindConnectionHint": "Built-in capabilities (memory, board, sheets) are opened like any integration — and removed the same way.",
-    "deleteAgentWarning": "This action cannot be undone. The agent will stop processing triggers immediately."
+    "deleteAgentWarning": "This action cannot be undone. The agent will stop processing triggers immediately.",
+    "descriptionHint": "The other agents of the team read this description when they decide whom to hand a piece of work to — say what to come to this agent with.",
+    "teamSkillNeedsTeam": "The agent is in no team, and work can only be handed to members of one. The skill binds, but does nothing until the agent joins a team."
   },
   "LlmProviders": {
     "title": "LLM Providers",
@@ -957,11 +960,13 @@
     "noFittingModels": "No model of this provider fits the purpose",
     "pickerClear": "Clear selection",
     "purposeChat": "Chat",
+    "purposeRoutine": "Routine (titles, compressing conversations)",
     "purposeImage": "Image generation",
     "purposeVision": "Vision",
     "purposeAudioIn": "Speech recognition",
     "purposeAudioOut": "Speech synthesis",
     "requirementChat": "Runs the conversation and the tool calls — a text model, preferably one supporting tools.",
+    "requirementRoutine": "The platform's housekeeping over the agent's conversations — naming them, compressing a long one into a summary. Any text model will do; pick a cheap, fast one.",
     "requirementImage": "Needs a model that generates images (output: image).",
     "requirementVision": "Needs a model that accepts images (input: image).",
     "requirementAudioIn": "Needs a model that accepts audio (input: audio).",
@@ -1017,7 +1022,6 @@
     "agentsDescription": "Manage team agents",
     "taskBoard": "Task Board",
     "taskBoardDescription": "View and manage tasks",
-    "agentChat": "Agent Chat",
     "agentChatDescription": "Team agent conversations",
     "knowledgeBase": "Knowledge Base",
     "knowledgeBaseDescription": "Manage team knowledge base",
@@ -1032,7 +1036,8 @@
     "switchTeam": "Switch team",
     "comingSoon": "This section is coming soon.",
     "updated": "Updated",
-    "tasksTotal": "Tasks"
+    "tasksTotal": "Tasks",
+    "agentRequests": "Requests"
   },
   "Connections": {
     "title": "Connections",
@@ -1566,16 +1571,6 @@
     "frontmatterCategories": "Categories",
     "frontmatterTags": "Tags"
   },
-  "Subagents": {
-    "count": "{count, plural, one {# subagent} other {# subagents}}",
-    "runningCount": "{count, plural, one {# working} other {# working}}",
-    "working": "working…",
-    "untitledErrand": "Untitled errand",
-    "viewRuns": "Runs",
-    "requestLabel": "Errand",
-    "contextShow": "Show context",
-    "contextHide": "Hide context"
-  },
   "AgentViews": {
     "hint": "Pages the agent's connections offer — its own tools' panels and the apps an MCP server hands out. A page runs isolated and its buttons call the connection's tools as the agent — under its bindings and access rules.",
     "empty": "No views. They come from a connection bound to this agent that offers them; an MCP connection created earlier shows its views after you test it, which re-reads its tools.",
@@ -1585,5 +1580,46 @@
     "loading": "Loading the page…",
     "loadError": "Could not load the page",
     "toolCallFailed": "The tool call failed"
+  },
+  "Errands": {
+    "count": "{count, plural, one {# errand} other {# errands}}",
+    "runningCount": "{count, plural, one {# working} other {# working}}",
+    "working": "working…",
+    "untitledErrand": "Untitled errand",
+    "viewRuns": "Runs",
+    "requestLabel": "Errand",
+    "requestFrom": "Errand from {agent}",
+    "contextShow": "Show context",
+    "contextHide": "Hide context"
+  },
+  "AgentRequests": {
+    "title": "Requests",
+    "loadError": "Could not load the team's requests",
+    "threadLoadError": "Could not load the correspondence",
+    "untitled": "Untitled request",
+    "empty": "No requests yet",
+    "emptyFiltered": "Nothing matches the filter",
+    "emptyTitle": "The agents have handed nothing to each other yet",
+    "emptyHint": "An agent with the “Team agents” skill can hand part of its work to another agent of this team — the requests show up here.",
+    "emptyExchange": "Nothing in this branch yet",
+    "filterAllAgents": "All agents",
+    "filterAllStatuses": "All statuses",
+    "statusWorking": "Working",
+    "statusDone": "Done",
+    "statusFailed": "Failed",
+    "statusCancelled": "Cancelled",
+    "statusStalled": "Never started",
+    "statusStalledHint": "The request was handed over but its run never reached the queue: nothing is running, and nothing will start on its own.",
+    "reportUndelivered": "Report undelivered",
+    "reportUndeliveredHint": "The addressee answered, but the report never reached the sender's conversation.",
+    "reportDone": "Report",
+    "reportFailed": "Failure report",
+    "requestsCount": "{count, plural, one {# request} other {# requests}}",
+    "absorbed": "Appended to the run already working",
+    "viewRun": "Run",
+    "viewBranchRuns": "Addressee's runs",
+    "originOf": "From {agent}'s conversation",
+    "originUntitled": "Untitled conversation",
+    "originRuns": "Conversation runs"
   }
 }

@@ -113,9 +113,15 @@ function BoardView({ board, teamId }: { board: Board; teamId: string }) {
     [invalidateComments]
   );
 
+  // The event names the changed fields but carries no values — re-read.
+  const handleRealtimeTaskUpdated = useCallback(() => {
+    invalidateTasks(board.id);
+  }, [board.id, invalidateTasks]);
+
   useBoardSubscription(board.id, {
     onTaskCreated: handleRealtimeTaskCreated,
     onTaskStatusChanged: handleRealtimeStatusChanged,
+    onTaskUpdated: handleRealtimeTaskUpdated,
     onCommentAdded: handleRealtimeCommentAdded,
   });
 

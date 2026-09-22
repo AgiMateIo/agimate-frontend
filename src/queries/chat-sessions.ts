@@ -5,18 +5,25 @@ import {
   useInfiniteQuery,
   useQuery,
   useQueryClient,
+  type InfiniteData,
+  type QueryClient,
+  type QueryKey,
 } from '@tanstack/react-query';
 import apiService from '@/services/api';
+import { useSessionEventsSubscription } from '@/realtime/useSessionEventsSubscription';
 import { dedupeById, nextPageParam } from '@/utils/paging';
+import type { ChatSessionResponse, PagedResponse, SessionEvent } from '@/types';
+import { channelKeys } from './channels';
+import { webchatKeys } from './webchat';
 
 // The `/manage/sessions` resource where it is not webchat's: the history of any
-// conversation whatever carries it, and the subagents working for one of them.
+// conversation whatever carries it, and the errands running for one of them.
 // Webchat's own lists and their caches live in `./webchat`.
 export const chatSessionKeys = {
   all: ['chat-sessions'] as const,
   messages: (sessionId: string) => [...chatSessionKeys.all, 'messages', sessionId] as const,
-  subagents: (parentSessionId: string) =>
-    [...chatSessionKeys.all, 'subagents', parentSessionId] as const,
+  errands: (parentSessionId: string) =>
+    [...chatSessionKeys.all, 'errands', parentSessionId] as const,
 };
 
 const MESSAGES_PAGE_SIZE = 50;
@@ -42,48 +49,159 @@ export function useSessionMessagesQuery(sessionId: string) {
   return { ...query, messages };
 }
 
-// Every subagent an agent has ever sent off for one conversation, freshest
-// first. One page and no paging: a single errand fans out to a handful of
-// subagents, not to a list somebody scrolls.
-const SUBAGENTS_PAGE_SIZE = 50;
+// Every errand a conversation has handed out, freshest first — the agent's own
+// copies (`connectorCode: 'subagents'`) and the branches of other agents of the
+// team (`connectorCode: 'agents'`, and an `agentId` that is somebody else's)
+// alike: `parentSessionId` is what they have in common and the only way to list
+// them. One page and no paging: a conversation delegates to a handful of
+// workers, not to a list somebody scrolls.
+const ERRANDS_PAGE_SIZE = 50;
 
-// How often the list is re-read while one of them is working. They report in
-// the background with nothing to announce them — the parent chat's own events
-// only fire once the agent answers, which is after the last of them is done.
-const RUNNING_POLL_MS = 5_000;
+// How often the list is re-read while one of them is working. The rows are
+// live (`session.updated` flips `isRunning`), so this is only the backstop for
+// a lost event and for a worker that died quietly — its row keeps saying
+// "running" for up to 15 minutes and no event announces the end of that.
+const RUNNING_POLL_MS = 30_000;
 
-export const subagentSessionsOptions = (parentSessionId: string) =>
+export const errandSessionsOptions = (parentSessionId: string) =>
   queryOptions({
-    queryKey: chatSessionKeys.subagents(parentSessionId),
+    queryKey: chatSessionKeys.errands(parentSessionId),
     queryFn: () =>
       apiService.getChatSessions({
         parentSessionId,
         page: 0,
-        size: SUBAGENTS_PAGE_SIZE,
+        size: ERRANDS_PAGE_SIZE,
       }),
     select: (page) => page.content,
-    // A subagent that died quietly keeps `isRunning` for up to 15 minutes, so
-    // this can poll a conversation nobody is waiting on any more. It costs one
-    // request per five seconds on an open chat only — the panel unmounts with
-    // the conversation.
+    // Costs one request per thirty seconds on an open chat only — the panel
+    // unmounts with the conversation.
     refetchInterval: (query) =>
       query.state.data?.content.some((s) => s.isRunning) ? RUNNING_POLL_MS : false,
   });
 
-export function useSubagentSessionsQuery(parentSessionId: string) {
-  return useQuery(subagentSessionsOptions(parentSessionId));
+export function useErrandSessionsQuery(parentSessionId: string) {
+  return useQuery(errandSessionsOptions(parentSessionId));
 }
 
-// Re-reads the subagents of one conversation. The chat calls it on every
-// non-progress event: a subagent that has just reported turns the agent's
-// answer into an event here, and that is the moment the list stops being
-// "three working" — the poll above would otherwise carry the stale row for up
-// to five seconds under an answer that is already on screen.
-export function useInvalidateSubagentSessions() {
+type SessionPage = PagedResponse<ChatSessionResponse>;
+
+// Where a live row lands in one freshest-first list. Present: replaced whole,
+// in place — unless its activity moved, and then it goes to the top. Absent: a
+// new session goes to the top, and so does a known one fresher than the head
+// (it was on a page not loaded yet, and the list would otherwise miss it until
+// the next read); anything older is left for whoever scrolls to its page.
+// `undefined` = this list is not touched.
+function placeRow(
+  rows: ChatSessionResponse[],
+  row: ChatSessionResponse,
+  isNew: boolean,
+): ChatSessionResponse[] | undefined {
+  const at = rows.findIndex((s) => s.id === row.id);
+  if (at >= 0) {
+    if (rows[at].lastActivityAt === row.lastActivityAt) {
+      const next = [...rows];
+      next[at] = row;
+      return next;
+    }
+    return [row, ...rows.filter((s) => s.id !== row.id)];
+  }
+  const head = rows[0];
+  if (isNew || !head || row.lastActivityAt > head.lastActivityAt) return [row, ...rows];
+  return undefined;
+}
+
+// The same over a grown-on-demand list: a row found on page 3 either stays
+// there (nothing moved) or is lifted onto page 0 — never left in both.
+function placeInPages(
+  data: InfiniteData<SessionPage>,
+  row: ChatSessionResponse,
+  isNew: boolean,
+): InfiniteData<SessionPage> {
+  const [first, ...rest] = data.pages;
+  if (!first) return data;
+  const found = data.pages.findIndex((p) => p.content.some((s) => s.id === row.id));
+  if (found < 0) {
+    const content = placeRow(first.content, row, isNew);
+    if (!content) return data;
+    const totalElements = first.totalElements + (isNew ? 1 : 0);
+    return { ...data, pages: [{ ...first, content, totalElements }, ...rest] };
+  }
+  const moved =
+    data.pages[found].content.find((s) => s.id === row.id)!.lastActivityAt !== row.lastActivityAt;
+  const pages = data.pages.map((p, i) =>
+    i !== found
+      ? p
+      : {
+          ...p,
+          content: moved
+            ? p.content.filter((s) => s.id !== row.id)
+            : p.content.map((s) => (s.id === row.id ? row : s)),
+        },
+  );
+  if (moved) pages[0] = { ...pages[0], content: [row, ...pages[0].content] };
+  return { ...data, pages };
+}
+
+/**
+ * Puts one session row into every cached list it belongs to — by that list's
+ * own filter, which is what keeps a Telegram thread out of the chat pane and an
+ * errand out of everything but its parent's panel. The one way a session row
+ * enters the cache: a live `session.*` event and a REST answer (a chat just
+ * started, a rename, a close) both come through here, since both are the
+ * listing's row in full. Replacing is idempotent, so the event that follows a
+ * local write changes nothing.
+ */
+export function applySessionRow(
+  queryClient: QueryClient,
+  row: ChatSessionResponse,
+  isNew = false,
+) {
+  const pages = (queryKey: QueryKey) =>
+    queryClient.setQueryData<InfiniteData<SessionPage>>(
+      queryKey,
+      (old) => old && placeInPages(old, row, isNew),
+    );
+  const page = (queryKey: QueryKey) =>
+    queryClient.setQueryData<SessionPage>(queryKey, (old) => {
+      const content = old && placeRow(old.content, row, isNew);
+      if (!old || !content) return old;
+      const grew = isNew && !old.content.some((s) => s.id === row.id);
+      return { ...old, content, totalElements: old.totalElements + (grew ? 1 : 0) };
+    });
+
+
+  if (row.connectorCode === 'webchat' && row.parentSessionId === null) {
+    for (const agentId of [undefined, row.agentId]) {
+      pages(webchatKeys.sessionsPages(agentId));
+      page(webchatKeys.sessionsList(agentId));
+    }
+  }
+  if (row.channelId) pages(channelKeys.sessions(row.channelId));
+  if (row.parentSessionId) page(chatSessionKeys.errands(row.parentSessionId));
+}
+
+export function useApplySessionRow() {
   const queryClient = useQueryClient();
   return useCallback(
-    (parentSessionId: string) =>
-      queryClient.invalidateQueries({ queryKey: chatSessionKeys.subagents(parentSessionId) }),
+    (row: ChatSessionResponse, isNew = false) => applySessionRow(queryClient, row, isNew),
     [queryClient],
+  );
+}
+
+/**
+ * Keeps every cached session list in step with the personal channel's
+ * `session.created` / `session.updated`. Mounted once, with the dashboard
+ * shell — a screen showing sessions needs nothing of its own. Each event is
+ * the listing's row in full: nothing is ever counted up locally, the badge is
+ * the server's `unreadCount`.
+ */
+export function useLiveSessionRows(enabled: boolean) {
+  const apply = useApplySessionRow();
+  useSessionEventsSubscription(
+    enabled,
+    useCallback(
+      ({ type, session }: SessionEvent) => apply(session, type === 'session.created'),
+      [apply],
+    ),
   );
 }

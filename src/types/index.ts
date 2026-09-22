@@ -32,3 +32,4 @@ export * from './sessions';
 export * from './auth';
 export * from './taxonomy';
 export * from './agent-views';
+export * from './agent-requests';

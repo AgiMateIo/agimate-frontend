@@ -53,7 +53,9 @@ export default function DeleteAgentLlmModal({
           // so dropping CHAT while other purposes stay bound leaves no chat model.
           : binding.purpose === 'CHAT'
             ? t('removeChatBindingWarning')
-            : t('removeBindingWarning')}
+            : binding.purpose === 'ROUTINE'
+              ? t('removeRoutineBindingWarning')
+              : t('removeBindingWarning')}
       </Alert>
     </ConfirmDeleteModal>
   );

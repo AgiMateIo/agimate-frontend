@@ -9,7 +9,7 @@ import {
 } from '@tanstack/react-query';
 import apiService from '@/services/api';
 import { dedupeById, nextPageParam } from '@/utils/paging';
-import type { WebchatActivityPayload, PagedResponse, ChatSessionResponse } from '@/types';
+import type { PagedResponse, ChatSessionResponse } from '@/types';
 
 export const webchatKeys = {
   all: ['webchat'] as const,
@@ -115,9 +115,9 @@ export function useMarkWebchatSessionRead() {
       clear();
       try {
         await apiService.markChatSessionRead(sessionId, lastReadMessageId);
-        // Again after the round trip: the same message that triggered this also
-        // refetches the sessions list, and a response the server prepared before
-        // the pointer moved brings the count back.
+        // Again after the round trip: a `session.updated` carrying the message
+        // that triggered this can land after the first clear, with the count
+        // from before the pointer moved.
         clear();
       } catch {
         // Swallowed on purpose — see above.
@@ -125,87 +125,4 @@ export function useMarkWebchatSessionRead() {
     },
     [queryClient],
   );
-}
-
-export function useWebchatCacheActions() {
-  const queryClient = useQueryClient();
-
-  return {
-    // Prepend a freshly created session into the lists it belongs to.
-    addSession: (session: ChatSessionResponse) => {
-      for (const key of [
-        webchatKeys.sessionsPages(undefined),
-        webchatKeys.sessionsPages(session.agentId),
-      ]) {
-        queryClient.setQueryData<SessionPages>(key, (old) => {
-          if (!old) return old;
-          const pages = old.pages.map((p) => ({
-            ...p,
-            content: p.content.filter((s) => s.id !== session.id),
-          }));
-          return {
-            ...old,
-            pages: [{ ...pages[0], content: [session, ...pages[0].content] }, ...pages.slice(1)],
-          };
-        });
-      }
-      // The counting caller lives on another page — a refetch there is cheaper
-      // than teaching this about `totalElements`.
-      queryClient.invalidateQueries({ queryKey: webchatKeys.sessionsLists() });
-    },
-    // Replace a session in-place across every cached page (e.g. after close).
-    patchSession: (session: ChatSessionResponse) => {
-      queryClient.setQueriesData<SessionPages>(
-        { queryKey: webchatKeys.sessionsPagesAll() },
-        (old) =>
-          old && {
-            ...old,
-            pages: old.pages.map((p) => ({
-              ...p,
-              content: p.content.map((s) => (s.id === session.id ? session : s)),
-            })),
-          },
-      );
-      queryClient.invalidateQueries({ queryKey: webchatKeys.sessionsLists() });
-    },
-    // A delivered agent message in some session of the user's — the personal
-    // channel's counting event. Raises that row's badge and preview at once,
-    // then refetches: the event carries no attachment flag, the count it
-    // implies can drift (it is best-effort), and the row's place in the list
-    // moved server-side.
-    applyActivity: (p: WebchatActivityPayload) => {
-      patchSessionRows(queryClient, (s) =>
-        s.id === p.sessionId
-          ? {
-              ...s,
-              unreadCount: s.unreadCount + 1,
-              // Whatever the run was doing, this message ended the turn.
-              isRunning: false,
-              lastActivityAt: p.createdAt,
-              lastMessage: {
-                text: p.preview,
-                direction: 'AGENT',
-                hasAttachments: false,
-                createdAt: p.createdAt,
-              },
-            }
-          : s,
-      );
-      // Only the lists that can hold this row — a message from one agent must
-      // not send another agent's open chat list back to the server.
-      for (const key of [
-        webchatKeys.sessionsPages(p.agentId),
-        webchatKeys.sessionsPages(undefined),
-        webchatKeys.sessionsLists(),
-      ]) {
-        queryClient.invalidateQueries({ queryKey: key });
-      }
-    },
-    // Called on chat activity (title and lastActivityAt move server-side). It
-    // costs one request per page the user has loaded, so paging deep into the
-    // sessions while an agent is answering is the expensive combination — rare
-    // enough to leave alone, and page 0 is where the change lands anyway.
-    invalidateSessions: () =>
-      queryClient.invalidateQueries({ queryKey: webchatKeys.sessions() }),
-  };
 }

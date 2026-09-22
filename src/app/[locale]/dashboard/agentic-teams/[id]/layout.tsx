@@ -90,8 +90,21 @@ export default function AgenticTeamDetailLayout({ children }: { children: React.
     );
   }
 
+  // The correspondence screen stretches to the bottom of the viewport instead
+  // of sitting in the section rhythm — three panes with their own scrolling,
+  // the same shape the chat uses. The layout's height minus the gap every page
+  // leaves under itself is the canvas; full height alone would put the screen
+  // and that gap one after the other and scroll the page by exactly the gap.
+  const fullHeight = pathname.endsWith('/requests');
+
   return (
-    <div className="space-y-6">
+    <div
+      className={
+        fullHeight
+          ? 'flex h-[calc(100%-var(--page-gap))] flex-col gap-4'
+          : 'space-y-6'
+      }
+    >
       <ErrorBoundary resetKeys={[teamId]}>
         <Suspense fallback={<Placeholder>{t('loading')}</Placeholder>}>
           <HeaderActionsTargetContext.Provider value={actionsTarget}>

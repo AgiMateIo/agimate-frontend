@@ -10,7 +10,7 @@ import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { allAgentsOptions } from '@/queries/agents';
 import UserFilesList from './UserFilesList';
-import { FilesViewSwitcher } from './FilesViewSwitcher';
+import { ViewSwitcher } from '@/components/ui/ViewSwitcher';
 import { useFilesViewMode } from './filesViewMode';
 import { Placeholder } from '@/components/ui/Placeholder';
 
@@ -80,7 +80,7 @@ export default function FilesBrowser({ fixedAgentId }: { fixedAgentId?: string }
           />
         </div>
         <div className="pt-0.5">
-          <FilesViewSwitcher mode={mode} onChange={setMode} />
+          <ViewSwitcher mode={mode} onChange={setMode} />
         </div>
       </div>
 

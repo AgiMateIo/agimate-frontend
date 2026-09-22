@@ -7,8 +7,8 @@ import { Placeholder } from '@/components/ui/Placeholder';
 import { useSessionMessagesQuery } from '@/queries/chat-sessions';
 import { formatDate } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
-import { parseSubagentRequest } from '@/utils/subagent';
-import { SubagentRequestCard } from './SubagentRequestCard';
+import { parseErrandRequest } from '@/utils/errand';
+import { ErrandRequestCard } from './ErrandRequestCard';
 
 // The read-only history of one conversation, whatever carries it: a messenger
 // thread on a channel's page, an errand a subagent was sent on. Webchat has its
@@ -102,15 +102,16 @@ export default function SessionTranscript({ sessionId }: { sessionId: string }) 
               </div>
             )}
             {messages.map((m) => {
-              // An errand handed to a subagent arrives as the USER side of its
-              // session, but it is a block the agent wrote for the model — it
-              // gets a card of its own, and falls back to the bubble below when
-              // it doesn't parse.
-              const request = m.direction === 'USER' ? parseSubagentRequest(m.text) : null;
+              // An errand — handed to a subagent or to another agent of the
+              // team — arrives as the USER side of its session, but it is a
+              // block one agent wrote for another's model: it gets a card of
+              // its own, and falls back to the bubble below when it doesn't
+              // parse.
+              const request = m.direction === 'USER' ? parseErrandRequest(m.text) : null;
               if (request) {
                 return (
                   <div key={m.id}>
-                    <SubagentRequestCard request={request} />
+                    <ErrandRequestCard request={request} />
                     <div className="mt-1 text-[10px] text-muted">
                       {formatDate(m.createdAt, locale)}
                     </div>

@@ -12,8 +12,10 @@ import WebchatConversation from '@/components/webchat/WebchatConversation';
 import { WebchatComposerProvider } from '@/components/webchat/composerStore';
 import AgentMcpUnavailable from '@/components/agents/AgentMcpUnavailable';
 import { useAgentDetailSuspenseQuery } from '@/queries/agents';
-import { useWebchatCacheActions, useWebchatSessionsQuery } from '@/queries/webchat';
-import { useWebchatActivitySubscription } from '@/realtime/useWebchatActivitySubscription';
+import { useWebchatSessionsQuery } from '@/queries/webchat';
+import { useApplySessionRow } from '@/queries/chat-sessions';
+import { usePinnedSelection } from '@/hooks/usePinnedSelection';
+import { useResyncEpoch } from '@/realtime/usePersonalChannel';
 import { getErrorMessage } from '@/utils/error';
 import { isMcpAgent } from '@/utils/agent';
 import type { AgentResponse } from '@/types';
@@ -35,7 +37,6 @@ function AgentChatView({ agent }: { agent: AgentResponse }) {
   const t = useTranslations('Chat');
   const agentId = agent.id;
 
-  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [actionError, setActionError] = useState('');
   // Below `md` the two panes don't fit side by side, so one is shown at a time.
@@ -44,24 +45,16 @@ function AgentChatView({ agent }: { agent: AgentResponse }) {
   const [mobilePane, setMobilePane] = useState<'list' | 'conversation'>('conversation');
 
   const sessionsQuery = useWebchatSessionsQuery(agentId);
-  const { addSession, patchSession, invalidateSessions, applyActivity } = useWebchatCacheActions();
+  const applySessionRow = useApplySessionRow();
 
   const agentsById = useMemo(() => ({ [agent.id]: agent }), [agent]);
   const sessions = sessionsQuery.sessions;
   // Land straight in the newest conversation rather than an empty frame — the
-  // backend sorts by lastActivityAt desc, so sessions[0] is where the user left off.
-  // Derived instead of an effect: nothing to sync, and a session that disappears
-  // from the list falls back to the newest on its own.
-  const activeSession =
-    sessions.find((s) => s.id === activeSessionId) ?? sessions[0] ?? null;
-
-  // Badges for the conversations the user is *not* in. The open one has its own
-  // per-session subscription, renders the message itself and marks it read on
-  // arrival — counting it here would raise a badge for a message on screen.
-  useWebchatActivitySubscription((p) => {
-    if (p.sessionId === activeSession?.id) return;
-    applyActivity(p);
-  });
+  // backend sorts by lastActivityAt desc, so sessions[0] is where the user left
+  // off — and stay there while live rows reorder the list or a chat started on
+  // another device arrives on top.
+  const [activeSession, setActiveSessionId] = usePinnedSelection(sessions);
+  const resyncEpoch = useResyncEpoch();
 
   const error =
     actionError ||
@@ -73,7 +66,7 @@ function AgentChatView({ agent }: { agent: AgentResponse }) {
     setActionError('');
     try {
       const session = await apiService.createWebchatSession(agentId);
-      addSession(session);
+      applySessionRow(session, true);
       setActiveSessionId(session.id);
       setMobilePane('conversation');
     } catch (err) {
@@ -119,11 +112,12 @@ function AgentChatView({ agent }: { agent: AgentResponse }) {
           >
             {activeSession ? (
               <WebchatConversation
-                key={activeSession.id}
+                // The epoch rebuilds the thread from history after a reconnect
+                // that could not recover the messages it missed.
+                key={`${activeSession.id}:${resyncEpoch}`}
                 session={activeSession}
                 agentName={agent.name}
-                onSessionUpdated={patchSession}
-                onActivity={invalidateSessions}
+                onSessionUpdated={applySessionRow}
                 onBack={() => setMobilePane('list')}
               />
             ) : sessionsQuery.isPending ? (

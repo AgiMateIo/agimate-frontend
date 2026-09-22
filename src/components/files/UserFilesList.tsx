@@ -5,11 +5,11 @@ import { useTranslations } from 'next-intl';
 import { Pagination } from '@/components/ui/Pagination';
 import { useUserFilesQuery } from '@/queries/files';
 import type { UserFileResponse } from '@/types';
+import type { ViewMode } from '@/utils/viewMode';
 import { FileCard } from './FileCard';
 import { FileTable } from './FileTable';
 import { FileTile } from './FileTile';
 import DeleteFileModal from './DeleteFileModal';
-import type { FilesViewMode } from './filesViewMode';
 import { Placeholder } from '@/components/ui/Placeholder';
 
 export default function UserFilesList({
@@ -30,7 +30,7 @@ export default function UserFilesList({
   onPageSizeChange: (size: number) => void;
   // id → name of the agent that created a file; empty while the agents list loads.
   agentNames: Map<string, string>;
-  mode: FilesViewMode;
+  mode: ViewMode;
 }) {
   const t = useTranslations('Files');
   const { data, refetch } = useUserFilesQuery(agentId, name, page, pageSize);

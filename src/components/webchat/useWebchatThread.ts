@@ -63,9 +63,10 @@ const fromEvent = (p: WebchatMessagePayload): ThreadMessage => ({
 // Deliberately local state, not React Query: live events + optimistic writes
 // dominate, and the thread dies with the session selection.
 //
-// `running` is the session row's `isRunning`, read once per session: an agent
-// that was already working when the conversation opened has no event left to
-// send, so without it a reply in flight looks like a conversation gone quiet.
+// `running` is the session row's `isRunning`: it seeds the indicator when the
+// conversation opens (an agent already working has no event left to send, so
+// without it a reply in flight looks like a conversation gone quiet), and its
+// live flips from `session.updated` move it afterwards.
 //
 // Switching sessions is a remount, not a reset: WebchatConversation is rendered
 // with `key={session.id}`, so `sessionId` is fixed for the life of this
@@ -101,15 +102,27 @@ export function useWebchatThread(sessionId: string | null, running = false) {
   // session selection (the echo swap to signed URLs happens inside a state
   // updater, which must stay pure) and revoked when the thread resets.
   const localPreviewUrlsRef = useRef<string[]>([]);
-  // Read inside the reset effect instead of as a dependency: `isRunning` flips
-  // on every sessions refetch, and re-running that effect would re-fetch the
-  // whole history behind it.
+  // The previous `running`, to tell a rise (a run started elsewhere) from the
+  // value simply being true.
   const runningRef = useRef(running);
   // Whether the indicator currently showing came from that seed and not from
   // anything this thread saw itself.
   const seededRunningRef = useRef(running);
   useEffect(() => {
+    const rose = running && !runningRef.current;
     runningRef.current = running;
+    // The row is live now (`session.updated`), so it switches the indicator on
+    // too — a message sent from another device starts a run this thread never
+    // saw a send for. Only then does it count as seeded (so the row going idle
+    // switches it back off): after a send from here the local evidence already
+    // lit it, and a stale idle row from a refetch must not put it out.
+    if (rose) {
+      setAwaitingReply((prev) => {
+        if (!prev) seededRunningRef.current = true;
+        return true;
+      });
+      return;
+    }
     // A row cached a minute ago can seed the indicator for a run that has since
     // finished — and a finished run has no event left to switch it off. The
     // first listing that reports the session idle does it instead. Local

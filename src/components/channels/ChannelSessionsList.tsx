@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { ChatSessionResponse } from '@/types';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
-import { useChannelCacheActions, useChannelSessionsQuery } from '@/queries/channels';
+import { useChannelSessionsQuery } from '@/queries/channels';
+import { useApplySessionRow } from '@/queries/chat-sessions';
+import { usePinnedSelection } from '@/hooks/usePinnedSelection';
 import { formatDate, parseBackendDate } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
 import ChannelChatView from './ChannelChatView';
@@ -26,17 +27,14 @@ export default function ChannelSessionsList({ channelId }: ChannelSessionsListPr
   const t = useTranslations('Channels');
   const tCommon = useTranslations('Common');
   const locale = useLocale();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const { sessions, isPending, error, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useChannelSessionsQuery(channelId);
-  const { patchSession } = useChannelCacheActions();
+  const applySessionRow = useApplySessionRow();
+
+  const [selected, setSelectedId] = usePinnedSelection(sessions);
 
   if (error) return <ErrorAlert>{getErrorMessage(error, 'Failed to load sessions')}</ErrorAlert>;
-
-  // Derived rather than an effect: switching channels lands on the freshest
-  // session of the new list on its own, and so does a selection that paged away.
-  const selected = sessions.find((s) => s.id === selectedId) ?? sessions[0] ?? null;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 min-h-0 h-[600px]">
@@ -96,7 +94,7 @@ export default function ChannelSessionsList({ channelId }: ChannelSessionsListPr
           <ChannelChatView
             key={selected.id}
             session={selected}
-            onUpdated={(updated) => patchSession(channelId, updated)}
+            onUpdated={applySessionRow}
           />
         ) : (
           <Placeholder size="sm">{t('selectSessionHint')}</Placeholder>

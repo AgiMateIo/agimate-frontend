@@ -7,12 +7,13 @@ import apiService from '@/services/api';
 import { ConnectionResponse, SkillResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
+import { Alert } from '@/components/ui/Alert';
 import { Chip } from '@/components/ui/Chip';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { getErrorMessage } from '@/utils/error';
 import { skillRequirements } from '@/utils/skill';
-import { useAgentSkillPlanQuery } from '@/queries/agents';
+import { agentDetailOptions, useAgentSkillPlanQuery } from '@/queries/agents';
 import { connectorCatalogOptions } from '@/queries/connectors';
 import { connectorNameOf } from '@/utils/connector';
 import { useSkillPickerQuery } from '@/queries/skills';
@@ -35,6 +36,12 @@ import { Placeholder } from '@/components/ui/Placeholder';
 // Rows revealed at once; "show more" grows the list in place. Both scopes are
 // merged client-side, so there is no server page to walk (see the query module).
 const CHUNK = 8;
+
+// The connector behind the "team agents" skill — handing work to another agent
+// of the same team. An agent outside a team can hold the skill but has nobody
+// to hand anything to, and nothing in the binding says so: the code is what
+// tells the skill apart, the skill's own name is the author's to change.
+const TEAM_AGENTS_CODE = 'agents';
 
 interface AddAgentSkillModalProps {
   agentId: string;
@@ -75,6 +82,8 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
   } = useSkillPickerQuery(catalogFilters.source, catalogFilters.debouncedSearch, catalogFilters.filters);
 
   const { data: catalog } = useQuery(connectorCatalogOptions());
+  // Cached by the agent's own pages, which this modal always opens from.
+  const { data: agent } = useQuery(agentDetailOptions(agentId));
   const connectorName = (code: string) => connectorNameOf(catalog, code);
 
   // The plan is the backend's reading of the skill against this agent: what
@@ -106,6 +115,14 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
   // Every external requirement needs an instance: without one the backend
   // refuses the binding rather than guessing between two accounts.
   const incomplete = !plan || !choicesComplete(plan.connectors, choice, created);
+
+  // Binding is allowed and does nothing: the agent would get a skill whose
+  // whole subject is the colleagues it doesn't have. A note rather than a
+  // refusal — the team can be given to it right after.
+  const teamlessTeamSkill =
+    !!selectedSkill &&
+    !agent?.agenticTeamId &&
+    skillRequirements(selectedSkill).some((r) => r.code === TEAM_AGENTS_CODE);
 
 
   const shown = skills.slice(0, visible);
@@ -178,6 +195,7 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
             <p className="text-sm font-medium text-foreground">
               {t('skillConnectionsSubtitle', { skill: selectedSkill.title })}
             </p>
+            {teamlessTeamSkill && <Alert variant="warning">{t('teamSkillNeedsTeam')}</Alert>}
             {planError ? (
               <ErrorAlert>{getErrorMessage(planError, t('skillPlanLoadError'))}</ErrorAlert>
             ) : planPending || !plan ? (
