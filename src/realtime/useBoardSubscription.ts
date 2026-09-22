@@ -5,12 +5,14 @@ import { subscribePersonalChannel } from './personalChannel';
 import type {
   BoardTaskCreatedPayload,
   BoardTaskStatusChangedPayload,
+  BoardTaskUpdatedPayload,
   BoardTaskCommentCreatedPayload,
 } from '@/types';
 
 export interface BoardSubscriptionHandlers {
   onTaskCreated?: (p: BoardTaskCreatedPayload) => void;
   onTaskStatusChanged?: (p: BoardTaskStatusChangedPayload) => void;
+  onTaskUpdated?: (p: BoardTaskUpdatedPayload) => void;
   onCommentAdded?: (p: BoardTaskCommentCreatedPayload) => void;
 }
 
@@ -41,6 +43,9 @@ export function useBoardSubscription(
           break;
         case 'board.task.statusChanged':
           h.onTaskStatusChanged?.(payload as BoardTaskStatusChangedPayload);
+          break;
+        case 'board.task.updated':
+          h.onTaskUpdated?.(payload as BoardTaskUpdatedPayload);
           break;
         case 'board.task.commentAdded':
           h.onCommentAdded?.(payload as BoardTaskCommentCreatedPayload);
