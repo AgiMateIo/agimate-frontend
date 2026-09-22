@@ -161,15 +161,12 @@ export default function WebchatConversation({
 
   const { handleEvent } = thread;
 
-  // Opening a conversation is reading it — the pointer goes to the end, with no
-  // body, and the badge on the row behind it drops to zero. Sending a message
-  // and closing the session clear it server-side, so neither needs a call.
-  const hasMessages = session.lastMessage !== null;
+  // Mark read on open only if something is unread; read once, since replies
+  // arriving later are marked by the subscription below.
+  const [unreadOnOpen] = useState(session.unreadCount > 0);
   useEffect(() => {
-    // A session that never had a message has nothing to mark — that is every
-    // freshly created chat, and it opens straight into this component.
-    if (hasMessages) markRead(sessionId);
-  }, [markRead, sessionId, hasMessages]);
+    if (unreadOnOpen) markRead(sessionId);
+  }, [markRead, sessionId, unreadOnOpen]);
 
   useWebchatSubscription(sessionId, {
     onMessage: (p: WebchatMessagePayload) => {
