@@ -1,11 +1,10 @@
 'use client';
 
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { AcademicCapIcon } from '@heroicons/react/24/outline';
 import { Chip } from '@/components/ui/Chip';
 import { SkillResponse } from '@/types';
 import { Link } from '@/i18n/navigation';
-import { formatDate } from '@/utils/date';
 import { skillRequirements } from '@/utils/skill';
 import SkillRequirementChips from './SkillRequirementChips';
 import { TaxonomyChips } from '@/components/taxonomy/TaxonomyChips';
@@ -30,7 +29,6 @@ export default function SkillCard({
   actions,
 }: SkillCardProps) {
   const t = useTranslations('Skills');
-  const locale = useLocale();
 
   const body = (
     <div className="flex items-start gap-3">
@@ -52,24 +50,22 @@ export default function SkillCard({
           )}
         </div>
 
+        {/* Where it sits in the catalog, right under the title. */}
+        <div className="mt-1.5 empty:hidden">
+          <TaxonomyChips item={skill} />
+        </div>
+
         {skill.description && (
-          <p className="text-sm text-muted mt-1 line-clamp-2">
+          <p className="text-sm text-muted mt-1.5 line-clamp-2">
             {skill.description}
           </p>
         )}
 
-        {/* Where it sits in the catalog, then what it needs — two rows with
-            two chip styles, so a tag is never read as a connector. */}
-        <div className="mt-2 space-y-1.5 empty:hidden">
-          <TaxonomyChips item={skill} />
-          {showConnectorCodes && skill.connectorCodes.length > 0 && (
+        {showConnectorCodes && skill.connectorCodes.length > 0 && (
+          <div className="mt-2">
             <SkillRequirementChips requirements={skillRequirements(skill)} />
-          )}
-        </div>
-
-        <div className="text-xs text-muted mt-2">
-          <span>{t('updatedAt')}: {formatDate(skill.updatedAt, locale)}</span>
-        </div>
+          </div>
+        )}
       </div>
 
       {actions && (
