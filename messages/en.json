@@ -602,7 +602,10 @@
     },
     "title": "You are signed in",
     "description": "Now go back to the AgiMate app. If it did not pick the sign-in up on its own, open it and sign in again.",
-    "install": "Get the app"
+    "install": "Get the app",
+    "return": "Back to the app",
+    "returnDescription": "Tap the button below to finish signing in to the AgiMate app.",
+    "returning": "Opening the app…"
   },
   "Common": {
     "copyright": "© 2025–{year} AgiMate",
