@@ -121,14 +121,7 @@ export default function HomePage() {
             {t('hero.titleHighlight')}
           </span>
         </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted">
-          {t('hero.subtitle')}
-        </p>
-        {/* Named ends of a range rather than a count: the preset gallery is built
-            from the API and this page is static, so a number here would go stale
-            the day a preset is added to the seed. The two names still have to
-            exist — check the seed before changing them. */}
-        <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted">
+        <p className="mx-auto mt-6 max-w-3xl whitespace-pre-line text-xl leading-relaxed text-muted sm:text-2xl">
           {t('hero.tagline')}
         </p>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -191,9 +184,7 @@ export default function HomePage() {
 
       {/* Harness — the position itself: the model only talks, everything around it
           does the work. Every card carries the technical line and a plain-language
-          one under it; the callout is the claim the rest of the page leans on —
-          connector credentials stay in the platform, so there is nothing in the
-          model to leak. */}
+          one under it. */}
       <section id="harness" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
         <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">
           {t('harness.title')}
@@ -222,9 +213,6 @@ export default function HomePage() {
             );
           })}
         </div>
-        <p className="mx-auto mt-8 max-w-3xl rounded-2xl border border-accent/20 bg-accent/5 p-6 text-center text-sm leading-relaxed sm:text-base">
-          {t('harness.callout')}
-        </p>
       </section>
 
       {/* How It Works — the animated call path: trigger → policy → one agent →

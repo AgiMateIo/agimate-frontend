@@ -20,8 +20,7 @@
     "hero": {
       "title": "Your agents",
       "titleHighlight": "under your control.",
-      "subtitle": "Agents take a few clicks to put together, and each one has its own skills, its own connectors, its own access. Add as many as you need: one per task, or a team working a shared board. They hold no keys to your services, and they reach only what you opened for them.",
-      "tagline": "A library of ready-made roles, from a personal assistant to a coder. Your first agent is three steps away. And you never have to leave a computer running.",
+      "tagline": "A library of ready-to-use AI agents.\nCreate a new agent in three steps.\nIn the cloud, with fine-grained access control.",
       "cta": "Build your first agent"
     },
     "harness": {
@@ -59,8 +58,7 @@
           "tech": "The agent is executed on the platform side: in the project cloud, or on your own server when self-hosted. Devices attach as companion connectors and never become the place the agent runs.",
           "plain": "So every call has a point where it can still be checked: the platform itself. An agent running on your own machine talks to the system directly, with no such checkpoint on the way."
         }
-      ],
-      "callout": "An agent can be talked into things — it is a language model, after all. But it cannot hand over a connector key: it does not have one. The most it can do is try to call a tool, and that runs into the rules and stays in the log."
+      ]
     },
     "agents": {
       "title": "An agent's specialisation rests on its access",
