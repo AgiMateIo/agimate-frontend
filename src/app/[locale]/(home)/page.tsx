@@ -8,6 +8,7 @@ import LandingHeader from '@/components/landing/LandingHeader';
 import LandingBackground from '@/components/landing/LandingBackground';
 import LandingFooter from '@/components/landing/LandingFooter';
 import HowItWorksFlow from '@/components/landing/HowItWorksFlow';
+import LandingVideo from '@/components/landing/LandingVideo';
 import {
   ArrowRightIcon,
   ShieldCheckIcon,
@@ -144,6 +145,7 @@ export default function HomePage() {
             </Link>
           )}
         </div>
+        <LandingVideo />
       </section>
 
       {/* Access — first section after the hero, because it is the claim the

@@ -21,7 +21,9 @@
       "title": "Your agents",
       "titleHighlight": "under your control.",
       "tagline": "A library of ready-to-use AI agents.\nCreate a new agent in three steps.\nIn the cloud, with fine-grained access control.",
-      "cta": "Build your first agent"
+      "cta": "Build your first agent",
+      "videoLabel": "Agimate — 30-second promo video",
+      "videoPlay": "Watch the video · 0:30"
     },
     "harness": {
       "title": "What a harness is",
