@@ -116,7 +116,8 @@ export default function HomePage() {
       {/* Hero */}
       <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-12 pt-14 sm:pb-16 sm:pt-16 md:pt-28 md:pb-20 text-center">
         <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl md:text-6xl">
-          {t('hero.title')}{' '}
+          {t('hero.title')}
+          <br />
           <span className="bg-gradient-to-r from-accent to-purple-400 bg-clip-text text-transparent">
             {t('hero.titleHighlight')}
           </span>
