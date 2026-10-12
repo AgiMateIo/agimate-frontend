@@ -143,9 +143,9 @@ export default function McpConsentForm({
           </h1>
           <p className="text-lg font-semibold font-mono text-foreground break-all">{consent.clientHost}</p>
           <p className="text-sm text-muted">
-            {consent.localApplication
+            {consent.localApplication || !consent.redirectHost
               ? t('returnsLocal')
-              : t('returnsTo', { host: consent.redirectHost })}
+              : t('returnsTo', { host: consent.redirectHost ?? '' })}
           </p>
           {userEmail && <p className="text-xs text-muted">{t('signedInAs', { email: userEmail })}</p>}
         </div>

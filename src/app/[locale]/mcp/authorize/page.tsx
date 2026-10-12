@@ -93,9 +93,9 @@ function McpAuthorizeContent() {
         <div className="text-center">
           <h1 className="text-xl font-semibold text-foreground mb-2">{t('doneTitle')}</h1>
           <p className="text-sm text-muted">
-            {consent.localApplication
+            {consent.localApplication || !consent.redirectHost
               ? t('doneLocal', { name: consent.clientName })
-              : t('doneRemote', { host: consent.redirectHost })}
+              : t('doneRemote', { host: consent.redirectHost ?? '' })}
           </p>
         </div>
       </AuthCard>

@@ -34,7 +34,8 @@ export interface McpConsent {
   clientHost: string;
   // CIMD today; a string so a kind the backend adds later doesn't break anything.
   clientKind: string;
-  redirectHost: string;
+  // null for a non-web return address (a private-use scheme); localApplication is true then.
+  redirectHost: string | null;
   localApplication: boolean;
   agents: McpConsentAgent[];
 }
