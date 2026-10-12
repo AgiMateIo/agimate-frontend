@@ -1,5 +1,5 @@
 import type { AgentType } from '@/types';
-import { getApiBaseUrl } from './api-url';
+import { getMcpServerUrl } from './api-url';
 
 // The three types whose loop runs outside the platform. They share everything
 // but the door for incoming events, and none of them uses a platform model —
@@ -17,10 +17,11 @@ export function isMcpAgent(type: AgentType): boolean {
   return type === 'MCP';
 }
 
-// The MCP endpoint the external client points at. Same host as the API gateway;
-// never assembled from the dashboard's own origin.
+// The MCP endpoint external clients point at — one for every agent, by link
+// (OAuth) or with the agent key. The old `api.<domain>/control/mcp` takes keys
+// only, so it is never shown.
 export function getMcpEndpointUrl(): string {
-  return `${getApiBaseUrl()}mcp`;
+  return getMcpServerUrl();
 }
 
 // What a bound connection's tools are called on the wire: the connection code,

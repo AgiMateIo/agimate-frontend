@@ -1,6 +1,7 @@
 import { API } from '@/config/constants';
 
 const DEV_FALLBACK = 'http://api.agimate.lc:8000/';
+const MCP_DEV_FALLBACK = 'http://mcp.agimate.lc:8000/mcp';
 
 export function getApiBaseUrl(): string {
   if (typeof window !== 'undefined') {
@@ -19,6 +20,20 @@ export function getApiBaseUrl(): string {
   const env = process.env.NEXT_PUBLIC_API_BASE_URL;
   if (env) return env.endsWith('/') ? env : `${env}/`;
   return DEV_FALLBACK;
+}
+
+// The platform's MCP server, on its own subdomain: `mcp.<domain>/mcp`, derived
+// like the gateway. Localhost and SSR take NEXT_PUBLIC_MCP_SERVER_URL.
+export function getMcpServerUrl(): string {
+  if (typeof window !== 'undefined') {
+    const { hostname, port, protocol } = window.location;
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      const domain = hostname.replace(/^www\./, '');
+      const portSuffix = port && port !== '80' && port !== '443' ? `:${port}` : '';
+      return `${protocol}//mcp.${domain}${portSuffix}/mcp`;
+    }
+  }
+  return process.env.NEXT_PUBLIC_MCP_SERVER_URL || MCP_DEV_FALLBACK;
 }
 
 // Resolves a signed file link — a listing row's `url`, a webchat attachment's
