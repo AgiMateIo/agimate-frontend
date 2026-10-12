@@ -25,9 +25,10 @@ import AgentTypePicker from '@/components/agents/AgentTypePicker';
 import DeleteAgentModal from '@/components/agents/DeleteAgentModal';
 import SecretKeyReveal from '@/components/connectors/SecretKeyReveal';
 import McpConnectPanel from '@/components/agents/McpConnectPanel';
+import McpClientsCard from '@/components/agents/McpClientsCard';
 import { formatDate } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
-import { isMcpAgent } from '@/utils/agent';
+import { isExternalAgentType, isMcpAgent } from '@/utils/agent';
 
 const getAgentTypeColor = (dest: string) => {
   switch (dest) {
@@ -83,6 +84,41 @@ export default function AgentGeneralPage() {
       setRotating(false);
     }
   };
+
+  // Only external agents present a key; it sits under "advanced" of the clients
+  // card, since a client with a browser signs in by link instead.
+  const keySection = (
+    <div>
+      <h3 className="text-sm font-medium text-muted mb-2">{t('agentKey')}</h3>
+      {rotatedKey ? (
+        <SecretKeyReveal
+          secret={rotatedKey}
+          label={t('agentKey')}
+          onDone={() => setRotatedKey(null)}
+        />
+      ) : (
+        <div className="space-y-2">
+          {rotateError && <ErrorAlert>{rotateError}</ErrorAlert>}
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="inline-flex items-center gap-1.5 bg-surface-secondary border border-border/50 rounded-lg px-3 py-1.5 text-xs text-muted font-mono">
+              <KeyIcon className="h-3 w-3" />
+              {agent.maskedKeyId}
+            </span>
+            <Button
+              variant="warning"
+              onClick={rotateKey}
+              loading={rotating}
+              disabled={rotating}
+              className="!py-1.5 text-sm"
+            >
+              {t('regenerateKey')}
+            </Button>
+          </div>
+          <p className="text-xs text-muted">{t('regenerateKeyDescription')}</p>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <>
@@ -258,44 +294,6 @@ export default function AgentGeneralPage() {
           </div>
         </InlineEditField>
 
-        {/* Key. Not a field — it is never typed in, only replaced — so it keeps
-            a button rather than a pencil, and sits by the other read-only facts
-            at the bottom instead of competing with the name for the top row.
-            A GENERIC agent never presents it (its loop runs on the platform),
-            so there it is noise with a dangerous button attached. */}
-        {agent.type !== 'GENERIC' && (
-        <div>
-          <h3 className="text-sm font-medium text-muted mb-2">{t('agentKey')}</h3>
-          {rotatedKey ? (
-            <SecretKeyReveal
-              secret={rotatedKey}
-              label={t('agentKey')}
-              onDone={() => setRotatedKey(null)}
-            />
-          ) : (
-            <div className="space-y-2">
-              {rotateError && <ErrorAlert>{rotateError}</ErrorAlert>}
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex items-center gap-1.5 bg-surface-secondary border border-border/50 rounded-lg px-3 py-1.5 text-xs text-muted font-mono">
-                  <KeyIcon className="h-3 w-3" />
-                  {agent.maskedKeyId}
-                </span>
-                <Button
-                  variant="warning"
-                  onClick={rotateKey}
-                  loading={rotating}
-                  disabled={rotating}
-                  className="!py-1.5 text-sm"
-                >
-                  {t('regenerateKey')}
-                </Button>
-              </div>
-              <p className="text-xs text-muted">{t('regenerateKeyDescription')}</p>
-            </div>
-          )}
-        </div>
-        )}
-
         {/* Created At */}
         <div>
           <h3 className="text-sm font-medium text-muted mb-2">{t('createdAt')}</h3>
@@ -304,7 +302,17 @@ export default function AgentGeneralPage() {
 
       </div>
 
-      {isMcpAgent(agent.type) && <McpConnectCard agentId={agent.id} agentKey={rotatedKey} />}
+      {isExternalAgentType(agent.type) && (
+        <McpClientsCard
+          agentId={agent.id}
+          advanced={
+            <>
+              {keySection}
+              {isMcpAgent(agent.type) && <McpConnectPanelSection agentId={agent.id} agentKey={rotatedKey} />}
+            </>
+          }
+        />
+      )}
 
       {deleting && (
         <DeleteAgentModal
@@ -368,22 +376,9 @@ function SetupLine({ text, href, link }: { text: string; href: string; link: str
   );
 }
 
-// Connection details of an MCP agent. The key rotation that used to live here
-// moved up to the key section — one agent has one key, and two buttons for it
-// on one page is one too many; a key rotated up there still lands in the
-// snippet below.
-function McpConnectCard({ agentId, agentKey }: { agentId: string; agentKey: string | null }) {
-  const t = useTranslations('Agents');
+// The key-based MCP config of an MCP agent, under the clients card's "advanced".
+// A key rotated in the section above lands in the snippet.
+function McpConnectPanelSection({ agentId, agentKey }: { agentId: string; agentKey: string | null }) {
   const { data: connections } = useQuery(agentConnectionsOptions(agentId));
-
-  return (
-    <div className="mt-6 bg-surface rounded-xl border border-border p-6 space-y-5">
-      <div>
-        <h2 className="text-lg font-semibold text-foreground">{t('mcpConnectTitle')}</h2>
-        <p className="text-sm text-muted mt-1">{t('mcpConnectSubtitle')}</p>
-      </div>
-
-      <McpConnectPanel agentKey={agentKey} connections={connections} />
-    </div>
-  );
+  return <McpConnectPanel agentKey={agentKey} connections={connections} />;
 }

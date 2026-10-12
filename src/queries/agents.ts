@@ -27,6 +27,7 @@ export const agentKeys = {
   // body is keyed by connection+uri because two connections of one skill share
   // a connector code and differ only by the instance they point at.
   views: (id: string) => [...agentKeys.detail(id), 'views'] as const,
+  mcpClients: (id: string) => [...agentKeys.detail(id), 'mcp-clients'] as const,
   viewContent: (id: string, connectionId: string, uri: string) =>
     [...agentKeys.views(id), 'content', connectionId, uri] as const,
   // Keyed by the agent-connection binding id, not the agent id: policies refine
@@ -140,6 +141,13 @@ export const agentViewsOptions = (agentId: string) =>
   queryOptions({
     queryKey: agentKeys.views(agentId),
     queryFn: () => apiService.getAgentViews(agentId),
+  });
+
+// External clients connected to the agent by link (OAuth), newest first as served.
+export const agentMcpClientsOptions = (agentId: string) =>
+  queryOptions({
+    queryKey: agentKeys.mcpClients(agentId),
+    queryFn: () => apiService.getAgentMcpClients(agentId),
   });
 
 
