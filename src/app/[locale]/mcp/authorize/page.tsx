@@ -37,6 +37,20 @@ function authorizationFrom(search: URLSearchParams): McpAuthorizationParams {
   return params;
 }
 
+// Schemes that run code or open local content in our origin. Not an allow-list:
+// private-use schemes (`cursor://`) are legitimate return addresses.
+const FORBIDDEN_SCHEMES = new Set(['javascript:', 'data:', 'vbscript:', 'blob:', 'file:', 'about:', 'filesystem:']);
+
+// The redirect is built by the backend from a client-declared `redirect_uri`, so
+// it is still checked here before the browser goes there.
+function isFollowable(url: string): boolean {
+  try {
+    return !FORBIDDEN_SCHEMES.has(new URL(url).protocol);
+  } catch {
+    return false;
+  }
+}
+
 function McpAuthorizeContent() {
   const t = useTranslations('McpAuthorize');
   const router = useRouter();
@@ -64,14 +78,16 @@ function McpAuthorizeContent() {
   const check = useQuery({ ...mcpAuthorizeCheckOptions(query, authorization), enabled: !!user });
 
   // A bad request from a verified client: the error belongs to the client.
-  const redirectUrl = check.data?.redirectUrl ?? leaving;
+  const target = check.data?.redirectUrl ?? leaving;
+  const refused = !!target && !isFollowable(target);
+  const redirectUrl = refused ? null : target;
   useEffect(() => {
     if (redirectUrl) window.location.assign(redirectUrl);
   }, [redirectUrl]);
 
   const consent = check.data?.consent;
 
-  if (leaving && consent) {
+  if (leaving && consent && !refused) {
     return (
       <AuthCard>
         <div className="text-center">
@@ -86,7 +102,7 @@ function McpAuthorizeContent() {
     );
   }
 
-  if (check.isError || (check.isSuccess && !consent && !redirectUrl)) {
+  if (refused || check.isError || (check.isSuccess && !consent && !redirectUrl)) {
     // 400 = return address unverified: going anywhere would make this an open redirect.
     const error = check.error;
     const detail = error instanceof ApiError && error.status ? error.message : null;
