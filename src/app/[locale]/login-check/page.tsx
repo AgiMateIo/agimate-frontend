@@ -2,11 +2,10 @@
 
 import { useRouter } from '@/i18n/navigation';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { safeNextPath } from '@/utils/next-path';
+import { takeRememberedNextPath } from '@/utils/next-path';
 import { clearReferralCode } from '@/utils/referral';
 import { useUser } from '@/contexts/UserContext';
 import AuthShell from '@/components/landing/AuthShell';
@@ -16,9 +15,6 @@ function LoginCheckContent() {
   const { fetchUser } = useUser();
   const t = useTranslations('LoginCheck');
   const hasRun = useRef(false);
-  // Set when sign-in interrupted something (the MCP OAuth callback); the
-  // backend echoes it back through `redirect_to`.
-  const next = safeNextPath(useSearchParams().get('next'));
   // 'network' — the gateway was unreachable, retrying the same id can work.
   // 'rejected' — the exchange itself failed (expired/spent id), only a fresh
   // sign-in helps. Both must surface: a silent bounce back to /login looks
@@ -65,9 +61,11 @@ function LoginCheckContent() {
     clearReferralCode();
 
     await fetchUser();
-    router.replace(next ?? '/dashboard');
+    // Where an interrupted flow wanted to go (consent page, MCP OAuth callback);
+    // taken only now, so a network retry above doesn't lose it.
+    router.replace(takeRememberedNextPath() ?? '/dashboard');
     return null;
-  }, [fetchUser, router, next]);
+  }, [fetchUser, router]);
 
   useEffect(() => {
     if (hasRun.current) return;

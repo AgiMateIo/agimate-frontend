@@ -127,7 +127,7 @@ The backend supports OAuth2 login from multiple frontend domains. The frontend a
 Never store the actual refresh token in JavaScript-accessible storage.
 
 ### Returning to an interrupted page after sign-in
-`/login` accepts `?next=<locale-less in-app path>` and threads it through as `redirect_to=<origin>/login-check?next=…`; `/login-check` navigates there instead of `/dashboard`. Values pass through `safeNextPath` (`src/utils/next-path.ts`) — in-app paths only, no absolute or protocol-relative URLs. It exists for the MCP OAuth callback, whose single-use `code`/`state` must survive the sign-in round trip **in the URL** rather than in storage.
+`/login` accepts `?next=<locale-less in-app path>` (the consent page and the MCP OAuth callback send their whole address there). A password sign-in navigates to it directly. A provider sign-in **cannot carry it through the backend**: user-api matches `redirect_to` against its allow-list character for character, so `…/login-check?next=…` misses and falls back to the bare `/login-check` — the `next` silently vanished, and for a while it did. So `redirect_to` is exactly `<origin>/login-check`, and `next` waits in `sessionStorage` (`rememberNextPath` on the provider click, `takeRememberedNextPath` on `/login-check` after a successful exchange; 15-minute expiry, same tab only). Values pass through `safeNextPath` (`src/utils/next-path.ts`) both ways — in-app paths only, no absolute or protocol-relative URLs. Never relax the exact match in user-api instead: a prefix rule there is an open redirect. Registration through the letter does not return to `next` (the letter opens a new tab).
 
 ## One host for sessions
 

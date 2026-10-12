@@ -8,7 +8,7 @@ import { useUser } from '@/contexts/UserContext';
 import apiService, { ApiError, hasStoredSession } from '@/services/api';
 import { API } from '@/config/constants';
 import { getApiBaseUrl } from '@/utils/api-url';
-import { safeNextPath } from '@/utils/next-path';
+import { rememberNextPath, safeNextPath } from '@/utils/next-path';
 import { currentReferralCode } from '@/utils/referral';
 import { providersForOrigin, type OfferedProvider } from '@/config/authProviders';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
@@ -50,16 +50,15 @@ function LoginContent() {
   const referral = useSyncExternalStore(subscribe, getReferralSnapshot, getReferralServerSnapshot);
   const authParams = useMemo(() => {
     const params = new URLSearchParams();
-    if (origin) {
-      params.set('redirect_to', `${origin}/login-check${next ? `?next=${encodeURIComponent(next)}` : ''}`);
-    }
+    // Exactly the allow-listed address: `next` goes through sessionStorage instead.
+    if (origin) params.set('redirect_to', `${origin}/login-check`);
     // The one moment the backend can learn who invited this account: it is
     // stored against the user only if the sign-in creates one. An unusable code
     // costs nothing — the backend drops it and the sign-in proceeds.
     if (referral) params.set('ref', referral);
     const query = params.toString();
     return query ? `?${query}` : '';
-  }, [origin, next, referral]);
+  }, [origin, referral]);
   const [pendingProvider, setPendingProvider] = useState<OfferedProvider | null>(null);
   // Signing in again on top of a live sign-in is not a no-op: the backend opens a
   // second session, and the account collects a device row nobody asked for. So
@@ -183,6 +182,7 @@ function LoginContent() {
             href={`${getApiBaseUrl()}${API.ENDPOINTS.USER_API}/oauth2/authorization/${provider}${authParams}`}
             onClick={(e) => {
               if (pendingProvider) { e.preventDefault(); return; }
+              rememberNextPath(next);
               setPendingProvider(provider);
             }}
             className={`w-full py-3 px-4 rounded-lg flex items-center justify-center font-medium transition-colors border border-border/50 ${
