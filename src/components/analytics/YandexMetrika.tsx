@@ -14,6 +14,12 @@ const COUNTER_ID = 111195543;
 // вырезается сборщиком.
 const ENABLED = process.env.NODE_ENV === 'production';
 
+// Страницы без стороннего кода: согласие MCP-клиента выдаёт доступ к агенту.
+// Путь — с локалью, как его отдаёт `next/navigation`.
+export function isAnalyticsFree(pathname: string | null): boolean {
+  return !!pathname && /^\/[a-z]{2}\/mcp\/authorize(\/|$)/.test(pathname);
+}
+
 type YandexMetrikaFn = (
   counterId: number,
   action: string,
@@ -34,9 +40,10 @@ declare global {
 export function YandexMetrika() {
   const pathname = usePathname();
   const previousUrl = useRef<string | null>(null);
+  const off = isAnalyticsFree(pathname);
 
   useEffect(() => {
-    if (!ENABLED) return;
+    if (!ENABLED || off) return;
     // Не href: в отчёте нужен полный URL со строкой запроса, но без фрагмента —
     // на /login-check в нём лежит ID refresh-токена, а trackHash выключен, так
     // что для отчётов hash всё равно ничего не значит.
@@ -46,9 +53,9 @@ export function YandexMetrika() {
     const referer = previousUrl.current ?? document.referrer;
     previousUrl.current = url;
     window.ym?.(COUNTER_ID, 'hit', url, { referer });
-  }, [pathname]);
+  }, [pathname, off]);
 
-  if (!ENABLED) return null;
+  if (!ENABLED || off) return null;
 
   return (
     <>

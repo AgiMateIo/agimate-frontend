@@ -33,6 +33,7 @@ export function configuredPrimaryOrigin(): string | undefined {
 // Everything that needs a session or runs a sign-in flow, as locale-less
 // prefixes. `/connections` covers both the locale-prefixed deep links and the
 // OAuth callback, whose `code`/`state` must reach the host that holds the session.
+// `/mcp` is the consent page of external MCP clients, announced on one host only.
 const PRIVATE_PREFIXES = [
   '/login',
   '/login-check',
@@ -42,6 +43,7 @@ const PRIVATE_PREFIXES = [
   '/dashboard',
   '/connections',
   '/llm-providers',
+  '/mcp',
 ];
 
 function isPrivatePath(pathname: string): boolean {

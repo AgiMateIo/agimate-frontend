@@ -33,3 +33,4 @@ export * from './auth';
 export * from './taxonomy';
 export * from './agent-views';
 export * from './agent-requests';
+export * from './mcp-oauth';

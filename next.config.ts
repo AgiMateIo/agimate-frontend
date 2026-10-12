@@ -40,6 +40,19 @@ const nextConfig: NextConfig = {
     env: {
         NEXT_PUBLIC_APP_VERSION: version,
     },
+    // The consent page of external MCP clients hands out access to an agent:
+    // never framed, or an invisible frame over another site collects the clicks.
+    async headers() {
+        return [
+            {
+                source: '/:locale(ru|en)/mcp/authorize',
+                headers: [
+                    { key: 'Content-Security-Policy', value: "frame-ancestors 'none'" },
+                    { key: 'X-Frame-Options', value: 'DENY' },
+                ],
+            },
+        ];
+    },
     async redirects() {
         return [
             { source: '/dashboard/connectors', destination: '/dashboard/apps', permanent: true },

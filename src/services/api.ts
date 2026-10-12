@@ -19,6 +19,7 @@ import { connectorsApi } from './modules/connectors';
 import { filesApi } from './modules/files';
 import { agenticTeamsApi } from './modules/agenticTeams';
 import { logsApi } from './modules/logs';
+import { mcpOauthApi } from './modules/mcpOauth';
 import { miscApi } from './modules/misc';
 import { runsApi } from './modules/runs';
 import { sessionsApi } from './modules/sessions';
@@ -41,6 +42,7 @@ const apiService = {
   ...filesApi,
   ...agenticTeamsApi,
   ...logsApi,
+  ...mcpOauthApi,
   ...miscApi,
   ...runsApi,
   ...sessionsApi,
