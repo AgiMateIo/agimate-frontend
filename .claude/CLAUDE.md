@@ -170,6 +170,7 @@ Some MCP servers (Notion, Linear, Atlassian, Sentry…) refuse a hand-written to
 
 - `check` has three exclusive outcomes: `consent` → the screen; `redirectUrl` → `window.location.assign` at once (the error belongs to the client); **`400` → show the message and go nowhere**, since the return address is unverified and following it would make the page an open redirect.
 - `clientName` is the client's own claim, `clientHost` is what tells a real one from a fake — the host is always shown, never smaller than the name.
+- Only `MCP` agents are listed (disabled ones greyed out); `check` also returns `WEBHOOK`/`CENTRIFUGO`/`GENERIC`, and the page hides them with a line saying so — a product choice, the backend would accept the external types.
 - A new agent is created **on Allow**, not on select (a "deny" must leave no stray agent), with the ordinary `POST /agents/` (`type: MCP`; from a preset like the wizard does). `fullKey` is never shown or kept. If approve then fails, the choice switches to the created agent so a retry doesn't make a second one. `404` on approve = re-run `check`.
 - No framing (`frame-ancestors 'none'` + `X-Frame-Options: DENY` from `next.config.ts` headers) and **no third-party code**: `YandexMetrika` skips the path (`isAnalyticsFree`), and the page reloads itself if the script arrived from `/login` by client navigation.
 

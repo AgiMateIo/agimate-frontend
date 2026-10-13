@@ -12,7 +12,6 @@ import { getErrorMessage } from '@/utils/error';
 import AuthCard from '@/components/auth/AuthCard';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
-import { Chip } from '@/components/ui/Chip';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Input, Select } from '@/components/ui/FormField';
 import type { AgentPresetResponse, McpAuthorizationParams, McpConsent } from '@/types';
@@ -46,7 +45,10 @@ export default function McpConsentForm({
   const { data: catalog } = useQuery(connectorCatalogOptions());
   const presets = useMemo(() => [...(presetsData ?? [])].sort(externalFirst), [presetsData]);
 
-  const selectable = consent.agents.filter((a) => a.available && a.enabled);
+  // Only MCP agents are offered; the rest aren't meant for an external client.
+  const agents = consent.agents.filter((a) => a.type === 'MCP' && a.available);
+  const hidden = consent.agents.length - agents.length;
+  const selectable = agents.filter((a) => a.enabled);
   // Nothing to pick from → creating one is the only way forward, so it starts selected.
   const [choice, setChoice] = useState<string | null>(selectable.length === 0 ? FROM_PRESET : null);
   const [presetName, setPresetName] = useState<string>('');
@@ -153,31 +155,23 @@ export default function McpConsentForm({
         <fieldset className="space-y-2" disabled={disabled}>
           <legend className="text-sm font-medium text-foreground mb-2">{t('chooseAgent')}</legend>
 
-          {consent.agents.map((agent) => {
-            const reason = !agent.available
-              ? t('agentUnavailable')
-              : !agent.enabled
-                ? t('agentDisabled')
-                : null;
-            return (
-              <Option
-                key={agent.id}
-                value={agent.id}
-                checked={effectiveChoice === agent.id}
-                onSelect={setChoice}
-                disabled={reason !== null}
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm font-medium text-foreground">{agent.name}</span>
-                  <Chip tone="muted">{agent.type}</Chip>
-                </div>
-                {agent.description && (
-                  <p className="text-xs text-muted mt-0.5 line-clamp-2">{agent.description}</p>
-                )}
-                {reason && <p className="text-xs text-muted mt-0.5">{reason}</p>}
-              </Option>
-            );
-          })}
+          <p className="text-xs text-muted mb-2">{t(hidden > 0 ? 'onlyMcpAgentsHidden' : 'onlyMcpAgents')}</p>
+
+          {agents.map((agent) => (
+            <Option
+              key={agent.id}
+              value={agent.id}
+              checked={effectiveChoice === agent.id}
+              onSelect={setChoice}
+              disabled={!agent.enabled}
+            >
+              <span className="text-sm font-medium text-foreground">{agent.name}</span>
+              {agent.description && (
+                <p className="text-xs text-muted mt-0.5 line-clamp-2">{agent.description}</p>
+              )}
+              {!agent.enabled && <p className="text-xs text-muted mt-0.5">{t('agentDisabled')}</p>}
+            </Option>
+          ))}
 
           {presets.length > 0 && (
             <Option value={FROM_PRESET} checked={effectiveChoice === FROM_PRESET} onSelect={setChoice}>
