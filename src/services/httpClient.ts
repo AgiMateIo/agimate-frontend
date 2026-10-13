@@ -68,16 +68,21 @@ const clearTokens = () => {
   clearCurrentSessionId();
 };
 
+// The interface locale, read off the URL prefix (routing is always prefixed);
+// null on the server and outside the locale routes.
+const currentLocale = (): string | null => {
+  if (typeof window === 'undefined') return null;
+  const [, maybeLocale] = window.location.pathname.split('/');
+  return (routing.locales as readonly string[]).includes(maybeLocale) ? maybeLocale : null;
+};
+
 // Hard-redirects to the login page, preserving the current locale prefix
 // (the next-intl middleware would otherwise bounce through the default locale).
 const clearTokensAndRedirectToLogin = () => {
   clearTokens();
   if (typeof window === 'undefined') return;
-  const [, maybeLocale] = window.location.pathname.split('/');
-  const prefix = (routing.locales as readonly string[]).includes(maybeLocale)
-    ? `/${maybeLocale}`
-    : '';
-  window.location.href = `${prefix}/login`;
+  const locale = currentLocale();
+  window.location.href = `${locale ? `/${locale}` : ''}/login`;
 };
 
 // Helper function to extract data from nested response
@@ -260,11 +265,15 @@ class HttpClient {
 
   // Builds request headers with the current access token attached. FormData
   // bodies get no Content-Type — the browser sets multipart/… with a boundary.
+  // Accept-Language is the interface locale, not the browser's: the backend picks
+  // content language (e.g. a preset-less agent's skills) from it.
   private buildHeaders(options: RequestInit): HeadersInit {
     const token = getAccessToken();
+    const locale = currentLocale();
     const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
     return {
       ...(!isFormData && { 'Content-Type': 'application/json' }),
+      ...(locale && { 'Accept-Language': locale }),
       ...(token && { 'Authorization': `Bearer ${token}` }),
       ...options.headers,
     };
