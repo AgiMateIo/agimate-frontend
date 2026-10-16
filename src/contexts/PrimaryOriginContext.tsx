@@ -31,14 +31,21 @@ const getReferralServerSnapshot = (): string | null => null;
  * would still get there through the proxy's redirect, one hop later and without
  * the code.
  */
-export function usePrimaryHref(path: '/login' | '/dashboard'): string {
+export function usePrimaryHref(
+  path: '/login' | '/dashboard' | '/register',
+  params?: Record<string, string>,
+): string {
   const origin = useContext(PrimaryOriginContext);
   const locale = useLocale();
   const host = useSyncExternalStore(subscribe, getHostSnapshot, getHostServerSnapshot);
   const referral = useSyncExternalStore(subscribe, currentReferralCode, getReferralServerSnapshot);
 
-  if (!origin || !host || host === new URL(origin).hostname) return path;
+  const query = new URLSearchParams(params);
+  if (!origin || !host || host === new URL(origin).hostname) {
+    return query.toString() ? `${path}?${query}` : path;
+  }
 
-  const query = path === '/login' && referral ? `?ref=${referral}` : '';
-  return `${origin}${getPathname({ href: path, locale })}${query}`;
+  if (path !== '/dashboard' && referral) query.set('ref', referral);
+  const search = query.toString();
+  return `${origin}${getPathname({ href: path, locale })}${search ? `?${search}` : ''}`;
 }

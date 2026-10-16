@@ -1641,5 +1641,68 @@
     "onThisPage": "On this page",
     "openScreen": "Open the screen",
     "toggleSection": "Expand or collapse the {section} section"
+  },
+  "CatalogPage": {
+    "meta": {
+      "title": "Agent and skill catalog — AgiMate",
+      "description": "Ready-made AgiMate agents and skills: what each one does, which services it works with and which skills it bundles. Pick an agent and create it in a couple of clicks.",
+      "ogTitle": "AgiMate agent catalog",
+      "ogDescription": "Ready-made agents and skills: what they do and which services they work with."
+    },
+    "nav": {
+      "agents": "Agents",
+      "skills": "Skills",
+      "login": "Sign in",
+      "dashboard": "Dashboard"
+    },
+    "title": "Agent catalog",
+    "subtitle": "Ready-made agents for common jobs. Each one is assembled from skills and already knows which services to work with — all that is left is to connect your own accounts.",
+    "agentsCount": "{count, plural, one {# agent} other {# agents}}",
+    "skillsCount": "{count, plural, one {# skill} other {# skills}}",
+    "skillsLabel": "Skills",
+    "connectorsLabel": "Services",
+    "noMatches": "Nothing matches the selected filters.",
+    "resetFilters": "Reset filters",
+    "empty": "The catalog is empty for now.",
+    "externalAgent": "For an external AI client",
+    "preset": {
+      "metaTitle": "{title} — a ready-made AgiMate agent",
+      "skillsTitle": "Agent skills",
+      "noSkills": "The agent works without additional skills."
+    },
+    "skill": {
+      "metaTitle": "{title} — an AgiMate agent skill",
+      "label": "Skill",
+      "connectorsTitle": "Works with",
+      "noConnectors": "Needs no service connections.",
+      "presetsTitle": "Part of these agents",
+      "noPresets": "Not part of any ready-made agent yet — you can add it to your own agent in the dashboard.",
+      "addHint": "A skill is added to an agent in the dashboard: on the agent's page, under Skills."
+    },
+    "cta": {
+      "create": "Create agent",
+      "haveAccount": "Already have an account? Sign in",
+      "note": "Sign-up is free. Afterwards the wizard opens with this agent."
+    },
+    "notFound": {
+      "title": "No such page in the catalog",
+      "text": "The agent or skill may have been renamed, removed from the catalog, or exist only in another language.",
+      "back": "Back to the catalog"
+    },
+    "error": {
+      "title": "The catalog is temporarily unavailable",
+      "text": "The data could not be loaded. Try reloading the page in a minute."
+    },
+    "skillsIndex": {
+      "meta": {
+        "title": "Agent skill catalog — AgiMate",
+        "description": "AgiMate agent skills: instructions for working with services — spreadsheets, mail, messengers and more. What each skill does, which services it works with and which ready-made agents bundle it.",
+        "ogTitle": "AgiMate skill catalog",
+        "ogDescription": "Agent skills: what they do, which services they work with and which agents bundle them."
+      },
+      "title": "Skill catalog",
+      "subtitle": "A skill tells an agent how to work with a service. Ready-made agents are assembled from skills, and any skill can be added to your own agent."
+    },
+    "tabsLabel": "Catalog sections"
   }
 }

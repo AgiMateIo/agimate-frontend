@@ -22,6 +22,27 @@ export function getApiBaseUrl(): string {
   return DEV_FALLBACK;
 }
 
+const withSlash = (url: string) => (url.endsWith('/') ? url : `${url}/`);
+
+// The gateway as the Next server reaches it, for server components only — read
+// per request, never inlined. An internal address first (no trip through the
+// public edge), then api.<primary host>, then the same env as SSR above.
+export function getServerApiBaseUrl(): string {
+  const internal = process.env.APP_API_INTERNAL_URL?.trim();
+  if (internal) return withSlash(internal);
+  const origin = process.env.APP_PUBLIC_ORIGIN?.trim();
+  if (origin) {
+    try {
+      const { protocol, hostname } = new URL(origin);
+      return `${protocol}//api.${hostname.replace(/^www\./, '')}/`;
+    } catch {
+      // Unparseable — fall through to the local defaults.
+    }
+  }
+  const env = process.env.NEXT_PUBLIC_API_BASE_URL;
+  return env ? withSlash(env) : DEV_FALLBACK;
+}
+
 // The platform's MCP server, on its own subdomain: `mcp.<domain>/mcp`, derived
 // like the gateway. Localhost and SSR take NEXT_PUBLIC_MCP_SERVER_URL.
 export function getMcpServerUrl(): string {

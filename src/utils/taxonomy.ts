@@ -61,3 +61,15 @@ export function presentFacets(
 
   return { categories, tagGroups };
 }
+
+// Code → label off a loaded dictionary; an unknown code reads as itself.
+export function taxonomyLabelLookup(taxonomy: TaxonomyResponse | undefined) {
+  const categories = new Map((taxonomy?.categories ?? []).map((c) => [c.code, c.label]));
+  const tags = new Map(
+    (taxonomy?.tagGroups ?? []).flatMap((g) => g.tags.map((t) => [t.code, t.label] as const)),
+  );
+  return {
+    categoryLabel: (code: string) => categories.get(code) ?? code,
+    tagLabel: (code: string) => tags.get(code) ?? code,
+  };
+}

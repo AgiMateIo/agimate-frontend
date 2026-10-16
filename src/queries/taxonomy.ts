@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import apiService from '@/services/api';
 import type { TaxonomyResponse } from '@/types';
+import { taxonomyLabelLookup } from '@/utils/taxonomy';
 
 export const taxonomyKeys = {
   all: ['taxonomy'] as const,
@@ -32,15 +33,5 @@ export interface TaxonomyLabels {
 // loading, failed, or simply does not know the code.
 export function useTaxonomyLabels(): TaxonomyLabels {
   const { data: taxonomy } = useTaxonomyQuery();
-  return useMemo(() => {
-    const categories = new Map((taxonomy?.categories ?? []).map((c) => [c.code, c.label]));
-    const tags = new Map(
-      (taxonomy?.tagGroups ?? []).flatMap((g) => g.tags.map((t) => [t.code, t.label] as const)),
-    );
-    return {
-      taxonomy,
-      categoryLabel: (code) => categories.get(code) ?? code,
-      tagLabel: (code) => tags.get(code) ?? code,
-    };
-  }, [taxonomy]);
+  return useMemo(() => ({ taxonomy, ...taxonomyLabelLookup(taxonomy) }), [taxonomy]);
 }
