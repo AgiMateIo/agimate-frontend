@@ -134,7 +134,8 @@
           ]
         ]
       },
-      "tableNote": "Five agents, five token bills and five separate sets of access. What they share is the harness: one set of rules and one log."
+      "tableNote": "Five agents, five token bills and five separate sets of access. What they share is the harness: one set of rules and one log.",
+      "catalogLink": "All ready-made agents"
     },
     "quickStart": {
       "title": "Three steps to a working agent",
@@ -686,7 +687,8 @@
       "github": "GitHub",
       "google": "Google",
       "yandex": "Yandex"
-    }
+    },
+    "catalog": "Catalog"
   },
   "LocaleSwitcher": {
     "ru": "RU",

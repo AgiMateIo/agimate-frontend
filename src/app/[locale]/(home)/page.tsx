@@ -57,6 +57,7 @@ export default function HomePage() {
   const loginHref = usePrimaryHref('/login');
   const dashboardHref = usePrimaryHref('/dashboard');
   const t = useTranslations('HomePage');
+  const tCommon = useTranslations('Common');
 
   const harnessItems = t.raw('harness.items') as PlainItem[];
   const agentAxes = t.raw('agents.axes') as PlainItem[];
@@ -108,6 +109,7 @@ export default function HomePage() {
           { href: '#how-it-works', label: t('nav.howItWorks') },
           { href: '#use-cases', label: t('nav.useCases') },
           { href: '#connections', label: t('nav.connections') },
+          { href: '/catalog/agents', label: tCommon('catalog'), internal: true },
           { href: '/business', label: t('nav.business'), internal: true, priority: true },
         ]}
         loginLabel={t('nav.login')}
@@ -290,6 +292,15 @@ export default function HomePage() {
         <p className="mx-auto mt-4 max-w-2xl text-center text-sm text-muted">
           {t('agents.tableNote')}
         </p>
+        <div className="mt-8 text-center">
+          <Link
+            href="/catalog/agents"
+            className="inline-flex items-center gap-2 font-medium text-accent hover:underline"
+          >
+            {t('agents.catalogLink')}
+            <ArrowRightIcon className="h-4 w-4" />
+          </Link>
+        </div>
       </section>
 
       {/* Quick start — right after the flow diagram: everything it just showed

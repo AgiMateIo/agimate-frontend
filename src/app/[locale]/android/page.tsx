@@ -21,6 +21,7 @@ import {
 
 export default function AndroidPage() {
   const t = useTranslations('AndroidPage');
+  const tCommon = useTranslations('Common');
 
   const triggers = [
     { key: 'wifi', icon: <WifiIcon className="h-6 w-6" /> },
@@ -72,6 +73,7 @@ export default function AndroidPage() {
           { href: '#how-it-works', label: t('nav.howItWorks') },
           { href: '#interface', label: t('nav.interface') },
           { href: '#install', label: t('nav.install') },
+          { href: '/catalog/agents', label: tCommon('catalog'), internal: true, priority: true },
         ]}
         loginLabel={t('nav.login')}
         dashboardLabel={t('nav.dashboard')}

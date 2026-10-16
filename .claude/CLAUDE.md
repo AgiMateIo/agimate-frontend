@@ -29,6 +29,8 @@ The API base URL is computed at runtime by `getApiBaseUrl()` in `src/utils/api-u
 
 The MCP server's address (`getMcpServerUrl`) is derived the same way as `mcp.<domain>/mcp`, with `NEXT_PUBLIC_MCP_SERVER_URL` (fallback `http://mcp.agimate.lc:8000/mcp`) on localhost.
 
+Server components that call the API themselves (the public catalog) use `getServerApiBaseUrl()`: `APP_API_INTERNAL_URL` (server-side, read per request — production points it at the internal gateway) → `https://api.<host of APP_PUBLIC_ORIGIN>/` → `NEXT_PUBLIC_API_BASE_URL` → the dev fallback.
+
 So for local dev against a custom gateway, set in `.env.local`:
 ```bash
 NEXT_PUBLIC_API_BASE_URL=http://api.agimate.lc:8000/
@@ -128,6 +130,14 @@ Never store the actual refresh token in JavaScript-accessible storage.
 
 ### Returning to an interrupted page after sign-in
 `/login` accepts `?next=<locale-less in-app path>` (the consent page and the MCP OAuth callback send their whole address there). A password sign-in navigates to it directly. A provider sign-in **cannot carry it through the backend**: user-api matches `redirect_to` against its allow-list character for character, so `…/login-check?next=…` misses and falls back to the bare `/login-check` — the `next` silently vanished, and for a while it did. So `redirect_to` is exactly `<origin>/login-check`, and `next` waits in `sessionStorage` (`rememberNextPath` on the provider click, `takeRememberedNextPath` on `/login-check` after a successful exchange; 15-minute expiry, same tab only). Values pass through `safeNextPath` (`src/utils/next-path.ts`) both ways — in-app paths only, no absolute or protocol-relative URLs. Never relax the exact match in user-api instead: a prefix rule there is an open redirect. Registration through the letter does not return to `next` (the letter opens a new tab).
+
+## Public catalog
+
+Two lists, `/{locale}/catalog/agents` and `/catalog/skills` (each filtered client-side by section and tag; bare `/catalog` is a 308 to the agents), and their entries `/catalog/agents/{name}`, `/catalog/skills/{name}` — public, indexable, server-rendered, and **not** in the private prefixes of `primary-origin.ts`. Connectors have no pages, only chips.
+
+- **Data** comes from the anonymous `GET control/public/catalog/{agent-presets/, agent-presets/{name}, skills/, skills/{name}, taxonomy/}` through `src/services/server/publicCatalog.ts` — a plain server `fetch`, never `httpClient` (a browser transport with tokens and the interface locale). `Accept-Language` is the **route's** locale, `next: { revalidate: 300 }` matches the backend's max-age; the routes are dynamic anyway (the locale layout reads headers), so it is the Data Cache that saves the backend, keyed by headers so languages never mix. A name failing `[A-Za-z0-9][A-Za-z0-9._-]*` never reaches the backend (`..` would resolve into another endpoint). 404 → `notFound()`, any other failure → `catalog/error.tsx`, never an empty-looking catalog.
+- **Presets and skills exist per language**: the same `name` may be absent in the other one. So hreflang (`catalogAlternates` + `availableLocales` in `src/utils/catalog-seo.ts`) and the sitemap link only the locales that answered 200, and `x-default` only when the default locale is among them.
+- **"Create agent"** (`CatalogCta`): a browser with a stored session goes straight to `/dashboard/agents/create?preset=<name>` (signing up again would open a second session); otherwise `/register?preset=` / `/login?preset=` via `usePrimaryHref(path, params)`. Both pages store the name in `localStorage` (`src/utils/pending-preset.ts`, 24 h, read once) because the confirmation letter opens a new tab without the query; the dashboard layout hands it to the wizard on the first non-`GUEST` load (a guest keeps it until activated). The wizard applies `?preset=` once the gallery loads; a name missing in this language shows `AgentWizard.presetUnavailable` instead of a 400 on create.
 
 ## One host for sessions
 
@@ -237,7 +247,8 @@ Translation files are split into two layers, merged at runtime in `src/i18n/requ
 messages/
 ├── en.json / ru.json            # Landing + auth + shared:
 │                                 #   Metadata, HomePage, Login, LoginCheck, Logout,
-│                                 #   Common, LocaleSwitcher, N8nPage, DesktopPage, AndroidPage
+│                                 #   Common, LocaleSwitcher, N8nPage, DesktopPage, AndroidPage,
+│                                 #   CatalogPage
 └── dashboard/
     └── en.json / ru.json         # Dashboard namespaces:
                                    #   Sidebar, TopBar, DashboardHome, ApiKeys,
@@ -291,6 +302,7 @@ src/
 │       ├── login/  login-check/  logout/
 │       ├── register/  register/confirm/      # email sign-up: request, then set the password
 │       ├── password/forgot/  password/reset/ # one letter, two entry points
+│       ├── catalog/                 # public catalog: agents/, skills/ (lists) + [name] pages
 │       └── n8n/  desktop/  android/   # landing pages
 │   └── connections/oauth/client.json/ # route handler, no locale prefix (see MCP OAuth)
 ├── components/
@@ -301,6 +313,8 @@ src/
 │   ├── sessions/                  # RenameSessionModal, SessionTranscript (the read-only
 │   │                              #   history every non-webchat conversation shares),
 │   │                              #   ErrandRequestCard
+│   ├── catalog/                   # public catalog cards, filters, CTA (server-safe except
+│   │                              #   CatalogBrowser and CatalogCta)
 │   ├── skills/  taxonomy/           # taxonomy: CategoryRow/TagRows filters, TaxonomyChips;
 │   │                              #   skills/SkillCatalogToolbar: the one skill-picker toolbar
 │   │                              #   (source + search + section + tag) and its reveal/"show more"

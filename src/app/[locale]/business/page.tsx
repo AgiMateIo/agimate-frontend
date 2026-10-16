@@ -36,6 +36,7 @@ const whiteLabelIcons = [SwatchIcon, CpuChipIcon, BanknotesIcon, ShieldCheckIcon
 
 export default function BusinessPage() {
   const t = useTranslations('BusinessPage');
+  const tCommon = useTranslations('Common');
 
   const audienceItems = t.raw('audience.items') as Array<{
     title: string;
@@ -65,6 +66,7 @@ export default function BusinessPage() {
           { href: '#included', label: t('nav.included') },
           { href: '#how', label: t('nav.how') },
           { href: '#license', label: t('nav.license') },
+          { href: '/catalog/agents', label: tCommon('catalog'), internal: true, priority: true },
         ]}
         loginLabel={t('nav.login')}
         dashboardLabel={t('nav.dashboard')}

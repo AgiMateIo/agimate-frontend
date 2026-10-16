@@ -20,6 +20,7 @@ import {
 
 export default function N8nPage() {
   const t = useTranslations('N8nPage');
+  const tCommon = useTranslations('Common');
   const { copied, copy } = useClipboard();
 
   const nodeCards = [
@@ -74,6 +75,7 @@ export default function N8nPage() {
           { href: '#setup', label: t('nav.setup') },
           { href: '#examples', label: t('nav.examples') },
           { href: '#install', label: t('nav.install') },
+          { href: '/catalog/agents', label: tCommon('catalog'), internal: true, priority: true },
         ]}
         loginLabel={t('nav.login')}
         dashboardLabel={t('nav.dashboard')}

@@ -13,6 +13,9 @@ export const PUBLIC_PAGES = [
     // The partner-facing page: linked from the landing header, and the one page
     // an inference provider or an integrator is meant to find by search.
     { path: '/business', namespace: 'BusinessPage', metaPrefix: 'meta.', priority: 0.9, changeFrequency: 'monthly' },
+    // The catalog lists; their entity pages come from the API, see sitemap.ts.
+    { path: '/catalog/agents', namespace: 'CatalogPage', metaPrefix: 'meta.', priority: 0.9, changeFrequency: 'weekly' },
+    { path: '/catalog/skills', namespace: 'CatalogPage.skillsIndex', metaPrefix: 'meta.', priority: 0.8, changeFrequency: 'weekly' },
     { path: '/n8n', namespace: 'N8nPage', metaPrefix: 'meta.', priority: 0.8, changeFrequency: 'monthly' },
     { path: '/desktop', namespace: 'DesktopPage', metaPrefix: 'meta.', priority: 0.8, changeFrequency: 'monthly' },
     { path: '/android', namespace: 'AndroidPage', metaPrefix: 'meta.', priority: 0.8, changeFrequency: 'monthly' },
