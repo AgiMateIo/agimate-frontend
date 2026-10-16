@@ -11,9 +11,10 @@ import { catalogCategory, presentFacets } from '@/utils/taxonomy';
 import { Button } from '@/components/ui/Button';
 import { FormField, Input, TextArea } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { Alert } from '@/components/ui/Alert';
 import { getErrorMessage } from '@/utils/error';
 import { getAgentAvatarUrl } from '@/utils/avatar';
-import { WizardStepProps } from './AgentWizard';
+import { WizardData, WizardStepProps } from './AgentWizard';
 import WizardActions from './WizardActions';
 
 // Card id of the "start from scratch" option (presets use their `name`).
@@ -29,7 +30,39 @@ const GRADIENTS = [
   'from-rose-500 to-red-500',
 ];
 
-export default function StepRole({ data, setData, goNext }: WizardStepProps) {
+// What choosing a preset writes into the draft — a pure prefill, every field
+// stays editable before creation.
+export function presetPatch(preset: AgentPresetResponse): Partial<WizardData> {
+  return {
+    presetName: preset.name,
+    presetConnectorCodes: preset.connectorCodes,
+    // Decides which wizard follows this step; null keeps the regular one.
+    agentType: preset.agentType,
+    webhookUrl: '',
+    connections: [],
+    failedConnections: [],
+    failedSkills: [],
+    name: preset.title,
+    description: preset.description,
+    instructions: preset.instructions,
+    // Preset skills carry no connector codes, so they cannot be given an
+    // instance here — they ride along inside the create call as before.
+    skills: preset.skills.map((s) => ({
+      id: s.id,
+      title: s.title,
+      description: s.description,
+      fromPreset: true,
+    })),
+    skillConnections: {},
+  };
+}
+
+export default function StepRole({
+  data,
+  setData,
+  goNext,
+  missingPreset = null,
+}: WizardStepProps & { missingPreset?: string | null }) {
   const t = useTranslations('AgentWizard');
   const { data: presets, isPending, error } = useAgentPresetsQuery();
   const { data: taxonomy } = useTaxonomyQuery();
@@ -57,32 +90,21 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
   // An empty one opens, since a from-scratch agent has nothing to preview.
   const [instructionsOpen, setInstructionsOpen] = useState(!data.instructions.trim());
 
+  // A preset can also arrive from outside (?preset= from the catalog, applied
+  // by the wizard once the gallery loads) — the card follows the draft.
+  const [seenPreset, setSeenPreset] = useState(data.presetName);
+  if (data.presetName !== seenPreset) {
+    setSeenPreset(data.presetName);
+    if (data.presetName) {
+      setSelectedCard(data.presetName);
+      setInstructionsOpen(false);
+    }
+  }
+
   const applyPreset = (preset: AgentPresetResponse) => {
     setSelectedCard(preset.name);
     setInstructionsOpen(false);
-    // Pure prefill — every field below stays editable before creation.
-    setData({
-      presetName: preset.name,
-      presetConnectorCodes: preset.connectorCodes,
-      // Decides which wizard follows this step; null keeps the regular one.
-      agentType: preset.agentType,
-      webhookUrl: '',
-      connections: [],
-      failedConnections: [],
-      failedSkills: [],
-      name: preset.title,
-      description: preset.description,
-      instructions: preset.instructions,
-      // Preset skills carry no connector codes, so they cannot be given an
-      // instance here — they ride along inside the create call as before.
-      skills: preset.skills.map((s) => ({
-        id: s.id,
-        title: s.title,
-        description: s.description,
-        fromPreset: true,
-      })),
-      skillConnections: {},
-    });
+    setData(presetPatch(preset));
   };
 
   const applyScratch = () => {
@@ -134,6 +156,10 @@ export default function StepRole({ data, setData, goNext }: WizardStepProps) {
           <h2 className="text-lg font-semibold text-foreground">{t('roleTitle')}</h2>
           <p className="text-sm text-muted mt-0.5">{t('roleSubtitle')}</p>
         </div>
+
+        {missingPreset && !selectedCard && (
+          <Alert variant="info">{t('presetUnavailable', { name: missingPreset })}</Alert>
+        )}
 
         {error ? (
           <ErrorAlert>{getErrorMessage(error, t('presetsLoadError'))}</ErrorAlert>

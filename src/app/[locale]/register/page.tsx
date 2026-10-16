@@ -1,12 +1,13 @@
 'use client';
 
-import { Suspense, useState, useSyncExternalStore } from 'react';
+import { Suspense, useEffect, useState, useSyncExternalStore } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { safeNextPath } from '@/utils/next-path';
 import { currentReferralCode } from '@/utils/referral';
+import { isPresetName, rememberPendingPreset } from '@/utils/pending-preset';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import AuthShell from '@/components/landing/AuthShell';
 import AuthCard from '@/components/auth/AuthCard';
@@ -21,7 +22,14 @@ const getReferralServerSnapshot = (): string | null => null;
 
 function RegisterContent() {
   const t = useTranslations('Register');
-  const next = safeNextPath(useSearchParams().get('next'));
+  const searchParams = useSearchParams();
+  const next = safeNextPath(searchParams.get('next'));
+  // A catalog preset to open in the wizard once the account exists — the
+  // confirmation letter opens a new tab, so it waits in storage.
+  const preset = searchParams.get('preset');
+  useEffect(() => {
+    if (isPresetName(preset)) rememberPendingPreset(preset);
+  }, [preset]);
   // Whoever's invite link brought this visitor here. Registration is the one
   // moment it can be applied; an unusable code is dropped by the backend and
   // never fails the request.
@@ -50,7 +58,11 @@ function RegisterContent() {
   const onResend = (e: React.FormEvent) =>
     resend.handleSubmit(e, () => apiService.resendRegistrationEmail(email.trim())).catch(() => {});
 
-  const signInHref = next ? `/login?next=${encodeURIComponent(next)}` : '/login';
+  const signInQuery = new URLSearchParams({
+    ...(next && { next }),
+    ...(isPresetName(preset) && { preset }),
+  }).toString();
+  const signInHref = signInQuery ? `/login?${signInQuery}` : '/login';
 
   if (sent) {
     return (

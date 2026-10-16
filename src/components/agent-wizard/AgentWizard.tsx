@@ -5,7 +5,8 @@ import { useTranslations } from 'next-intl';
 import { AgentCreatedResponse, AgentType, SkillConnectorRequirement } from '@/types';
 import WizardStepper from './WizardStepper';
 import WizardSummary from './WizardSummary';
-import StepRole from './StepRole';
+import StepRole, { presetPatch } from './StepRole';
+import { useAgentPresetsQuery } from '@/queries/agent-presets';
 import StepSkills from './StepSkills';
 import StepDone from './StepDone';
 import StepDelivery from './StepDelivery';
@@ -106,9 +107,11 @@ const EMPTY: WizardData = {
 interface AgentWizardProps {
   // Creating inside an agentic team (?teamId=...) — sent as agenticTeamId.
   teamId?: string | null;
+  // A preset to preselect (?preset=, from the public catalog).
+  presetName?: string | null;
 }
 
-export default function AgentWizard({ teamId = null }: AgentWizardProps) {
+export default function AgentWizard({ teamId = null, presetName = null }: AgentWizardProps) {
   const t = useTranslations('AgentWizard');
   const [current, setCurrent] = useState(0);
   const [maxReached, setMaxReached] = useState(0);
@@ -165,6 +168,26 @@ export default function AgentWizard({ teamId = null }: AgentWizardProps) {
     setBranch(external);
     setMaxReached(0);
   }
+
+  // ?preset= is applied once, when the gallery arrives (the same cached query
+  // StepRole reads). The catalog is per language, so a name from the other one
+  // is simply absent — said out loud rather than failing creation with a 400.
+  const { data: presets } = useAgentPresetsQuery();
+  const [presetSeeded, setPresetSeeded] = useState(false);
+  if (!presetSeeded && presetName && presets) {
+    setPresetSeeded(true);
+    const preset = presets.find((p) => p.name === presetName);
+    if (preset && data.presetName === null) {
+      // The choice was made in the catalog: straight on to its skills (or the
+      // delivery step of an external agent); the gallery stays one step back.
+      setDataState((prev) => ({ ...prev, ...presetPatch(preset) }));
+      setBranch(preset.agentType !== null);
+      setCurrent(1);
+      setMaxReached(1);
+    }
+  }
+  const missingPreset =
+    presetSeeded && presetName && presets && !presets.some((p) => p.name === presetName) ? presetName : null;
 
   const goTo = (index: number) => {
     // The agent exists after the create call — earlier steps are read-only history.
@@ -225,7 +248,7 @@ export default function AgentWizard({ teamId = null }: AgentWizardProps) {
       {/* No padding here and no overflow clipping: each step pads its own body so
           its sticky action bar can sit flush at the card's bottom edge. */}
       <div className="bg-surface rounded-xl border border-border">
-        {current === 0 && <StepRole {...stepProps} />}
+        {current === 0 && <StepRole {...stepProps} missingPreset={missingPreset} />}
         {external ? (
           <>
             {current === 1 && <StepDelivery {...stepProps} />}

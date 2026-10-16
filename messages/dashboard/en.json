@@ -143,7 +143,8 @@
     "skillInstanceHint": "The agent has several connections of this type open — pick the one this skill works with.",
     "skillInstanceNotChosen": "Not chosen",
     "skillBindFailed": "Could not bind these skills: {names}. The agent exists — bind them from its page.",
-    "descriptionHint": "This is what the other agents of the team go by when they decide whom to hand a piece of work to."
+    "descriptionHint": "This is what the other agents of the team go by when they decide whom to hand a piece of work to.",
+    "presetUnavailable": "The agent “{name}” is not in the catalog in this language — it may have been renamed or exist only in another language. Pick a similar one or start from scratch."
   },
   "Chat": {
     "pageTitle": "Chat",

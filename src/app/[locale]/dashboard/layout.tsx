@@ -3,12 +3,13 @@
 import { useTranslations } from 'next-intl';
 import { useUser } from '@/contexts/UserContext';
 import { usePathname, useRouter } from '@/i18n/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import SidebarNav from '@/components/layout/SidebarNav';
 import TopBar from '@/components/layout/TopBar';
 import PendingActivationNotice from '@/components/dashboard/PendingActivationNotice';
 import { BreadcrumbProvider } from '@/contexts/BreadcrumbContext';
 import { useIsGuest } from '@/hooks/useIsGuest';
+import { takePendingPreset } from '@/utils/pending-preset';
 import { usePersonalChannel } from '@/realtime/usePersonalChannel';
 import { useLiveSessionRows } from '@/queries/chat-sessions';
 import { useLiveContacts } from '@/queries/webchat';
@@ -64,6 +65,18 @@ export default function DashboardLayout({
       router.push('/login');
     }
   }, [user, loading, router]);
+
+  // A preset chosen in the public catalog before signing up: the first page of
+  // the dashboard hands over to the wizard. A guest keeps it until activated
+  // (it expires on its own); the wizard takes it itself when opened directly.
+  const presetChecked = useRef(false);
+  useEffect(() => {
+    if (!user || isGuest || presetChecked.current) return;
+    presetChecked.current = true;
+    if (pathname === '/dashboard/agents/create') return;
+    const preset = takePendingPreset();
+    if (preset) router.replace(`/dashboard/agents/create?preset=${encodeURIComponent(preset)}`);
+  }, [user, isGuest, pathname, router]);
 
   useEffect(() => {
     if (!navOpen) return;

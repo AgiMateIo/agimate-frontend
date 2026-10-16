@@ -10,6 +10,7 @@ import { API } from '@/config/constants';
 import { getApiBaseUrl } from '@/utils/api-url';
 import { rememberNextPath, safeNextPath } from '@/utils/next-path';
 import { currentReferralCode } from '@/utils/referral';
+import { isPresetName, rememberPendingPreset } from '@/utils/pending-preset';
 import { providersForOrigin, type OfferedProvider } from '@/config/authProviders';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import AuthShell from '@/components/landing/AuthShell';
@@ -45,7 +46,13 @@ function LoginContent() {
   // Where to land after sign-in, when the user was sent here mid-flow (the MCP
   // OAuth callback carries single-use parameters, so the whole address travels
   // through the round trip instead of being stored anywhere).
-  const next = safeNextPath(useSearchParams().get('next'));
+  const searchParams = useSearchParams();
+  const next = safeNextPath(searchParams.get('next'));
+  // A catalog preset: the dashboard opens the wizard with it after sign-in.
+  const preset = searchParams.get('preset');
+  useEffect(() => {
+    if (isPresetName(preset)) rememberPendingPreset(preset);
+  }, [preset]);
   // Whoever's invite link brought this visitor here, possibly days ago.
   const referral = useSyncExternalStore(subscribe, getReferralSnapshot, getReferralServerSnapshot);
   const authParams = useMemo(() => {
@@ -106,7 +113,11 @@ function LoginContent() {
   }, [user, next, router]);
 
   const providers = providersForOrigin(origin);
-  const registerHref = next ? `/register?next=${encodeURIComponent(next)}` : '/register';
+  const registerQuery = new URLSearchParams({
+    ...(next && { next }),
+    ...(isPresetName(preset) && { preset }),
+  }).toString();
+  const registerHref = registerQuery ? `/register?${registerQuery}` : '/register';
 
   if (restoring || user) {
     return (
