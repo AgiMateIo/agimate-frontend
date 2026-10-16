@@ -13,7 +13,6 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 // be a finished legal document.
 export default function LegalPage({ namespace }: { namespace: 'Terms' | 'Privacy' }) {
   const t = useTranslations(namespace);
-  const tHome = useTranslations('HomePage');
 
   const sections = t.raw('sections') as Array<{ title: string; body: string }>;
 
@@ -21,11 +20,7 @@ export default function LegalPage({ namespace }: { namespace: 'Terms' | 'Privacy
     <div className="min-h-screen text-foreground">
       <LandingBackground />
 
-      <LandingHeader
-        navLinks={[]}
-        loginLabel={tHome('nav.login')}
-        dashboardLabel={tHome('nav.dashboard')}
-      />
+      <LandingHeader />
 
       <main className="mx-auto max-w-3xl px-4 sm:px-6 py-12 sm:py-16">
         <Link

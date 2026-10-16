@@ -7,15 +7,7 @@
   },
   "HomePage": {
     "nav": {
-      "harness": "The harness",
-      "agents": "Agents",
-      "howItWorks": "How it works",
-      "useCases": "Use cases",
-      "connections": "Connectors",
-      "dashboard": "Dashboard",
-      "login": "Sign in",
-      "security": "Access",
-      "business": "For business"
+      "dashboard": "Dashboard"
     },
     "hero": {
       "title": "Your agents",
@@ -688,7 +680,21 @@
       "google": "Google",
       "yandex": "Yandex"
     },
-    "catalog": "Catalog"
+    "nav": {
+      "catalog": "Catalog",
+      "apps": "Apps",
+      "android": "Android",
+      "androidHint": "Your phone as an event source and a remote hand",
+      "desktop": "Desktop",
+      "desktopHint": "An agent with access to your computer",
+      "n8n": "n8n",
+      "n8nHint": "Nodes for automation workflows",
+      "business": "For business",
+      "docs": "Docs",
+      "login": "Sign in",
+      "dashboard": "Dashboard",
+      "menu": "Menu"
+    }
   },
   "LocaleSwitcher": {
     "ru": "RU",
@@ -700,15 +706,6 @@
       "description": "White label AgiMate: the platform runs inside your perimeter, on your domain and under your brand. For inference providers, integrators and SaaS vendors — a finished agent dashboard, connectors, channels and logs instead of building one.",
       "ogTitle": "An agent platform for your customers",
       "ogDescription": "White label AgiMate: your brand, your perimeter, your models. The agent dashboard, connectors, channels and logs are already there."
-    },
-    "nav": {
-      "audience": "Who it's for",
-      "whiteLabel": "White label",
-      "included": "What's ready",
-      "how": "How it works",
-      "license": "Licence",
-      "login": "Sign in",
-      "dashboard": "Dashboard"
     },
     "hero": {
       "title": "An agent platform",
@@ -822,14 +819,6 @@
       "description": "Three n8n nodes: device event triggers, connector method calls, and mobile device management. Install in under a minute.",
       "ogTitle": "AgiMate + n8n — Nodes for real-device automation",
       "ogDescription": "Event triggers, connector method calls, mobile device control — all through n8n."
-    },
-    "nav": {
-      "nodes": "Nodes",
-      "setup": "Setup",
-      "examples": "Examples",
-      "install": "Install",
-      "dashboard": "Dashboard",
-      "login": "Sign in"
     },
     "hero": {
       "title": "AgiMate",
@@ -1060,14 +1049,6 @@
       "description": "Free open-source app — a specialized AI agent that monitors files, notifications, and executes commands on your computer. Windows, macOS, Linux.",
       "ogTitle": "AgiMate Desktop — AI agent for your computer",
       "ogDescription": "AI agent on your computer. File watching, notifications, text-to-speech, plugin system."
-    },
-    "nav": {
-      "features": "Features",
-      "plugins": "Plugins",
-      "specs": "Specs",
-      "install": "Install",
-      "dashboard": "Dashboard",
-      "login": "Sign in"
     },
     "hero": {
       "title": "AgiMate",
@@ -1377,14 +1358,6 @@
       "ogTitle": "AgiMate for Android — Triggers and remote actions",
       "ogDescription": "Device triggers and remote commands for your AI agent. Install the APK and connect your phone to automation."
     },
-    "nav": {
-      "features": "Features",
-      "howItWorks": "How it works",
-      "interface": "Interface",
-      "install": "Install",
-      "dashboard": "Dashboard",
-      "login": "Sign in"
-    },
     "hero": {
       "title": "AgiMate",
       "titleHighlight": "for Android",
@@ -1653,9 +1626,7 @@
     },
     "nav": {
       "agents": "Agents",
-      "skills": "Skills",
-      "login": "Sign in",
-      "dashboard": "Dashboard"
+      "skills": "Skills"
     },
     "title": "Agent catalog",
     "subtitle": "Ready-made agents for common jobs. Each one is assembled from skills and already knows which services to work with — all that is left is to connect your own accounts.",

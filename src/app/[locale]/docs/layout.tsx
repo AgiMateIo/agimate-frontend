@@ -1,4 +1,3 @@
-import { getTranslations } from 'next-intl/server';
 import { resolveLocale } from '@/i18n/routing';
 import { getDocTree } from '@/utils/docs';
 import LandingHeader from '@/components/landing/LandingHeader';
@@ -24,7 +23,6 @@ export default async function DocsLayout({
 }) {
     const { locale: requested } = await params;
     const locale = resolveLocale(requested);
-    const t = await getTranslations('HomePage');
     const sections = getDocTree(locale);
 
     return (
@@ -32,11 +30,7 @@ export default async function DocsLayout({
         // directly under a short page, halfway up the window. The column plus a
         // growing main is what pins it to the bottom of the viewport.
         <div className="flex min-h-screen flex-col text-foreground">
-            <LandingHeader
-                navLinks={[]}
-                loginLabel={t('nav.login')}
-                dashboardLabel={t('nav.dashboard')}
-            />
+            <LandingHeader />
 
             {/* `max-w-6xl` is not a taste call: it is the container LandingHeader
                 and LandingFooter use, and a wider one here makes the content

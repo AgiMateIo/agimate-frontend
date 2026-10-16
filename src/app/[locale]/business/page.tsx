@@ -36,7 +36,6 @@ const whiteLabelIcons = [SwatchIcon, CpuChipIcon, BanknotesIcon, ShieldCheckIcon
 
 export default function BusinessPage() {
   const t = useTranslations('BusinessPage');
-  const tCommon = useTranslations('Common');
 
   const audienceItems = t.raw('audience.items') as Array<{
     title: string;
@@ -59,18 +58,7 @@ export default function BusinessPage() {
     <div className="min-h-screen text-foreground">
       <LandingBackground />
 
-      <LandingHeader
-        navLinks={[
-          { href: '#audience', label: t('nav.audience') },
-          { href: '#white-label', label: t('nav.whiteLabel') },
-          { href: '#included', label: t('nav.included') },
-          { href: '#how', label: t('nav.how') },
-          { href: '#license', label: t('nav.license') },
-          { href: '/catalog/agents', label: tCommon('catalog'), internal: true, priority: true },
-        ]}
-        loginLabel={t('nav.login')}
-        dashboardLabel={t('nav.dashboard')}
-      />
+      <LandingHeader />
 
       {/* Hero — the offer in one line: not "build agents", but "hand agents to
           the customers you already have". */}

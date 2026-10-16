@@ -21,7 +21,6 @@ import {
 
 export default function AndroidPage() {
   const t = useTranslations('AndroidPage');
-  const tCommon = useTranslations('Common');
 
   const triggers = [
     { key: 'wifi', icon: <WifiIcon className="h-6 w-6" /> },
@@ -67,17 +66,7 @@ export default function AndroidPage() {
     <div className="min-h-screen text-foreground">
       <LandingBackground />
 
-      <LandingHeader
-        navLinks={[
-          { href: '#features', label: t('nav.features') },
-          { href: '#how-it-works', label: t('nav.howItWorks') },
-          { href: '#interface', label: t('nav.interface') },
-          { href: '#install', label: t('nav.install') },
-          { href: '/catalog/agents', label: tCommon('catalog'), internal: true, priority: true },
-        ]}
-        loginLabel={t('nav.login')}
-        dashboardLabel={t('nav.dashboard')}
-      />
+      <LandingHeader />
 
       {/* Hero */}
       <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-16 pt-14 sm:pb-20 sm:pt-16 md:pt-28 md:pb-24 text-center">

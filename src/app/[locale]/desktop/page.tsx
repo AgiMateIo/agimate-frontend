@@ -33,7 +33,6 @@ const useCaseIcons = [
 
 export default function DesktopPage() {
   const t = useTranslations('DesktopPage');
-  const tCommon = useTranslations('Common');
 
   const triggers = [
     { key: 'fileWatcher', icon: <FolderIcon className="h-6 w-6" /> },
@@ -84,17 +83,7 @@ export default function DesktopPage() {
       <LandingBackground />
 
       {/* Header */}
-      <LandingHeader
-        navLinks={[
-          { href: '#features', label: t('nav.features') },
-          { href: '#plugins', label: t('nav.plugins') },
-          { href: '#specs', label: t('nav.specs') },
-          { href: '#install', label: t('nav.install') },
-          { href: '/catalog/agents', label: tCommon('catalog'), internal: true, priority: true },
-        ]}
-        loginLabel={t('nav.login')}
-        dashboardLabel={t('nav.dashboard')}
-      />
+      <LandingHeader />
 
       {/* Hero */}
       <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-16 pt-14 sm:pb-20 sm:pt-16 md:pt-28 md:pb-24 text-center">

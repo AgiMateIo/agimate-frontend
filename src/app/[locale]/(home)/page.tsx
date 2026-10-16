@@ -57,7 +57,6 @@ export default function HomePage() {
   const loginHref = usePrimaryHref('/login');
   const dashboardHref = usePrimaryHref('/dashboard');
   const t = useTranslations('HomePage');
-  const tCommon = useTranslations('Common');
 
   const harnessItems = t.raw('harness.items') as PlainItem[];
   const agentAxes = t.raw('agents.axes') as PlainItem[];
@@ -101,20 +100,7 @@ export default function HomePage() {
       <LandingBackground />
 
       {/* Header */}
-      <LandingHeader
-        navLinks={[
-          { href: '#security', label: t('nav.security') },
-          { href: '#harness', label: t('nav.harness') },
-          { href: '#agents', label: t('nav.agents') },
-          { href: '#how-it-works', label: t('nav.howItWorks') },
-          { href: '#use-cases', label: t('nav.useCases') },
-          { href: '#connections', label: t('nav.connections') },
-          { href: '/catalog/agents', label: tCommon('catalog'), internal: true },
-          { href: '/business', label: t('nav.business'), internal: true, priority: true },
-        ]}
-        loginLabel={t('nav.login')}
-        dashboardLabel={t('nav.dashboard')}
-      />
+      <LandingHeader />
 
       {/* Hero */}
       <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-12 pt-14 sm:pb-16 sm:pt-16 md:pt-28 md:pb-20 text-center">

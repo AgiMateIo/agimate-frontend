@@ -20,7 +20,6 @@ import {
 
 export default function N8nPage() {
   const t = useTranslations('N8nPage');
-  const tCommon = useTranslations('Common');
   const { copied, copy } = useClipboard();
 
   const nodeCards = [
@@ -69,17 +68,7 @@ export default function N8nPage() {
     <div className="min-h-screen text-foreground">
       <LandingBackground />
 
-      <LandingHeader
-        navLinks={[
-          { href: '#nodes', label: t('nav.nodes') },
-          { href: '#setup', label: t('nav.setup') },
-          { href: '#examples', label: t('nav.examples') },
-          { href: '#install', label: t('nav.install') },
-          { href: '/catalog/agents', label: tCommon('catalog'), internal: true, priority: true },
-        ]}
-        loginLabel={t('nav.login')}
-        dashboardLabel={t('nav.dashboard')}
-      />
+      <LandingHeader />
 
       {/* Hero */}
       <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-16 pt-14 sm:pb-20 sm:pt-16 md:pt-28 md:pb-24 text-center">
