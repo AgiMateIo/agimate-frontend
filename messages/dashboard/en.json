@@ -1089,6 +1089,7 @@
     "platformName": "Platform",
     "name": "Name",
     "namePlaceholder": "Enter connection name (optional)",
+    "advancedSettings": "Advanced settings",
     "create": "Create",
     "editConnection": "Edit Connection",
     "deleteConnection": "Delete Connection",

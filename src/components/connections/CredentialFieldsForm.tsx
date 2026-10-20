@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import type { CredentialFieldSpec } from '@/types';
 import { FormField, Input, TextArea } from '@/components/ui/FormField';
@@ -77,59 +77,103 @@ interface CredentialFieldsFormProps {
   // server-side validation errors, keyed by field code
   fieldErrors: Record<string, string>;
   onFieldChange: (fieldName: string, value: string) => void;
+  // Rendered between the required fields and the collapsed optional ones.
+  afterRequired?: ReactNode;
 }
 
+/**
+ * Required fields up front, optional ones under "advanced settings" — what
+ * the user must enter stays the whole visible form (an MCP server's URL, with
+ * its token and headers tucked away). The fold opens by itself when it holds
+ * a value or an error, so nothing that matters is hidden.
+ */
 export default function CredentialFieldsForm({
   credentialFields,
   credentials,
   fieldErrors,
   onFieldChange,
+  afterRequired,
 }: CredentialFieldsFormProps) {
   const t = useTranslations('Connections');
 
+  const entries = Object.entries(credentialFields);
+  const required = entries.filter(([, spec]) => spec.required);
+  const optional = entries.filter(([, spec]) => !spec.required);
+  // Nothing required (or nothing optional) — no point folding anything.
+  const fold = required.length > 0 && optional.length > 0;
+
+  const errorOf = (fieldName: string, spec: CredentialFieldSpec) =>
+    isBrokenJson(spec, credentials[fieldName] || '') ? t('invalidJson') : fieldErrors[fieldName];
+
+  const [expanded, setExpanded] = useState(() =>
+    optional.some(([field]) => credentials[field]?.trim()),
+  );
+  const optionalHasError = optional.some(([field, spec]) => errorOf(field, spec));
+
+  const renderField = ([fieldName, spec]: [string, CredentialFieldSpec]) => {
+    const value = credentials[fieldName] || '';
+    const error = errorOf(fieldName, spec);
+
+    return (
+      <FormField key={fieldName} label={spec.label} required={spec.required} error={error}>
+        {isSecret(spec) ? (
+          <PasswordInput
+            value={value}
+            onChange={(e) => onFieldChange(fieldName, e.target.value)}
+            required={spec.required}
+          />
+        ) : spec.type === 'JSON' ? (
+          <TextArea
+            value={value}
+            onChange={(e) => onFieldChange(fieldName, e.target.value)}
+            required={spec.required}
+            rows={4}
+            spellCheck={false}
+            placeholder='{"X-Api-Key": "…"}'
+            className="font-mono text-sm"
+          />
+        ) : (
+          <Input
+            // `inputMode` rather than `type="url"`: it gets the right
+            // mobile keyboard without letting the browser reject a value
+            // the backend would have accepted — what counts as a reachable
+            // server is decided by the connection test, not by a scheme.
+            type="text"
+            inputMode={spec.type === 'URL' ? 'url' : undefined}
+            value={value}
+            onChange={(e) => onFieldChange(fieldName, e.target.value)}
+            required={spec.required}
+            autoComplete="off"
+            spellCheck={false}
+            placeholder={spec.type === 'URL' ? 'https://…' : undefined}
+          />
+        )}
+      </FormField>
+    );
+  };
+
+  if (!fold) {
+    return (
+      <>
+        {entries.map(renderField)}
+        {afterRequired}
+      </>
+    );
+  }
+
   return (
     <>
-      {Object.entries(credentialFields).map(([fieldName, spec]) => {
-        const value = credentials[fieldName] || '';
-        const error = isBrokenJson(spec, value) ? t('invalidJson') : fieldErrors[fieldName];
-
-        return (
-          <FormField key={fieldName} label={spec.label} required={spec.required} error={error}>
-            {isSecret(spec) ? (
-              <PasswordInput
-                value={value}
-                onChange={(e) => onFieldChange(fieldName, e.target.value)}
-                required={spec.required}
-              />
-            ) : spec.type === 'JSON' ? (
-              <TextArea
-                value={value}
-                onChange={(e) => onFieldChange(fieldName, e.target.value)}
-                required={spec.required}
-                rows={4}
-                spellCheck={false}
-                placeholder='{"X-Api-Key": "…"}'
-                className="font-mono text-sm"
-              />
-            ) : (
-              <Input
-                // `inputMode` rather than `type="url"`: it gets the right
-                // mobile keyboard without letting the browser reject a value
-                // the backend would have accepted — what counts as a reachable
-                // server is decided by the connection test, not by a scheme.
-                type="text"
-                inputMode={spec.type === 'URL' ? 'url' : undefined}
-                value={value}
-                onChange={(e) => onFieldChange(fieldName, e.target.value)}
-                required={spec.required}
-                autoComplete="off"
-                spellCheck={false}
-                placeholder={spec.type === 'URL' ? 'https://…' : undefined}
-              />
-            )}
-          </FormField>
-        );
-      })}
+      {required.map(renderField)}
+      {afterRequired}
+      <details
+        open={expanded || optionalHasError}
+        onToggle={(e) => setExpanded(e.currentTarget.open)}
+      >
+        <summary className="cursor-pointer text-sm font-medium text-muted hover:text-foreground">
+          {t('advancedSettings')}
+        </summary>
+        <div className="mt-3 space-y-4">{optional.map(renderField)}</div>
+      </details>
     </>
   );
 }

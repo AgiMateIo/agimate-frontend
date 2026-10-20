@@ -1089,6 +1089,7 @@
     "platformName": "Платформа",
     "name": "Название",
     "namePlaceholder": "Введите название подключения (необязательно)",
+    "advancedSettings": "Дополнительные настройки",
     "create": "Создать",
     "editConnection": "Редактировать подключение",
     "deleteConnection": "Удалить подключение",

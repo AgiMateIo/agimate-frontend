@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/Button';
 import { FormField, Input } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { getErrorMessage } from '@/utils/error';
+import { connectionNameFromUrl } from '@/utils/connection-name';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { connectionsListOptions } from '@/queries/connections';
 import { ConnectionAvatar } from './ConnectionAvatar';
@@ -66,6 +67,8 @@ export default function ConnectionSetupForm({
   const tAuth = useTranslations('ConnectionAuth');
   const queryClient = useQueryClient();
   const [name, setName] = useState(initialName);
+  // Until the user types a name of their own, it follows the server address.
+  const [nameEdited, setNameEdited] = useState(initialName !== '');
   // set when the backend rejects the credentials as a duplicate instance (409)
   const [conflict, setConflict] = useState<ConnectionResponse | null>(null);
   // the browser is on its way to the provider's consent screen — nothing left
@@ -78,6 +81,12 @@ export default function ConnectionSetupForm({
   const credentialFields = credentialFieldsOverride ?? connector.integrationMeta?.credentialFields ?? {};
   const { credentials, handleFieldChange, canSubmit, filledCredentials } =
     useCredentialFields(credentialFields, initialCredentials);
+
+  const urlField = Object.entries(credentialFields).find(
+    ([, spec]) => spec.required && spec.type === 'URL',
+  )?.[0];
+  const suggestedName = urlField ? connectionNameFromUrl(credentials[urlField]) : null;
+  const shownName = nameEdited ? name : (suggestedName ?? '');
 
   // null result = we are leaving the SPA for the consent screen; routing to the
   // connection card now would fight the redirect.
@@ -110,7 +119,7 @@ export default function ConnectionSetupForm({
         created = await apiService.createConnection({
           connectorCode: connector.code,
           credentials: filledCredentials(),
-          name: name.trim() || undefined,
+          name: shownName.trim() || suggestedName || undefined,
         });
       } catch (err) {
         if (err instanceof ApiError && err.status === 409) {
@@ -170,21 +179,25 @@ export default function ConnectionSetupForm({
         </div>
       )}
 
-      <FormField label={t('name')}>
-        <Input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder={t('namePlaceholder')}
-          maxLength={100}
-        />
-      </FormField>
-
       <CredentialFieldsForm
         credentialFields={credentialFields}
         credentials={credentials}
         fieldErrors={fieldErrors}
         onFieldChange={handleFieldChange}
+        afterRequired={
+          <FormField label={t('name')}>
+            <Input
+              type="text"
+              value={shownName}
+              onChange={(e) => {
+                setNameEdited(true);
+                setName(e.target.value);
+              }}
+              placeholder={suggestedName ?? t('namePlaceholder')}
+              maxLength={100}
+            />
+          </FormField>
+        }
       />
 
       {error && <ErrorAlert>{error}</ErrorAlert>}
