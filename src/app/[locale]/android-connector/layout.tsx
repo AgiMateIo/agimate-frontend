@@ -9,11 +9,11 @@ export async function generateMetadata({
 }) {
   const { locale: requested } = await params;
   const locale = resolveLocale(requested);
-  const t = await getTranslations({ locale, namespace: 'DesktopPage' });
+  const t = await getTranslations({ locale, namespace: 'AndroidPage' });
   return {
     title: t('meta.title'),
     description: t('meta.description'),
-    alternates: buildAlternates(locale, '/desktop'),
+    alternates: buildAlternates(locale, '/android-connector'),
     openGraph: {
       title: t('meta.ogTitle'),
       description: t('meta.ogDescription'),
@@ -23,7 +23,7 @@ export async function generateMetadata({
   };
 }
 
-export default function DesktopLayout({
+export default function AndroidLayout({
   children,
 }: {
   children: React.ReactNode;

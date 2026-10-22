@@ -28,9 +28,9 @@ export default function ConnectorsPage() {
           <li>{t('gettingStartedStep1')}</li>
           <li>
             {t('gettingStartedStep2')}{' '}
-            <Link href="/desktop" target="_blank" className="text-accent hover:underline">{t('desktopApp')}</Link>
+            <Link href="/desktop-connector" target="_blank" className="text-accent hover:underline">{t('desktopApp')}</Link>
             {' / '}
-            <Link href="/android" target="_blank" className="text-accent hover:underline">{t('androidApp')}</Link>
+            <Link href="/android-connector" target="_blank" className="text-accent hover:underline">{t('androidApp')}</Link>
           </li>
         </ol>
         <div className="flex items-center gap-2 pt-1">

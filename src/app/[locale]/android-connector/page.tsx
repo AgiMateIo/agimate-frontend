@@ -9,13 +9,20 @@ import {
   ArrowRightIcon,
   ArrowDownIcon,
   WifiIcon,
-  ExclamationTriangleIcon,
+  Battery0Icon,
   PhoneArrowDownLeftIcon,
   DevicePhoneMobileIcon,
+  ArrowPathRoundedSquareIcon,
+  MapPinIcon,
   BellAlertIcon,
+  QuestionMarkCircleIcon,
   SpeakerWaveIcon,
+  UserGroupIcon,
+  CalendarDaysIcon,
+  CameraIcon,
+  MapIcon,
   BoltIcon,
-  PlayIcon,
+  WrenchScrewdriverIcon,
   Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 
@@ -23,20 +30,26 @@ export default function AndroidPage() {
   const t = useTranslations('AndroidPage');
 
   const triggers = [
-    { key: 'wifi', icon: <WifiIcon className="h-6 w-6" /> },
-    { key: 'battery', icon: <ExclamationTriangleIcon className="h-6 w-6" /> },
     { key: 'call', icon: <PhoneArrowDownLeftIcon className="h-6 w-6" /> },
-    { key: 'notification', icon: <DevicePhoneMobileIcon className="h-6 w-6" /> },
+    { key: 'battery', icon: <Battery0Icon className="h-6 w-6" /> },
+    { key: 'wifi', icon: <WifiIcon className="h-6 w-6" /> },
+    { key: 'shake', icon: <ArrowPathRoundedSquareIcon className="h-6 w-6" /> },
+    { key: 'geofence', icon: <MapPinIcon className="h-6 w-6" /> },
   ] as const;
 
-  const actions = [
+  const tools = [
     { key: 'notify', icon: <BellAlertIcon className="h-6 w-6" /> },
+    { key: 'ask', icon: <QuestionMarkCircleIcon className="h-6 w-6" /> },
     { key: 'tts', icon: <SpeakerWaveIcon className="h-6 w-6" /> },
+    { key: 'contacts', icon: <UserGroupIcon className="h-6 w-6" /> },
+    { key: 'calendar', icon: <CalendarDaysIcon className="h-6 w-6" /> },
+    { key: 'camera', icon: <CameraIcon className="h-6 w-6" /> },
+    { key: 'geofences', icon: <MapIcon className="h-6 w-6" /> },
   ] as const;
 
   const screens = [
     { key: 'triggers', icon: <BoltIcon className="h-6 w-6" /> },
-    { key: 'actions', icon: <PlayIcon className="h-6 w-6" /> },
+    { key: 'tools', icon: <WrenchScrewdriverIcon className="h-6 w-6" /> },
     { key: 'settings', icon: <Cog6ToothIcon className="h-6 w-6" /> },
   ] as const;
 
@@ -112,21 +125,21 @@ export default function AndroidPage() {
             <p className="mt-4 text-sm text-muted">{t('features.triggersCaption')}</p>
           </div>
 
-          {/* Actions column */}
+          {/* Tools column */}
           <div>
-            <h3 className="mb-6 text-xl font-semibold">{t('features.actionsTitle')}</h3>
+            <h3 className="mb-6 text-xl font-semibold">{t('features.toolsTitle')}</h3>
             <div className="space-y-4">
-              {actions.map((action) => (
-                <ActionCard
-                  key={action.key}
-                  icon={action.icon}
-                  title={t(`features.actions.${action.key}.title`)}
-                  description={t(`features.actions.${action.key}.description`)}
-                  useCase={t(`features.actions.${action.key}.useCase`)}
+              {tools.map((tool) => (
+                <ToolCard
+                  key={tool.key}
+                  icon={tool.icon}
+                  title={t(`features.tools.${tool.key}.title`)}
+                  description={t(`features.tools.${tool.key}.description`)}
+                  useCase={t(`features.tools.${tool.key}.useCase`)}
                 />
               ))}
             </div>
-            <p className="mt-4 text-sm text-muted">{t('features.actionsCaption')}</p>
+            <p className="mt-4 text-sm text-muted">{t('features.toolsCaption')}</p>
           </div>
         </div>
       </section>
@@ -391,7 +404,7 @@ function TriggerCard({
   );
 }
 
-function ActionCard({
+function ToolCard({
   icon,
   title,
   description,

@@ -2,10 +2,8 @@ import { getTranslations } from 'next-intl/server';
 import { ArrowTopRightOnSquareIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import AuthShell from '@/components/landing/AuthShell';
 import AuthCard from '@/components/auth/AuthCard';
+import { RUSTORE_URL as INSTALL_URL } from '@/components/landing/RuStoreBadge';
 import { resolveHeaderLocale } from './locale';
-
-// Where the Android chat client is distributed.
-const INSTALL_URL = 'https://www.rustore.ru/catalog/app/ru.agimate.chat';
 
 export default async function AppAuthPage() {
   const locale = await resolveHeaderLocale();

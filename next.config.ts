@@ -57,6 +57,11 @@ const nextConfig: NextConfig = {
         return [
             { source: '/dashboard/connectors', destination: '/dashboard/apps', permanent: true },
             { source: '/dashboard/connectors/:id', destination: '/dashboard/apps/:id', permanent: true },
+            // The connector pages were renamed once the Android chat app got a page of its own.
+            { source: '/android', destination: '/android-connector', permanent: true },
+            { source: '/:locale(ru|en)/android', destination: '/:locale/android-connector', permanent: true },
+            { source: '/desktop', destination: '/desktop-connector', permanent: true },
+            { source: '/:locale(ru|en)/desktop', destination: '/:locale/desktop-connector', permanent: true },
         ];
     },
 };

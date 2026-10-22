@@ -17,8 +17,9 @@ export const PUBLIC_PAGES = [
     { path: '/catalog/agents', namespace: 'CatalogPage', metaPrefix: 'meta.', priority: 0.9, changeFrequency: 'weekly' },
     { path: '/catalog/skills', namespace: 'CatalogPage.skillsIndex', metaPrefix: 'meta.', priority: 0.8, changeFrequency: 'weekly' },
     { path: '/n8n', namespace: 'N8nPage', metaPrefix: 'meta.', priority: 0.8, changeFrequency: 'monthly' },
-    { path: '/desktop', namespace: 'DesktopPage', metaPrefix: 'meta.', priority: 0.8, changeFrequency: 'monthly' },
-    { path: '/android', namespace: 'AndroidPage', metaPrefix: 'meta.', priority: 0.8, changeFrequency: 'monthly' },
+    { path: '/desktop-connector', namespace: 'DesktopPage', metaPrefix: 'meta.', priority: 0.8, changeFrequency: 'monthly' },
+    { path: '/android-chat', namespace: 'AndroidChatPage', metaPrefix: 'meta.', priority: 0.8, changeFrequency: 'monthly' },
+    { path: '/android-connector', namespace: 'AndroidPage', metaPrefix: 'meta.', priority: 0.8, changeFrequency: 'monthly' },
     { path: '/privacy', namespace: 'Privacy', metaPrefix: 'meta.', priority: 0.3, changeFrequency: 'yearly' },
     { path: '/terms', namespace: 'Terms', metaPrefix: 'meta.', priority: 0.3, changeFrequency: 'yearly' },
 ] as const satisfies ReadonlyArray<{

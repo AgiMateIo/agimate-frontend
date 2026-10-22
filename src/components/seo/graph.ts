@@ -47,8 +47,8 @@ export function buildHomeGraph({
                 description,
                 url: `${origin}/${locale}`,
                 applicationCategory: 'BusinessApplication',
-                // Web is the dashboard; the rest are the clients the /desktop and
-                // /android pages actually offer.
+                // Web is the dashboard; the rest are the clients the /desktop-connector and
+                // /android-connector pages actually offer.
                 operatingSystem: 'Web, Windows, macOS, Linux, Android',
                 inLanguage: locale,
                 publisher: { '@id': organizationId },

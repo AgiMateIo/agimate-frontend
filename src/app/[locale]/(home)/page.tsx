@@ -92,8 +92,10 @@ export default function HomePage() {
     DevicePhoneMobileIcon,
     ChatBubbleLeftRightIcon,
   ];
+  // Only the phone has a page of its own among the channels.
+  const channelHrefs: Array<string | undefined> = [undefined, undefined, '/android-chat', undefined];
   const installIcons = [DevicePhoneMobileIcon, ComputerDesktopIcon, BoltIcon];
-  const installHrefs = ['/android', '/desktop', '/n8n'];
+  const installHrefs = ['/android-connector', '/desktop-connector', '/n8n'];
 
   return (
     <div className="min-h-screen text-foreground">
@@ -401,8 +403,9 @@ export default function HomePage() {
           <div className="mx-auto flex max-w-xl flex-wrap justify-center gap-x-8 gap-y-6">
             {channelItems.map((ch, i) => {
               const Icon = channelIcons[i];
-              return (
-                <div key={ch.name} className="flex w-24 flex-col items-center gap-2">
+              const href = channelHrefs[i];
+              const head = (
+                <>
                   <div
                     className={`flex h-14 w-14 items-center justify-center rounded-xl ${
                       ch.soon ? 'bg-surface-secondary text-muted' : 'bg-accent/10 text-accent'
@@ -411,10 +414,23 @@ export default function HomePage() {
                     <Icon className="h-7 w-7" />
                   </div>
                   <span
-                    className={`text-center text-sm font-medium ${ch.soon ? 'text-muted' : ''}`}
+                    className={`text-center text-sm font-medium ${ch.soon ? 'text-muted' : ''} ${
+                      href ? 'underline decoration-accent/40 underline-offset-4' : ''
+                    }`}
                   >
                     {ch.name}
                   </span>
+                </>
+              );
+              return (
+                <div key={ch.name} className="flex w-24 flex-col items-center gap-2">
+                  {href ? (
+                    <Link href={href} className="flex flex-col items-center gap-2 transition-opacity hover:opacity-80">
+                      {head}
+                    </Link>
+                  ) : (
+                    head
+                  )}
                   {ch.note && (
                     <span className="text-center text-xs leading-snug text-muted">{ch.note}</span>
                   )}

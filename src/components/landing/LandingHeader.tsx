@@ -14,8 +14,9 @@ import { Bars3Icon, ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/outli
 // anchors: they made the header a table of contents of whichever page it was
 // on, eight items long on the home page, and those pages read by scrolling.
 const APPS = [
-  { href: '/android', label: 'android', hint: 'androidHint' },
-  { href: '/desktop', label: 'desktop', hint: 'desktopHint' },
+  { href: '/android-chat', label: 'androidChat', hint: 'androidChatHint' },
+  { href: '/android-connector', label: 'android', hint: 'androidHint' },
+  { href: '/desktop-connector', label: 'desktop', hint: 'desktopHint' },
   { href: '/n8n', label: 'n8n', hint: 'n8nHint' },
 ] as const;
 

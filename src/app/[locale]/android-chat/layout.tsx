@@ -9,11 +9,11 @@ export async function generateMetadata({
 }) {
   const { locale: requested } = await params;
   const locale = resolveLocale(requested);
-  const t = await getTranslations({ locale, namespace: 'AndroidPage' });
+  const t = await getTranslations({ locale, namespace: 'AndroidChatPage' });
   return {
     title: t('meta.title'),
     description: t('meta.description'),
-    alternates: buildAlternates(locale, '/android'),
+    alternates: buildAlternates(locale, '/android-chat'),
     openGraph: {
       title: t('meta.ogTitle'),
       description: t('meta.ogDescription'),
@@ -23,7 +23,7 @@ export async function generateMetadata({
   };
 }
 
-export default function AndroidLayout({
+export default function AndroidChatLayout({
   children,
 }: {
   children: React.ReactNode;
