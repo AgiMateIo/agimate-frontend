@@ -174,8 +174,7 @@ export default function HomePage() {
       </section>
 
       {/* Harness — the position itself: the model only talks, everything around it
-          does the work. Every card carries the technical line and a plain-language
-          one under it. */}
+          does the work. A plain-language line only where the technical one needs it. */}
       <section id="harness" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
         <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">
           {t('harness.title')}
@@ -196,10 +195,12 @@ export default function HomePage() {
                 </div>
                 <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
                 <p className="text-sm leading-relaxed text-muted">{item.tech}</p>
-                <p className="mt-3 border-t border-border/50 pt-3 text-sm leading-relaxed text-foreground/80">
-                  <span className="font-medium text-accent">{t('harness.plainLabel')} </span>
-                  {item.plain}
-                </p>
+                {item.plain && (
+                  <p className="mt-3 border-t border-border/50 pt-3 text-sm leading-relaxed text-foreground/80">
+                    <span className="font-medium text-accent">{t('harness.plainLabel')} </span>
+                    {item.plain}
+                  </p>
+                )}
               </div>
             );
           })}
@@ -235,10 +236,12 @@ export default function HomePage() {
                 </div>
                 <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
                 <p className="text-sm leading-relaxed text-muted">{item.tech}</p>
-                <p className="mt-3 border-t border-border/50 pt-3 text-sm leading-relaxed text-foreground/80">
-                  <span className="font-medium text-accent">{t('agents.plainLabel')} </span>
-                  {item.plain}
-                </p>
+                {item.plain && (
+                  <p className="mt-3 border-t border-border/50 pt-3 text-sm leading-relaxed text-foreground/80">
+                    <span className="font-medium text-accent">{t('agents.plainLabel')} </span>
+                    {item.plain}
+                  </p>
+                )}
               </div>
             );
           })}
@@ -275,9 +278,6 @@ export default function HomePage() {
             </tbody>
           </table>
         </div>
-        <p className="mx-auto mt-4 max-w-2xl text-center text-sm text-muted">
-          {t('agents.tableNote')}
-        </p>
         <div className="mt-8 text-center">
           <Link
             href="/catalog/agents"
@@ -593,5 +593,5 @@ export default function HomePage() {
 interface PlainItem {
   title: string;
   tech: string;
-  plain: string;
+  plain?: string;
 }

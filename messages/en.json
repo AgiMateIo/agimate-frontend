@@ -19,65 +19,59 @@
     },
     "harness": {
       "title": "What a harness is",
-      "subtitle": "A language model does one thing — write text. Everything that turns text into work sits around it. One harness for the whole system; the settings belong to each agent.",
+      "subtitle": "On its own, a model only writes text. To send an email or file a task it needs tools, keys to your services, rules and a log. We call all of that the harness. It is shared by every agent and configured for each one separately.",
       "plainLabel": "In plain words:",
       "items": [
         {
-          "title": "Hands: the tools",
-          "tech": "The concrete calls that connections bring in: MCP servers, your own API behind a key, connectors to Telegram, your phone and your computer. A tool appears for an agent together with the binding.",
-          "plain": "What the agent can do at all: send a message, file a task, read a spreadsheet."
+          "title": "Tools",
+          "tech": "Tools come from connections: an MCP server, your own API behind a key, Telegram, your phone or computer. An agent sees a tool only while that connection is bound to it. For example, sending a Telegram message or reading a spreadsheet row."
         },
         {
-          "title": "Craft: the skills",
-          "tech": "A skill is written know-how for using tools: the order of steps, the rules, and the connectors it needs. It is versioned, reused across agents, and picked from a shared catalogue.",
-          "plain": "Tools are what an agent can do. A skill is how well it handles them: which one to reach for, in what order, when to stop and ask."
+          "title": "Skills",
+          "tech": "A skill says in what order to call tools, what not to do, and which connections it needs. One skill can go on several agents; ready-made ones are in the catalogue.",
+          "plain": "A skill gives the agent the steps: read the receipt, add the expense to the sheet, and ask you if the totals don't match."
         },
         {
-          "title": "Connector credentials stay on the platform",
-          "tech": "A connection's credentials are held on the platform side. The agent gets tool descriptions and calls them by name, and the connector key is supplied outside the model. The LLM provider key is a different matter: it is what reaches the model at all, and it goes to the platform worker.",
-          "plain": "The agent does not know the passwords to your services. It says \"send the email\", and the harness supplies the connector key, outside the model."
+          "title": "Keys stay on the platform",
+          "tech": "Connection keys and tokens are stored on the platform. The model sees only tool names and descriptions, and the key is added after it has chosen a call. The exception is the LLM provider key: the model can't be reached without it, so it goes to the platform worker."
         },
         {
-          "title": "Rails: rules checked before the call",
-          "tech": "Allow or deny an individual tool and its parameters, up to closing a connection entirely.",
-          "plain": "\"Reading is fine, deleting isn't.\" Checked before the agent touches the service."
+          "title": "Rules before the call",
+          "tech": "You can allow or deny an individual tool, limit its parameters, or close a connection entirely.",
+          "plain": "The agent may read your mail but not delete it. The check runs before the request reaches the mail server."
         },
         {
-          "title": "Trail: the log of every action",
-          "tech": "The run, its steps, every call with parameters and result, token spend per model.",
-          "plain": "You can see what the agent actually did and why: a line with the call parameters and the service's answer."
+          "title": "Action log",
+          "tech": "For every run you can see the agent's steps, each call with its parameters and the service's answer, and how many tokens each model used."
         },
         {
-          "title": "Ground: the platform runs the agent",
-          "tech": "The agent is executed on the platform side: in the project cloud, or on your own server when self-hosted. Devices attach as companion connectors and never become the place the agent runs.",
-          "plain": "So every call has a point where it can still be checked: the platform itself. An agent running on your own machine talks to the system directly, with no such checkpoint on the way."
+          "title": "Where the agent runs",
+          "tech": "The agent runs on the platform: in our cloud, or on your own server if you host AgiMate yourself. Your phone and computer connect as connectors and carry out commands, but the agent itself never runs on them.",
+          "plain": "So every call passes through the platform, where the rules get a chance to work. An agent running directly on your machine talks to the system with nothing in between to check it."
         }
       ]
     },
     "agents": {
       "title": "An agent's specialisation rests on its access",
-      "subtitle": "An instruction is a request, and a request can be argued with. A connection binding is a boundary: the agent does not get past it, however it is persuaded. Each agent has its own.",
+      "subtitle": "A model can break an instruction if it's pushed hard enough. A tool from a connection that isn't bound to the agent can't be called at all: for that agent it doesn't exist. So an agent's role is set first of all by what it is connected to.",
       "plainLabel": "In plain words:",
       "axes": [
         {
           "title": "Its own model",
-          "tech": "The provider and the priority list of models are set on the agent, separately for chat, vision and image generation.",
-          "plain": "An expensive model where thinking is needed, a cheap one where it's shuffling data. You pay per job, not one flat rate for everything."
+          "tech": "The provider and a priority list of models are set per agent: for chat, for reading images and for generating them. An analyst can get a strong model, while a reminder agent does fine on a cheap one."
         },
         {
           "title": "Its own instructions",
-          "tech": "Each agent carries its own instruction text — from a ready-made role or from scratch.",
-          "plain": "Each has its own manner and its own ground rules. One answers a customer briefly and politely, another works through the numbers in detail."
+          "tech": "Each agent has its own instruction text, from a ready-made role or written from scratch. One answers customers briefly; another goes through a report and cites the numbers."
         },
         {
           "title": "Its own access",
           "tech": "Connections are bound to a specific agent, and inside a binding there are rules for individual tools and their parameters.",
-          "plain": "Like clearances for staff. One has access to email, another to the spreadsheets, and nobody has access to everything."
+          "plain": "Like staff passes: the accountant gets the spreadsheets, the secretary gets mail and the calendar."
         },
         {
           "title": "Its own skills",
-          "tech": "The skill set is assembled on the agent; another agent's tools never show up in it.",
-          "plain": "An agent can do exactly what its role needs. Less lying around means less chance of reaching for the wrong tool."
+          "tech": "Skills are added to a specific agent, and tools that other agents' skills need don't appear on it. The less an agent has lying around, the less often it reaches for the wrong tool."
         }
       ],
       "table": {
@@ -126,24 +120,23 @@
           ]
         ]
       },
-      "tableNote": "Five agents, five token bills and five separate sets of access. What they share is the harness: one set of rules and one log.",
       "catalogLink": "All ready-made agents"
     },
     "quickStart": {
       "title": "Three steps to a working agent",
-      "subtitle": "A ready-made role brings its own instructions and skills. Everything it prefills stays editable — before creation and at any point after.",
+      "subtitle": "A ready-made role comes with instructions and matching skills. You can change any of it while creating the agent or later.",
       "steps": [
         {
           "title": "Pick a role",
-          "description": "A gallery of ready-made roles: the description, instructions and matching skills are already written. Or start from scratch if the job is your own."
+          "description": "Every role in the gallery already has a description, instructions and a set of skills. If none fits, start with a blank agent."
         },
         {
           "title": "Check the skills",
-          "description": "The role's skills are already ticked. Drop the ones you don't need, add your own — or just move on and come back to it later."
+          "description": "The role's skills are already ticked. Untick the ones you don't need, add your own, or skip the step and come back to it later."
         },
         {
           "title": "Start talking",
-          "description": "The agent exists and answers in the dashboard chat. Everything else gets connected when you need it, not before the first message."
+          "description": "The agent answers in the dashboard chat straight away. Telegram, your own model and connections to services can be added later, when you need them."
         }
       ],
       "tuneTitle": "And you can always tune it further",
@@ -159,8 +152,8 @@
     "howItWorks": {
       "eyebrow": "How it works",
       "lede": "Every call goes through a rule",
-      "intro": "A trigger arrives from a connector or a device. The platform checks it against the agent's rules and hands it to one agent. Having done its work, the agent calls a tool back through the core — and that call goes through the same check. Credentials are attached inside the core and never reach the agent, and every trigger and every call lands in its own log: allowed and denied alike.",
-      "sr": "Flow diagram. On the left are the sources: tools and triggers, grouped into connectors and devices. A trigger travels from a connector or a device into the AgiMate core. There it is checked by the Policy block: is it allowed for this agent or not. A denied trigger goes no further and lands in the trigger log. An allowed one passes to Trigger routing, which hands it to one specific agent. Having worked on the trigger, the agent reaches back into the core and calls a tool on a connector or a device. That call is checked by the same rules and lands in the tool call log. Connector credentials stay in the core and are never passed to the agent. The agent's answer returns through the core, surfaces in the User Channel block, and leaves for the messenger the conversation is in: webchat, Telegram, the phone app or an IDE. On the diagram each connector and device carries its own name (Mail, Laptop, Calendar, Android), each agent carries the name it was given, and each packet in flight carries a Greek letter. The trigger log lists the time, the connector or device, the trigger name, the Greek name of the packet that carried it, and the verdict. The tool call log lists the time, the agent that asked, the connector or device it went to, the tool, and the verdict.",
+      "intro": "A trigger, say a new email, arrives from a connection or a device. The platform checks it against the rules and hands it to one agent. When the agent needs to act, it calls a tool through the core, and that call is checked the same way. The core adds the keys; the agent never gets them. Allowed and denied events are written to the trigger log and the tool call log.",
+      "sr": "Diagram: triggers from connections and devices (Mail, Calendar, Laptop, Android) pass a policy check in the core and go to one agent. Tool calls pass the same check, and the agent's answer goes to the user in the web chat, Telegram, the phone app or an IDE. Below the diagram are two logs, triggers and tool calls, with each row marked allowed or denied. Packets on the diagram carry Greek letters, which match them to rows in the log.",
       "tool": "Tool",
       "trigger": "Trigger",
       "rules": "Policy",
@@ -284,11 +277,11 @@
     },
     "useCases": {
       "title": "What you can build today",
-      "subtitle": "Scenarios made of parts that already exist in the dashboard — each one shows what it's assembled from",
+      "subtitle": "Each scenario is built from parts the dashboard already has. Under the description you can see which ones.",
       "items": [
         {
           "title": "An agent in Telegram",
-          "description": "Set up a channel: the Telegram connector, an incoming-message trigger, a reply tool. The agent answers per your instructions and the conversation is stored as sessions you can read in the dashboard.",
+          "description": "Connect Telegram as a channel and the agent starts answering there according to your instructions. You can read the conversations in the dashboard afterwards.",
           "flow": [
             "Telegram channel",
             "Agent",
@@ -298,7 +291,7 @@
         },
         {
           "title": "A scheduled check",
-          "description": "A connector job runs on a schedule: the agent visits an external service, checks what matters and writes to you. Jobs can be paused or run right now.",
+          "description": "On a schedule, the agent checks an external service and sends you the result. For example, it checks every hour whether your site is up, or collects new leads each morning. A job can be paused or run outside the schedule.",
           "flow": [
             "Schedule",
             "Connection",
@@ -308,7 +301,7 @@
         },
         {
           "title": "Reacting to an event",
-          "description": "An external system sends a webhook — the agent parses the event and takes the next step. Every delivery and every tool call stays in the trigger logs.",
+          "description": "An external system sends a webhook, say about a new payment or a failed build, and the agent decides what to do next. Deliveries and tool calls are visible in the trigger log.",
           "flow": [
             "Webhook",
             "Trigger",
@@ -318,7 +311,7 @@
         },
         {
           "title": "An agent on your device",
-          "description": "The Android and desktop apps are connectors to your own hardware. Notifications, calls and device events become triggers, and the agent answers with a push, spoken text or a command carried out on the device.",
+          "description": "The Android and desktop apps connect your device to the agent. A notification arrives, the phone rings or a file changes, and the agent receives it as an event. In reply it can send a push, read text aloud or run a command on the device.",
           "flow": [
             "Device event",
             "Android / Desktop",
@@ -328,7 +321,7 @@
         },
         {
           "title": "An agent in your IDE",
-          "description": "Over the ACP protocol the agent plugs into your editor and works next to the code — with the same skills, access rules and log as everywhere else.",
+          "description": "Over the ACP protocol the agent connects to your code editor. It keeps the same skills, access rules and log as in Telegram or the web chat.",
           "flow": [
             "IDE",
             "ACP",
@@ -338,7 +331,7 @@
         },
         {
           "title": "Your own service as a tool",
-          "description": "Connect your API as a key-authenticated app or an MCP server — its methods become the agent's tools. What exactly it may do is up to your rules.",
+          "description": "Connect your API as an app with a key or as an MCP server, and its methods become the agent's tools. Rules decide which of them the agent may call.",
           "flow": [
             "MCP / app",
             "Connection",
@@ -348,7 +341,7 @@
         },
         {
           "title": "A team of agents on a shared board",
-          "description": "Assemble a team of agents and give it a shared board: tasks with statuses, an assigned agent, comments in the thread. Changes reach the dashboard in real time.",
+          "description": "Several agents work from one task board: each task has a status, an assignee and a comment thread. Changes on the board show up in the dashboard immediately.",
           "flow": [
             "Team",
             "Task board",
@@ -367,11 +360,11 @@
         },
         {
           "title": "Rules are checked before the call",
-          "description": "Allow or deny a specific tool, constrain its parameters, close a connection entirely. The rule fires before the external service is ever contacted, and the denial goes to the log."
+          "description": "You can deny an agent a single tool, limit the values of its parameters or close a connection entirely. If a rule blocks the call, the request never reaches the external service, and the denial is written to the log."
         },
         {
           "title": "Every action logged",
-          "description": "Who called what, when, with what result. Errors and policy denials are collected separately, so you know where to look."
+          "description": "The log shows which agent called a tool, with what parameters, and what the service answered. Errors and policy denials can be filtered out on their own."
         }
       ],
       "docsLink": "How the access rules work"
@@ -382,15 +375,15 @@
       "items": [
         {
           "title": "Your key at your provider",
-          "description": "Connect a provider with your own key and pay it directly. The model list is pulled from the provider, and unavailable ones are flagged."
+          "description": "Connect a provider with your own key, and tokens are billed by that provider at your rate. The platform takes the model list from the provider and marks the ones that are currently unavailable."
         },
         {
           "title": "Different models for different jobs",
-          "description": "Chat, vision, image generation — each job gets its own priority list of models. If the first doesn't fit, the next one is used."
+          "description": "Chat, image recognition and image generation each get their own priority list of models. If the first model on the list is unavailable, the platform uses the next one."
         },
         {
           "title": "Spend visible in the dashboard",
-          "description": "How many tokens went out, from which agent, on which model. No key of your own yet — start on the platform free tier."
+          "description": "The dashboard shows how many tokens each agent spent and on which model. If you don't have a key yet, you can start on the platform's free allowance."
         }
       ]
     },
