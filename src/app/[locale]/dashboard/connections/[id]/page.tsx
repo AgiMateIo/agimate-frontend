@@ -244,7 +244,7 @@ function ConnectionDetailContent({ id }: { id: string }) {
           {
             id: 'skills',
             label: t('tabSkills'),
-            content: <ConnectionSkillsTab connectorCode={connection.connectorCode} />,
+            content: <ConnectionSkillsTab connectionId={connection.id} />,
           },
           {
             id: 'agents',

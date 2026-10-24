@@ -17,10 +17,12 @@ export const skillsApi = {
 
   // scope: MINE (default) = own skills of any visibility; PUBLIC = all public skills.
   // `category` / `tag` are taxonomy codes (one tag at a time — the endpoint
-  // takes no list), ANDed with the rest.
+  // takes no list), ANDed with the rest. `connectionId` = skills that work with
+  // that connection (code and params); together with `connectorCode` it is a 400.
   async getSkills(params?: {
     search?: string;
     connectorCode?: string;
+    connectionId?: string;
     scope?: SkillScope;
     category?: string;
     tag?: string;
@@ -31,6 +33,7 @@ export const skillsApi = {
       {
         search: params?.search,
         connectorCode: params?.connectorCode,
+        connectionId: params?.connectionId,
         scope: params?.scope,
         category: params?.category,
         tag: params?.tag,

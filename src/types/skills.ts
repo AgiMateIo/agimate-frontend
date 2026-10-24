@@ -1,8 +1,8 @@
 // Skill types
 
 // Which skills the list endpoint returns: MINE = own skills of any visibility
-// (default), PUBLIC = all public skills.
-export type SkillScope = 'MINE' | 'PUBLIC';
+// (default), PUBLIC = all public skills, ALL = both, an own public skill once.
+export type SkillScope = 'MINE' | 'PUBLIC' | 'ALL';
 
 // One entry of an access-rule allow-list: a tool/trigger name, optionally
 // narrowed to calls whose arguments match `params` (the ALLOW row's

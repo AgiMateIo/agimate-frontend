@@ -4,21 +4,21 @@ import { useTranslations } from 'next-intl';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Alert } from '@/components/ui/Alert';
 import SkillCard from '@/components/skills/SkillCard';
-import { useConnectorSkillsQuery } from '@/queries/skills';
+import { useConnectionSkillsQuery } from '@/queries/skills';
 import { getErrorMessage } from '@/utils/error';
 import { Placeholder } from '@/components/ui/Placeholder';
 
 interface ConnectionSkillsTabProps {
-  connectorCode: string;
+  connectionId: string;
 }
 
-// Every skill that declares this connector — own and public in one list. The
+// Every skill that works with this connection — own and public in one list. The
 // distinction stays visible on the card (SkillCard badges public skills), so a
 // segmented control only made the set harder to scan.
-export default function ConnectionSkillsTab({ connectorCode }: ConnectionSkillsTabProps) {
+export default function ConnectionSkillsTab({ connectionId }: ConnectionSkillsTabProps) {
   const t = useTranslations('ConnectionDetail');
 
-  const { skills, isPending, error, truncated } = useConnectorSkillsQuery(connectorCode);
+  const { skills, isPending, error, truncated } = useConnectionSkillsQuery(connectionId);
 
   if (isPending) {
     return <Placeholder>{t('loadingSkills')}</Placeholder>;

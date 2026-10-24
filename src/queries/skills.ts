@@ -17,8 +17,8 @@ export const skillKeys = {
   lists: () => [...skillKeys.all, 'list'] as const,
   list: (tab: SkillListTab, search: string, page: number, size: number) =>
     [...skillKeys.lists(), tab, search, page, size] as const,
-  byConnector: (connectorCode: string, scope: SkillScope) =>
-    [...skillKeys.lists(), 'by-connector', connectorCode, scope] as const,
+  byConnection: (connectionId: string) =>
+    [...skillKeys.lists(), 'by-connection', connectionId] as const,
   picker: (scope: SkillScope, search: string, category: string, tag: string) =>
     [...skillKeys.lists(), 'picker', scope, search, category, tag] as const,
   detail: (id: string) => [...skillKeys.all, 'detail', id] as const,
@@ -194,43 +194,27 @@ export function useSkillPickerSuspenseQuery(
   return mergePickerPages(scopes, results.map((r) => r.data));
 }
 
-// One page per scope, deliberately large: the two scopes are merged client-side
-// (see useConnectorSkillsQuery), and paging a merged list against two
-// independently paged sources would silently drop rows.
-const CONNECTOR_SKILLS_SIZE = 100;
+// One large page rather than paging: the tab is a list to scan, not to browse,
+// and `truncated` sends the user to the Skills page for the rest.
+const CONNECTION_SKILLS_SIZE = 100;
 
-export const connectorSkillsOptions = (connectorCode: string, scope: SkillScope) =>
+// Skills that work with this connection: its connector, and — when a
+// requirement names params (an MCP server's URL) — the same params. The server
+// picks them; scope ALL returns own and public, an own public skill once.
+export const connectionSkillsOptions = (connectionId: string) =>
   queryOptions({
-    queryKey: skillKeys.byConnector(connectorCode, scope),
+    queryKey: skillKeys.byConnection(connectionId),
     queryFn: () =>
-      apiService.getSkills({ connectorCode, scope, size: CONNECTOR_SKILLS_SIZE }),
+      apiService.getSkills({ connectionId, scope: 'ALL', size: CONNECTION_SKILLS_SIZE }),
   });
 
-// Every skill declaring this connector, own and public alike. The endpoint has
-// no "all" scope, so MINE (own skills of any visibility) and PUBLIC (everyone's
-// public ones) are fetched in parallel and merged; own rows win the dedupe,
-// since a skill that is both mine and public is still mine.
-export function useConnectorSkillsQuery(connectorCode: string) {
-  const [mine, publics] = useQueries({
-    queries: [
-      connectorSkillsOptions(connectorCode, 'MINE'),
-      connectorSkillsOptions(connectorCode, 'PUBLIC'),
-    ],
-  });
-
-  const byId = new Map<string, SkillResponse>();
-  for (const skill of publics.data?.content ?? []) byId.set(skill.id, skill);
-  for (const skill of mine.data?.content ?? []) byId.set(skill.id, skill);
-
-  const pageOf = (data: PagedResponse<SkillResponse> | undefined) =>
-    data ? data.totalElements > data.content.length : false;
-
+export function useConnectionSkillsQuery(connectionId: string) {
+  const { data, isPending, error } = useQuery(connectionSkillsOptions(connectionId));
   return {
-    skills: [...byId.values()].sort((a, b) => a.title.localeCompare(b.title)),
-    isPending: mine.isPending || publics.isPending,
-    error: mine.error ?? publics.error,
-    // True when a scope had more rows than one page — the list is not the whole set.
-    truncated: pageOf(mine.data) || pageOf(publics.data),
+    skills: [...(data?.content ?? [])].sort((a, b) => a.title.localeCompare(b.title)),
+    isPending,
+    error,
+    truncated: data ? data.totalElements > data.content.length : false,
   };
 }
 
