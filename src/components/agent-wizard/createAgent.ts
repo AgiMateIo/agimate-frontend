@@ -36,15 +36,16 @@ export function internalCodesFor(
 }
 
 // The open connections that fit one requirement. There is no agent yet to ask
-// a plan for, so the identity match is done here the way the backend does it:
-// a requirement naming an MCP address fits the connection whose `subCode` is
-// that address, and a requirement without one fits every instance of the code.
+// a plan for, so the match is done here the way the backend does it: a
+// requirement with params fits the connections holding the same values, and a
+// requirement without them fits every instance of the code.
 export function fittingConnections(data: WizardData, requirement: SkillConnectorRequirement) {
-  const ofCode = data.connections.filter((c) => c.connectorCode === requirement.code);
-  const identity = requirement.params?.url;
-  if (!identity) return ofCode;
-  const same = ofCode.filter((c) => c.subCode === identity);
-  return same.length > 0 ? same : ofCode;
+  const wanted = Object.entries(requirement.params ?? {});
+  return data.connections.filter(
+    (c) =>
+      c.connectorCode === requirement.code &&
+      wanted.every(([field, value]) => c.params?.[field] === value),
+  );
 }
 
 // Which instance a picked skill will use for one of its external requirements.

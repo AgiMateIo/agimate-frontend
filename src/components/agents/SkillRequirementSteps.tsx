@@ -156,9 +156,11 @@ function RequirementStep({
         )}
       </div>
 
-      {c.identity && (
-        <p className="text-xs text-muted font-mono break-all">{c.identity}</p>
-      )}
+      {/* What the skill was written for (an MCP server's URL) — tells two
+          instances of one connector apart. */}
+      {Object.values(c.params ?? {}).map((value) => (
+        <p key={value} className="text-xs text-muted font-mono break-all">{value}</p>
+      ))}
 
       {c.internal ? (
         <p className="text-xs text-muted">

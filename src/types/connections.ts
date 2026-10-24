@@ -15,6 +15,10 @@ export interface ConnectionResponse {
   // never had one. Always fall back to `fullCode`, never render the empty
   // string and never call a string method on it unguarded.
   name: string | null;
+  // Non-secret fields of the connection form as saved (an MCP server's `url`);
+  // SECRET fields never appear. Empty for Telegram, and for an MCP URL carrying
+  // a key — that URL is stored as a secret whole.
+  params: Record<string, string>;
   enabled: boolean;
   authStatus: ConnectionAuthStatus;
   lastUsedAt: string | null;

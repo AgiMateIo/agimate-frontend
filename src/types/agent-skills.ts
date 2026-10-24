@@ -8,9 +8,9 @@
 import type { AccessEffect, PolicyKind } from './agent-connections';
 import type { CredentialFieldSpec } from './skills';
 
-// A connection of the user that fits one requirement of a skill: by identity
-// (the same MCP URL) when the requirement resolves to one, otherwise every
-// instance of the connector code.
+// A connection of the user that fits one requirement of a skill: one with the
+// same params (the same MCP URL) when the requirement declares any, otherwise
+// every instance of the connector code.
 export interface SkillConnectorMatch {
   connectionId: string;
   // Legitimately null, as on the connection itself.
@@ -51,9 +51,6 @@ export interface AgentSkillConnectorStatus {
   // The integration's credentials form (same shape as the catalog's), in
   // render order. null for an internal connector.
   credentialFields: Record<string, CredentialFieldSpec> | null;
-  // The instance identity the params resolve to (an MCP server's URL); null
-  // when unknown — then `matches` is every instance of the code.
-  identity: string | null;
   matches: SkillConnectorMatch[];
   // The instance this binding points at. null = none chosen. For bindings made
   // before instance selection existed the backend still fills the old

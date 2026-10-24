@@ -186,6 +186,14 @@ function ConnectionDetailContent({ id }: { id: string }) {
                     <dt className="text-sm text-muted">{t('platformIdentifier')}</dt>
                     <dd className="text-foreground mt-0.5 font-mono text-sm">{connection.subCode ?? '—'}</dd>
                   </div>
+                  {Object.entries(connection.params ?? {}).map(([field, value]) => (
+                    <div key={field}>
+                      <dt className="text-sm text-muted">
+                        {connector.integrationMeta?.credentialFields[field]?.label ?? field}
+                      </dt>
+                      <dd className="text-foreground mt-0.5 font-mono text-sm break-all">{value}</dd>
+                    </div>
+                  ))}
                   {connection.name && (
                     <div>
                       <dt className="text-sm text-muted">{tInt('name')}</dt>

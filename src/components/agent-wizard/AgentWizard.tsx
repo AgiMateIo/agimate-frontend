@@ -37,9 +37,9 @@ export interface WizardConnection {
   name: string | null;
   fullCode: string;
   connectorCode: string;
-  // The instance's identity on the platform (an MCP server's URL) — what a
-  // skill requirement naming an address is matched against.
-  subCode: string | null;
+  // Non-secret form values (an MCP server's URL) — what a skill requirement's
+  // params are matched against.
+  params: Record<string, string>;
 }
 
 // Something that could not be attached once the agent already existed.
