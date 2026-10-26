@@ -63,6 +63,9 @@ export interface SkillResponse {
   // Flat tag codes for the filters; empty is the normal state, not lost data.
   // Read through `catalogTags()`.
   tags?: string[];
+  // Ready-made first messages the skill adds to an agent's empty chat (≤5,
+  // one line each). Optional while an older backend may still answer.
+  starters?: string[];
   version: number;
   isPublic: boolean;
   userId: string;

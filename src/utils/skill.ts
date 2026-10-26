@@ -75,12 +75,14 @@ function requirementLines(r: SkillConnectorRequirement): string[] {
 // parameterised requirement must survive a body edit — writing codes alone
 // would silently strip the author's keys, pre-fills and access rules. The same
 // goes for the category and the tags: left out, a body edit would quietly
-// file the skill back under "other".
+// file the skill back under "other", and for the starters, which a body edit
+// would wipe.
 export function buildSkillMd(
   skill: Pick<SkillDetailResponse, 'name' | 'title' | 'description' | 'connectorCodes' | 'mdContent'> & {
     connectors?: SkillConnectorRequirement[];
     category?: string;
     tags?: string[];
+    starters?: string[];
   },
 ): string {
   const lines = ['---', `name: ${skill.name}`, `title: ${skill.title}`];
@@ -99,6 +101,9 @@ export function buildSkillMd(
     } else {
       lines.push('connectors:', ...requirements.flatMap(requirementLines));
     }
+  }
+  if (skill.starters && skill.starters.length > 0) {
+    lines.push('starters:', ...skill.starters.map((text) => `  - ${scalar(text)}`));
   }
   lines.push('---', '', skill.mdContent);
   return lines.join('\n');
