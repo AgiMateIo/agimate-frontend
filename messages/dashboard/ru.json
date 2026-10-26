@@ -25,7 +25,8 @@
     "createTeam": "Создать команду",
     "administration": "Админ-панель",
     "users": "Пользователи",
-    "runs": "Запуски"
+    "runs": "Запуски",
+    "presets": "Пресеты"
   },
   "TopBar": {
     "breadcrumbs": {
@@ -56,7 +57,8 @@
       "toolCalls": "Вызовы инструментов",
       "admin": "Админ-панель",
       "users": "Пользователи",
-      "runs": "Запуски"
+      "runs": "Запуски",
+      "presets": "Пресеты"
     },
     "openMenu": "Открыть меню",
     "settings": "Настройки",
@@ -1606,7 +1608,37 @@
     "usageScopePlatform": "Личный расход этого пользователя на платформенной модели.",
     "usageScopeOwnKey": "Расход всего ключа — по всем агентам этого пользователя сразу.",
     "usageUtcNote": "Текущие календарные сутки и месяц в UTC — с местным днём они не совпадают. Это токены, а не деньги: вход + выход + запись кэша, чтение кэша не учитывается.",
-    "usageNoProviders": "Ни платформенного провайдера, ни своих ключей."
+    "usageNoProviders": "Ни платформенного провайдера, ни своих ключей.",
+    "presetsTitle": "Пресеты",
+    "presetsSubtitle": "Роли агентов в галерее мастера создания. Правка действует на агентов, созданных после неё, — уже созданные остаются как были.",
+    "presetCreate": "Новый пресет",
+    "presetCatalog": "Каталог",
+    "loadingPresets": "Загружаем пресеты…",
+    "noPresets": "В этом каталоге пресетов нет.",
+    "presetDisabled": "Выключен",
+    "presetSaveFailed": "Не удалось сохранить пресет",
+    "presetEditTitle": "Пресет {name}",
+    "presetCreateTitle": "Новый пресет",
+    "presetCatalogNote": "Каталог {locale}. Каталоги ru и en — разные пресеты, а не переводы одного.",
+    "presetName": "Код",
+    "presetNameImmutable": "Задаётся при создании и не меняется.",
+    "presetNameHint": "kebab-case, например investment-advisor. Потом не меняется.",
+    "presetNameInvalid": "Только строчные латинские буквы, цифры и одиночные дефисы.",
+    "presetTitle": "Название",
+    "presetDescription": "Описание",
+    "presetInstructions": "Инструкции",
+    "presetInstructionsHint": "Markdown. Черновик промпта агента, его можно поправить в мастере.",
+    "presetGreeting": "Приветствие",
+    "presetCopiedOnCreate": "Копируется в агента при создании; пусто — без приветствия.",
+    "presetStarters": "Подсказки",
+    "presetSkills": "Системные навыки",
+    "presetSkillsHint": "Имена навыков через запятую. Неизвестное имя не пройдёт сохранение.",
+    "presetAgentType": "Тип агента",
+    "presetAgentTypeDefault": "Обычный мастер",
+    "presetCategory": "Раздел",
+    "presetSortOrder": "Порядок",
+    "presetTags": "Теги",
+    "presetEnabled": "Показывать в галерее"
   },
   "Taxonomy": {
     "categories": "Разделы каталога",

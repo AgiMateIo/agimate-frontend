@@ -37,3 +37,39 @@ export interface AgentPresetResponse {
   category?: string;
   tags?: string[];
 }
+
+// The two preset catalogs; the admin calls send it as Accept-Language.
+export type PresetCatalogLocale = 'ru' | 'en';
+
+// Admin view of a preset (GET /control/manage/agent-presets/all/, ADMIN only):
+// the gallery row plus what only an admin edits. The catalog is picked by
+// Accept-Language — `ru` and `en` are separate presets with their own ids, not
+// translations of one.
+export interface AdminAgentPresetResponse extends AgentPresetResponse {
+  // Copied into an agent at creation only; editing the preset leaves created
+  // agents as they are.
+  greeting?: string | null;
+  starters?: string[];
+  // System skill names; the gallery row resolves them into `skills`.
+  skillNames?: string[];
+  sortOrder?: number;
+  enabled?: boolean;
+}
+
+// PATCH: an absent/null field is left alone; `greeting: ''` clears it and
+// `starters` replaces the whole list. `name` is immutable and set on create.
+export interface AdminAgentPresetRequest {
+  name?: string;
+  title?: string;
+  description?: string;
+  instructions?: string;
+  greeting?: string;
+  starters?: string[];
+  // An unknown name is a 400.
+  skillNames?: string[];
+  agentType?: AgentType | null;
+  category?: string;
+  tags?: string[];
+  sortOrder?: number;
+  enabled?: boolean;
+}

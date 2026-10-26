@@ -80,6 +80,7 @@ export default function TopBar({
     settings: t('breadcrumbs.settings'),
     admin: t('breadcrumbs.admin'),
     users: t('breadcrumbs.users'),
+    presets: t('breadcrumbs.presets'),
     create: t('breadcrumbs.create'),
     edit: t('breadcrumbs.edit'),
     board: t('breadcrumbs.board'),

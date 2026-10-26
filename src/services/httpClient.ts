@@ -334,28 +334,33 @@ class HttpClient {
     return extractResponseData<T>(jsonData);
   }
 
-  async get<T>(endpoint: string): Promise<T> {
+  // `headers` override the defaults — a page that picks the content language
+  // itself (the preset admin) sends its own Accept-Language.
+  async get<T>(endpoint: string, headers?: Record<string, string>): Promise<T> {
     const url = `${getApiBaseUrl()}${endpoint}`;
+    // Two languages of one URL are two answers, not one request to share.
+    const dedupKey = headers ? `${url}\n${JSON.stringify(headers)}` : url;
 
-    const existing = this.inflightGetRequests.get(url);
+    const existing = this.inflightGetRequests.get(dedupKey);
     if (existing) {
       return existing as Promise<T>;
     }
 
-    const promise = this.makeRequest<T>(url);
-    this.inflightGetRequests.set(url, promise);
+    const promise = this.makeRequest<T>(url, headers ? { headers } : {});
+    this.inflightGetRequests.set(dedupKey, promise);
     promise.finally(() => {
-      this.inflightGetRequests.delete(url);
+      this.inflightGetRequests.delete(dedupKey);
     }).catch(() => {});
 
     return promise;
   }
 
-  async post<T>(endpoint: string, data: unknown): Promise<T> {
+  async post<T>(endpoint: string, data: unknown, headers?: Record<string, string>): Promise<T> {
     const url = `${getApiBaseUrl()}${endpoint}`;
     return this.makeRequest<T>(url, {
       method: 'POST',
       body: JSON.stringify(data),
+      ...(headers && { headers }),
     });
   }
 
@@ -377,11 +382,12 @@ class HttpClient {
     });
   }
 
-  async patch<T>(endpoint: string, data: unknown): Promise<T> {
+  async patch<T>(endpoint: string, data: unknown, headers?: Record<string, string>): Promise<T> {
     const url = `${getApiBaseUrl()}${endpoint}`;
     return this.makeRequest<T>(url, {
       method: 'PATCH',
       body: JSON.stringify(data),
+      ...(headers && { headers }),
     });
   }
 

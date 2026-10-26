@@ -25,7 +25,8 @@
     "createTeam": "Create team",
     "administration": "Admin panel",
     "users": "Users",
-    "runs": "Runs"
+    "runs": "Runs",
+    "presets": "Presets"
   },
   "TopBar": {
     "breadcrumbs": {
@@ -56,7 +57,8 @@
       "toolCalls": "Tool Calls",
       "admin": "Admin panel",
       "users": "Users",
-      "runs": "Runs"
+      "runs": "Runs",
+      "presets": "Presets"
     },
     "openMenu": "Open menu",
     "settings": "Settings",
@@ -1606,7 +1608,37 @@
     "usageScopePlatform": "This user’s personal spend on the platform model.",
     "usageScopeOwnKey": "Spend of the whole key — every agent of this user together.",
     "usageUtcNote": "The current calendar day and month in UTC, so they do not line up with your local day. Tokens, not money: input + output + cache writes, cache reads excluded.",
-    "usageNoProviders": "Neither the platform provider nor a key of their own."
+    "usageNoProviders": "Neither the platform provider nor a key of their own.",
+    "presetsTitle": "Presets",
+    "presetsSubtitle": "Agent roles of the creation wizard’s gallery. Changes apply to agents created from now on — existing ones keep what they were created with.",
+    "presetCreate": "New preset",
+    "presetCatalog": "Catalog",
+    "loadingPresets": "Loading presets…",
+    "noPresets": "This catalog has no presets.",
+    "presetDisabled": "Disabled",
+    "presetSaveFailed": "Could not save the preset",
+    "presetEditTitle": "Preset {name}",
+    "presetCreateTitle": "New preset",
+    "presetCatalogNote": "Catalog {locale}. The ru and en catalogs are separate presets, not translations of one.",
+    "presetName": "Code",
+    "presetNameImmutable": "Set at creation and never changed.",
+    "presetNameHint": "kebab-case, e.g. investment-advisor. Cannot be changed later.",
+    "presetNameInvalid": "Lowercase Latin letters, digits and single hyphens only.",
+    "presetTitle": "Title",
+    "presetDescription": "Description",
+    "presetInstructions": "Instructions",
+    "presetInstructionsHint": "Markdown. The draft of the agent’s prompt, editable in the wizard.",
+    "presetGreeting": "Greeting",
+    "presetCopiedOnCreate": "Copied into the agent at creation; leave empty for none.",
+    "presetStarters": "Suggestions",
+    "presetSkills": "System skills",
+    "presetSkillsHint": "Skill names, comma-separated. An unknown name is refused on save.",
+    "presetAgentType": "Agent type",
+    "presetAgentTypeDefault": "Regular wizard",
+    "presetCategory": "Section",
+    "presetSortOrder": "Order",
+    "presetTags": "Tags",
+    "presetEnabled": "Shown in the gallery"
   },
   "Taxonomy": {
     "categories": "Catalog sections",

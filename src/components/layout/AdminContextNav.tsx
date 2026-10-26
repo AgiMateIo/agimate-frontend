@@ -1,17 +1,18 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { ShieldCheckIcon, UsersIcon } from '@heroicons/react/24/outline';
+import { RectangleStackIcon, ShieldCheckIcon, UsersIcon } from '@heroicons/react/24/outline';
 import ContextNav, { type ContextSection } from './ContextNav';
 
-type Section = { key: string; labelKey: 'users'; href: string; icon: ContextSection['icon'] };
+type Section = { key: string; labelKey: 'users' | 'presets'; href: string; icon: ContextSection['icon'] };
 
 const SECTIONS: Section[] = [
   { key: 'users', labelKey: 'users', href: '/dashboard/admin/users', icon: UsersIcon },
+  { key: 'presets', labelKey: 'presets', href: '/dashboard/admin/presets', icon: RectangleStackIcon },
 ];
 
 // Administration has no entity to switch between and nothing to fetch — the same
-// contextual shell as agents/teams, with a static header and one section.
+// contextual shell as agents/teams, with a static header and static sections.
 export default function AdminContextNav({
   currentSection,
   collapsed,
