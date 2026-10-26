@@ -31,21 +31,26 @@ import { formatDateTimeShort } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
 import { useWebchatSubscription } from '@/realtime/useWebchatSubscription';
 import { useMarkWebchatSessionRead } from '@/queries/webchat';
+import { useAgentStartersQuery, useHideAgentStarterMutation } from '@/queries/agents';
 import { useWebchatThread, ThreadMessage } from './useWebchatThread';
 import { ChatMessageText } from './ChatMessageText';
 import { ChatMessageAttachments, type RefreshParts } from './ChatMessageAttachments';
 import { ComposerAttachments } from './ComposerAttachments';
+import { ChatStarters } from './ChatStarters';
 import FilePickerModal from '@/components/files/FilePickerModal';
 import RenameSessionModal from '@/components/sessions/RenameSessionModal';
 import ErrandsPanel from './ErrandsPanel';
 import { useComposerAttachments, MAX_ATTACHMENTS } from './useComposerAttachments';
 import { useComposerSending, useComposerStore, useComposerText } from './composerStore';
-import type { WebchatMessagePayload, ChatSessionResponse } from '@/types';
+import type { AgentType, WebchatMessagePayload, ChatSessionResponse } from '@/types';
 import { Placeholder } from '@/components/ui/Placeholder';
 
 interface WebchatConversationProps {
   session: ChatSessionResponse;
   agentName: string;
+  // Decides whether the empty chat offers a greeting and starters: a WEBHOOK
+  // agent answers from somebody else's code, which knows nothing of them.
+  agentType: AgentType;
   // Closing and renaming both answer the enriched row — one handler puts either
   // back into the sessions list.
   onSessionUpdated: (updated: ChatSessionResponse) => void;
@@ -122,6 +127,7 @@ function MessageRow({
 export default function WebchatConversation({
   session,
   agentName,
+  agentType,
   onSessionUpdated,
   onBack,
 }: WebchatConversationProps) {
@@ -160,6 +166,17 @@ export default function WebchatConversation({
   const anchoringRef = useRef(false);
 
   const { handleEvent } = thread;
+
+  // Only for an empty, open session — fetched at most once per opening, and
+  // the block goes as soon as the first message lands.
+  const isEmpty = !thread.loading && thread.messages.length === 0 && !thread.awaitingReply;
+  const offersStarters = agentType !== 'MCP' && agentType !== 'WEBHOOK' && !session.closedAt;
+  const starters = useAgentStartersQuery(session.agentId, offersStarters && isEmpty);
+  const hideStarter = useHideAgentStarterMutation(session.agentId);
+  const startersData =
+    offersStarters && starters.data && (starters.data.greeting || starters.data.starters.length > 0)
+      ? starters.data
+      : null;
 
   // Mark read on open only if something is unread; read once, since replies
   // arriving later are marked by the subscription below.
@@ -269,6 +286,18 @@ export default function WebchatConversation({
         return; // keep the tray so the user can retry the send as-is
       }
       composer.clearAfterSend();
+    } finally {
+      composerStore.setSending(sessionId, false);
+    }
+  };
+
+  // The same request as typing it: the text goes out as an ordinary message,
+  // and the draft and the tray are left as they were.
+  const handleStarter = async (text: string) => {
+    if (session.closedAt || sending) return;
+    composerStore.setSending(sessionId, true);
+    try {
+      await thread.send(text);
     } finally {
       composerStore.setSending(sessionId, false);
     }
@@ -455,7 +484,15 @@ export default function WebchatConversation({
 
           {thread.loading ? (
             <Placeholder size="sm">{t('loadingMessages')}</Placeholder>
-          ) : thread.messages.length === 0 && !thread.awaitingReply ? (
+          ) : isEmpty && startersData ? (
+            <ChatStarters
+              agentName={agentName}
+              data={startersData}
+              disabled={sending}
+              onPick={handleStarter}
+              onHide={(starter) => hideStarter.mutate(starter)}
+            />
+          ) : isEmpty ? (
             <Placeholder size="sm">{t('noMessages')}</Placeholder>
           ) : (
             // Own spacing instead of the container's space-y so consecutive

@@ -25,6 +25,9 @@ import type {
   AgentViewContentResponse,
   CallViewToolRequest,
   CallToolResult,
+  AgentStartersResponse,
+  UpdateAgentStartersRequest,
+  HideAgentStarterRequest,
 } from '@/types';
 
 export const agentsApi = {
@@ -191,5 +194,27 @@ export const agentsApi = {
   // 403 the server does not expose it to views, 429 the page is calling too fast.
   async callAgentViewTool(agentId: string, data: CallViewToolRequest): Promise<CallToolResult> {
     return httpClient.post<CallToolResult>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/views/tools/call`, data);
+  },
+
+  // Greeting and starters of the empty chat: the agent's own, then the skills'.
+  async getAgentStarters(agentId: string): Promise<AgentStartersResponse> {
+    return httpClient.get<AgentStartersResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/starters/`);
+  },
+
+  // Replaces the greeting and the agent's own list whole; skill starters are not
+  // sent and not touched. Answers the same as GET.
+  async updateAgentStarters(agentId: string, data: UpdateAgentStartersRequest): Promise<AgentStartersResponse> {
+    return httpClient.put<AgentStartersResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/starters/`, data);
+  },
+
+  // Skill starters only. A repeat is a success; 404 = the skill no longer has
+  // that text, or the binding isn't this agent's.
+  async hideAgentStarter(agentId: string, data: HideAgentStarterRequest): Promise<void> {
+    await httpClient.post<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/starters/hidden`, data);
+  },
+
+  // Brings back every hidden skill starter of the agent at once.
+  async restoreAgentStarters(agentId: string): Promise<void> {
+    await httpClient.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/starters/hidden/`);
   },
 };

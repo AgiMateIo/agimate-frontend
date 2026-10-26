@@ -200,7 +200,10 @@
     "previewLoading": "Загрузка страницы...",
     "previewUnavailable": "Страницу не удалось показать. Файл можно скачать.",
     "fileGone": "Файл больше недоступен",
-    "fileVersion": "версия {version}"
+    "fileVersion": "версия {version}",
+    "starterFromSkill": "из навыка «{skill}»",
+    "hideStarter": "Скрыть подсказку",
+    "moreStarters": "{count, plural, one {Ещё # подсказка} few {Ещё # подсказки} many {Ещё # подсказок} other {Ещё # подсказки}}"
   },
   "Files": {
     "title": "Мои файлы",

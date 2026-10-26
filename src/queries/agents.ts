@@ -7,7 +7,14 @@ import {
 } from '@tanstack/react-query';
 import apiService from '@/services/api';
 import { newestFirst } from '@/utils/date';
-import type { AgentResponse, AgentSkillResponse, PagedResponse, PatchAgentRequest } from '@/types';
+import type {
+  AgentResponse,
+  AgentSkillResponse,
+  AgentStarter,
+  AgentStartersResponse,
+  PagedResponse,
+  PatchAgentRequest,
+} from '@/types';
 
 export const agentKeys = {
   all: ['agents'] as const,
@@ -23,6 +30,9 @@ export const agentKeys = {
   skillPlan: (id: string, skillId: string) =>
     [...agentKeys.detail(id), 'skill-plan', skillId] as const,
   llms: (id: string) => [...agentKeys.detail(id), 'llms'] as const,
+  // Under the detail so the access invalidation reaches it: binding a skill or
+  // connecting its integration changes which skill starters are offered.
+  starters: (id: string) => [...agentKeys.detail(id), 'starters'] as const,
   // The pages this agent's connections offer, and one such page's body. The
   // body is keyed by connection+uri because two connections of one skill share
   // a connector code and differ only by the instance they point at.
@@ -181,6 +191,46 @@ export function useAgentViewContentQuery(view: { connectionId: string; uri: stri
 }
 
 // A large single page used to build id→agent lookup maps.
+export const agentStartersOptions = (agentId: string) =>
+  queryOptions({
+    queryKey: agentKeys.starters(agentId),
+    queryFn: () => apiService.getAgentStarters(agentId),
+  });
+
+// Non-suspense: an empty chat must not wait on its hints, and a failed load
+// just leaves the chat as it was before starters existed.
+export function useAgentStartersQuery(agentId: string, enabled = true) {
+  return useQuery({ ...agentStartersOptions(agentId), enabled });
+}
+
+// Hides one skill starter; the row leaves the cache at once and comes back if
+// the server refuses. A 404 means the skill rewrote it — re-read either way.
+export function useHideAgentStarterMutation(agentId: string) {
+  const queryClient = useQueryClient();
+  const key = agentKeys.starters(agentId);
+  return useMutation({
+    mutationFn: (starter: AgentStarter) =>
+      apiService.hideAgentStarter(agentId, { agentSkillId: starter.agentSkillId!, text: starter.text }),
+    onMutate: async (starter) => {
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData<AgentStartersResponse>(key);
+      if (previous) {
+        queryClient.setQueryData<AgentStartersResponse>(key, {
+          ...previous,
+          starters: previous.starters.filter(
+            (s) => !(s.agentSkillId === starter.agentSkillId && s.text === starter.text),
+          ),
+        });
+      }
+      return { previous };
+    },
+    onError: (_err, _starter, context) => {
+      if (context?.previous) queryClient.setQueryData(key, context.previous);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
+  });
+}
+
 export const allAgentsOptions = () =>
   queryOptions({
     queryKey: [...agentKeys.lists(), 'all-agents'] as const,
@@ -280,7 +330,13 @@ export function useAgentCacheActions() {
       queryClient.invalidateQueries({ queryKey: agentKeys.skills(id) });
       queryClient.invalidateQueries({ queryKey: agentKeys.connections(id) });
       queryClient.invalidateQueries({ queryKey: [...agentKeys.detail(id), 'skill-plan'] });
+      queryClient.invalidateQueries({ queryKey: agentKeys.starters(id) });
     },
+    // PUT answers with the full GET shape, so it replaces the cache as is.
+    setAgentStarters: (id: string, data: AgentStartersResponse) =>
+      queryClient.setQueryData(agentKeys.starters(id), data),
+    invalidateAgentStarters: (id: string) =>
+      queryClient.invalidateQueries({ queryKey: agentKeys.starters(id) }),
     // A binding row answered by its own PATCH is the same row the listing
     // returns, so it goes straight into the list — a refetch would only redraw
     // the control a second time.

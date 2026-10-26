@@ -200,7 +200,10 @@
     "previewLoading": "Loading the page...",
     "previewUnavailable": "The page could not be shown. The file is still downloadable.",
     "fileGone": "The file is no longer available",
-    "fileVersion": "version {version}"
+    "fileVersion": "version {version}",
+    "starterFromSkill": "from the {skill} skill",
+    "hideStarter": "Hide this suggestion",
+    "moreStarters": "{count, plural, one {# more suggestion} other {# more suggestions}}"
   },
   "Files": {
     "title": "My files",

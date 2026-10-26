@@ -117,6 +117,7 @@ function AgentChatView({ agent }: { agent: AgentResponse }) {
                 key={`${activeSession.id}:${resyncEpoch}`}
                 session={activeSession}
                 agentName={agent.name}
+                agentType={agent.type}
                 onSessionUpdated={applySessionRow}
                 onBack={() => setMobilePane('list')}
               />
