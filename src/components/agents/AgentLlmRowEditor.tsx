@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import apiService from '@/services/api';
-import { AgentLlmPurpose, AgentLlmResponse, LlmProviderResponse } from '@/types';
+import { AgentLlmBindingRequest, AgentLlmPurpose, LlmProviderResponse } from '@/types';
 import { getErrorMessage } from '@/utils/error';
 import { Button } from '@/components/ui/Button';
 import { FormField, Select } from '@/components/ui/FormField';
@@ -19,23 +19,25 @@ import {
 
 interface AgentLlmRowEditorProps {
   agentId: string;
-  // The purpose being edited — it is the binding's identity and never changes
-  // here (moving a model to another purpose = clear one row, fill another).
   purpose: AgentLlmPurpose;
-  // The current binding of this purpose, when it has one — its presence decides
-  // create (POST) vs replace (PUT), so a 409 is never reachable.
-  binding?: AgentLlmResponse;
+  // The purpose's chain in attempt order — a PUT sends it back with the edited
+  // position substituted.
+  chain: AgentLlmBindingRequest[];
+  // The position being replaced; null = append a new link.
+  index: number | null;
   // Already filtered to bindable providers (no platform row) by the caller.
   providers: LlmProviderResponse[];
   onCancel: () => void;
   onSuccess: () => void;
 }
 
-// Inline editor that takes over one row of the models table.
+// Inline editor for one link of a purpose's chain: appended with POST, replaced
+// with a PUT of the whole chain (there is no single-link endpoint).
 export default function AgentLlmRowEditor({
   agentId,
   purpose,
-  binding,
+  chain,
+  index,
   providers,
   onCancel,
   onSuccess,
@@ -44,16 +46,24 @@ export default function AgentLlmRowEditor({
   const tCommon = useTranslations('Common');
   const tp = useTranslations('LlmProviders');
 
-  const initialProvider = binding?.llmProviderId ?? providers[0]?.id ?? '';
+  const current = index === null ? undefined : chain[index];
+  const initialProvider = current?.llmProviderId ?? providers[0]?.id ?? '';
   const [providerId, setProviderId] = useState(initialProvider);
-  // On a fresh row the provider's own first choice for this purpose is a
+  // On a fresh link the provider's own first choice for this purpose is a
   // preselect; nothing more — the binding that gets saved is whatever is here.
   const initialProviderRow = providers.find((p) => p.id === initialProvider);
   const [model, setModel] = useState(
-    binding?.model ?? (initialProviderRow ? firstPurposeModel(initialProviderRow, purpose) : null) ?? ''
+    current?.model ?? (initialProviderRow ? firstPurposeModel(initialProviderRow, purpose) : null) ?? ''
   );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const value = model.trim();
+  // The backend rejects a pair that is already in the chain (400); catching it
+  // here keeps the obvious mistake from costing a request.
+  const duplicate =
+    !!value &&
+    chain.some((b, i) => i !== index && b.llmProviderId === providerId && b.model === value);
 
   // The purpose's modality demand, resolved to a sentence for the picker's warnings
   // and shown as the field hint — the free-text case has no metadata to check.
@@ -63,15 +73,17 @@ export default function AgentLlmRowEditor({
   };
 
   const handleSubmit = async () => {
-    if (!providerId || !model.trim()) return;
+    if (!providerId || !value || duplicate) return;
     setSubmitting(true);
     setError(null);
     try {
-      const body = { llmProviderId: providerId, model: model.trim() };
-      if (binding) {
-        await apiService.updateAgentLlm(agentId, purpose, body);
+      if (index === null) {
+        await apiService.createAgentLlm(agentId, { llmProviderId: providerId, model: value, purpose });
       } else {
-        await apiService.createAgentLlm(agentId, { ...body, purpose });
+        const bindings = chain.map((b, i) =>
+          i === index ? { llmProviderId: providerId, model: value } : b
+        );
+        await apiService.updateAgentLlm(agentId, purpose, { bindings });
       }
       onSuccess();
     } catch (err) {
@@ -82,9 +94,14 @@ export default function AgentLlmRowEditor({
   };
 
   return (
-    <div className="bg-surface-secondary border-l-2 border-accent px-4 py-4 space-y-4">
+    <div className="bg-surface-secondary border-l-2 border-accent px-4 py-4 space-y-4 rounded-lg">
       <div className="flex items-center justify-between gap-3">
-        <span className="text-sm font-medium text-foreground">{tp(purposeLabelKey[purpose])}</span>
+        <span className="text-sm font-medium text-foreground">
+          {tp(purposeLabelKey[purpose])}
+          {index !== null && (
+            <span className="text-muted font-normal"> · {t('chainLinkLabel', { index: index + 1 })}</span>
+          )}
+        </span>
         <button
           type="button"
           onClick={onCancel}
@@ -135,10 +152,18 @@ export default function AgentLlmRowEditor({
         </div>
       </div>
 
-      {error && <ErrorAlert>{error}</ErrorAlert>}
+      {duplicate ? (
+        <ErrorAlert>{t('duplicateBinding')}</ErrorAlert>
+      ) : (
+        error && <ErrorAlert>{error}</ErrorAlert>
+      )}
 
       <div className="flex gap-3">
-        <Button onClick={handleSubmit} disabled={submitting || !model.trim()} loading={submitting}>
+        <Button
+          onClick={handleSubmit}
+          disabled={submitting || !value || duplicate}
+          loading={submitting}
+        >
           {tCommon('save')}
         </Button>
         <Button variant="secondary" onClick={onCancel} disabled={submitting}>

@@ -151,7 +151,8 @@ export const agentsApi = {
     return httpClient.post<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/skills/refresh`, {});
   },
 
-  // Agent ↔ LLM bindings — keyed by purpose (one model per purpose per agent).
+  // Agent ↔ LLM bindings — an ordered chain (≤5) per purpose. POST appends one
+  // link; PUT replaces the whole chain of a purpose and answers with it.
   async getAgentLlms(agentId: string): Promise<AgentLlmResponse[]> {
     return httpClient.get<AgentLlmResponse[]>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/llms/`);
   },
@@ -160,9 +161,10 @@ export const agentsApi = {
     return httpClient.post<AgentLlmResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/llms/`, data);
   },
 
-  // {purpose} must be the uppercase enum value — lowercase gives 400.
-  async updateAgentLlm(agentId: string, purpose: AgentLlmPurpose, data: UpdateAgentLlmRequest): Promise<AgentLlmResponse> {
-    return httpClient.put<AgentLlmResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/llms/${purpose}`, data);
+  // {purpose} must be the uppercase enum value — lowercase gives 400. [] deletes
+  // the whole chain, so removing a link is a PUT with the remaining ones.
+  async updateAgentLlm(agentId: string, purpose: AgentLlmPurpose, data: UpdateAgentLlmRequest): Promise<AgentLlmResponse[]> {
+    return httpClient.put<AgentLlmResponse[]>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/llms/${purpose}`, data);
   },
 
   async deleteAgentLlm(agentId: string, purpose: AgentLlmPurpose): Promise<void> {

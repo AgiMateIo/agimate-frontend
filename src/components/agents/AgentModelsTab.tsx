@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useQueries } from '@tanstack/react-query';
-import { AgentLlmPurpose, AgentLlmResponse, AgentType, LlmProviderType } from '@/types';
+import { AgentLlmBindingRequest, AgentLlmPurpose, AgentLlmResponse, AgentType } from '@/types';
 import { getErrorMessage } from '@/utils/error';
 import { isExternalAgentType } from '@/utils/agent';
 import { localeMap } from '@/i18n/routing';
@@ -13,9 +13,17 @@ import {
   llmProvidersListOptions,
   useLlmUsageQuery,
 } from '@/queries/llm-providers';
+import apiService from '@/services/api';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Link } from '@/i18n/navigation';
-import { TrashIcon, PencilIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  ExclamationTriangleIcon,
+  PencilIcon,
+  PlusIcon,
+  TrashIcon,
+} from '@heroicons/react/24/outline';
 import { Chip } from '@/components/ui/Chip';
 import AgentLlmRowEditor from './AgentLlmRowEditor';
 import DeleteAgentLlmModal from './DeleteAgentLlmModal';
@@ -23,6 +31,7 @@ import { matchCapabilityFilter } from '@/components/llm-providers/modelRegistry'
 import { Placeholder } from '@/components/ui/Placeholder';
 import {
   LLM_PURPOSES,
+  MAX_PURPOSE_CHAIN,
   isTextPurpose,
   purposeLabelKey,
   purposeRequirement,
@@ -37,17 +46,20 @@ interface AgentModelsTabProps {
   agentType?: AgentType;
 }
 
-const providerTypeBadge: Record<LlmProviderType, string> = {
-  OPENAI: 'OpenAI',
-  ANTHROPIC: 'Anthropic',
-  GEMINI: 'Gemini',
-  OPENAI_COMPATIBLE: 'OpenAI-compatible',
-};
+// A real binding row: only the synthetic PLATFORM record lacks a provider id.
+type UserBinding = AgentLlmResponse & { llmProviderId: string };
 
-// One row per purpose — the purpose IS the binding's identity, so the table is a
-// fixed list of the five purposes rather than of arbitrary rows. Filling a row
-// creates the binding, editing replaces it, clearing it hands the purpose back to
-// the backend's auto-pick (or, for the last one, to the platform fallback).
+const toPair = (binding: UserBinding): AgentLlmBindingRequest => ({
+  llmProviderId: binding.llmProviderId,
+  model: binding.model,
+});
+
+// One card per purpose, holding that purpose's ordered chain of bindings. The
+// server picks the first link it can use on every call and says nothing about
+// which one that was, so the card shows the order of attempts, never "active".
+// An empty chain still resolves through the chat provider's priority list (or,
+// for the last purpose, the chat model itself) — that is what the empty state
+// spells out. A zero-binding agent gets a single synthetic PLATFORM row.
 export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabProps) {
   const t = useTranslations('Agents');
   const tu = useTranslations('LlmUsage');
@@ -70,8 +82,13 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
   });
   const { invalidateAgentLlms } = useAgentCacheActions();
 
-  const [editing, setEditing] = useState<AgentLlmPurpose | null>(null);
-  const [deleting, setDeleting] = useState<AgentLlmResponse | null>(null);
+  // A link being replaced (index) or appended (index: null).
+  const [editing, setEditing] = useState<{ purpose: AgentLlmPurpose; index: number | null } | null>(null);
+  const [deleting, setDeleting] = useState<UserBinding | null>(null);
+  // Reordering saves at once (there is no per-link endpoint), and the lock keeps
+  // rapid clicks from racing whole-chain PUTs.
+  const [savingPurpose, setSavingPurpose] = useState<AgentLlmPurpose | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   // The platform row only shows up for ADMINs and cannot be bound to an agent
   // (POST/PUT with its id give a bare 404) — keep it out of the editor.
@@ -116,6 +133,7 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
   const handleMutationSuccess = () => {
     setEditing(null);
     setDeleting(null);
+    setActionError(null);
     invalidateAgentLlms(agentId);
   };
 
@@ -129,20 +147,50 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
   }
 
   const providerById = (id: string) => allProviders.find((p) => p.id === id);
-  // `source` is the only reliable marker — a synthetic platform row is
-  // indistinguishable from a real one by its provider name or model.
-  const byPurpose = new Map(
-    bindings.filter((b) => b.source === 'USER').map((b) => [b.purpose, b] as const)
+  // Served order is the chain order (purpose, then priority) — do not re-sort.
+  const userBindings = bindings.filter(
+    (b): b is UserBinding => b.source === 'USER' && !!b.llmProviderId
   );
+  const chains = new Map<AgentLlmPurpose, UserBinding[]>();
+  for (const binding of userBindings) {
+    const list = chains.get(binding.purpose);
+    if (list) list.push(binding);
+    else chains.set(binding.purpose, [binding]);
+  }
+  const chainOf = (purpose: AgentLlmPurpose) => chains.get(purpose) ?? [];
+
+  // Moving a link rewrites the whole chain in the new order — the only way to
+  // express "this one first" through the API.
+  const moveLink = async (purpose: AgentLlmPurpose, index: number, delta: number) => {
+    const chain = chainOf(purpose);
+    const target = index + delta;
+    if (target < 0 || target >= chain.length) return;
+    const reordered = chain.map(toPair);
+    [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+    setActionError(null);
+    setSavingPurpose(purpose);
+    try {
+      await apiService.updateAgentLlm(agentId, purpose, { bindings: reordered });
+      invalidateAgentLlms(agentId);
+    } catch (err) {
+      setActionError(getErrorMessage(err, t('saveOrderFailed')));
+    } finally {
+      setSavingPurpose(null);
+    }
+  };
+
+  // `source` is the only reliable marker — a synthetic platform row is
+  // indistinguishable from a real one by its provider name or model. It only
+  // exists while the agent has no bindings at all.
   const platformRow = bindings.find((b) => b.source === 'PLATFORM');
   const noProviders = bindableProviders.length === 0;
 
-  // A purpose the agent has not bound is served by the purpose list of the
-  // provider carrying its CHAT binding — and by nothing else, since the backend
-  // no longer picks a model by capability. Show what that resolves to, so an
-  // unbound row is not read as "the platform will figure it out".
-  const chatBinding = byPurpose.get('CHAT');
-  const chatProvider = chatBinding?.llmProviderId ? providerById(chatBinding.llmProviderId) : undefined;
+  // An unbound purpose resolves through the priority list of the provider that
+  // carries the first link of the agent's CHAT chain — and by nothing else,
+  // since the backend does not pick a model by capability.
+  const chatBinding = chainOf('CHAT')[0];
+  const chatProvider = chatBinding ? providerById(chatBinding.llmProviderId) : undefined;
+  const chatModel = chatBinding?.model ?? platformRow?.model;
   // First model of the list the provider would actually reach for: UNAVAILABLE
   // ones are skipped in favour of the next. Without a registry to check against,
   // the head of the list is the best guess.
@@ -166,12 +214,22 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
       </Link>
     ) : (
       <button
-        onClick={() => setEditing(purpose)}
+        onClick={() => setEditing({ purpose, index: null })}
         className="text-sm text-accent hover:text-accent/80 transition-colors whitespace-nowrap"
       >
         {label}
       </button>
     );
+
+  // What the chain leaves behind when this link goes: the rest of the purpose's
+  // chain, sent back as one PUT. Matched by provider + model (unique within a
+  // purpose by the backend's own rule), so a background refetch cannot strand
+  // the modal on stale row objects.
+  const deleteRemaining = deleting
+    ? chainOf(deleting.purpose)
+        .filter((b) => !(b.llmProviderId === deleting.llmProviderId && b.model === deleting.model))
+        .map(toPair)
+    : [];
 
   return (
     <div className="space-y-4">
@@ -189,165 +247,222 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
         </Link>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-border">
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('purpose')}</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('provider')}</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted">{t('model')}</th>
-              <th className="text-right py-3 px-4 text-sm font-medium text-muted"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {LLM_PURPOSES.map((purpose) => {
-              if (editing === purpose) {
-                return (
-                  <tr key={purpose} className="border-b border-border last:border-b-0">
-                    <td colSpan={4} className="p-0">
-                      <AgentLlmRowEditor
-                        agentId={agentId}
-                        purpose={purpose}
-                        binding={byPurpose.get(purpose)}
-                        providers={bindableProviders}
-                        onCancel={() => setEditing(null)}
-                        onSuccess={handleMutationSuccess}
-                      />
-                    </td>
-                  </tr>
-                );
-              }
+      {actionError && <ErrorAlert>{actionError}</ErrorAlert>}
 
-              const binding = byPurpose.get(purpose);
-              // The platform fallback is reported on its own purpose (CHAT in
-              // practice) and only while the agent has no bindings at all.
-              const platform = !binding && platformRow?.purpose === purpose ? platformRow : undefined;
-              const provider = binding?.llmProviderId ? providerById(binding.llmProviderId) : undefined;
-              // Only meaningful for an unbound row, and only once a chat
-              // provider exists to inherit from.
-              const unbound = !binding && !platform;
-              const inheritedState = unbound && chatProvider
-                ? purposeState(chatProvider.purposePriority, purpose)
-                : 'unset';
-              const inherited = inheritedState === 'list' ? inheritedModel(purpose) : undefined;
-              // ROUTINE is the one purpose that never fails: without a model of
-              // its own or on the chat provider's list it runs on the chat model.
-              const onChatModel = unbound && purpose === 'ROUTINE' && !inherited;
-              const chatModel = chatBinding?.model ?? platformRow?.model;
+      <div className="space-y-3">
+        {LLM_PURPOSES.map((purpose) => {
+          const chain = chainOf(purpose);
+          // The platform fallback is reported on its own purpose (CHAT in
+          // practice) and only while the agent has no bindings at all.
+          const platform = chain.length === 0 && platformRow?.purpose === purpose ? platformRow : undefined;
+          const isEditing = editing?.purpose === purpose;
+          const busy = savingPurpose === purpose;
+          const unbound = chain.length === 0 && !platform;
+          // Only meaningful for an unbound card, and only once a chat provider
+          // exists to inherit from.
+          const inheritedState = unbound && chatProvider
+            ? purposeState(chatProvider.purposePriority, purpose)
+            : 'unset';
+          const inherited = inheritedState === 'list' ? inheritedModel(purpose) : undefined;
+          // ROUTINE is the one purpose that never fails: without a model of
+          // its own or on the chat provider's list it runs on the chat model.
+          const onChatModel = unbound && purpose === 'ROUTINE' && !inherited;
 
-              return (
-                <tr
-                  key={purpose}
-                  className="border-b border-border last:border-b-0 hover:bg-surface-secondary transition-colors"
-                >
-                  <td className="py-3 px-4 text-sm">
-                    {/* Tool purposes stand out; the text ones (the norm) stay neutral. */}
-                    <Chip tone={isTextPurpose(purpose) ? 'default' : 'accent'}>
-                      {tp(purposeLabelKey[purpose])}
-                    </Chip>
-                  </td>
-                  <td className="py-3 px-4 text-sm">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {platform ? (
-                        <>
-                          <Chip strong tone="success" title={t('platformModelHint')}>
-                            {t('platformModel')}
-                          </Chip>
-                          {platformDay && platformDay.limitTokens !== null && (
-                            <span className="text-xs text-muted">
-                              {tu('remainingToday', {
-                                remaining: (platformDay.remainingTokens ?? 0).toLocaleString(bcp47),
-                                limit: platformDay.limitTokens.toLocaleString(bcp47),
-                              })}
-                            </span>
+          return (
+            <section key={purpose} className="border border-border rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                  {/* Tool purposes stand out; the text ones (the norm) stay neutral. */}
+                  <Chip tone={isTextPurpose(purpose) ? 'default' : 'accent'}>
+                    {tp(purposeLabelKey[purpose])}
+                  </Chip>
+                  {chain.length > 0 ? (
+                    <span className="text-xs text-muted" title={t('chainOrderHint')}>
+                      {t('chainCount', { count: chain.length, max: MAX_PURPOSE_CHAIN })}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-muted">{tp(purposeRequirementLabelKey[purpose])}</span>
+                  )}
+                </div>
+                {!isEditing && chain.length > 0 && (
+                  chain.length >= MAX_PURPOSE_CHAIN ? (
+                    <span className="text-xs text-muted">{t('chainFull', { max: MAX_PURPOSE_CHAIN })}</span>
+                  ) : !noProviders ? (
+                    <button
+                      type="button"
+                      onClick={() => setEditing({ purpose, index: null })}
+                      disabled={busy}
+                      className="inline-flex items-center gap-1.5 text-sm text-accent hover:text-accent/80 transition-colors disabled:opacity-40"
+                    >
+                      <PlusIcon className="h-4 w-4" />
+                      {t('addModel')}
+                    </button>
+                  ) : null
+                )}
+              </div>
+
+              {chain.length > 0 && (
+                <ol className="divide-y divide-border/50 border border-border rounded-lg bg-surface-secondary">
+                  {chain.map((binding, index) => {
+                    const provider = providerById(binding.llmProviderId);
+                    return (
+                      <li
+                        key={`${binding.llmProviderId}:${binding.model}`}
+                        className="flex items-center gap-3 px-3 py-2"
+                      >
+                        <span
+                          className="w-4 shrink-0 text-xs text-muted tabular-nums"
+                          title={t('chainOrderHint')}
+                        >
+                          {index + 1}
+                        </span>
+                        <div className="min-w-0 flex-1 grid gap-x-4 gap-y-1 md:grid-cols-2">
+                          <div className="flex items-center gap-2 flex-wrap min-w-0">
+                            <span className="text-sm text-foreground truncate">{binding.llmProviderName}</span>
+                            {provider && !provider.enabled && (
+                              <Chip icon={ExclamationTriangleIcon} tone="warning" title={t('providerDisabledHint')}>
+                                {t('providerDisabled')}
+                              </Chip>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 flex-wrap min-w-0">
+                            <span className="text-sm text-foreground font-mono truncate">{binding.model}</span>
+                            {isModelUnfit(binding) && (
+                              <Chip
+                                icon={ExclamationTriangleIcon}
+                                tone="warning"
+                                title={tp(purposeRequirementLabelKey[binding.purpose])}
+                              >
+                                {t('modelUnfit')}
+                              </Chip>
+                            )}
+                            {isModelUnlisted(binding) && (
+                              <Chip icon={ExclamationTriangleIcon} tone="warning" title={t('modelUnlistedHint')}>
+                                {t('modelUnlisted')}
+                              </Chip>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-0.5 shrink-0">
+                          {chain.length > 1 && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => moveLink(purpose, index, -1)}
+                                disabled={busy || index === 0}
+                                aria-label={t('moveModelUp')}
+                                className="p-1 rounded-md text-muted hover:text-foreground hover:bg-surface transition-colors disabled:opacity-30"
+                              >
+                                <ArrowUpIcon className="h-4 w-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => moveLink(purpose, index, 1)}
+                                disabled={busy || index === chain.length - 1}
+                                aria-label={t('moveModelDown')}
+                                className="p-1 rounded-md text-muted hover:text-foreground hover:bg-surface transition-colors disabled:opacity-30"
+                              >
+                                <ArrowDownIcon className="h-4 w-4" />
+                              </button>
+                            </>
                           )}
-                        </>
-                      ) : binding ? (
-                        <>
-                          <Chip strong tone="accent">{providerTypeBadge[binding.providerType]}</Chip>
-                          <span className="text-foreground">{binding.llmProviderName}</span>
-                          {provider && !provider.enabled && (
-                            <Chip icon={ExclamationTriangleIcon} tone="warning" title={t('providerDisabledHint')}>
-                              {t('providerDisabled')}
-                            </Chip>
-                          )}
-                        </>
-                      ) : inherited ? (
-                        <span className="text-muted" title={t('inheritedModelHint')}>
+                          <button
+                            type="button"
+                            onClick={() => setEditing({ purpose, index })}
+                            disabled={busy}
+                            aria-label={t('changeModel')}
+                            className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface transition-colors"
+                          >
+                            <PencilIcon className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDeleting(binding)}
+                            disabled={busy}
+                            aria-label={t('deleteModelBinding')}
+                            className="p-1.5 rounded-lg text-muted hover:text-error hover:bg-error/10 transition-colors"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+              )}
+
+              {isEditing ? (
+                <AgentLlmRowEditor
+                  agentId={agentId}
+                  purpose={purpose}
+                  chain={chain.map(toPair)}
+                  index={editing.index}
+                  providers={bindableProviders}
+                  onCancel={() => setEditing(null)}
+                  onSuccess={handleMutationSuccess}
+                />
+              ) : chain.length === 0 ? (
+                <div className="flex items-center justify-between gap-3 flex-wrap rounded-lg bg-surface-secondary px-3 py-2.5">
+                  <div className="flex items-center gap-2 flex-wrap min-w-0">
+                    {platform ? (
+                      <>
+                        <Chip strong tone="success" title={t('platformModelHint')}>
+                          {t('platformModel')}
+                        </Chip>
+                        {platformDay && platformDay.limitTokens !== null && (
+                          <span className="text-xs text-muted">
+                            {tu('remainingToday', {
+                              remaining: (platformDay.remainingTokens ?? 0).toLocaleString(bcp47),
+                              limit: platformDay.limitTokens.toLocaleString(bcp47),
+                            })}
+                          </span>
+                        )}
+                        <span className="text-sm text-foreground font-mono">{platform.model}</span>
+                      </>
+                    ) : inherited ? (
+                      <>
+                        <span className="text-sm text-muted" title={t('inheritedModelHint')}>
                           {t('inheritedFromProvider', { provider: chatProvider!.name })}
                         </span>
-                      ) : onChatModel ? (
-                        <span className="text-muted" title={t('routineOnChatModelHint')}>
+                        <span className="text-sm text-muted font-mono">{inherited}</span>
+                      </>
+                    ) : onChatModel ? (
+                      <>
+                        <span className="text-sm text-muted" title={t('routineOnChatModelHint')}>
                           {t('routineOnChatModel')}
                         </span>
-                      ) : inheritedState === 'off' ? (
-                        <Chip icon={ExclamationTriangleIcon} tone="warning" title={t('purposeOffHint', { provider: chatProvider!.name })}>
-                          {t('purposeOff')}
-                        </Chip>
-                      ) : (
-                        <span className="text-muted" title={t('unsetModelHint')}>
-                          {t('unsetModel')}
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="py-3 px-4 text-sm text-foreground font-mono">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {binding?.model ?? platform?.model ?? (
-                        inherited
-                          ? <span className="text-muted">{inherited}</span>
-                          : onChatModel && chatModel
-                            ? <span className="text-muted">{chatModel}</span>
-                            : <span className="text-muted font-sans">—</span>
-                      )}
-                      {binding && isModelUnfit(binding) && (
-                        <Chip icon={ExclamationTriangleIcon} tone="warning" title={tp(purposeRequirementLabelKey[binding.purpose])}>
-                          {t('modelUnfit')}
-                        </Chip>
-                      )}
-                      {binding && isModelUnlisted(binding) && (
-                        <Chip icon={ExclamationTriangleIcon} tone="warning" title={t('modelUnlistedHint')}>
-                          {t('modelUnlisted')}
-                        </Chip>
-                      )}
-                    </div>
-                  </td>
-                  <td className="py-3 px-4 text-right">
-                    {binding ? (
-                      <div className="flex items-center justify-end gap-1">
-                        <button
-                          onClick={() => setEditing(purpose)}
-                          aria-label={t('changeModel')}
-                          className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-secondary transition-colors"
-                        >
-                          <PencilIcon className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => setDeleting(binding)}
-                          aria-label={t('deleteModelBinding')}
-                          className="p-1.5 rounded-lg text-muted hover:text-error hover:bg-error/10 transition-colors"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                      </div>
+                        {chatModel && <span className="text-sm text-muted font-mono">{chatModel}</span>}
+                      </>
+                    ) : inheritedState === 'off' ? (
+                      <Chip
+                        icon={ExclamationTriangleIcon}
+                        tone="warning"
+                        title={t('purposeOffHint', { provider: chatProvider!.name })}
+                      >
+                        {t('purposeOff')}
+                      </Chip>
                     ) : (
-                      // The platform row is virtual — PUT/DELETE on its purpose 404,
-                      // so the only move it offers is creating a real binding.
-                      setModelAction(purpose, platform ? t('chooseOwnModel') : t('setModel'))
+                      <span className="text-sm text-muted" title={t('unsetModelHint')}>
+                        {t('unsetModel')}
+                      </span>
                     )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                  </div>
+                  {/* The platform row is virtual — PUT on its purpose would be a
+                      no-op, so the only move it offers is creating a real link. */}
+                  {setModelAction(purpose, platform ? t('chooseOwnModel') : t('setModel'))}
+                </div>
+              ) : null}
+            </section>
+          );
+        })}
       </div>
 
       {deleting && (
         <DeleteAgentLlmModal
           agentId={agentId}
           binding={deleting}
-          isLastBinding={byPurpose.size === 1}
+          remaining={deleteRemaining}
+          hasOtherBindings={userBindings.length > 1}
           onClose={() => setDeleting(null)}
           onSuccess={handleMutationSuccess}
         />

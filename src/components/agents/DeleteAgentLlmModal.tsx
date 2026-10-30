@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import apiService from '@/services/api';
-import { AgentLlmResponse } from '@/types';
+import { AgentLlmBindingRequest, AgentLlmResponse } from '@/types';
 import { Alert } from '@/components/ui/Alert';
 import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
 import { purposeLabelKey } from '@/components/llm-providers/llmPurpose';
@@ -10,9 +10,12 @@ import { purposeLabelKey } from '@/components/llm-providers/llmPurpose';
 interface DeleteAgentLlmModalProps {
   agentId: string;
   binding: AgentLlmResponse;
-  // True when this is the agent's only binding — removing it drops the agent
+  // The links that stay — the PUT body that removes this one. Empty clears the
+  // whole purpose, which the backend treats the same as DELETE.
+  remaining: AgentLlmBindingRequest[];
+  // False when this is the agent's only binding — removing it drops the agent
   // back onto the platform fallback model.
-  isLastBinding: boolean;
+  hasOtherBindings: boolean;
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -20,13 +23,16 @@ interface DeleteAgentLlmModalProps {
 export default function DeleteAgentLlmModal({
   agentId,
   binding,
-  isLastBinding,
+  remaining,
+  hasOtherBindings,
   onClose,
   onSuccess,
 }: DeleteAgentLlmModalProps) {
   const t = useTranslations('Agents');
   const tCommon = useTranslations('Common');
   const tp = useTranslations('LlmProviders');
+
+  const lastOfPurpose = remaining.length === 0;
 
   return (
     <ConfirmDeleteModal
@@ -35,7 +41,9 @@ export default function DeleteAgentLlmModal({
       cancelLabel={tCommon('cancel')}
       defaultError="Failed to delete binding"
       fullWidthButtons
-      onConfirm={() => apiService.deleteAgentLlm(agentId, binding.purpose)}
+      onConfirm={async () => {
+        await apiService.updateAgentLlm(agentId, binding.purpose, { bindings: remaining });
+      }}
       onClose={onClose}
       onSuccess={onSuccess}
     >
@@ -47,15 +55,19 @@ export default function DeleteAgentLlmModal({
       </div>
 
       <Alert variant="warning">
-        {isLastBinding
+        {!hasOtherBindings
           ? t('removeLastBindingWarning')
-          // The platform fallback only appears when the agent has zero bindings,
-          // so dropping CHAT while other purposes stay bound leaves no chat model.
-          : binding.purpose === 'CHAT'
-            ? t('removeChatBindingWarning')
-            : binding.purpose === 'ROUTINE'
-              ? t('removeRoutineBindingWarning')
-              : t('removeBindingWarning')}
+          : !lastOfPurpose
+            // A middle link: the next one moves up, the purpose stays bound.
+            ? t('removeChainLinkWarning')
+            : binding.purpose === 'CHAT'
+              // The platform fallback only appears when the agent has zero bindings,
+              // so dropping the whole CHAT chain while other purposes stay bound
+              // leaves no chat model.
+              ? t('removeChatBindingWarning')
+              : binding.purpose === 'ROUTINE'
+                ? t('removeRoutineBindingWarning')
+                : t('removeBindingWarning')}
       </Alert>
     </ConfirmDeleteModal>
   );

@@ -178,9 +178,13 @@ export type AgentLlmSource = 'USER' | 'PLATFORM';
 // summary, naming it), where a cheap fast model beats a clever one; the rest are
 // tool models for the media connector (image generation / vision /
 // speech-to-text / text-to-speech).
-// The purpose IS the binding's identity: one model per purpose per agent, and
-// the value travels in the PUT/DELETE path (uppercase — lowercase gives 400).
-// Resolution order, with no guessing at any step: the agent's own binding →
+// A purpose holds an ordered chain of up to five bindings: the server takes the
+// first one it can use (provider enabled, model still listed, quota left, the
+// model serves the purpose's modality) and reports no reason for skipping —
+// order of attempts is all the UI can honestly show. The purpose travels in the
+// PUT/DELETE path (uppercase — lowercase gives 400); a position inside it is
+// `priority`, assigned by the server from the order it was given.
+// Resolution order, with no guessing at any step: the agent's own chain →
 // `purposePriority` of the provider carrying the agent's CHAT binding → the
 // platform provider's. Nothing found = the tool call fails, and the user reads
 // the reason verbatim in the chat. ROUTINE is the exception: it never fails —
@@ -192,8 +196,10 @@ export type AgentLlmPurpose = 'CHAT' | 'ROUTINE' | 'IMAGE' | 'VISION' | 'AUDIO_I
 
 export interface AgentLlmResponse {
   model: string;
-  // Identifies the binding — the {purpose} path segment of PUT/DELETE.
   purpose: AgentLlmPurpose;
+  // Position in the purpose's chain, 0 = first attempt. null only on the
+  // synthetic PLATFORM record, which is not part of any chain.
+  priority: number | null;
   // null for the synthetic PLATFORM record — the provider is system-owned.
   llmProviderId: string | null;
   llmProviderName: string;
@@ -201,18 +207,26 @@ export interface AgentLlmResponse {
   source: AgentLlmSource;
 }
 
+// One link of a chain in a PUT body — the position is its array index.
+export interface AgentLlmBindingRequest {
+  llmProviderId: string;
+  model: string;
+}
+
 export interface CreateAgentLlmRequest {
   llmProviderId: string;
   model: string;
-  // Omitted → CHAT. 409 when the purpose is already bound — PUT instead.
+  // Omitted → CHAT. Appends to the end of the purpose's chain (priority = max + 1).
+  // 409 when the chain is full (five links), this provider + model pair is
+  // already in it, or a concurrent request took the position.
   purpose?: AgentLlmPurpose;
 }
 
-// The purpose is not part of the body — it comes from the path and cannot change
-// (moving a model to another purpose = delete + create).
+// Replaces the whole chain of one purpose, in the order given — the index is the
+// priority. [] is equivalent to DELETE. There is no single-link update: editing
+// one link sends every other one back untouched.
 export interface UpdateAgentLlmRequest {
-  llmProviderId: string;
-  model: string;
+  bindings: AgentLlmBindingRequest[];
 }
 
 // --- Token usage & quotas ---

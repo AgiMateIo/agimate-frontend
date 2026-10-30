@@ -19,6 +19,9 @@ export const LLM_PURPOSES: readonly AgentLlmPurpose[] = ['CHAT', 'ROUTINE', 'IMA
 // there would configure nothing — keep it out of the UI until one does.
 export const PROVIDER_PURPOSES: readonly AgentLlmPurpose[] = ['CHAT', 'ROUTINE', 'VISION', 'IMAGE'];
 
+// The backend's cap on one purpose's chain — POST past it answers 409.
+export const MAX_PURPOSE_CHAIN = 5;
+
 // The text purposes — the conversation and the platform's housekeeping over
 // it — read as the norm; the media tools are what stands out in a list.
 export function isTextPurpose(purpose: string): boolean {
