@@ -4,7 +4,13 @@ import { useState, useMemo } from 'react';
 import type { ComponentType, SVGProps } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useQueries } from '@tanstack/react-query';
-import { AgentLlmBindingRequest, AgentLlmPurpose, AgentLlmResponse, AgentType } from '@/types';
+import {
+  AgentLlmBindingRequest,
+  AgentLlmPurpose,
+  AgentLlmResponse,
+  AgentType,
+  LlmProviderResponse,
+} from '@/types';
 import { getErrorMessage } from '@/utils/error';
 import { isExternalAgentType } from '@/utils/agent';
 import { localeMap } from '@/i18n/routing';
@@ -204,22 +210,47 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
   const platformRow = bindings.find((b) => b.source === 'PLATFORM');
   const noProviders = bindableProviders.length === 0;
 
-  // An unbound purpose resolves through the priority list of the provider that
-  // carries the first link of the agent's CHAT chain — and by nothing else,
-  // since the backend does not pick a model by capability.
-  const chatBinding = chainOf('CHAT')[0];
-  const chatProvider = chatBinding ? providerById(chatBinding.llmProviderId) : undefined;
-  const chatModel = chatBinding?.model ?? platformRow?.model;
-  // First model of the list the provider would actually reach for: UNAVAILABLE
-  // ones are skipped in favour of the next. Without a registry to check against,
-  // the head of the list is the best guess.
-  const inheritedModel = (purpose: AgentLlmPurpose): string | undefined => {
-    const list = chatProvider?.purposePriority?.[purpose];
+  // An unbound purpose falls back to the purpose lists of the agent's chat
+  // providers, in their chain order — the resolver walks the same list, skips a
+  // provider with no list or an explicit [], and reads no list of a disabled
+  // provider at all.
+  const chatProviders = [...new Set(chainOf('CHAT').map((b) => b.llmProviderId))]
+    .map((id) => providerById(id))
+    .filter((p): p is LlmProviderResponse => !!p && p.enabled);
+
+  // The first listed model the resolver would not skip. A known registry lets a
+  // list of dead models fall through to the next provider; an unknown one is no
+  // basis for judging, so the head of the list stays the best guess.
+  const usableListedModel = (
+    provider: LlmProviderResponse,
+    purpose: AgentLlmPurpose
+  ): string | undefined => {
+    const list = provider.purposePriority?.[purpose];
     if (!list || list.length === 0) return undefined;
-    const registry = chatProvider ? registryOf(chatProvider.id) : undefined;
+    const registry = registryOf(provider.id);
     if (!registry || registry.length === 0) return list[0];
-    return list.find((m) => registry.find((r) => r.model === m)?.status !== 'UNAVAILABLE') ?? list[0];
+    return list.find((m) => registry.find((r) => r.model === m)?.status !== 'UNAVAILABLE');
   };
+
+  const inheritedFrom = (
+    purpose: AgentLlmPurpose
+  ): { provider: LlmProviderResponse; model: string } | undefined => {
+    for (const provider of chatProviders) {
+      const model = usableListedModel(provider, purpose);
+      if (model) return { provider, model };
+    }
+    return undefined;
+  };
+
+  // ROUTINE's last resort: the chat chain itself, the first link that is not
+  // dead. The platform model covers the fully unbound agent.
+  const chatModel =
+    chainOf('CHAT').find((b) => {
+      const provider = providerById(b.llmProviderId);
+      return provider?.enabled && !isModelUnlisted(b);
+    })?.model ??
+    chainOf('CHAT')[0]?.model ??
+    platformRow?.model;
 
   // Without a provider of their own there is nothing to pick a model from, so
   // the call to action is the key, not the model.
@@ -277,15 +308,23 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
           const isEditing = editing?.purpose === purpose;
           const busy = savingPurpose === purpose;
           const unbound = chain.length === 0 && !platform;
-          // Only meaningful for an unbound card, and only once a chat provider
-          // exists to inherit from.
-          const inheritedState = unbound && chatProvider
-            ? purposeState(chatProvider.purposePriority, purpose)
-            : 'unset';
-          const inherited = inheritedState === 'list' ? inheritedModel(purpose) : undefined;
-          // ROUTINE is the one purpose that never fails: without a model of
-          // its own or on the chat provider's list it runs on the chat model.
+          // What the purpose would fall back to, walked the way the resolver
+          // walks it: the chat providers in chain order, each skipped when it
+          // declares no list — or deliberately none.
+          const inherited = unbound ? inheritedFrom(purpose) : undefined;
+          // ROUTINE is the one purpose that never fails: without a model of its
+          // own or in the chat providers' lists it runs on the chat model.
           const onChatModel = unbound && purpose === 'ROUTINE' && !inherited;
+          // An explicit [] at one provider only drops that provider from the
+          // chain, so it is a warning about the agent's own providers — for
+          // media the platform may still serve, and nobody promised it would not.
+          const purposeOff =
+            unbound &&
+            purpose !== 'CHAT' &&
+            purpose !== 'ROUTINE' &&
+            !inherited &&
+            chatProviders.length > 0 &&
+            chatProviders.every((p) => purposeState(p.purposePriority, purpose) === 'off');
           // The chain's tail is the "add a fallback" node — no separate button.
           const canAdd = !isEditing && chain.length < MAX_PURPOSE_CHAIN && !noProviders;
 
@@ -471,9 +510,9 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
                     ) : inherited ? (
                       <>
                         <span className="text-sm text-muted" title={t('inheritedModelHint')}>
-                          {t('inheritedFromProvider', { provider: chatProvider!.name })}
+                          {t('inheritedFromProvider', { provider: inherited.provider.name })}
                         </span>
-                        <span className="text-sm text-muted font-mono">{inherited}</span>
+                        <span className="text-sm text-muted font-mono">{inherited.model}</span>
                       </>
                     ) : onChatModel ? (
                       <>
@@ -482,12 +521,8 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
                         </span>
                         {chatModel && <span className="text-sm text-muted font-mono">{chatModel}</span>}
                       </>
-                    ) : inheritedState === 'off' ? (
-                      <Chip
-                        icon={ExclamationTriangleIcon}
-                        tone="warning"
-                        title={t('purposeOffHint', { provider: chatProvider!.name })}
-                      >
+                    ) : purposeOff ? (
+                      <Chip icon={ExclamationTriangleIcon} tone="warning" title={t('purposeOffHint')}>
                         {t('purposeOff')}
                       </Chip>
                     ) : (
