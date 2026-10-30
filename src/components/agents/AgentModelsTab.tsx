@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import type { ComponentType, SVGProps } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useQueries } from '@tanstack/react-query';
 import { AgentLlmBindingRequest, AgentLlmPurpose, AgentLlmResponse, AgentType } from '@/types';
@@ -19,9 +20,15 @@ import { Link } from '@/i18n/navigation';
 import {
   ArrowDownIcon,
   ArrowUpIcon,
+  ChatBubbleLeftRightIcon,
+  ClockIcon,
   ExclamationTriangleIcon,
+  EyeIcon,
+  MicrophoneIcon,
   PencilIcon,
+  PhotoIcon,
   PlusIcon,
+  SpeakerWaveIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline';
 import { Chip } from '@/components/ui/Chip';
@@ -54,12 +61,24 @@ const toPair = (binding: UserBinding): AgentLlmBindingRequest => ({
   model: binding.model,
 });
 
+// One face per purpose so the six cards read apart at a glance.
+const purposeIcons = {
+  CHAT: ChatBubbleLeftRightIcon,
+  ROUTINE: ClockIcon,
+  IMAGE: PhotoIcon,
+  VISION: EyeIcon,
+  AUDIO_IN: MicrophoneIcon,
+  AUDIO_OUT: SpeakerWaveIcon,
+} satisfies Record<AgentLlmPurpose, ComponentType<SVGProps<SVGSVGElement>>>;
+
 // One card per purpose, holding that purpose's ordered chain of bindings. The
-// server picks the first link it can use on every call and says nothing about
-// which one that was, so the card shows the order of attempts, never "active".
-// An empty chain still resolves through the chat provider's priority list (or,
-// for the last purpose, the chat model itself) — that is what the empty state
-// spells out. A zero-binding agent gets a single synthetic PLATFORM row.
+// links are drawn as a vertical chain — a filled node for the attempt, hollow
+// ones below it for the fallbacks — because the order IS the feature. The server
+// picks the first link it can use on every call and says nothing about which one
+// that was, so the card shows the order of attempts, never "active". An empty
+// chain still resolves through the chat provider's priority list (or, for the
+// last purpose, the chat model itself) — that is what the empty state spells
+// out. A zero-binding agent gets a single synthetic PLATFORM row.
 export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabProps) {
   const t = useTranslations('Agents');
   const tu = useTranslations('LlmUsage');
@@ -267,66 +286,64 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
           // ROUTINE is the one purpose that never fails: without a model of
           // its own or on the chat provider's list it runs on the chat model.
           const onChatModel = unbound && purpose === 'ROUTINE' && !inherited;
+          // The chain's tail is the "add a fallback" node — no separate button.
+          const canAdd = !isEditing && chain.length < MAX_PURPOSE_CHAIN && !noProviders;
 
           return (
             <section key={purpose} className="border border-border rounded-xl p-4 space-y-3">
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <div className="flex items-center gap-2 flex-wrap min-w-0">
                   {/* Tool purposes stand out; the text ones (the norm) stay neutral. */}
-                  <Chip tone={isTextPurpose(purpose) ? 'default' : 'accent'}>
+                  <Chip icon={purposeIcons[purpose]} tone={isTextPurpose(purpose) ? 'default' : 'accent'}>
                     {tp(purposeLabelKey[purpose])}
                   </Chip>
-                  {chain.length > 0 ? (
+                  {chain.length > 0 && (
                     <span className="text-xs text-muted" title={t('chainOrderHint')}>
                       {t('chainCount', { count: chain.length, max: MAX_PURPOSE_CHAIN })}
                     </span>
-                  ) : (
-                    <span className="text-xs text-muted">{tp(purposeRequirementLabelKey[purpose])}</span>
                   )}
                 </div>
-                {!isEditing && chain.length > 0 && (
-                  chain.length >= MAX_PURPOSE_CHAIN ? (
-                    <span className="text-xs text-muted">{t('chainFull', { max: MAX_PURPOSE_CHAIN })}</span>
-                  ) : !noProviders ? (
-                    <button
-                      type="button"
-                      onClick={() => setEditing({ purpose, index: null })}
-                      disabled={busy}
-                      className="inline-flex items-center gap-1.5 text-sm text-accent hover:text-accent/80 transition-colors disabled:opacity-40"
-                    >
-                      <PlusIcon className="h-4 w-4" />
-                      {t('addModel')}
-                    </button>
-                  ) : null
+                {chain.length >= MAX_PURPOSE_CHAIN && (
+                  <span className="text-xs text-muted">{t('chainFull', { max: MAX_PURPOSE_CHAIN })}</span>
                 )}
               </div>
 
               {chain.length > 0 && (
-                <ol className="divide-y divide-border/50 border border-border rounded-lg bg-surface-secondary">
+                <ol>
                   {chain.map((binding, index) => {
                     const provider = providerById(binding.llmProviderId);
+                    const primary = index === 0;
                     return (
                       <li
                         key={`${binding.llmProviderId}:${binding.model}`}
-                        className="flex items-center gap-3 px-3 py-2"
+                        className="group flex gap-3"
                       >
-                        <span
-                          className="w-4 shrink-0 text-xs text-muted tabular-nums"
-                          title={t('chainOrderHint')}
-                        >
-                          {index + 1}
-                        </span>
-                        <div className="min-w-0 flex-1 grid gap-x-4 gap-y-1 md:grid-cols-2">
+                        {/* The node and the rail below it: the first link is the
+                            attempt, every next one a fallback for the one above. */}
+                        <div className="flex flex-col items-center">
+                          <span
+                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] tabular-nums ${
+                              primary
+                                ? 'bg-accent font-medium text-accent-foreground'
+                                : 'border border-border bg-surface text-muted'
+                            }`}
+                          >
+                            {index + 1}
+                          </span>
+                          {(index < chain.length - 1 || canAdd) && (
+                            <span className="mt-1 w-px flex-1 bg-border" aria-hidden />
+                          )}
+                        </div>
+
+                        <div className="min-w-0 flex-1 pb-3">
                           <div className="flex items-center gap-2 flex-wrap min-w-0">
-                            <span className="text-sm text-foreground truncate">{binding.llmProviderName}</span>
-                            {provider && !provider.enabled && (
-                              <Chip icon={ExclamationTriangleIcon} tone="warning" title={t('providerDisabledHint')}>
-                                {t('providerDisabled')}
-                              </Chip>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 flex-wrap min-w-0">
-                            <span className="text-sm text-foreground font-mono truncate">{binding.model}</span>
+                            <span
+                              className={`truncate font-mono text-sm ${
+                                primary ? 'font-medium text-foreground' : 'text-foreground/80'
+                              }`}
+                            >
+                              {binding.model}
+                            </span>
                             {isModelUnfit(binding) && (
                               <Chip
                                 icon={ExclamationTriangleIcon}
@@ -342,8 +359,20 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
                               </Chip>
                             )}
                           </div>
+                          <div className="mt-0.5 flex items-center gap-2 flex-wrap text-xs">
+                            <span className="truncate text-foreground/70">{binding.llmProviderName}</span>
+                            <span className="text-muted">
+                              {primary ? t('chainPrimaryHint') : t('chainFallbackHint')}
+                            </span>
+                            {provider && !provider.enabled && (
+                              <Chip icon={ExclamationTriangleIcon} tone="warning" title={t('providerDisabledHint')}>
+                                {t('providerDisabled')}
+                              </Chip>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-0.5 shrink-0">
+
+                        <div className="flex shrink-0 items-start gap-0.5 pb-3 pt-0.5 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
                           {chain.length > 1 && (
                             <>
                               <button
@@ -351,7 +380,7 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
                                 onClick={() => moveLink(purpose, index, -1)}
                                 disabled={busy || index === 0}
                                 aria-label={t('moveModelUp')}
-                                className="p-1 rounded-md text-muted hover:text-foreground hover:bg-surface transition-colors disabled:opacity-30"
+                                className="p-1 rounded-md text-muted hover:text-foreground hover:bg-surface-secondary transition-colors disabled:opacity-30"
                               >
                                 <ArrowUpIcon className="h-4 w-4" />
                               </button>
@@ -360,7 +389,7 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
                                 onClick={() => moveLink(purpose, index, 1)}
                                 disabled={busy || index === chain.length - 1}
                                 aria-label={t('moveModelDown')}
-                                className="p-1 rounded-md text-muted hover:text-foreground hover:bg-surface transition-colors disabled:opacity-30"
+                                className="p-1 rounded-md text-muted hover:text-foreground hover:bg-surface-secondary transition-colors disabled:opacity-30"
                               >
                                 <ArrowDownIcon className="h-4 w-4" />
                               </button>
@@ -371,7 +400,7 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
                             onClick={() => setEditing({ purpose, index })}
                             disabled={busy}
                             aria-label={t('changeModel')}
-                            className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface transition-colors"
+                            className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-secondary transition-colors"
                           >
                             <PencilIcon className="h-4 w-4" />
                           </button>
@@ -388,6 +417,22 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
                       </li>
                     );
                   })}
+
+                  {canAdd && (
+                    <li className="flex gap-3">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-dashed border-border text-muted">
+                        <PlusIcon className="h-3 w-3" />
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setEditing({ purpose, index: null })}
+                        disabled={busy}
+                        className="self-start text-sm text-accent hover:text-accent/80 transition-colors disabled:opacity-40"
+                      >
+                        {t('addFallbackModel')}
+                      </button>
+                    </li>
+                  )}
                 </ol>
               )}
 
@@ -402,8 +447,12 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
                   onSuccess={handleMutationSuccess}
                 />
               ) : chain.length === 0 ? (
-                <div className="flex items-center justify-between gap-3 flex-wrap rounded-lg bg-surface-secondary px-3 py-2.5">
-                  <div className="flex items-center gap-2 flex-wrap min-w-0">
+                <div className="flex items-center gap-3">
+                  <span
+                    className="h-5 w-5 shrink-0 rounded-full border border-dashed border-border"
+                    aria-hidden
+                  />
+                  <div className="flex min-w-0 flex-1 items-center gap-2 flex-wrap">
                     {platform ? (
                       <>
                         <Chip strong tone="success" title={t('platformModelHint')}>
