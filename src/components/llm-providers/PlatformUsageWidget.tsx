@@ -9,8 +9,10 @@ const RADIUS = 26;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 // Free-tier balance card for the dashboard home. Renders nothing unless the
-// backend reports a platform (free-tier) entry with a daily quota — i.e. the
-// installation has the platform provider enabled and this user is on it.
+// backend reports a platform (free-tier) entry with a daily quota — i.e. a
+// platform provider is enabled and this user is on it. With several platform
+// providers the card shows the first one that has a quota; the full picture is
+// in the dashboard's spend section.
 export default function PlatformUsageWidget() {
   const t = useTranslations('LlmUsage');
   const locale = useLocale();
@@ -18,9 +20,16 @@ export default function PlatformUsageWidget() {
   const fmt = (n: number) => n.toLocaleString(bcp47);
 
   const { data } = useLlmUsageQuery();
-  const day = data?.find((u) => u.source === 'PLATFORM')?.windows.find((w) => w.window === 'DAY');
+  // There can be several platform providers now; the ring shows the first one
+  // that actually has a daily free-tier quota.
+  const platform = data?.find(
+    (u) =>
+      u.source === 'PLATFORM' &&
+      u.windows.some((w) => w.window === 'DAY' && w.limitTokens !== null),
+  );
+  const day = platform?.windows.find((w) => w.window === 'DAY');
 
-  if (!day || day.limitTokens === null) return null;
+  if (!platform || !day || day.limitTokens === null) return null;
 
   // The ring shows what is left, not what is spent — this is a balance card.
   const remainingPct = Math.max(
@@ -64,6 +73,7 @@ export default function PlatformUsageWidget() {
 
       <div className="min-w-0">
         <div className="text-sm font-medium text-muted">{t('freeTierTitle')}</div>
+        <div className="text-xs text-muted">{platform.providerName}</div>
         <div className="mt-0.5 text-foreground">
           {t('remainingToday', {
             remaining: fmt(day.remainingTokens ?? 0),

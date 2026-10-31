@@ -1,14 +1,20 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { RectangleStackIcon, ShieldCheckIcon, UsersIcon } from '@heroicons/react/24/outline';
+import { CpuChipIcon, RectangleStackIcon, ShieldCheckIcon, UsersIcon } from '@heroicons/react/24/outline';
 import ContextNav, { type ContextSection } from './ContextNav';
 
-type Section = { key: string; labelKey: 'users' | 'presets'; href: string; icon: ContextSection['icon'] };
+type Section = {
+  key: string;
+  labelKey: 'users' | 'presets' | 'platformLlms';
+  href: string;
+  icon: ContextSection['icon'];
+};
 
 const SECTIONS: Section[] = [
   { key: 'users', labelKey: 'users', href: '/dashboard/admin/users', icon: UsersIcon },
   { key: 'presets', labelKey: 'presets', href: '/dashboard/admin/presets', icon: RectangleStackIcon },
+  { key: 'platform-llms', labelKey: 'platformLlms', href: '/dashboard/admin/platform-llms', icon: CpuChipIcon },
 ];
 
 // Administration has no entity to switch between and nothing to fetch — the same

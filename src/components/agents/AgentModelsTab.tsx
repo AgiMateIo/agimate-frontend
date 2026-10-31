@@ -1,54 +1,32 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import type { ComponentType, SVGProps } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useQueries } from '@tanstack/react-query';
 import {
   AgentLlmBindingRequest,
   AgentLlmPurpose,
   AgentLlmResponse,
+  AgentLlmSource,
   AgentType,
   LlmProviderResponse,
 } from '@/types';
 import { getErrorMessage } from '@/utils/error';
 import { isExternalAgentType } from '@/utils/agent';
-import { localeMap } from '@/i18n/routing';
 import { agentLlmsOptions, useAgentCacheActions } from '@/queries/agents';
-import {
-  llmProviderModelsOptions,
-  llmProvidersListOptions,
-  useLlmUsageQuery,
-} from '@/queries/llm-providers';
+import { llmProviderModelsOptions, llmProvidersListOptions } from '@/queries/llm-providers';
 import apiService from '@/services/api';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Link } from '@/i18n/navigation';
-import {
-  ArrowDownIcon,
-  ArrowUpIcon,
-  ChatBubbleLeftRightIcon,
-  ClockIcon,
-  ExclamationTriangleIcon,
-  EyeIcon,
-  MicrophoneIcon,
-  PencilIcon,
-  PhotoIcon,
-  PlusIcon,
-  SpeakerWaveIcon,
-  TrashIcon,
-} from '@heroicons/react/24/outline';
-import { Chip } from '@/components/ui/Chip';
-import AgentLlmRowEditor from './AgentLlmRowEditor';
+import { FilterPill } from '@/components/ui/FilterPill';
 import DeleteAgentLlmModal from './DeleteAgentLlmModal';
+import AgentPurposeCard, { type UserBinding } from './AgentPurposeCard';
 import { matchCapabilityFilter } from '@/components/llm-providers/modelRegistry';
 import { Placeholder } from '@/components/ui/Placeholder';
 import {
   LLM_PURPOSES,
   MAX_PURPOSE_CHAIN,
-  isTextPurpose,
-  purposeLabelKey,
   purposeRequirement,
-  purposeRequirementLabelKey,
   purposeState,
 } from '@/components/llm-providers/llmPurpose';
 
@@ -57,55 +35,28 @@ interface AgentModelsTabProps {
   // An external agent thinks on its own model, so nothing here is "the agent's
   // model" — bindings only cover the tool tasks the platform runs itself.
   agentType?: AgentType;
+  // Which set of chains is in force: the platform's or the agent's own.
+  llmSource: AgentLlmSource;
 }
-
-// A real binding row: only the synthetic PLATFORM record lacks a provider id.
-type UserBinding = AgentLlmResponse & { llmProviderId: string };
 
 const toPair = (binding: UserBinding): AgentLlmBindingRequest => ({
   llmProviderId: binding.llmProviderId,
   model: binding.model,
 });
 
-// One face per purpose so the six cards read apart at a glance.
-const purposeIcons = {
-  CHAT: ChatBubbleLeftRightIcon,
-  ROUTINE: ClockIcon,
-  IMAGE: PhotoIcon,
-  VISION: EyeIcon,
-  AUDIO_IN: MicrophoneIcon,
-  AUDIO_OUT: SpeakerWaveIcon,
-} satisfies Record<AgentLlmPurpose, ComponentType<SVGProps<SVGSVGElement>>>;
-
-// One card per purpose, holding that purpose's ordered chain of bindings. The
-// links are drawn as a vertical chain — a filled node for the attempt, hollow
-// ones below it for the fallbacks — because the order IS the feature. The server
-// picks the first link it can use on every call and says nothing about which one
-// that was, so the card shows the order of attempts, never "active". An empty
-// chain still resolves through the chat provider's priority list (or, for the
-// last purpose, the chat model itself) — that is what the empty state spells
-// out. A zero-binding agent gets a single synthetic PLATFORM row.
-export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabProps) {
+// The models screen's data and actions: one card per purpose (AgentPurposeCard
+// draws it), a source switcher, and the chain mutations. The one rule that
+// shapes everything here: a PLATFORM agent's own bindings are stored but
+// inactive, and the backend refuses a non-empty PUT on them — adding a model
+// changes the payer and needs the explicit switch to BYOK.
+export default function AgentModelsTab({ agentId, agentType, llmSource }: AgentModelsTabProps) {
   const t = useTranslations('Agents');
-  const tu = useTranslations('LlmUsage');
-  // Purpose names and their model requirements are LLM-domain vocabulary shared
-  // with the provider screens — they live in the LlmProviders namespace.
-  const tp = useTranslations('LlmProviders');
-  const locale = useLocale();
-  const bcp47 = localeMap[locale];
-
-  // Free-tier balance for the synthetic platform row — supplementary, so a
-  // failed/absent usage response simply hides the remaining-tokens hint.
-  const { data: usage } = useLlmUsageQuery();
-  const platformDay = usage
-    ?.find((u) => u.source === 'PLATFORM')
-    ?.windows.find((w) => w.window === 'DAY');
 
   const [{ data: bindings, isPending: bindingsPending, error: bindingsError },
          { data: allProviders, isPending: providersPending, error: providersError }] = useQueries({
     queries: [agentLlmsOptions(agentId), llmProvidersListOptions()],
   });
-  const { invalidateAgentLlms } = useAgentCacheActions();
+  const { setAgent, setAgentLlms, invalidateAgentLlms } = useAgentCacheActions();
 
   // A link being replaced (index) or appended (index: null).
   const [editing, setEditing] = useState<{ purpose: AgentLlmPurpose; index: number | null } | null>(null);
@@ -113,10 +64,11 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
   // Reordering saves at once (there is no per-link endpoint), and the lock keeps
   // rapid clicks from racing whole-chain PUTs.
   const [savingPurpose, setSavingPurpose] = useState<AgentLlmPurpose | null>(null);
+  const [switchingSource, setSwitchingSource] = useState<AgentLlmSource | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  // The platform row only shows up for ADMINs and cannot be bound to an agent
-  // (POST/PUT with its id give a bare 404) — keep it out of the editor.
+  // Platform rows are not addressable — keep the platform providers out of the
+  // editor, where they would only produce a failed request.
   const bindableProviders = useMemo(
     () => (allProviders ?? []).filter((p) => !p.platform),
     [allProviders]
@@ -146,8 +98,7 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
   };
   // A model bound before the purpose gained a requirement — or one whose metadata
   // changed since — can sit in a purpose it cannot serve. Only flag the media
-  // purposes,
-  // whose demand is hard; CHAT's tool support is advisory.
+  // purposes, whose demand is hard; CHAT's tool support is advisory.
   const isModelUnfit = (binding: AgentLlmResponse): boolean => {
     const requirement = purposeRequirement[binding.purpose];
     if (!requirement.hard) return false;
@@ -160,6 +111,27 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
     setDeleting(null);
     setActionError(null);
     invalidateAgentLlms(agentId);
+  };
+
+  const handleSourceSwitch = async (source: AgentLlmSource) => {
+    if (source === llmSource || switchingSource) return;
+    setActionError(null);
+    setSwitchingSource(source);
+    setEditing(null);
+    setDeleting(null);
+    try {
+      const updated = await apiService.setAgentLlmSource(agentId, source);
+      // The PUT answers with the whole agent, including the recomputed binding
+      // list; write both in so the switcher and the cards flip together. The
+      // invalidation then confirms with the server rather than filling a gap.
+      setAgent(updated);
+      setAgentLlms(agentId, updated.llms);
+      invalidateAgentLlms(agentId);
+    } catch (err) {
+      setActionError(getErrorMessage(err, t('sourceSwitchFailed')));
+    } finally {
+      setSwitchingSource(null);
+    }
   };
 
   const error = bindingsError ?? providersError;
@@ -184,6 +156,19 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
   }
   const chainOf = (purpose: AgentLlmPurpose) => chains.get(purpose) ?? [];
 
+  // The platform's effective chains are already resolved for this agent type
+  // (media only for external agents); group them the same way.
+  const platformChains = new Map<AgentLlmPurpose, AgentLlmResponse[]>();
+  for (const binding of bindings) {
+    if (binding.source !== 'PLATFORM') continue;
+    const list = platformChains.get(binding.purpose);
+    if (list) list.push(binding);
+    else platformChains.set(binding.purpose, [binding]);
+  }
+  const platformChainOf = (purpose: AgentLlmPurpose) => platformChains.get(purpose) ?? [];
+
+  const platformMode = llmSource === 'PLATFORM';
+
   // Moving a link rewrites the whole chain in the new order — the only way to
   // express "this one first" through the API.
   const moveLink = async (purpose: AgentLlmPurpose, index: number, delta: number) => {
@@ -204,16 +189,12 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
     }
   };
 
-  // `source` is the only reliable marker — a synthetic platform row is
-  // indistinguishable from a real one by its provider name or model. It only
-  // exists while the agent has no bindings at all.
-  const platformRow = bindings.find((b) => b.source === 'PLATFORM');
   const noProviders = bindableProviders.length === 0;
 
-  // An unbound purpose falls back to the purpose lists of the agent's chat
-  // providers, in their chain order — the resolver walks the same list, skips a
-  // provider with no list or an explicit [], and reads no list of a disabled
-  // provider at all.
+  // BYOK only: an unbound purpose falls back to the purpose lists of the
+  // agent's chat providers, in their chain order — the resolver walks the same
+  // list, skips a provider with no list or an explicit [], and reads no list of
+  // a disabled provider at all.
   const chatProviders = [...new Set(chainOf('CHAT').map((b) => b.llmProviderId))]
     .map((id) => providerById(id))
     .filter((p): p is LlmProviderResponse => !!p && p.enabled);
@@ -242,34 +223,15 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
     return undefined;
   };
 
-  // ROUTINE's last resort: the chat chain itself, the first link that is not
-  // dead. The platform model covers the fully unbound agent.
-  const chatModel =
-    chainOf('CHAT').find((b) => {
-      const provider = providerById(b.llmProviderId);
-      return provider?.enabled && !isModelUnlisted(b);
-    })?.model ??
-    chainOf('CHAT')[0]?.model ??
-    platformRow?.model;
-
-  // Without a provider of their own there is nothing to pick a model from, so
-  // the call to action is the key, not the model.
-  const setModelAction = (purpose: AgentLlmPurpose, label: string) =>
-    noProviders ? (
-      <Link
-        href="/dashboard/llm-providers"
-        className="text-sm text-accent hover:text-accent/80 transition-colors whitespace-nowrap"
-      >
-        {tu('connectOwnKey')} →
-      </Link>
-    ) : (
-      <button
-        onClick={() => setEditing({ purpose, index: null })}
-        className="text-sm text-accent hover:text-accent/80 transition-colors whitespace-nowrap"
-      >
-        {label}
-      </button>
-    );
+  // ROUTINE's last resort: the chat model itself. On the platform source that is
+  // the head of the platform's CHAT chain; on BYOK, the first own CHAT link that
+  // is not dead.
+  const chatModel = platformMode
+    ? platformChainOf('CHAT')[0]?.model
+    : chainOf('CHAT').find((b) => {
+        const provider = providerById(b.llmProviderId);
+        return provider?.enabled && !isModelUnlisted(b);
+      })?.model ?? chainOf('CHAT')[0]?.model;
 
   // What the chain leaves behind when this link goes: the rest of the purpose's
   // chain, sent back as one PUT. Matched by provider + model (unique within a
@@ -283,18 +245,42 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
+      <div className="space-y-1">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-medium text-foreground">{t('llmSource')}</span>
+            <div className="flex items-center gap-1.5">
+              <FilterPill
+                active={platformMode}
+                onClick={() => handleSourceSwitch('PLATFORM')}
+                disabled={switchingSource !== null}
+              >
+                {t('llmSourcePlatform')}
+              </FilterPill>
+              <FilterPill
+                active={!platformMode}
+                onClick={() => handleSourceSwitch('BYOK')}
+                disabled={switchingSource !== null}
+              >
+                {t('llmSourceByok')}
+              </FilterPill>
+            </div>
+          </div>
+          <Link
+            href="/dashboard/llm-providers"
+            className="text-sm text-accent hover:text-accent/80 transition-colors whitespace-nowrap"
+          >
+            {t('manageProviders')} →
+          </Link>
+        </div>
+        <p className="text-sm text-muted">
+          {platformMode ? t('llmSourcePlatformHint') : t('llmSourceByokHint')}
+        </p>
         {/* For an external agent the chat model is the client's; what is bound
             here only drives the tool tasks the platform executes itself. */}
-        <p className="text-sm text-muted">
-          {agentType && isExternalAgentType(agentType) ? t('externalPurposeHint') : t('purposeHint')}
-        </p>
-        <Link
-          href="/dashboard/llm-providers"
-          className="text-sm text-accent hover:text-accent/80 transition-colors whitespace-nowrap"
-        >
-          {t('manageProviders')} →
-        </Link>
+        {agentType && isExternalAgentType(agentType) && (
+          <p className="text-sm text-muted">{t('externalPurposeHint')}</p>
+        )}
       </div>
 
       {actionError && <ErrorAlert>{actionError}</ErrorAlert>}
@@ -302,22 +288,20 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
       <div className="space-y-3">
         {LLM_PURPOSES.map((purpose) => {
           const chain = chainOf(purpose);
-          // The platform fallback is reported on its own purpose (CHAT in
-          // practice) and only while the agent has no bindings at all.
-          const platform = chain.length === 0 && platformRow?.purpose === purpose ? platformRow : undefined;
-          const isEditing = editing?.purpose === purpose;
-          const busy = savingPurpose === purpose;
-          const unbound = chain.length === 0 && !platform;
+          const platformChain = platformChainOf(purpose);
+          const unbound = !platformMode && chain.length === 0;
           // What the purpose would fall back to, walked the way the resolver
           // walks it: the chat providers in chain order, each skipped when it
           // declares no list — or deliberately none.
           const inherited = unbound ? inheritedFrom(purpose) : undefined;
-          // ROUTINE is the one purpose that never fails: without a model of its
-          // own or in the chat providers' lists it runs on the chat model.
-          const onChatModel = unbound && purpose === 'ROUTINE' && !inherited;
+          // ROUTINE is the one purpose that never fails: without a chain of its
+          // own it runs on the chat model — the platform's CHAT chain or the
+          // agent's own, depending on the source.
+          const onChatModel = platformMode
+            ? purpose === 'ROUTINE' && platformChain.length === 0 && !!chatModel
+            : unbound && purpose === 'ROUTINE' && !inherited;
           // An explicit [] at one provider only drops that provider from the
-          // chain, so it is a warning about the agent's own providers — for
-          // media the platform may still serve, and nobody promised it would not.
+          // chain, so it is a warning about the agent's own providers.
           const purposeOff =
             unbound &&
             purpose !== 'CHAT' &&
@@ -325,218 +309,40 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
             !inherited &&
             chatProviders.length > 0 &&
             chatProviders.every((p) => purposeState(p.purposePriority, purpose) === 'off');
-          // The chain's tail is the "add a fallback" node — no separate button.
-          const canAdd = !isEditing && chain.length < MAX_PURPOSE_CHAIN && !noProviders;
+          const isEditing = editing?.purpose === purpose;
+          // Adding is a BYOK move: on PLATFORM the backend refuses it.
+          const canAdd = !platformMode && !isEditing && chain.length < MAX_PURPOSE_CHAIN && !noProviders;
 
           return (
-            <section key={purpose} className="border border-border rounded-xl p-4 space-y-3">
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                <div className="flex items-center gap-2 flex-wrap min-w-0">
-                  {/* Tool purposes stand out; the text ones (the norm) stay neutral. */}
-                  <Chip icon={purposeIcons[purpose]} tone={isTextPurpose(purpose) ? 'default' : 'accent'}>
-                    {tp(purposeLabelKey[purpose])}
-                  </Chip>
-                  {chain.length > 0 && (
-                    <span className="text-xs text-muted" title={t('chainOrderHint')}>
-                      {t('chainCount', { count: chain.length, max: MAX_PURPOSE_CHAIN })}
-                    </span>
-                  )}
-                </div>
-                {chain.length >= MAX_PURPOSE_CHAIN && (
-                  <span className="text-xs text-muted">{t('chainFull', { max: MAX_PURPOSE_CHAIN })}</span>
-                )}
-              </div>
-
-              {chain.length > 0 && (
-                <ol>
-                  {chain.map((binding, index) => {
-                    const provider = providerById(binding.llmProviderId);
-                    const primary = index === 0;
-                    return (
-                      <li
-                        key={`${binding.llmProviderId}:${binding.model}`}
-                        className="group flex gap-3"
-                      >
-                        {/* The node and the rail below it: the first link is the
-                            attempt, every next one a fallback for the one above. */}
-                        <div className="flex flex-col items-center">
-                          <span
-                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] tabular-nums ${
-                              primary
-                                ? 'bg-accent font-medium text-accent-foreground'
-                                : 'border border-border bg-surface text-muted'
-                            }`}
-                          >
-                            {index + 1}
-                          </span>
-                          {(index < chain.length - 1 || canAdd) && (
-                            <span className="mt-1 w-px flex-1 bg-border" aria-hidden />
-                          )}
-                        </div>
-
-                        <div className="min-w-0 flex-1 pb-3">
-                          <div className="flex items-center gap-2 flex-wrap min-w-0">
-                            <span
-                              className={`truncate font-mono text-sm ${
-                                primary ? 'font-medium text-foreground' : 'text-foreground/80'
-                              }`}
-                            >
-                              {binding.model}
-                            </span>
-                            {isModelUnfit(binding) && (
-                              <Chip
-                                icon={ExclamationTriangleIcon}
-                                tone="warning"
-                                title={tp(purposeRequirementLabelKey[binding.purpose])}
-                              >
-                                {t('modelUnfit')}
-                              </Chip>
-                            )}
-                            {isModelUnlisted(binding) && (
-                              <Chip icon={ExclamationTriangleIcon} tone="warning" title={t('modelUnlistedHint')}>
-                                {t('modelUnlisted')}
-                              </Chip>
-                            )}
-                          </div>
-                          <div className="mt-0.5 flex items-center gap-2 flex-wrap text-xs">
-                            <span className="truncate text-foreground/70">{binding.llmProviderName}</span>
-                            <span className="text-muted">
-                              {primary ? t('chainPrimaryHint') : t('chainFallbackHint')}
-                            </span>
-                            {provider && !provider.enabled && (
-                              <Chip icon={ExclamationTriangleIcon} tone="warning" title={t('providerDisabledHint')}>
-                                {t('providerDisabled')}
-                              </Chip>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex shrink-0 items-start gap-0.5 pb-3 pt-0.5 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
-                          {chain.length > 1 && (
-                            <>
-                              <button
-                                type="button"
-                                onClick={() => moveLink(purpose, index, -1)}
-                                disabled={busy || index === 0}
-                                aria-label={t('moveModelUp')}
-                                className="p-1 rounded-md text-muted hover:text-foreground hover:bg-surface-secondary transition-colors disabled:opacity-30"
-                              >
-                                <ArrowUpIcon className="h-4 w-4" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => moveLink(purpose, index, 1)}
-                                disabled={busy || index === chain.length - 1}
-                                aria-label={t('moveModelDown')}
-                                className="p-1 rounded-md text-muted hover:text-foreground hover:bg-surface-secondary transition-colors disabled:opacity-30"
-                              >
-                                <ArrowDownIcon className="h-4 w-4" />
-                              </button>
-                            </>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => setEditing({ purpose, index })}
-                            disabled={busy}
-                            aria-label={t('changeModel')}
-                            className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-secondary transition-colors"
-                          >
-                            <PencilIcon className="h-4 w-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setDeleting(binding)}
-                            disabled={busy}
-                            aria-label={t('deleteModelBinding')}
-                            className="p-1.5 rounded-lg text-muted hover:text-error hover:bg-error/10 transition-colors"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </li>
-                    );
-                  })}
-
-                  {canAdd && (
-                    <li className="flex gap-3">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-dashed border-border text-muted">
-                        <PlusIcon className="h-3 w-3" />
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setEditing({ purpose, index: null })}
-                        disabled={busy}
-                        className="self-start text-sm text-accent hover:text-accent/80 transition-colors disabled:opacity-40"
-                      >
-                        {t('addFallbackModel')}
-                      </button>
-                    </li>
-                  )}
-                </ol>
-              )}
-
-              {isEditing ? (
-                <AgentLlmRowEditor
-                  agentId={agentId}
-                  purpose={purpose}
-                  chain={chain.map(toPair)}
-                  index={editing.index}
-                  providers={bindableProviders}
-                  onCancel={() => setEditing(null)}
-                  onSuccess={handleMutationSuccess}
-                />
-              ) : chain.length === 0 ? (
-                <div className="flex items-center gap-3">
-                  <span
-                    className="h-5 w-5 shrink-0 rounded-full border border-dashed border-border"
-                    aria-hidden
-                  />
-                  <div className="flex min-w-0 flex-1 items-center gap-2 flex-wrap">
-                    {platform ? (
-                      <>
-                        <Chip strong tone="success" title={t('platformModelHint')}>
-                          {t('platformModel')}
-                        </Chip>
-                        {platformDay && platformDay.limitTokens !== null && (
-                          <span className="text-xs text-muted">
-                            {tu('remainingToday', {
-                              remaining: (platformDay.remainingTokens ?? 0).toLocaleString(bcp47),
-                              limit: platformDay.limitTokens.toLocaleString(bcp47),
-                            })}
-                          </span>
-                        )}
-                        <span className="text-sm text-foreground font-mono">{platform.model}</span>
-                      </>
-                    ) : inherited ? (
-                      <>
-                        <span className="text-sm text-muted" title={t('inheritedModelHint')}>
-                          {t('inheritedFromProvider', { provider: inherited.provider.name })}
-                        </span>
-                        <span className="text-sm text-muted font-mono">{inherited.model}</span>
-                      </>
-                    ) : onChatModel ? (
-                      <>
-                        <span className="text-sm text-muted" title={t('routineOnChatModelHint')}>
-                          {t('routineOnChatModel')}
-                        </span>
-                        {chatModel && <span className="text-sm text-muted font-mono">{chatModel}</span>}
-                      </>
-                    ) : purposeOff ? (
-                      <Chip icon={ExclamationTriangleIcon} tone="warning" title={t('purposeOffHint')}>
-                        {t('purposeOff')}
-                      </Chip>
-                    ) : (
-                      <span className="text-sm text-muted" title={t('unsetModelHint')}>
-                        {t('unsetModel')}
-                      </span>
-                    )}
-                  </div>
-                  {/* The platform row is virtual — PUT on its purpose would be a
-                      no-op, so the only move it offers is creating a real link. */}
-                  {setModelAction(purpose, platform ? t('chooseOwnModel') : t('setModel'))}
-                </div>
-              ) : null}
-            </section>
+            <AgentPurposeCard
+              key={purpose}
+              purpose={purpose}
+              agentId={agentId}
+              agentType={agentType}
+              platformMode={platformMode}
+              platformChain={platformChain}
+              chain={chain}
+              editorChain={chain.map(toPair)}
+              providers={bindableProviders}
+              canAdd={canAdd}
+              editing={isEditing}
+              editingIndex={isEditing ? editing.index : null}
+              busy={savingPurpose === purpose}
+              inherited={
+                inherited ? { providerName: inherited.provider.name, model: inherited.model } : undefined
+              }
+              onChatModel={onChatModel}
+              chatModel={chatModel}
+              purposeOff={purposeOff}
+              noProviders={noProviders}
+              isModelUnlisted={isModelUnlisted}
+              isModelUnfit={isModelUnfit}
+              onMove={(index, delta) => moveLink(purpose, index, delta)}
+              onEdit={(index) => setEditing({ purpose, index })}
+              onCancelEdit={() => setEditing(null)}
+              onDelete={setDeleting}
+              onSuccess={handleMutationSuccess}
+            />
           );
         })}
       </div>
@@ -547,6 +353,8 @@ export default function AgentModelsTab({ agentId, agentType }: AgentModelsTabPro
           binding={deleting}
           remaining={deleteRemaining}
           hasOtherBindings={userBindings.length > 1}
+          clearWholePurpose={platformMode}
+          purposeCount={chainOf(deleting.purpose).length}
           onClose={() => setDeleting(null)}
           onSuccess={handleMutationSuccess}
         />

@@ -14,6 +14,7 @@ import { firstPurposeModel } from './llmPurpose';
 import { ProviderAvatar } from './ProviderAvatar';
 import { Placeholder } from '@/components/ui/Placeholder';
 import { useIdSet } from '@/hooks/useIdSet';
+import { useLlmProviderCacheActions } from '@/queries/llm-providers';
 
 interface LlmProvidersListProps {
   providers: LlmProviderResponse[];
@@ -27,6 +28,7 @@ export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersLi
   const bcp47 = localeMap[locale];
 
   const busy = useIdSet();
+  const { invalidateUsage } = useLlmProviderCacheActions();
 
   const handleToggleEnabled = async (provider: LlmProviderResponse) => {
     busy.add(provider.id);
@@ -35,6 +37,8 @@ export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersLi
     try {
       const updated = await apiService.updateLlmProvider(provider.id, { enabled: newEnabled });
       onUpdate(providers.map(p => p.id === provider.id ? updated : p));
+      // Only enabled platform providers have usage rows.
+      if (provider.platform) invalidateUsage();
     } catch (err) {
       console.error('Failed to toggle provider', err);
       onUpdate(providers.map(p => p.id === provider.id ? { ...p, enabled: provider.enabled } : p));
@@ -51,8 +55,8 @@ export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersLi
     );
   }
 
-  // The platform row (admin-only, backend-gated) is presented in its own section
-  // above the user's personal providers.
+  // Platform providers (admin-only, backend-gated) are presented in their own
+  // section above the user's personal providers. There can be several.
   const platformProviders = providers.filter(p => p.platform);
   const personalProviders = providers.filter(p => !p.platform);
 
@@ -61,7 +65,7 @@ export default function LlmProvidersList({ providers, onUpdate }: LlmProvidersLi
     // The list DTO no longer carries models — the registry lives on the detail page.
     const neverRefreshed = provider.modelsRefreshedAt === null;
     const isPlatform = provider.platform;
-    const displayName = isPlatform ? tu('platformProviderName') : provider.name;
+    const displayName = provider.name;
 
     const typeLabel = t(PROVIDER_TYPE_LABEL_KEY[provider.providerType]);
     const host = provider.baseUrl ? deriveProviderNameFromUrl(provider.baseUrl) : '';

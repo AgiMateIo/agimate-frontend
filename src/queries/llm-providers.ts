@@ -1,9 +1,11 @@
 import { queryOptions, useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import apiService from '@/services/api';
 import type {
+  AgentLlmPurpose,
   CreateLlmQuotaRequest,
   LlmProviderModelResponse,
   LlmProviderResponse,
+  PlatformLlmEntryResponse,
   UpdateLlmQuotaRequest,
 } from '@/types';
 
@@ -14,6 +16,8 @@ export const llmProviderKeys = {
   quotas: (providerId: string) => [...llmProviderKeys.all, 'quotas', providerId] as const,
   models: (providerId: string) => [...llmProviderKeys.all, 'models', providerId] as const,
   catalog: () => [...llmProviderKeys.all, 'catalog'] as const,
+  // The platform's purpose chains, flat and admin-only.
+  platformPurposes: () => [...llmProviderKeys.all, 'platform-purposes'] as const,
 };
 
 export function llmProviderCatalogOptions() {
@@ -36,6 +40,15 @@ export function llmProviderModelsOptions(providerId: string) {
   return queryOptions({
     queryKey: llmProviderKeys.models(providerId),
     queryFn: () => apiService.getLlmProviderModels(providerId),
+  });
+}
+
+// ADMIN only. One flat list: rows carry their purpose and priority, so the
+// screen groups them by purpose without a second request per purpose.
+export function platformLlmsOptions() {
+  return queryOptions({
+    queryKey: llmProviderKeys.platformPurposes(),
+    queryFn: () => apiService.getPlatformLlms(),
   });
 }
 
@@ -124,6 +137,17 @@ export function useLlmProviderCacheActions() {
           ? prev.map((m) => (m.id === model.id ? model : m))
           : [...prev, model];
       }),
+    // Platform usage rows are matched by provider name and only enabled providers
+    // appear at all, so a rename or an enable/disable stales them.
+    invalidateUsage: () =>
+      queryClient.invalidateQueries({ queryKey: llmProviderKeys.usage() }),
+    // PUT answers with the purpose's whole chain; replace that purpose's rows in
+    // the flat list. Cross-purpose order does not matter — the page groups.
+    setPlatformPurpose: (purpose: AgentLlmPurpose, entries: PlatformLlmEntryResponse[]) =>
+      queryClient.setQueryData<PlatformLlmEntryResponse[]>(
+        llmProviderKeys.platformPurposes(),
+        (prev) => (prev ? [...prev.filter((e) => e.purpose !== purpose), ...entries] : prev),
+      ),
     invalidate: () =>
       queryClient.invalidateQueries({ queryKey: llmProviderKeys.all }),
   };

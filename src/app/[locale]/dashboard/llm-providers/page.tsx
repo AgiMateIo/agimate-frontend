@@ -46,10 +46,9 @@ function LlmProvidersContent() {
     if (deepLink.open) router.replace('/dashboard/llm-providers');
   }, [deepLink.open, router]);
 
-  // The platform provider is a singleton — only offer to create it to an admin who
-  // doesn't already have one (the backend only returns the platform row to admins).
-  const hasPlatform = providers.some((p) => p.platform);
-  const canCreatePlatform = isAdmin && !hasPlatform;
+  // Platform rows are only returned to admins, and there can be several (one per
+  // vendor, each with its own key and quotas).
+  const canCreatePlatform = isAdmin;
 
   const handleAddSuccess = () => {
     invalidate();

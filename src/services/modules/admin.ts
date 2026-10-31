@@ -39,8 +39,8 @@ export const adminApi = {
 
   // The same shape as the caller's own usage, for the user in the path. Never
   // 404s: control-api does not own the user directory, so an unknown id answers
-  // with the platform provider at zero. An empty array is legal too — the user
-  // has neither the platform provider nor a key of their own.
+  // with the platform providers at zero. An empty array is legal too — the user
+  // has neither a platform provider nor a key of their own.
   async getAdminUserLlmUsage(userId: string): Promise<LlmUsageResponse[]> {
     return httpClient.get<LlmUsageResponse[]>(
       `${API.ENDPOINTS.CONTROL_API}/manage/admin/llm-usage/${userId}/`,

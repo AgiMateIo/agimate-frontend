@@ -27,13 +27,13 @@ export default function AdminUserUsage({ userId }: { userId: string }) {
         <div className="space-y-3">
           {rows.map((row) => (
             <div
-              key={row.llmProviderId ?? 'platform'}
+              // Platform rows have no id — one row per provider, told apart by name.
+              key={row.llmProviderId ?? `platform:${row.providerName}`}
               className="space-y-2 rounded-lg border border-border bg-surface p-3"
             >
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-sm font-medium text-foreground">
-                  {/* The platform provider reports a technical name ("platform"). */}
-                  {row.source === 'PLATFORM' ? tu('platformProviderName') : row.providerName}
+                  {row.providerName}
                 </span>
                 <Chip tone={row.source === 'PLATFORM' ? 'accent' : 'default'}>
                   {row.source === 'PLATFORM' ? tu('platformBadge') : t('usageSourceOwnKey')}

@@ -36,8 +36,6 @@ export default function EditLlmProviderModal({ provider, onClose, onSuccess }: E
   const [extraBodyText, setExtraBodyText] = useState(formatExtraBody(provider.extraBody));
 
   const isCompatible = provider.providerType === 'OPENAI_COMPATIBLE';
-  const isPlatform = provider.platform;
-  // The platform name is a locked service key ("platform") — renaming is rejected.
 
   const { loading, error, handleSubmit, setError } = useAsyncForm<LlmProviderResponse>({
     onSuccess: (updated) => onSuccess(updated),
@@ -53,7 +51,9 @@ export default function EditLlmProviderModal({ provider, onClose, onSuccess }: E
     }
     handleSubmit(e, () => {
       const body: UpdateLlmProviderRequest = {};
-      if (!isPlatform && name.trim() !== provider.name) body.name = name.trim();
+      // Renaming is allowed for platform rows too — the name is unique among
+      // the platform providers, and a duplicate answers 409.
+      if (name.trim() !== provider.name) body.name = name.trim();
       const trimmedUrl = baseUrl.trim();
       if (trimmedUrl !== (provider.baseUrl ?? '')) {
         body.baseUrl = trimmedUrl === '' ? '' : trimmedUrl;
@@ -76,18 +76,20 @@ export default function EditLlmProviderModal({ provider, onClose, onSuccess }: E
   return (
     <Modal isOpen={true} onClose={onClose} title={t('editProvider')}>
       <form onSubmit={onSubmit} className="space-y-4">
-        {!isPlatform && (
-          <FormField label={t('name')} required>
-            <Input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              maxLength={100}
-              disabled={loading}
-            />
-          </FormField>
-        )}
+        <FormField
+          label={t('name')}
+          required
+          hint={provider.platform ? t('platformNameHint') : undefined}
+        >
+          <Input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            maxLength={100}
+            disabled={loading}
+          />
+        </FormField>
 
         <FormField label={t('baseUrl')} hint={isCompatible ? undefined : t('baseUrlPlaceholderDefault')}>
           <Input

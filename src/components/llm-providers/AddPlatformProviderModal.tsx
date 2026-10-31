@@ -22,19 +22,20 @@ interface AddPlatformProviderModalProps {
   onSuccess: () => void;
 }
 
-// ADMIN-only. Creates the singleton platform provider. Unlike the personal-provider
-// form there is no name field (the backend forces `name: "platform"`), and the row
-// is created disabled — the free-tier is turned on later via the enable toggle once
-// quotas are set.
+// ADMIN-only. Creates a platform provider — there can be several, one per vendor,
+// each with its own key and quotas, so the name is required and unique among
+// them. Purpose assignments are not part of this form: they live on the Platform
+// LLMs admin page. The row is created disabled; the free tier is turned on later
+// via the enable toggle once quotas are set.
 export default function AddPlatformProviderModal({ onClose, onSuccess }: AddPlatformProviderModalProps) {
   const t = useTranslations('LlmProviders');
   const tCommon = useTranslations('Common');
   const tu = useTranslations('LlmUsage');
 
+  const [name, setName] = useState('');
   const [providerType, setProviderType] = useState<LlmProviderType>(DEFAULT_PROVIDER_TYPE);
   const [baseUrl, setBaseUrl] = useState(DEFAULT_BASE_URL[DEFAULT_PROVIDER_TYPE]);
   const [apiKey, setApiKey] = useState('');
-  const [chatModel, setChatModel] = useState('');
 
   const [creating, setCreating] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -62,18 +63,15 @@ export default function AddPlatformProviderModal({ onClose, onSuccess }: AddPlat
     let createdId: string | null = null;
     try {
       const body: CreatePlatformLlmProviderRequest = {
+        name: name.trim(),
         providerType,
         apiKey: apiKey.trim(),
         baseUrl: baseUrl.trim() || undefined,
-        // The registry is empty at creation time, so any id is accepted here.
-        // Vision/image lists are configured afterwards, once models are fetched.
-        purposePriority: chatModel.trim() ? { CHAT: [chatModel.trim()] } : undefined,
       };
       const created = await apiService.createPlatformLlmProvider(body);
       createdId = created.id;
     } catch (err) {
-      // Backend rejects a second platform provider with a 409 message (singleton),
-      // surfaced here directly. The trigger is already hidden when one exists.
+      // A duplicate name is a 409 — the backend's message names the clash.
       setError(getErrorMessage(err, tu('platformCreateFailed')));
       setCreating(false);
       return;
@@ -102,6 +100,17 @@ export default function AddPlatformProviderModal({ onClose, onSuccess }: AddPlat
     <Modal isOpen={true} onClose={busy ? () => {} : onClose} title={tu('createPlatformProvider')}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <Alert variant="info">{tu('platformCreateHint')}</Alert>
+
+        <FormField label={t('name')} required hint={t('platformNameHint')}>
+          <Input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            maxLength={100}
+            required
+            disabled={busy}
+          />
+        </FormField>
 
         <FormField label={t('providerType')} required>
           <Select
@@ -143,16 +152,6 @@ export default function AddPlatformProviderModal({ onClose, onSuccess }: AddPlat
           />
         </FormField>
 
-        <FormField label={tu('fallbackModel')} hint={tu('fallbackModelHint')}>
-          <Input
-            type="text"
-            value={chatModel}
-            onChange={(e) => setChatModel(e.target.value)}
-            placeholder="gpt-5-mini"
-            disabled={busy}
-          />
-        </FormField>
-
         {error && <ErrorAlert>{error}</ErrorAlert>}
 
         {refreshing && <Alert variant="info">{t('verifyingCredentials')}</Alert>}
@@ -176,7 +175,7 @@ export default function AddPlatformProviderModal({ onClose, onSuccess }: AddPlat
               </Button>
               <Button
                 type="submit"
-                disabled={busy || !apiKey.trim() || (isCompatible && !baseUrl.trim())}
+                disabled={busy || !name.trim() || !apiKey.trim() || (isCompatible && !baseUrl.trim())}
                 loading={busy}
               >
                 {t('create')}

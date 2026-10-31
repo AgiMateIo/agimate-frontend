@@ -17,7 +17,7 @@ export default function AgentModelsPage() {
 
   return (
     <div className="bg-surface rounded-xl border border-border p-6">
-      <AgentModelsTab agentId={agentId} agentType={agent.type} />
+      <AgentModelsTab agentId={agentId} agentType={agent.type} llmSource={agent.llmSource} />
     </div>
   );
 }

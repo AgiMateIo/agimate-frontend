@@ -53,7 +53,7 @@ function ProviderDetailContent({ id }: { id: string }) {
   const [{ data: providers }, { data: models }] = useSuspenseQueries({
     queries: [llmProvidersListOptions(), llmProviderModelsOptions(id)],
   });
-  const { setProviders, setProviderModels } = useLlmProviderCacheActions();
+  const { setProviders, setProviderModels, invalidateUsage } = useLlmProviderCacheActions();
   const usageQuery = useLlmUsageQuery();
 
   const provider = providers.find((p) => p.id === id);
@@ -66,7 +66,7 @@ function ProviderDetailContent({ id }: { id: string }) {
   const [refreshError, setRefreshError] = useState<string | null>(null);
 
   // Label the [id] breadcrumb segment with the provider name.
-  useSetBreadcrumb(id, provider?.platform ? tu('platformProviderName') : provider?.name);
+  useSetBreadcrumb(id, provider?.name);
 
   if (!provider) {
     return (
@@ -98,9 +98,20 @@ function ProviderDetailContent({ id }: { id: string }) {
     }
   };
 
-  const usage = usageQuery.data?.find((u) => u.llmProviderId === provider.id);
-  const displayName = provider.platform ? tu('platformProviderName') : provider.name;
+  // A platform usage row carries no provider id — it is told apart by name. The
+  // platform can have several providers, hence the name match rather than a
+  // single "the platform row".
+  const usage = usageQuery.data?.find((u) =>
+    provider.platform
+      ? u.source === 'PLATFORM' && u.providerName === provider.name
+      : u.llmProviderId === provider.id
+  );
+  const displayName = provider.name;
   const hasModels = models.length > 0;
+  // A platform provider has no purposes tab; a tab selection carried over from
+  // another provider (client-side navigation reuses this component) must not
+  // leave the content area blank.
+  const shownTab = provider.platform && activeTab === 'purposes' ? 'info' : activeTab;
 
   // One line per configured purpose: the model that would be tried first, plus
   // how many fallbacks sit behind it. Audio purposes are omitted here for the
@@ -148,7 +159,7 @@ function ProviderDetailContent({ id }: { id: string }) {
       </div>
 
       <Tabs
-        activeTab={activeTab}
+        activeTab={shownTab}
         onTabChange={(id) => setActiveTab(id as typeof activeTab)}
         tabs={[
           {
@@ -178,17 +189,33 @@ function ProviderDetailContent({ id }: { id: string }) {
                     sub={provider.mediaTransport === null ? t('mediaTransportDefaultSub') : undefined}
                     action={<RowAction icon={PencilIcon} label={t('editProvider')} onClick={() => setEditing(true)} />}
                   />
-                  <FieldRow
-                    label={t('purposesTitle')}
-                    value={purposeSummary}
-                    action={(
-                      <RowAction
-                        icon={AdjustmentsHorizontalIcon}
-                        label={t('purposesManage')}
-                        onClick={() => setActiveTab('purposes')}
-                      />
-                    )}
-                  />
+                  {/* A platform provider's assignments are global, not a
+                      property of the row — they live on the admin page. */}
+                  {provider.platform ? (
+                    <FieldRow
+                      label={t('purposesTitle')}
+                      value={t('platformPurposesProviderValue')}
+                      action={(
+                        <RowAction
+                          icon={AdjustmentsHorizontalIcon}
+                          label={t('platformPurposesManage')}
+                          onClick={() => router.push('/dashboard/admin/platform-llms')}
+                        />
+                      )}
+                    />
+                  ) : (
+                    <FieldRow
+                      label={t('purposesTitle')}
+                      value={purposeSummary}
+                      action={(
+                        <RowAction
+                          icon={AdjustmentsHorizontalIcon}
+                          label={t('purposesManage')}
+                          onClick={() => setActiveTab('purposes')}
+                        />
+                      )}
+                    />
+                  )}
                   <FieldRow
                     label={t('modelsLabel')}
                     value={hasModels ? t('availableModels', { count: models.length }) : t('noModelsYet')}
@@ -207,19 +234,21 @@ function ProviderDetailContent({ id }: { id: string }) {
                   <FieldRow label={t('createdAt')} value={formatDate(provider.createdAt, bcp47)} />
                 </section>
 
-                {/* The platform provider cannot be deleted — only disabled. */}
-                {!provider.platform && (
-                  <section className="bg-surface rounded-xl border border-error/30 p-5 flex items-center justify-between gap-4 flex-wrap">
-                    <div className="min-w-0">
-                      <h3 className="text-sm font-semibold text-foreground">{t('deleteProvider')}</h3>
-                      <p className="text-xs text-muted mt-0.5">{t('deleteWarning')}</p>
-                    </div>
-                    <Button variant="danger" onClick={() => setDeleting(true)} className="flex items-center gap-2 shrink-0">
-                      <TrashIcon className="h-4 w-4" />
-                      {t('deleteProvider')}
-                    </Button>
-                  </section>
-                )}
+                {/* A platform provider can be deleted only while no platform
+                    assignment references it; the backend's 400 explains the
+                    refusal and the modal shows it verbatim. */}
+                <section className="bg-surface rounded-xl border border-error/30 p-5 flex items-center justify-between gap-4 flex-wrap">
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-semibold text-foreground">{t('deleteProvider')}</h3>
+                    <p className="text-xs text-muted mt-0.5">
+                      {provider.platform ? t('deletePlatformWarning') : t('deleteWarning')}
+                    </p>
+                  </div>
+                  <Button variant="danger" onClick={() => setDeleting(true)} className="flex items-center gap-2 shrink-0">
+                    <TrashIcon className="h-4 w-4" />
+                    {t('deleteProvider')}
+                  </Button>
+                </section>
               </div>
             ),
           },
@@ -236,7 +265,9 @@ function ProviderDetailContent({ id }: { id: string }) {
               />
             ),
           },
-          {
+          // Platform assignments are global and edited on the admin page; a
+          // platform row does not carry purpose lists of its own.
+          ...(provider.platform ? [] : [{
             id: 'purposes',
             label: t('tabPurposes'),
             content: (
@@ -246,7 +277,7 @@ function ProviderDetailContent({ id }: { id: string }) {
                 onSaved={applyUpdated}
               />
             ),
-          },
+          }]),
           {
             id: 'usage',
             label: tu('tabUsage'),
@@ -289,6 +320,9 @@ function ProviderDetailContent({ id }: { id: string }) {
           onClose={() => setEditing(false)}
           onSuccess={(updated) => {
             applyUpdated(updated);
+            // A rename changes the key platform usage rows are matched by, and
+            // enabling/disabling adds or removes a row.
+            invalidateUsage();
             setEditing(false);
           }}
         />
@@ -311,6 +345,7 @@ function ProviderDetailContent({ id }: { id: string }) {
           onClose={() => setDeleting(false)}
           onSuccess={(deletedId) => {
             setProviders(providers.filter((p) => p.id !== deletedId));
+            invalidateUsage();
             router.push('/dashboard/llm-providers');
           }}
         />

@@ -2,6 +2,7 @@
 import { httpClient } from '../httpClient';
 import { API } from '@/config/constants';
 import type {
+  AgentLlmPurpose,
   LlmProviderCatalogEntry,
   LlmProviderResponse,
   CreateLlmProviderRequest,
@@ -14,6 +15,8 @@ import type {
   LlmQuota,
   CreateLlmQuotaRequest,
   UpdateLlmQuotaRequest,
+  PlatformLlmBindingsRequest,
+  PlatformLlmEntryResponse,
 } from '@/types';
 
 export const llmProvidersApi = {
@@ -32,7 +35,8 @@ export const llmProvidersApi = {
     return httpClient.post<LlmProviderResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/llm-providers/`, data);
   },
 
-  // ADMIN only — creates the singleton platform provider (disabled). 409 if it already exists.
+  // ADMIN only — creates a platform provider (disabled). There can be several;
+  // a duplicate name among them answers 409.
   async createPlatformLlmProvider(data: CreatePlatformLlmProviderRequest): Promise<LlmProviderResponse> {
     return httpClient.post<LlmProviderResponse>(`${API.ENDPOINTS.CONTROL_API}/manage/llm-providers/platform`, data);
   },
@@ -43,6 +47,28 @@ export const llmProvidersApi = {
 
   async deleteLlmProvider(id: string): Promise<void> {
     return httpClient.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/llm-providers/${id}`);
+  },
+
+  // ADMIN only: the platform's purpose chains (platform_llms). The same shape
+  // as the agent's bindings, but global and provider-addressed. PUT replaces one
+  // purpose's chain and answers with it; [] is equivalent to DELETE.
+  async getPlatformLlms(): Promise<PlatformLlmEntryResponse[]> {
+    return httpClient.get<PlatformLlmEntryResponse[]>(`${API.ENDPOINTS.CONTROL_API}/manage/admin/platform-llms/`);
+  },
+
+  async updatePlatformLlms(
+    purpose: AgentLlmPurpose,
+    data: PlatformLlmBindingsRequest,
+  ): Promise<PlatformLlmEntryResponse[]> {
+    return httpClient.put<PlatformLlmEntryResponse[]>(
+      `${API.ENDPOINTS.CONTROL_API}/manage/admin/platform-llms/${purpose}`,
+      data,
+    );
+  },
+
+  // 404 when the purpose had no chain — the caller treats it as already clear.
+  async deletePlatformLlms(purpose: AgentLlmPurpose): Promise<void> {
+    return httpClient.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/admin/platform-llms/${purpose}`);
   },
 
   async refreshLlmProviderModels(id: string): Promise<RefreshModelsResponse> {

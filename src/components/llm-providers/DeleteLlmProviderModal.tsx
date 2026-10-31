@@ -28,7 +28,9 @@ export default function DeleteLlmProviderModal({ provider, onClose, onSuccess }:
     >
       <Alert variant="warning">
         <p className="font-medium">{t('deleteWarning')}</p>
-        <p className="text-xs mt-1">{t('deleteCascadeWarning')}</p>
+        <p className="text-xs mt-1">
+          {provider.platform ? t('deletePlatformWarning') : t('deleteCascadeWarning')}
+        </p>
       </Alert>
     </ConfirmDeleteModal>
   );

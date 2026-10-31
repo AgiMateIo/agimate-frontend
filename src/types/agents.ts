@@ -1,6 +1,6 @@
 // Agent types
 
-import type { AgentLlmResponse } from './llm-providers';
+import type { AgentLlmResponse, AgentLlmSource } from './llm-providers';
 
 // How events reach the agent — the only thing the type decides now.
 // GENERIC runs on the platform (internal queue, platform or user-bound model);
@@ -31,6 +31,9 @@ export interface AgentResponse {
   createdAt: string;
   skills: AgentSkillSummary[];
   llms: AgentLlmResponse[];
+  // Which chains the agent runs on. Creation never accepts it — a new agent is
+  // always PLATFORM; only PUT /agents/{id}/llm-source moves it.
+  llmSource: AgentLlmSource;
 }
 
 export interface AgentCreatedResponse {

@@ -3,9 +3,9 @@
 import { SparklesIcon } from '@heroicons/react/24/outline';
 import { LlmProviderType } from '@/types';
 
-// Per-type avatar tile: a two-letter mark on a brand-tinted background. The
-// platform provider gets its own success-green sparkle tile so it reads as
-// special at a glance.
+// Per-type avatar tile: a two-letter mark on a brand-tinted background. Platform
+// providers get their own success-green sparkle tile so they read as special at
+// a glance.
 const STYLES: Record<LlmProviderType, { badge: string; className: string }> = {
   OPENAI: { badge: 'AI', className: 'bg-emerald-500/15 text-emerald-500' },
   ANTHROPIC: { badge: 'An', className: 'bg-orange-500/15 text-orange-500' },

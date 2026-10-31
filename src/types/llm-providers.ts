@@ -58,8 +58,9 @@ export interface LlmProviderModelResponse {
 // a lowercase or unknown key is rejected with 400 while parsing the body.
 //
 // Three states, three meanings:
-//   key absent   — the purpose is not configured; resolution falls through to the
-//                  platform provider;
+//   key absent   — the purpose is not configured at this provider; a BYOK agent
+//                  moves on to the next chat provider's list (the platform is
+//                  never a fallback in BYOK);
 //   []           — the purpose is switched off deliberately; the chain stops here;
 //   [a, b, …]    — priority order: the first model the registry does not mark
 //                  UNAVAILABLE wins.
@@ -74,14 +75,18 @@ export interface LlmProviderResponse {
   // null = never set — the backend treats it as CHAT_MODALITIES. Providers created
   // before the field existed answer null, which is "as it was", not a misconfiguration.
   mediaTransport: LlmMediaTransport | null;
-  // null = nothing configured for any purpose.
+  // null = nothing configured for any purpose. Platform providers always answer
+  // null: their assignments live in `platform_llms` (see PlatformLlmEntryResponse)
+  // and PATCH refuses this field on a platform row with a 400.
   purposePriority: LlmPurposePriority | null;
   apiKeyMask: string;
   modelsRefreshedAt: string | null;
   extraBody: LlmExtraBody | null;
   enabled: boolean;
-  // true only for the system-owned platform provider (visible to ADMIN only).
-  // Its name is locked ("platform") and it cannot be deleted — only disabled.
+  // true for the system-owned platform providers (visible to ADMIN only). There
+  // can be several — one per vendor, each with its own key and quotas — and
+  // their names are ordinary, unique among the platform rows. A platform row can
+  // be deleted only while no platform assignment references it.
   platform: boolean;
   createdAt: string;
 }
@@ -134,6 +139,8 @@ export interface UpdateLlmProviderRequest {
   mediaTransport?: LlmMediaTransport;
   // Replaces the whole map — keys are not merged. Absent = keep, {} = clear.
   // Editing one purpose still means sending every other purpose back untouched.
+  // Not accepted for a platform row (400): platform assignments are their own
+  // resource, PUT/DELETE /manage/admin/platform-llms/{purpose}.
   purposePriority?: LlmPurposePriority;
   apiKey?: string;
   enabled?: boolean;
@@ -141,13 +148,15 @@ export interface UpdateLlmProviderRequest {
   extraBody?: LlmExtraBody | null;
 }
 
-// Create the system-owned platform provider (ADMIN only). `name` is not accepted —
-// the backend forces it to "platform". The row is created disabled; enable it via
-// PATCH after configuring free-tier quotas.
+// Create a system-owned platform provider (ADMIN only). `name` is required and
+// unique among the platform rows (a duplicate answers 409); it is no longer
+// forced to "platform". The row is created disabled; enable it via PATCH once
+// its free-tier quotas are set. Purpose assignments are not created here — they
+// live in `platform_llms` (PUT /manage/admin/platform-llms/{purpose}).
 export interface CreatePlatformLlmProviderRequest {
+  name: string;
   providerType: LlmProviderType;
   baseUrl?: string | null;
-  purposePriority?: LlmPurposePriority;
   apiKey: string;
 }
 
@@ -166,12 +175,20 @@ export interface UpdateModelExtraBodyRequest {
   extraBody: LlmExtraBody | null;
 }
 
-// USER — a real `agent_llms` row, editable/deletable as usual.
-// PLATFORM — a virtual free-tier fallback the backend synthesizes when the agent
-// has zero user bindings and the platform provider is enabled with a non-empty
-// CHAT list (its `model` is that list's first entry). Not addressable
-// (llmProviderId is null) and not persisted, so it must not be edited/deleted.
-export type AgentLlmSource = 'USER' | 'PLATFORM';
+// Which way an agent's models are chosen. The two chains never mix:
+//   PLATFORM — only the platform's purpose chains run; the agent's own bindings
+//              stay stored but inactive (they can be deleted, not edited).
+//   BYOK     — only the agent's own bindings and the purpose lists of its chat
+//              providers; the platform is never substituted for any purpose.
+// A brand-new agent is always PLATFORM; switching is an explicit request
+// (PUT /agents/{agentId}/llm-source) because it changes who pays.
+export type AgentLlmSource = 'PLATFORM' | 'BYOK';
+
+// USER — a real `agent_llms` row.
+// PLATFORM — an effective link of a platform chain. Synthesized from
+// `platform_llms` (not persisted on the agent), not addressable
+// (`llmProviderId` is null), so it must not be edited or deleted.
+export type AgentLlmBindingSource = 'USER' | 'PLATFORM';
 
 // CHAT — the agent's main conversation model; ROUTINE — the platform's own
 // housekeeping over the agent's conversations (compressing a long one into a
@@ -184,12 +201,13 @@ export type AgentLlmSource = 'USER' | 'PLATFORM';
 // order of attempts is all the UI can honestly show. The purpose travels in the
 // PUT/DELETE path (uppercase — lowercase gives 400); a position inside it is
 // `priority`, assigned by the server from the order it was given.
-// Resolution order, with no guessing at any step: the agent's own chain →
-// `purposePriority` of the provider carrying the agent's CHAT binding → the
-// platform provider's. Nothing found = the tool call fails, and the user reads
-// the reason verbatim in the chat. ROUTINE is the exception: it never fails —
-// with nothing bound it takes a model of the CHAT provider and, failing that,
-// the chat model itself.
+// Resolution follows `llmSource`:
+//   PLATFORM — the platform's chain for the purpose;
+//   BYOK     — the agent's own chain → `purposePriority` lists of the providers
+//              carrying its CHAT bindings. Nothing found = the tool call fails,
+//              and the user reads the reason verbatim in the chat.
+// ROUTINE is the exception: it never fails — with nothing bound it takes a model
+// of the CHAT provider and, failing that, the chat model itself.
 // AUDIO_IN/AUDIO_OUT are accepted and stored everywhere, but no speech tools
 // exist yet — bindings on them do nothing so far.
 export type AgentLlmPurpose = 'CHAT' | 'ROUTINE' | 'IMAGE' | 'VISION' | 'AUDIO_IN' | 'AUDIO_OUT';
@@ -197,14 +215,19 @@ export type AgentLlmPurpose = 'CHAT' | 'ROUTINE' | 'IMAGE' | 'VISION' | 'AUDIO_I
 export interface AgentLlmResponse {
   model: string;
   purpose: AgentLlmPurpose;
-  // Position in the purpose's chain, 0 = first attempt. null only on the
-  // synthetic PLATFORM record, which is not part of any chain.
-  priority: number | null;
-  // null for the synthetic PLATFORM record — the provider is system-owned.
+  // Position in the purpose's chain, 0 = first attempt. Always a number now:
+  // platform links are numbered like the agent's own.
+  priority: number;
+  // null for a PLATFORM row — the provider is system-owned and the id cannot be
+  // sent to any agent-binding endpoint.
   llmProviderId: string | null;
   llmProviderName: string;
   providerType: LlmProviderType;
-  source: AgentLlmSource;
+  source: AgentLlmBindingSource;
+  // Whether this row takes part in resolution. PLATFORM rows are always active;
+  // a BYOK agent's rows are always active; a PLATFORM agent's own rows are
+  // inactive — kept so they can be deleted.
+  active: boolean;
 }
 
 // One link of a chain in a PUT body — the position is its array index.
@@ -245,16 +268,37 @@ export interface LlmUsageWindow {
 }
 
 export interface LlmUsageResponse {
-  // null for the platform provider (system-owned, not addressable).
+  // null for platform providers (system-owned, not addressable). Several
+  // platform rows can be present — one per enabled platform provider — so
+  // `providerName` is what tells them apart; never assume a single one.
   llmProviderId: string | null;
-  // Technical "platform" for the platform provider — the UI supplies a label.
   providerName: string;
-  source: AgentLlmSource;
+  source: AgentLlmBindingSource;
   windows: LlmUsageWindow[];
 }
 
+// --- Platform purpose chains (ADMIN) ---
+
+// GET /manage/admin/platform-llms/ — one link of a platform chain, flat. The
+// server orders purposes by the enum and links within a purpose by `priority`.
+export interface PlatformLlmEntryResponse {
+  llmProviderId: string;
+  providerName: string;
+  providerType: LlmProviderType;
+  purpose: AgentLlmPurpose;
+  priority: number;
+  model: string;
+}
+
+// PUT /manage/admin/platform-llms/{purpose} — replaces that purpose's chain in
+// the order given; `[]` is the same as DELETE. Links must belong to platform
+// providers; the server assigns `priority` from the array index.
+export interface PlatformLlmBindingsRequest {
+  bindings: AgentLlmBindingRequest[];
+}
+
 // TOTAL — cap across all agents using this provider.
-// AGENT — per-agent cap. USER — per-user cap (only meaningful on the platform provider).
+// AGENT — per-agent cap. USER — per-user cap (meaningful on platform providers).
 export type LlmQuotaSubjectKind = 'TOTAL' | 'AGENT' | 'USER';
 
 export interface LlmQuota {

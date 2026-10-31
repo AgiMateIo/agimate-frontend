@@ -35,12 +35,15 @@ export default function LlmSpend() {
       ) : (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {usage.map((entry) => (
-            <div key={entry.llmProviderId ?? 'platform'} className="space-y-2 px-1">
+            <div
+              // Several platform rows can arrive; their ids are all null, so the
+              // name is what keeps them apart.
+              key={entry.llmProviderId ?? `platform:${entry.providerName}`}
+              className="space-y-2 px-1"
+            >
               <div className="flex items-center gap-2">
                 <span className="truncate text-sm font-medium text-foreground">
-                  {entry.source === 'PLATFORM'
-                    ? tUsage('platformProviderName')
-                    : entry.providerName}
+                  {entry.providerName}
                 </span>
                 {entry.source === 'PLATFORM' && (
                   <span className="shrink-0 rounded-full bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent">

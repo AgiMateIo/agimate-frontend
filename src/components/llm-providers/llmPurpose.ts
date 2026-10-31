@@ -14,9 +14,10 @@ import type { CapabilityFilter } from './modelRegistry';
 // conversation, then the platform's housekeeping over it), the media tools after.
 export const LLM_PURPOSES: readonly AgentLlmPurpose[] = ['CHAT', 'ROUTINE', 'IMAGE', 'VISION', 'AUDIO_IN', 'AUDIO_OUT'];
 
-// Purposes the provider-level priority editor exposes. The backend stores audio
-// lists happily, but no speech-to-text/text-to-speech tool exists yet, so a list
-// there would configure nothing — keep it out of the UI until one does.
+// Purposes the purpose editors expose — the provider-level priority lists and
+// the platform's own chains. The backend stores audio lists happily, but no
+// speech-to-text/text-to-speech tool exists yet, so a list there would configure
+// nothing — keep it out of the UI until one does.
 export const PROVIDER_PURPOSES: readonly AgentLlmPurpose[] = ['CHAT', 'ROUTINE', 'VISION', 'IMAGE'];
 
 // The backend's cap on one purpose's chain — POST past it answers 409.
@@ -65,7 +66,8 @@ export const purposeRequirementLabelKey = {
   AUDIO_OUT: 'requirementAudioOut',
 } as const satisfies Record<AgentLlmPurpose, string>;
 
-// 'unset' — the key is absent: the purpose falls through to the platform provider.
+// 'unset' — the key is absent: this provider offers nothing for the purpose, and
+//           a BYOK agent moves on to the next chat provider's list.
 // 'off'   — an empty list: deliberately switched off, the chain stops here.
 // 'list'  — a priority order of models.
 export type PurposeState = 'unset' | 'off' | 'list';

@@ -19,6 +19,7 @@ import type {
   SkillBindingPlanResponse,
   AgentLlmResponse,
   AgentLlmPurpose,
+  AgentLlmSource,
   CreateAgentLlmRequest,
   UpdateAgentLlmRequest,
   AgentViewResponse,
@@ -169,6 +170,17 @@ export const agentsApi = {
 
   async deleteAgentLlm(agentId: string, purpose: AgentLlmPurpose): Promise<void> {
     return httpClient.delete<void>(`${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/llms/${purpose}`);
+  },
+
+  // Switches the agent between the platform's chains and its owner's own keys.
+  // POST/PUT on the bindings endpoints answer 400 while the source is PLATFORM
+  // — adding a binding must not change the payer as a side effect — so a screen
+  // that offers editing switches first. Answers the updated agent.
+  async setAgentLlmSource(agentId: string, source: AgentLlmSource): Promise<AgentResponse> {
+    return httpClient.put<AgentResponse>(
+      `${API.ENDPOINTS.CONTROL_API}/manage/agents/${agentId}/llm-source`,
+      { source },
+    );
   },
 
   // Views (MCP Apps) — the pages this agent's connections offer.

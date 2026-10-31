@@ -2,8 +2,8 @@ import type { AgentType } from '@/types';
 import { getMcpServerUrl } from './api-url';
 
 // The three types whose loop runs outside the platform. They share everything
-// but the door for incoming events, and none of them uses a platform model —
-// the brain (and its keys) belong to the user.
+// but the door for incoming events: the brain (and its keys) belong to the
+// user. Only the platform-run tool tasks (media) may use platform chains.
 export const EXTERNAL_AGENT_TYPES: AgentType[] = ['MCP', 'CENTRIFUGO', 'WEBHOOK'];
 
 export function isExternalAgentType(type: AgentType): boolean {

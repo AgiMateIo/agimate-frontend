@@ -8,6 +8,7 @@ import {
 import apiService from '@/services/api';
 import { newestFirst } from '@/utils/date';
 import type {
+  AgentLlmResponse,
   AgentResponse,
   AgentSkillResponse,
   AgentStarter,
@@ -136,8 +137,10 @@ export function useAgentSkillPlanQuery(agentId: string, skillId: string | null) 
   });
 }
 
-// Model bindings of one agent, keyed by purpose. A zero-binding agent gets a
-// single synthetic PLATFORM row back — never a real row, see AgentLlmSource.
+// Model bindings of one agent, keyed by purpose. The list mixes the effective
+// platform links (source PLATFORM, no provider id) with the agent's own rows
+// (source USER, inactive while the agent's llmSource is PLATFORM) — see
+// AgentLlmBindingSource.
 export const agentLlmsOptions = (agentId: string) =>
   queryOptions({
     queryKey: agentKeys.llms(agentId),
@@ -321,6 +324,15 @@ export function useAgentCacheActions() {
   return {
     invalidateAgent: (id: string) =>
       queryClient.invalidateQueries({ queryKey: agentKeys.detail(id) }),
+    // A response that is the full detail shape (the llm-source switch) replaces
+    // the cached agent, so the screen does not show the old source while a
+    // refetch is in flight.
+    setAgent: (agent: AgentResponse) =>
+      queryClient.setQueryData(agentKeys.detail(agent.id), agent),
+    // The detail response already carries the recomputed binding list; seeding it
+    // keeps the models tab from flashing the previous source's rows.
+    setAgentLlms: (id: string, llms: AgentLlmResponse[]) =>
+      queryClient.setQueryData(agentKeys.llms(id), llms),
     invalidateAgentLlms: (id: string) =>
       queryClient.invalidateQueries({ queryKey: agentKeys.llms(id) }),
     // Skills and connections satisfy each other: opening a connection can turn a
