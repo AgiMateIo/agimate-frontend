@@ -1,12 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { CpuChipIcon, RectangleStackIcon, ShieldCheckIcon, UsersIcon } from '@heroicons/react/24/outline';
+import { CpuChipIcon, RectangleStackIcon, ShieldCheckIcon, SparklesIcon, UsersIcon } from '@heroicons/react/24/outline';
 import ContextNav, { type ContextSection } from './ContextNav';
 
 type Section = {
   key: string;
-  labelKey: 'users' | 'presets' | 'platformLlms';
+  labelKey: 'users' | 'presets' | 'platformProviders' | 'platformLlms';
   href: string;
   icon: ContextSection['icon'];
 };
@@ -14,6 +14,7 @@ type Section = {
 const SECTIONS: Section[] = [
   { key: 'users', labelKey: 'users', href: '/dashboard/admin/users', icon: UsersIcon },
   { key: 'presets', labelKey: 'presets', href: '/dashboard/admin/presets', icon: RectangleStackIcon },
+  { key: 'platform-providers', labelKey: 'platformProviders', href: '/dashboard/admin/platform-providers', icon: SparklesIcon },
   { key: 'platform-llms', labelKey: 'platformLlms', href: '/dashboard/admin/platform-llms', icon: CpuChipIcon },
 ];
 

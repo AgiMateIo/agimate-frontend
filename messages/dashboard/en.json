@@ -27,7 +27,8 @@
     "users": "Users",
     "runs": "Runs",
     "presets": "Presets",
-    "platformLlms": "Platform LLMs"
+    "platformProviders": "Platform providers",
+    "platformLlms": "LLM purposes"
   },
   "TopBar": {
     "breadcrumbs": {
@@ -60,7 +61,8 @@
       "users": "Users",
       "runs": "Runs",
       "presets": "Presets",
-      "platformLlms": "Platform LLMs"
+      "platformProviders": "Platform providers",
+      "platformLlms": "LLM purposes"
     },
     "openMenu": "Open menu",
     "settings": "Settings",
@@ -1078,14 +1080,17 @@
     "modelLabel": "Model",
     "platformNameHint": "Unique among the platform providers. This is the name shown in usage and platform chains.",
     "deletePlatformWarning": "Deletion is allowed only while no platform assignment references this provider; otherwise the server refuses — clear the assignments first.",
+    "platformProvidersTitle": "Platform providers",
+    "platformProvidersSubtitle": "Shared free-tier providers for agents without a key of their own. Each has its own key, quotas and model registry.",
+    "platformProvidersEmpty": "No platform providers yet.",
     "platformPurposesProviderValue": "Configured for the whole platform",
     "platformPurposesManage": "Configure platform purposes",
-    "platformPurposesTitle": "Platform purposes",
+    "platformPurposesTitle": "LLM purposes",
     "platformPurposesSubtitle": "The chains every agent with the Platform source runs on. One chain per purpose, up to five links: the server takes the first model it can use.",
     "platformPurposesNoAccess": "This section is available to administrators only.",
     "platformPurposesLoading": "Loading platform purposes…",
     "platformPurposesNoProviders": "No platform providers yet. Create one first — a purpose chain is built from platform providers.",
-    "platformPurposesCreateProvider": "Open LLM Providers",
+    "platformPurposesCreateProvider": "Open platform providers",
     "platformPurposeEmpty": "No chain — the platform has no model for this purpose.",
     "platformPurposeCount": "{count} of {max}",
     "platformPurposeUnsaved": "Unsaved changes",
@@ -1571,12 +1576,9 @@
     "tabInfo": "Info",
     "tabUsage": "Usage",
     "tabQuotas": "Quotas",
-    "platformSectionTitle": "Platform providers",
-    "platformSectionSubtitle": "Shared free-tier providers for agents without a key of their own. Visible to administrators only.",
     "createPlatformProvider": "Create platform provider",
     "platformCreateHint": "A platform provider is created disabled. Set free-tier quotas, then enable it to turn the free tier on.",
     "platformCreateFailed": "Failed to create platform provider",
-    "personalSectionTitle": "My providers",
     "freeTierOff": "Free tier off",
     "freeTierTitle": "Free tier",
     "usageTitle": "Token usage",

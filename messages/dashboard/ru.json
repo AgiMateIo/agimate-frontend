@@ -27,7 +27,8 @@
     "users": "Пользователи",
     "runs": "Запуски",
     "presets": "Пресеты",
-    "platformLlms": "Платформенные LLM"
+    "platformProviders": "Платформенные провайдеры",
+    "platformLlms": "Назначения LLM"
   },
   "TopBar": {
     "breadcrumbs": {
@@ -60,7 +61,8 @@
       "users": "Пользователи",
       "runs": "Запуски",
       "presets": "Пресеты",
-      "platformLlms": "Платформенные LLM"
+      "platformProviders": "Платформенные провайдеры",
+      "platformLlms": "Назначения LLM"
     },
     "openMenu": "Открыть меню",
     "settings": "Настройки",
@@ -1078,14 +1080,17 @@
     "modelLabel": "Модель",
     "platformNameHint": "Уникально среди платформенных провайдеров. Под этим именем провайдер виден в расходе и платформенных цепочках.",
     "deletePlatformWarning": "Удаление возможно, только если на провайдера не ссылается ни одно платформенное назначение; иначе сервер откажет — сначала снимите назначения.",
+    "platformProvidersTitle": "Платформенные провайдеры",
+    "platformProvidersSubtitle": "Общие провайдеры free-tier для агентов без своего ключа. У каждого свой ключ, квоты и реестр моделей.",
+    "platformProvidersEmpty": "Платформенных провайдеров пока нет.",
     "platformPurposesProviderValue": "Настраиваются для всей платформы",
     "platformPurposesManage": "Настроить платформенные назначения",
-    "platformPurposesTitle": "Платформенные назначения",
+    "platformPurposesTitle": "Назначения LLM",
     "platformPurposesSubtitle": "Цепочки, на которых работают все агенты с источником «Платформа». Одна цепочка на назначение, до пяти звеньев: сервер берёт первую модель, которую может использовать.",
     "platformPurposesNoAccess": "Раздел доступен только администраторам.",
     "platformPurposesLoading": "Загрузка платформенных назначений…",
     "platformPurposesNoProviders": "Платформенных провайдеров пока нет. Сначала создайте провайдера — цепочка назначения строится из них.",
-    "platformPurposesCreateProvider": "Перейти к LLM-провайдерам",
+    "platformPurposesCreateProvider": "Перейти к платформенным провайдерам",
     "platformPurposeEmpty": "Цепочки нет — у платформы нет модели для этого назначения.",
     "platformPurposeCount": "{count} из {max}",
     "platformPurposeUnsaved": "Есть несохранённые изменения",
@@ -1571,12 +1576,9 @@
     "tabInfo": "Информация",
     "tabUsage": "Расход",
     "tabQuotas": "Квоты",
-    "platformSectionTitle": "Платформенные провайдеры",
-    "platformSectionSubtitle": "Общие провайдеры free-tier для агентов без своего ключа. Видны только администраторам.",
     "createPlatformProvider": "Создать платформенный провайдер",
     "platformCreateHint": "Платформенный провайдер создаётся выключенным. Настройте квоты free-tier и включите его, чтобы активировать free-tier.",
     "platformCreateFailed": "Не удалось создать платформенный провайдер",
-    "personalSectionTitle": "Мои провайдеры",
     "freeTierOff": "Free-tier выключен",
     "freeTierTitle": "Free-tier",
     "usageTitle": "Расход токенов",

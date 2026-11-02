@@ -11,9 +11,9 @@ import type { AgentLlmPurpose, PlatformLlmEntryResponse } from '@/types';
 import PlatformPurposeCard from './PlatformPurposeCard';
 
 // The platform's own answer to "which model serves this purpose" — the same
-// ordered chains an agent holds, but global. Platform providers themselves are
-// created and key-rotated on the LLM Providers page; this screen only wires
-// providers and models into purposes.
+// ordered chains an agent holds, but global. Platform providers themselves live
+// in the sibling Platform providers section; this screen only wires providers
+// and models into purposes.
 export default function AdminPlatformLlms() {
   const t = useTranslations('LlmProviders');
 
@@ -41,7 +41,7 @@ export default function AdminPlatformLlms() {
       <Placeholder>
         <p>{t('platformPurposesNoProviders')}</p>
         <div className="mt-4">
-          <Link href="/dashboard/llm-providers" className="text-accent hover:text-accent/80 transition-colors">
+          <Link href="/dashboard/admin/platform-providers" className="text-accent hover:text-accent/80 transition-colors">
             {t('platformPurposesCreateProvider')} →
           </Link>
         </div>

@@ -81,6 +81,7 @@ export default function TopBar({
     admin: t('breadcrumbs.admin'),
     users: t('breadcrumbs.users'),
     presets: t('breadcrumbs.presets'),
+    'platform-providers': t('breadcrumbs.platformProviders'),
     'platform-llms': t('breadcrumbs.platformLlms'),
     create: t('breadcrumbs.create'),
     edit: t('breadcrumbs.edit'),

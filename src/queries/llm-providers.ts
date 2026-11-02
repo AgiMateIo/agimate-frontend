@@ -127,6 +127,12 @@ export function useLlmProviderCacheActions() {
     // the full next array — write it straight into the cache.
     setProviders: (providers: LlmProviderResponse[]) =>
       queryClient.setQueryData(llmProviderKeys.list(), providers),
+    // One row changed (a toggle, an edit): replace it in place, so a page that
+    // renders a subset of the list never drops the rows it filtered out.
+    setProvider: (provider: LlmProviderResponse) =>
+      queryClient.setQueryData<LlmProviderResponse[]>(llmProviderKeys.list(), (prev) =>
+        prev ? prev.map((p) => (p.id === provider.id ? provider : p)) : prev
+      ),
     // Refresh/extra-body responses return full registry rows — write them straight in.
     setProviderModels: (providerId: string, models: LlmProviderModelResponse[]) =>
       queryClient.setQueryData(llmProviderKeys.models(providerId), models),

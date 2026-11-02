@@ -6,22 +6,18 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { Button } from '@/components/ui/Button';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useLlmProvidersQuery, useLlmProviderCacheActions } from '@/queries/llm-providers';
 import LlmProvidersList from '@/components/llm-providers/LlmProvidersList';
 import AddLlmProviderModal, { type LlmProviderPrefill } from '@/components/llm-providers/AddLlmProviderModal';
-import AddPlatformProviderModal from '@/components/llm-providers/AddPlatformProviderModal';
 import { parseProviderType } from '@/components/llm-providers/providerTypes';
 import { Placeholder } from '@/components/ui/Placeholder';
 
 function LlmProvidersContent() {
   const t = useTranslations('LlmProviders');
-  const tu = useTranslations('LlmUsage');
-  const isAdmin = useIsAdmin();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: providers } = useLlmProvidersQuery();
-  const { setProviders, invalidate } = useLlmProviderCacheActions();
+  const { setProvider, invalidate } = useLlmProviderCacheActions();
 
   // Target of the `/llm-providers/new` deep link. The query is read once, at
   // mount, and stripped straight after: the create form lives in a modal, and a
@@ -40,25 +36,19 @@ function LlmProvidersContent() {
     return { open, prefill };
   });
   const [showAddModal, setShowAddModal] = useState(deepLink.open);
-  const [showPlatformModal, setShowPlatformModal] = useState(false);
 
   useEffect(() => {
     if (deepLink.open) router.replace('/dashboard/llm-providers');
   }, [deepLink.open, router]);
-
-  // Platform rows are only returned to admins, and there can be several (one per
-  // vendor, each with its own key and quotas).
-  const canCreatePlatform = isAdmin;
 
   const handleAddSuccess = () => {
     invalidate();
     setShowAddModal(false);
   };
 
-  const handlePlatformSuccess = () => {
-    invalidate();
-    setShowPlatformModal(false);
-  };
+  // Platform providers are the platform's own rows; they are managed under
+  // Admin → Platform providers, not among a person's providers.
+  const personalProviders = providers.filter((p) => !p.platform);
 
   return (
     <>
@@ -68,11 +58,6 @@ function LlmProvidersContent() {
           <p className="text-muted mt-1">{t('subtitle')}</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          {canCreatePlatform && (
-            <Button variant="secondary" onClick={() => setShowPlatformModal(true)}>
-              {tu('createPlatformProvider')}
-            </Button>
-          )}
           <Button onClick={() => setShowAddModal(true)}>
             {t('addProvider')}
           </Button>
@@ -80,8 +65,8 @@ function LlmProvidersContent() {
       </div>
 
       <LlmProvidersList
-        providers={providers}
-        onUpdate={setProviders}
+        providers={personalProviders}
+        onUpdate={setProvider}
       />
 
       {showAddModal && (
@@ -89,13 +74,6 @@ function LlmProvidersContent() {
           onClose={() => setShowAddModal(false)}
           onSuccess={handleAddSuccess}
           prefill={deepLink.prefill ?? undefined}
-        />
-      )}
-
-      {showPlatformModal && (
-        <AddPlatformProviderModal
-          onClose={() => setShowPlatformModal(false)}
-          onSuccess={handlePlatformSuccess}
         />
       )}
     </>
