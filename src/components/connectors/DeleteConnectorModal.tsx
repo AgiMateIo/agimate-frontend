@@ -8,7 +8,8 @@ import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
 import { appLabel } from '@/utils/app';
 
 interface DeleteConnectorModalProps {
-  connector: AppResponse;
+  // A list row, or the detail's {appId, title, code} mapped to `id`.
+  connector: Pick<AppResponse, 'id' | 'title' | 'code'>;
   onClose: () => void;
   onSuccess: (connectorId: string) => void;
 }

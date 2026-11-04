@@ -6,12 +6,10 @@ import { Link } from '@/i18n/navigation';
 import { localeMap } from '@/i18n/routing';
 import apiService from '@/services/api';
 import { AppResponse } from '@/types';
-import { useQueryClient } from '@tanstack/react-query';
 import { TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { Toggle } from '@/components/ui/Toggle';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { useAppsQuery, useAppCacheActions } from '@/queries/apps';
-import { skillKeys } from '@/queries/skills';
 import { formatDate } from '@/utils/date';
 import { appLabel } from '@/utils/app';
 import AddConnectorModal from './AddConnectorModal';
@@ -33,7 +31,6 @@ function ConnectorsListView({
   const bcp47Locale = localeMap[locale];
   const { data: pageInfo } = useAppsQuery(page);
   const { patchAppInLists, removeAppFromLists, invalidateLists } = useAppCacheActions();
-  const queryClient = useQueryClient();
   const connectors = pageInfo.content;
 
   const [showAddModal, setShowAddModal] = useState(false);
@@ -64,8 +61,6 @@ function ConnectorsListView({
 
   const handleDeleteSuccess = (connectorId: string) => {
     removeAppFromLists(connectorId);
-    // Deleting an app deletes the skill it brought (server-side).
-    queryClient.invalidateQueries({ queryKey: skillKeys.all });
     setDeletingConnector(null);
   };
 

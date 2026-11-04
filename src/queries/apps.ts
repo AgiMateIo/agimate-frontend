@@ -4,6 +4,7 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query';
 import apiService from '@/services/api';
+import { skillKeys } from '@/queries/skills';
 import type { AppResponse, PagedResponse } from '@/types';
 
 export const appKeys = {
@@ -61,6 +62,8 @@ export function useAppCacheActions() {
             : old
       );
       queryClient.invalidateQueries({ queryKey: appKeys.lists() });
+      // Deleting an app deletes the skill it brought (server-side).
+      queryClient.invalidateQueries({ queryKey: skillKeys.all });
     },
     invalidateLists: () =>
       queryClient.invalidateQueries({ queryKey: appKeys.lists() }),
