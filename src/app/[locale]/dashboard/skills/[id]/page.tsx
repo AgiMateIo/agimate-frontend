@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import { useRouter } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { SkillDetailResponse } from '@/types';
 import { useSkillDetailSuspenseQuery, useSkillCacheActions } from '@/queries/skills';
@@ -23,6 +23,7 @@ import { useUser } from '@/contexts/UserContext';
 import { useSetBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { formatDate } from '@/utils/date';
+import { appLabel } from '@/utils/app';
 import { buildSkillMd, skillRequirements } from '@/utils/skill';
 import SkillRequirementChips from '@/components/skills/SkillRequirementChips';
 import SkillFrontmatterReference from '@/components/skills/SkillFrontmatterReference';
@@ -103,6 +104,21 @@ function SkillDetailContent({ skillId }: { skillId: string }) {
           <div className="mt-2 empty:hidden">
             <TaxonomyChips item={skill} />
           </div>
+          {skill.origin && (
+            <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 mt-2 text-xs text-muted">
+              <span>{t('originApp')}:</span>
+              <Link
+                href={`/dashboard/apps/${skill.origin.connectionId}`}
+                className="text-primary hover:underline"
+              >
+                {appLabel(skill.origin) ?? t('originAppUnknown')}
+              </Link>
+              {skill.origin.version && (
+                <span>{t('version', { version: skill.origin.version })}</span>
+              )}
+              {skill.origin.deviceName && <span>· {skill.origin.deviceName}</span>}
+            </div>
+          )}
           {skill.connectorCodes.length > 0 && (
             <div className="flex flex-wrap items-center gap-1.5 mt-2">
               <span className="text-xs text-muted">{t('connectorsLabel')}:</span>

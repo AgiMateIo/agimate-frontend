@@ -6,7 +6,7 @@ import apiService from '@/services/api';
 import { AppCreatedResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { FormField, Input, TextArea } from '@/components/ui/FormField';
+import { FormField, TextArea } from '@/components/ui/FormField';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
@@ -20,7 +20,6 @@ interface AddConnectorModalProps {
 export default function AddConnectorModal({ onClose, onSuccess }: AddConnectorModalProps) {
   const t = useTranslations('Connectors');
   const tCommon = useTranslations('Common');
-  const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [createdConnector, setCreatedConnector] = useState<AppCreatedResponse | null>(null);
 
@@ -32,7 +31,6 @@ export default function AddConnectorModal({ onClose, onSuccess }: AddConnectorMo
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
       apiService.createApp({
-        name,
         description: description || undefined,
         connectorCode: 'app',
       })
@@ -49,16 +47,13 @@ export default function AddConnectorModal({ onClose, onSuccess }: AddConnectorMo
     return (
       <Modal isOpen={true} onClose={handleClose} title={t('appKeyCreated')}>
         <SecretKeyReveal secret={createdConnector.fullKey} onDone={handleClose}>
-          <Alert variant="info">
-            <p className="text-sm">
-              <strong>{t('name')}:</strong> {createdConnector.name}
-            </p>
-            {createdConnector.description && createdConnector.description.trim() && (
-              <p className="text-sm mt-1">
+          {createdConnector.description && createdConnector.description.trim() && (
+            <Alert variant="info">
+              <p className="text-sm">
                 <strong>{t('description')}:</strong> {createdConnector.description}
               </p>
-            )}
-          </Alert>
+            </Alert>
+          )}
         </SecretKeyReveal>
       </Modal>
     );
@@ -67,17 +62,6 @@ export default function AddConnectorModal({ onClose, onSuccess }: AddConnectorMo
   return (
     <Modal isOpen={true} onClose={onClose} title={t('createApp')}>
       <form onSubmit={onSubmit} className="space-y-4">
-        <FormField label={t('name')} required>
-          <Input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={t('appNamePlaceholder')}
-            required
-            maxLength={100}
-          />
-        </FormField>
-
         <FormField label={t('description')}>
           <TextArea
             value={description}
@@ -87,6 +71,8 @@ export default function AddConnectorModal({ onClose, onSuccess }: AddConnectorMo
             rows={2}
           />
         </FormField>
+
+        <p className="text-xs text-muted">{t('appNamesItself')}</p>
 
         {error && <ErrorAlert>{error}</ErrorAlert>}
 
@@ -102,7 +88,7 @@ export default function AddConnectorModal({ onClose, onSuccess }: AddConnectorMo
           </Button>
           <Button
             type="submit"
-            disabled={loading || !name.trim()}
+            disabled={loading}
             loading={loading}
             className="flex-1"
           >

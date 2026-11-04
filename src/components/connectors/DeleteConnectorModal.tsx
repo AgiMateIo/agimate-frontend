@@ -5,6 +5,7 @@ import apiService from '@/services/api';
 import { AppResponse } from '@/types';
 import { Alert } from '@/components/ui/Alert';
 import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
+import { appLabel } from '@/utils/app';
 
 interface DeleteConnectorModalProps {
   connector: AppResponse;
@@ -16,6 +17,7 @@ export default function DeleteConnectorModal({ connector, onClose, onSuccess }: 
   const t = useTranslations('Connectors');
 
   const tCommon = useTranslations('Common');
+  const label = appLabel(connector);
   return (
     <ConfirmDeleteModal
       title={t('deleteApp')}
@@ -29,7 +31,9 @@ export default function DeleteConnectorModal({ connector, onClose, onSuccess }: 
       onSuccess={() => onSuccess(connector.id)}
     >
       <p className="text-foreground">
-        {t('deleteConfirm', { name: connector.name })}
+        {label
+          ? t('deleteConfirm', { name: label })
+          : t('deleteAppConfirmUnlinked')}
       </p>
 
       <Alert variant="warning">

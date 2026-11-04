@@ -40,6 +40,17 @@ export interface SkillConnectorRequirement {
   triggers?: SkillAccessRules | null;
 }
 
+// The app instance that brought a skill; it is also the selector, so the skill
+// resolves to exactly this connection.
+export interface SkillOrigin {
+  connectionId: string;
+  // App kind; null when the app row is already gone.
+  code: string | null;
+  title: string | null;
+  version: string | null;
+  deviceName: string | null;
+}
+
 export interface SkillResponse {
   id: string;
   // Machine code (validated kebab-case slug) — not for display.
@@ -71,6 +82,8 @@ export interface SkillResponse {
   userId: string;
   // Platform skill: read-only for non-admin users (cannot rename/delete/edit).
   system?: boolean;
+  // The app instance that brought this skill; null/absent for a user-authored one.
+  origin?: SkillOrigin | null;
   createdAt: string;
   updatedAt: string;
 }

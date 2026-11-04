@@ -13,7 +13,8 @@ import SecretKeyReveal from './SecretKeyReveal';
 
 interface RegenerateConnectorKeyModalProps {
   connectorId: string;
-  connectorName: string;
+  // Null while no app has connected with the key yet.
+  connectorName: string | null;
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -50,7 +51,9 @@ export default function RegenerateConnectorKeyModal({ connectorId, connectorName
     <Modal isOpen={true} onClose={onClose} title={t('regenerateKey')} size="sm">
       <form onSubmit={handleRegenerate} className="space-y-4">
         <p className="text-foreground">
-          {t('regenerateConfirm', { name: connectorName })}
+          {connectorName
+            ? t('regenerateConfirm', { name: connectorName })
+            : t('regenerateConfirmUnlinked')}
         </p>
 
         <Alert variant="warning">

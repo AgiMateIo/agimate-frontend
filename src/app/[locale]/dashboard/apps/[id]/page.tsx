@@ -11,11 +11,13 @@ import { useAppDetailQuery } from '@/queries/apps';
 import RegenerateConnectorKeyModal from '@/components/connectors/RegenerateConnectorKeyModal';
 import { Placeholder } from '@/components/ui/Placeholder';
 import { Button } from '@/components/ui/Button';
+import { appLabel } from '@/utils/app';
 
 function ConnectorContent({ id }: { id: string }) {
   const t = useTranslations('Connectors');
   const { data: connector } = useAppDetailQuery(id);
-  useSetBreadcrumb(id, connector.appName);
+  const label = appLabel(connector);
+  useSetBreadcrumb(id, label ?? t('appNotConnected'));
   const [showRegenerate, setShowRegenerate] = useState(false);
 
   const handleRegenerateSuccess = () => {
@@ -26,7 +28,7 @@ function ConnectorContent({ id }: { id: string }) {
     <>
       {/* Header */}
       <div className="flex items-center gap-3">
-        <h1 className="text-2xl font-bold text-foreground">{connector.appName}</h1>
+        <h1 className="text-2xl font-bold text-foreground">{label ?? t('appNotConnected')}</h1>
         <Chip strong tone={connector.connected ? 'success' : 'muted'}>
           {connector.connected ? t('connected') : t('disconnected')}
         </Chip>
@@ -38,8 +40,20 @@ function ConnectorContent({ id }: { id: string }) {
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
           <div>
             <dt className="text-sm text-muted">{t('appName')}</dt>
-            <dd className="text-foreground mt-0.5">{connector.appName}</dd>
+            <dd className="text-foreground mt-0.5">{label ?? t('appNotConnected')}</dd>
           </div>
+          {connector.code && (
+            <div>
+              <dt className="text-sm text-muted">{t('appCode')}</dt>
+              <dd className="text-foreground mt-0.5 font-mono text-sm">{connector.code}</dd>
+            </div>
+          )}
+          {connector.version && (
+            <div>
+              <dt className="text-sm text-muted">{t('appVersion')}</dt>
+              <dd className="text-foreground mt-0.5">{connector.version}</dd>
+            </div>
+          )}
           <div>
             <dt className="text-sm text-muted">{t('appId')}</dt>
             <dd className="text-foreground mt-0.5 font-mono text-sm">{connector.appId}</dd>
@@ -48,6 +62,18 @@ function ConnectorContent({ id }: { id: string }) {
             <div>
               <dt className="text-sm text-muted">{t('deviceId')}</dt>
               <dd className="text-foreground mt-0.5 font-mono text-sm">{connector.deviceId}</dd>
+            </div>
+          )}
+          {connector.deviceName && (
+            <div>
+              <dt className="text-sm text-muted">{t('deviceName')}</dt>
+              <dd className="text-foreground mt-0.5">{connector.deviceName}</dd>
+            </div>
+          )}
+          {connector.deviceOs && (
+            <div>
+              <dt className="text-sm text-muted">{t('deviceOs')}</dt>
+              <dd className="text-foreground mt-0.5">{connector.deviceOs}</dd>
             </div>
           )}
         </dl>
@@ -60,12 +86,12 @@ function ConnectorContent({ id }: { id: string }) {
         </div>
       </div>
 
-      {/* Device Features */}
-      {connector.deviceFeatures && Object.keys(connector.deviceFeatures).length > 0 && (
+      {/* Device info */}
+      {connector.info && Object.keys(connector.info).length > 0 && (
         <div className="bg-surface rounded-xl border border-border p-5">
-          <h2 className="text-lg font-semibold text-foreground mb-4">{t('deviceFeatures')}</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">{t('deviceInfo')}</h2>
           <pre className="p-3 bg-background rounded-lg text-xs font-mono text-foreground/80 overflow-x-auto">
-            {JSON.stringify(connector.deviceFeatures, null, 2)}
+            {JSON.stringify(connector.info, null, 2)}
           </pre>
         </div>
       )}
@@ -162,7 +188,7 @@ function ConnectorContent({ id }: { id: string }) {
       {showRegenerate && (
         <RegenerateConnectorKeyModal
           connectorId={connector.appId}
-          connectorName={connector.appName}
+          connectorName={label}
           onClose={() => setShowRegenerate(false)}
           onSuccess={handleRegenerateSuccess}
         />

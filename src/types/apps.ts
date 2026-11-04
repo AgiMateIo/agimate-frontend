@@ -2,8 +2,14 @@
 
 export interface AppResponse {
   id: string;
-  name: string;
-  description: string;
+  // App kind the client declares at link time; null until the first such link.
+  // A row connected before that change keeps its old user label here.
+  code: string | null;
+  // Human-readable title the client declared.
+  title: string | null;
+  // Client version the client declared.
+  version: string | null;
+  description: string | null;
   maskedKeyId: string;
   enabled: boolean;
   createdAt: string;
@@ -13,31 +19,36 @@ export interface AppResponse {
 
 export interface AppCreatedResponse {
   id: string;
-  name: string;
+  code: string | null;
+  title: string | null;
+  version: string | null;
   fullKey: string;
-  description: string;
+  description: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface UserAppDetailResponse {
   appId: string;
-  appName: string;
+  code: string | null;
+  title: string | null;
+  version: string | null;
   deviceId: string | null;
-  deviceFeatures: Record<string, unknown> | null;
+  deviceName: string | null;
+  deviceOs: string | null;
+  info: Record<string, unknown> | null;
   connected: boolean;
   triggers: Record<string, unknown> | null;
   tools: Record<string, unknown> | null;
 }
 
+// The key is created without a name: the app names itself at link time.
 export interface CreateAppRequest {
-  name: string;
   description?: string;
   connectorCode: string;
 }
 
 export interface UpdateAppRequest {
-  name?: string;
   description?: string;
   enabled?: boolean;
 }

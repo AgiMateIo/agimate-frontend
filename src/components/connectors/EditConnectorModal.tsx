@@ -6,9 +6,10 @@ import apiService from '@/services/api';
 import { AppResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { FormField, Input, TextArea } from '@/components/ui/FormField';
+import { FormField, TextArea } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
+import { appLabel } from '@/utils/app';
 
 interface EditConnectorModalProps {
   connector: AppResponse;
@@ -19,8 +20,8 @@ interface EditConnectorModalProps {
 export default function EditConnectorModal({ connector, onClose, onSuccess }: EditConnectorModalProps) {
   const t = useTranslations('Connectors');
   const tCommon = useTranslations('Common');
-  const [name, setName] = useState(connector.name);
   const [description, setDescription] = useState(connector.description || '');
+  const label = appLabel(connector);
 
   const { loading, error, handleSubmit } = useAsyncForm<AppResponse>({
     onSuccess,
@@ -30,7 +31,6 @@ export default function EditConnectorModal({ connector, onClose, onSuccess }: Ed
   const onSubmit = (e: React.FormEvent) =>
     handleSubmit(e, () =>
       apiService.updateApp(connector.id, {
-        name,
         // Sent even when empty: "" is what clears the field. Dropping the key
         // instead used to mean an emptied description simply stayed put, with
         // no way to remove one from this form at all.
@@ -41,16 +41,7 @@ export default function EditConnectorModal({ connector, onClose, onSuccess }: Ed
   return (
     <Modal isOpen={true} onClose={onClose} title={t('editApp')}>
       <form onSubmit={onSubmit} className="space-y-4">
-        <FormField label={t('name')} required>
-          <Input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={t('appNamePlaceholder')}
-            required
-            maxLength={100}
-          />
-        </FormField>
+        <p className="text-sm text-muted">{label ?? t('appNotConnected')}</p>
 
         <FormField label={t('description')}>
           <TextArea
@@ -76,7 +67,7 @@ export default function EditConnectorModal({ connector, onClose, onSuccess }: Ed
           </Button>
           <Button
             type="submit"
-            disabled={loading || !name.trim()}
+            disabled={loading}
             loading={loading}
             className="flex-1"
           >
