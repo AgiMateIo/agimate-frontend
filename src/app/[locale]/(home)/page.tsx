@@ -1,5 +1,6 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import { Link } from '@/i18n/navigation';
 import { useUser } from '@/contexts/UserContext';
 import { usePrimaryHref } from '@/contexts/PrimaryOriginContext';
@@ -9,6 +10,8 @@ import LandingBackground from '@/components/landing/LandingBackground';
 import LandingFooter from '@/components/landing/LandingFooter';
 import HowItWorksFlow from '@/components/landing/HowItWorksFlow';
 import LandingVideo from '@/components/landing/LandingVideo';
+import LandingMotion from '@/components/landing/LandingMotion';
+import { useScrollProgress } from '@/hooks/useScrollProgress';
 import {
   ArrowRightIcon,
   ShieldCheckIcon,
@@ -57,6 +60,8 @@ export default function HomePage() {
   const loginHref = usePrimaryHref('/login');
   const dashboardHref = usePrimaryHref('/dashboard');
   const t = useTranslations('HomePage');
+  const agentsTableRef = useScrollProgress<HTMLDivElement>();
+  const quickStartRef = useScrollProgress<HTMLDivElement>();
 
   const harnessItems = t.raw('harness.items') as PlainItem[];
   const agentAxes = t.raw('agents.axes') as PlainItem[];
@@ -100,6 +105,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen text-foreground">
       <LandingBackground />
+      <LandingMotion />
 
       {/* Header */}
       <LandingHeader />
@@ -141,10 +147,10 @@ export default function HomePage() {
       {/* Access — first section after the hero, because it is the claim the
           product is positioned on. Everything below explains how it is held up. */}
       <section id="security" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
-        <h2 className="mb-8 sm:mb-10 md:mb-14 text-center text-2xl sm:text-3xl font-bold tracking-tight">
+        <h2 className="reveal mb-8 sm:mb-10 md:mb-14 text-center text-2xl sm:text-3xl font-bold tracking-tight">
           {t('security.title')}
         </h2>
-        <div className="grid gap-6 sm:grid-cols-3">
+        <div className="reveal grid gap-6 sm:grid-cols-3" style={{ '--i': 1 } as CSSProperties}>
           {securityItems.map((item, i) => {
             const Icon = securityIcons[i];
             return (
@@ -164,7 +170,7 @@ export default function HomePage() {
         {/* The claim above is marketing until the model is written down. The docs
             page is what a reader comes to check it against, so link it from here
             the way README and SECURITY.md do. */}
-        <div className="mt-8 text-center">
+        <div className="reveal mt-8 text-center" style={{ '--i': 2 } as CSSProperties}>
           <Link
             href="/docs/agents/connections"
             className="inline-flex items-center gap-2 text-sm font-medium text-accent hover:underline"
@@ -178,13 +184,19 @@ export default function HomePage() {
       {/* Harness — the position itself: the model only talks, everything around it
           does the work. A plain-language line only where the technical one needs it. */}
       <section id="harness" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
-        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">
+        <h2 className="reveal mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">
           {t('harness.title')}
         </h2>
-        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-2xl text-center text-muted">
+        <p
+          className="reveal mx-auto mb-8 sm:mb-10 md:mb-14 max-w-2xl text-center text-muted"
+          style={{ '--i': 1 } as CSSProperties}
+        >
           {t('harness.subtitle')}
         </p>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+          className="reveal grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          style={{ '--i': 2 } as CSSProperties}
+        >
           {harnessItems.map((item, i) => {
             const Icon = harnessIcons[i];
             return (
@@ -219,13 +231,19 @@ export default function HomePage() {
           until several of them sit side by side with different models, rights and
           bills. Being many is not the claim here; the boundary is. */}
       <section id="agents" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
-        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">
+        <h2 className="reveal mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">
           {t('agents.title')}
         </h2>
-        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-2xl text-center text-muted">
+        <p
+          className="reveal mx-auto mb-8 sm:mb-10 md:mb-14 max-w-2xl text-center text-muted"
+          style={{ '--i': 1 } as CSSProperties}
+        >
           {t('agents.subtitle')}
         </p>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div
+          className="reveal grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
+          style={{ '--i': 2 } as CSSProperties}
+        >
           {agentAxes.map((item, i) => {
             const Icon = agentAxisIcons[i];
             return (
@@ -251,7 +269,11 @@ export default function HomePage() {
 
         {/* Three agents side by side. Narrower than the table's min width the row
             scrolls inside its own box rather than dragging the page sideways. */}
-        <div className="mt-8 overflow-x-auto rounded-2xl border border-border/50 bg-surface shadow-card">
+        <div
+          ref={agentsTableRef}
+          className="reveal mt-8 overflow-x-auto rounded-2xl border border-border/50 bg-surface shadow-card"
+          style={{ '--i': 3 } as CSSProperties}
+        >
           <table className="w-full min-w-[760px] border-collapse text-left text-sm">
             <thead>
               <tr className="border-b border-border/50 text-xs uppercase tracking-wide text-muted">
@@ -263,8 +285,17 @@ export default function HomePage() {
               </tr>
             </thead>
             <tbody>
-              {agentTable.rows.map((row) => (
-                <tr key={row[0]} className="border-b border-border/30 last:border-0">
+              {agentTable.rows.map((row, rowIndex) => (
+                <tr
+                  key={row[0]}
+                  className="scan-row border-b border-border/30 last:border-0"
+                  style={
+                    {
+                      '--start': rowIndex / agentTable.rows.length,
+                      '--rate': agentTable.rows.length * 2.5,
+                    } as CSSProperties
+                  }
+                >
                   {row.map((cell, i) => (
                     <td
                       key={`${row[0]}-${i}`}
@@ -280,7 +311,7 @@ export default function HomePage() {
             </tbody>
           </table>
         </div>
-        <div className="mt-8 text-center">
+        <div className="reveal mt-8 text-center" style={{ '--i': 4 } as CSSProperties}>
           <Link
             href="/catalog/agents"
             className="inline-flex items-center gap-2 font-medium text-accent hover:underline"
@@ -294,19 +325,32 @@ export default function HomePage() {
       {/* Quick start — right after the flow diagram: everything it just showed
           is assembled in three steps */}
       <section id="quick-start" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
-        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">
+        <h2 className="reveal mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">
           {t('quickStart.title')}
         </h2>
-        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-xl text-center text-muted">
+        <p
+          className="reveal mx-auto mb-8 sm:mb-10 md:mb-14 max-w-xl text-center text-muted"
+          style={{ '--i': 1 } as CSSProperties}
+        >
           {t('quickStart.subtitle')}
         </p>
-        <div className="grid gap-6 sm:grid-cols-3">
+        <div
+          ref={quickStartRef}
+          className="reveal grid gap-6 sm:grid-cols-3"
+          style={{ '--i': 2 } as CSSProperties}
+        >
           {quickStartSteps.map((step, i) => (
             <div
               key={step.title}
-              className="rounded-2xl border border-accent/20 bg-surface shadow-card p-6"
+              className="scan-step rounded-2xl border border-accent/20 bg-surface shadow-card p-6"
+              style={
+                {
+                  '--start': i / quickStartSteps.length,
+                  '--rate': quickStartSteps.length * 2.5,
+                } as CSSProperties
+              }
             >
-              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-accent text-accent-foreground font-semibold">
+              <div className="scan-step-number mb-4 flex h-10 w-10 items-center justify-center rounded-full font-semibold">
                 {i + 1}
               </div>
               <h3 className="mb-2 text-lg font-semibold">{step.title}</h3>
@@ -316,7 +360,10 @@ export default function HomePage() {
         </div>
 
         {/* Nothing is a one-way door — what stays open after creation */}
-        <div className="mt-8 rounded-2xl border border-border/50 bg-surface-secondary/50 p-6">
+        <div
+          className="reveal mt-8 rounded-2xl border border-border/50 bg-surface-secondary/50 p-6"
+          style={{ '--i': 3 } as CSSProperties}
+        >
           <h3 className="mb-4 text-center text-base font-semibold">{t('quickStart.tuneTitle')}</h3>
           <div className="flex flex-wrap justify-center gap-2">
             {quickStartTuneItems.map((item) => (
@@ -334,46 +381,43 @@ export default function HomePage() {
 
       {/* Use Cases */}
       <section id="use-cases" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
-        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">
+        <h2 className="reveal mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">
           {t('useCases.title')}
         </h2>
-        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-xl text-center text-muted">
+        <p
+          className="reveal mx-auto mb-8 sm:mb-10 md:mb-14 max-w-xl text-center text-muted"
+          style={{ '--i': 1 } as CSSProperties}
+        >
           {t('useCases.subtitle')}
         </p>
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="reveal grid gap-6 md:grid-cols-2" style={{ '--i': 2 } as CSSProperties}>
           {useCaseItems.map((uc, index) => (
-            <div
+            <UseCaseCard
               key={uc.title}
-              className={`group rounded-2xl border border-border/50 bg-surface shadow-card p-6 transition-colors hover:border-accent/30${
-                index === useCaseItems.length - 1 && useCaseItems.length % 2 === 1
-                  ? ' last:md:col-span-2'
-                  : ''
-              }`}
-            >
-              <h3 className="mb-2 text-lg font-semibold">{uc.title}</h3>
-              <p className="mb-4 text-sm leading-relaxed text-muted">{uc.description}</p>
-              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 font-mono text-xs text-muted">
-                {uc.flow.map((step: string, i: number) => (
-                  <span key={step} className="flex items-center gap-1.5 sm:gap-2">
-                    <span className="rounded bg-accent/10 px-2 py-1 text-accent">{step}</span>
-                    {i < uc.flow.length - 1 && <span className="text-accent/60">&rarr;</span>}
-                  </span>
-                ))}
-              </div>
-            </div>
+              title={uc.title}
+              description={uc.description}
+              flow={uc.flow}
+              wide={index === useCaseItems.length - 1 && useCaseItems.length % 2 === 1}
+            />
           ))}
         </div>
       </section>
 
       {/* Models — bring your own key */}
       <section id="models" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
-        <h2 className="mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">
+        <h2 className="reveal mb-4 text-center text-2xl sm:text-3xl font-bold tracking-tight">
           {t('models.title')}
         </h2>
-        <p className="mx-auto mb-8 sm:mb-10 md:mb-14 max-w-xl text-center text-muted">
+        <p
+          className="reveal mx-auto mb-8 sm:mb-10 md:mb-14 max-w-xl text-center text-muted"
+          style={{ '--i': 1 } as CSSProperties}
+        >
           {t('models.subtitle')}
         </p>
-        <div className="grid gap-6 sm:grid-cols-3">
+        <div
+          className="reveal grid gap-6 sm:grid-cols-3"
+          style={{ '--i': 2 } as CSSProperties}
+        >
           {modelItems.map((item, i) => {
             const Icon = modelIcons[i];
             return (
@@ -395,7 +439,7 @@ export default function HomePage() {
       {/* Connections */}
       <section id="connections" className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
         {/* Channels */}
-        <div className="mb-12 sm:mb-16 text-center">
+        <div className="reveal mb-12 sm:mb-16 text-center">
           <h2 className="mb-2 text-2xl sm:text-3xl font-bold tracking-tight">
             {t('connections.channels.title')}
           </h2>
@@ -446,7 +490,7 @@ export default function HomePage() {
         </div>
 
         {/* Integrations — available now, then the catalog in progress */}
-        <div className="mb-12 sm:mb-16 text-center">
+        <div className="reveal mb-12 sm:mb-16 text-center" style={{ '--i': 1 } as CSSProperties}>
           <h3 className="mb-2 text-xl sm:text-2xl font-bold tracking-tight">
             {t('connections.integrations.title')}
           </h3>
@@ -479,7 +523,7 @@ export default function HomePage() {
         </div>
 
         {/* Install */}
-        <div className="text-center">
+        <div className="reveal text-center" style={{ '--i': 2 } as CSSProperties}>
           <h3 className="mb-2 text-xl sm:text-2xl font-bold tracking-tight">
             {t('connections.install.title')}
           </h3>
@@ -524,7 +568,7 @@ export default function HomePage() {
 
       {/* Open Source & Self-hosted */}
       <section className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
-        <div className="rounded-2xl border border-accent/20 bg-surface shadow-card p-6 sm:p-8 md:p-10">
+        <div className="reveal rounded-2xl border border-accent/20 bg-surface shadow-card p-6 sm:p-8 md:p-10">
           <h2 className="mb-4 text-2xl sm:text-3xl font-bold tracking-tight">
             {t('openSource.title')}
           </h2>
@@ -568,7 +612,7 @@ export default function HomePage() {
 
       {/* Final CTA */}
       <section className="mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-16 md:py-20">
-        <div className="rounded-2xl border border-accent/20 bg-accent/5 p-8 sm:p-12 text-center">
+        <div className="reveal rounded-2xl border border-accent/20 bg-accent/5 p-8 sm:p-12 text-center">
           <h2 className="mb-4 text-2xl sm:text-3xl font-bold tracking-tight">{t('cta.title')}</h2>
           <p className="mx-auto mb-8 max-w-md text-muted">{t('cta.subtitle')}</p>
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
@@ -602,6 +646,50 @@ export default function HomePage() {
 
       {/* Footer */}
       <LandingFooter />
+    </div>
+  );
+}
+
+// Each card owns its progress: stacked on a phone, every chain charges as its
+// own card arrives instead of all at once with the grid.
+function UseCaseCard({
+  title,
+  description,
+  flow,
+  wide,
+}: {
+  title: string;
+  description: string;
+  flow: string[];
+  wide: boolean;
+}) {
+  const ref = useScrollProgress<HTMLDivElement>();
+  const itemStyle = (i: number) =>
+    ({ '--start': i / flow.length, '--rate': flow.length * 2.5 }) as CSSProperties;
+
+  return (
+    <div
+      ref={ref}
+      className={`group rounded-2xl border border-border/50 bg-surface shadow-card p-6 transition-colors hover:border-accent/30${
+        wide ? ' last:md:col-span-2' : ''
+      }`}
+    >
+      <h3 className="mb-2 text-lg font-semibold">{title}</h3>
+      <p className="mb-4 text-sm leading-relaxed text-muted">{description}</p>
+      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 font-mono text-xs text-muted">
+        {flow.map((step, i) => (
+          <span key={step} className="flex items-center gap-1.5 sm:gap-2">
+            <span className="scan-chip rounded bg-accent/10 px-2 py-1 text-accent" style={itemStyle(i)}>
+              {step}
+            </span>
+            {i < flow.length - 1 && (
+              <span className="scan-arrow text-accent/60" style={itemStyle(i)}>
+                &rarr;
+              </span>
+            )}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }

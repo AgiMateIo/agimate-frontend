@@ -138,6 +138,112 @@ body {
 .animate-aurora-2 { animation: aurora-2 17s linear infinite; }
 .animate-aurora-3 { animation: aurora-3 21s linear infinite; }
 
+/* Landing scroll motion. `useScrollProgress` writes `--p` (0 → 1) per scene and
+   every effect below is a pure function of it, so scrolling up unwinds it. */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 600ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition-delay: calc(var(--i, 0) * 70ms);
+}
+
+.reveal.is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* A keyboard focus must never land on a link that is still invisible. */
+.reveal:focus-within {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+/* Each item takes an equal slice of the scene's progress and ignites in its
+   first 40%, so the movement travels down the list in visible steps. */
+.scan-row,
+.scan-chip,
+.scan-arrow,
+.scan-step {
+  --local: clamp(0, calc((var(--p, 0) - var(--start, 0)) * var(--rate, 1)), 1);
+}
+
+.scan-row {
+  background-color: color-mix(in oklab, var(--accent) calc(var(--local, 0) * 12%), transparent);
+}
+
+/* The tint alone drops muted cells below AA on the light theme, so the text
+   darkens (and lightens in dark mode) together with the row. */
+.scan-row td:not(:first-child) {
+  color: color-mix(in oklab, var(--foreground) calc(var(--local, 0) * 100%), var(--muted));
+}
+
+.scan-chip {
+  background-image: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--accent) 24%, transparent) calc(var(--local, 0) * 100%),
+    transparent calc(var(--local, 0) * 100%)
+  );
+  color: color-mix(in oklab, var(--foreground) calc(var(--local, 0) * 100%), var(--accent));
+}
+
+.scan-arrow {
+  opacity: calc(0.25 + var(--local, 0) * 0.75);
+}
+
+.scan-step {
+  border-color: color-mix(in oklab, var(--accent) calc(20% + var(--local, 0) * 45%), transparent);
+}
+
+/* The ignition snaps over a few pixels of scroll: a half-lit circle would mix
+   white text and a mid-tone background into unreadable grey. */
+.scan-step-number {
+  --lit: clamp(0, calc((var(--local, 0) - 0.5) * 10), 1);
+  background-color: color-mix(in oklab, var(--accent) calc(var(--lit) * 100%), transparent);
+  border: 1px solid color-mix(in oklab, var(--accent) calc(30% + var(--lit) * 70%), transparent);
+  color: color-mix(in oklab, var(--accent-foreground) calc(var(--lit) * 100%), var(--muted));
+  transform: scale(calc(0.92 + var(--lit) * 0.08));
+}
+
+/* Backdrop drift — `translate` composes with the layers' rotating transforms. */
+.animate-aurora-1 { translate: calc(var(--landing-scroll, 0) * -40px) calc(var(--landing-scroll, 0) * 60px); }
+.animate-aurora-2 { translate: calc(var(--landing-scroll, 0) * 54px) calc(var(--landing-scroll, 0) * -44px); }
+.animate-aurora-3 { translate: calc(var(--landing-scroll, 0) * -28px) calc(var(--landing-scroll, 0) * -68px); }
+
+/* Without scripting the observers never run; show the finished page. */
+@media (scripting: none) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .scan-row,
+  .scan-chip,
+  .scan-arrow,
+  .scan-step {
+    --local: 1;
+  }
+}
+
+/* Printing before scrolling would otherwise print every un-revealed block blank. */
+@media print {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .scan-row,
+  .scan-chip,
+  .scan-arrow,
+  .scan-step {
+    --local: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-sidebar-forward,
   .animate-sidebar-back,
@@ -145,6 +251,25 @@ body {
   .animate-aurora-2,
   .animate-aurora-3 {
     animation: none;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .animate-aurora-1,
+  .animate-aurora-2,
+  .animate-aurora-3 {
+    translate: none;
+  }
+
+  .scan-row,
+  .scan-chip,
+  .scan-arrow,
+  .scan-step {
+    --local: 1;
   }
 }
 

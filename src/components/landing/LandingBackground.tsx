@@ -6,7 +6,11 @@
 // globals.css; its colours come from the backdrop tokens.
 export default function LandingBackground() {
   return (
-    <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+    // LandingMotion writes `--landing-scroll` here, so the offset dies with the page.
+    <div
+      data-landing-scroll
+      className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
+    >
       <div className="landing-backdrop absolute inset-0" />
       <div className="aurora-layer animate-aurora-1 -left-[20%] -top-[25%] h-[80vh] w-[80vw]" />
       <div className="aurora-layer animate-aurora-2 -right-[25%] -top-[10%] h-[95vh] w-[70vw]" />
