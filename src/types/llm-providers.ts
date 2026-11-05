@@ -134,6 +134,11 @@ export interface CreateLlmProviderRequest {
 
 export interface UpdateLlmProviderRequest {
   name?: string;
+  // Absent/null = the type is kept. Validated together with the resulting
+  // `baseUrl`: switching to OPENAI_COMPATIBLE while neither this request nor
+  // the stored row carries one answers 400, so the edit form checks the pair
+  // before sending.
+  providerType?: LlmProviderType | null;
   baseUrl?: string | null;
   // Same partial semantics as the rest: absent = keep, present = overwrite.
   mediaTransport?: LlmMediaTransport;

@@ -61,6 +61,14 @@ export function suggestMediaTransport(baseUrl: string): LlmMediaTransport {
   return wantsMediaEndpoint ? 'MEDIA_ENDPOINT' : 'CHAT_MODALITIES';
 }
 
+// Store the canonical shape the backend expects: the full prefix with the
+// version, no trailing slash (it appends `/models` and friends as-is). The
+// scheme's own slashes stay — only a path tail is stripped.
+export function normalizeBaseUrl(baseUrl: string): string {
+  const trimmed = baseUrl.trim();
+  return trimmed.replace(/^(https?:\/\/.+?)\/+$/i, '$1');
+}
+
 // Derive a provider name from a base URL's domain, e.g.
 // "https://openrouter.ai/api/v1" -> "openrouter.ai", "https://api.openai.com/v1" -> "openai.com".
 // Strips leading "www." / "api." for a cleaner name. Returns "" when the URL is empty/invalid.
