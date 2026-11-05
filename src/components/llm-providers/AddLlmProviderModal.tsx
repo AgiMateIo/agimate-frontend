@@ -379,7 +379,7 @@ export default function AddLlmProviderModal({ onClose, onSuccess, prefill }: Add
           </div>
         )}
 
-        <ExtraBodyField value={extraBodyText} onChange={setExtraBodyText} disabled={busy} />
+        <ExtraBodyField value={extraBodyText} onChange={setExtraBodyText} baseUrl={baseUrl} disabled={busy} />
 
         {error && <ErrorAlert>{error}</ErrorAlert>}
 

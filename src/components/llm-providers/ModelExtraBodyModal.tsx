@@ -10,14 +10,16 @@ import { FormField, TextArea } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { formatExtraBody, parseExtraBodyInput } from './extraBody';
+import { ExtraBodyHints } from './ExtraBodyHints';
 
-// Typical use case: pin the vision provider on an OpenRouter-style aggregator.
+// Typical use case: a per-model reasoning level or an upstream pin.
 const PLACEHOLDER = `{
-  "provider": { "only": ["moonshotai"], "require_parameters": true }
+  "reasoning_effort": "low"
 }`;
 
 interface ModelExtraBodyModalProps {
   providerId: string;
+  baseUrl: string | null;
   model: LlmProviderModelResponse;
   onClose: () => void;
   onSuccess: (updated: LlmProviderModelResponse) => void;
@@ -25,7 +27,13 @@ interface ModelExtraBodyModalProps {
 
 // Per-model extra_body override — deep-merged over the provider's extraBody
 // by the backend (model wins, arrays replaced whole). Refresh never touches it.
-export default function ModelExtraBodyModal({ providerId, model, onClose, onSuccess }: ModelExtraBodyModalProps) {
+export default function ModelExtraBodyModal({
+  providerId,
+  baseUrl,
+  model,
+  onClose,
+  onSuccess,
+}: ModelExtraBodyModalProps) {
   const t = useTranslations('LlmProviders');
   const tCommon = useTranslations('Common');
   const [text, setText] = useState(formatExtraBody(model.extraBody));
@@ -51,7 +59,7 @@ export default function ModelExtraBodyModal({ providerId, model, onClose, onSucc
   };
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={t('modelExtraBodyTitle')}>
+    <Modal isOpen={true} onClose={onClose} title={t('modelExtraBodyTitle')} size="lg">
       <form onSubmit={onSubmit} className="space-y-4">
         <div className="text-sm text-foreground font-mono break-all">{model.model}</div>
 
@@ -69,6 +77,8 @@ export default function ModelExtraBodyModal({ providerId, model, onClose, onSucc
             className="font-mono text-xs"
           />
         </FormField>
+
+        <ExtraBodyHints baseUrl={baseUrl} scope="model" />
 
         {error && <ErrorAlert>{error}</ErrorAlert>}
 

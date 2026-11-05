@@ -148,7 +148,7 @@ export default function EditLlmProviderModal({ provider, onClose, onSuccess }: E
           disabled={loading}
         />
 
-        <ExtraBodyField value={extraBodyText} onChange={setExtraBodyText} disabled={loading} />
+        <ExtraBodyField value={extraBodyText} onChange={setExtraBodyText} baseUrl={baseUrl} disabled={loading} />
 
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-foreground">{t('providerStatus')}</span>
