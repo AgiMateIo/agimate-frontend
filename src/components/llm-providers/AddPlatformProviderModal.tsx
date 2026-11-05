@@ -14,6 +14,7 @@ import {
   DEFAULT_BASE_URL,
   DEFAULT_PROVIDER_TYPE,
   PROVIDER_TYPE_LABEL_KEY,
+  normalizeBaseUrl,
   providerTypeOptions,
 } from './providerTypes';
 
@@ -54,7 +55,8 @@ export default function AddPlatformProviderModal({ onClose, onSuccess }: AddPlat
     setError(null);
     setRefreshError(null);
 
-    if (isCompatible && !baseUrl.trim()) {
+    const nextUrl = normalizeBaseUrl(baseUrl);
+    if (isCompatible && !nextUrl) {
       setError(t('baseUrlRequired'));
       return;
     }
@@ -66,7 +68,7 @@ export default function AddPlatformProviderModal({ onClose, onSuccess }: AddPlat
         name: name.trim(),
         providerType,
         apiKey: apiKey.trim(),
-        baseUrl: baseUrl.trim() || undefined,
+        baseUrl: nextUrl || undefined,
       };
       const created = await apiService.createPlatformLlmProvider(body);
       createdId = created.id;
@@ -129,7 +131,7 @@ export default function AddPlatformProviderModal({ onClose, onSuccess }: AddPlat
         <FormField
           label={t('baseUrl')}
           required={isCompatible}
-          hint={isCompatible ? undefined : t('baseUrlPlaceholderDefault')}
+          hint={isCompatible ? t('baseUrlHint') : t('baseUrlHintDefault')}
         >
           <Input
             type="url"
@@ -175,7 +177,7 @@ export default function AddPlatformProviderModal({ onClose, onSuccess }: AddPlat
               </Button>
               <Button
                 type="submit"
-                disabled={busy || !name.trim() || !apiKey.trim() || (isCompatible && !baseUrl.trim())}
+                disabled={busy || !name.trim() || !apiKey.trim() || (isCompatible && !normalizeBaseUrl(baseUrl))}
                 loading={busy}
               >
                 {t('create')}

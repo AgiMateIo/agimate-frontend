@@ -272,6 +272,7 @@ export default function ProviderModelsSection({
       {editing && (
         <ModelExtraBodyModal
           providerId={provider.id}
+          baseUrl={provider.baseUrl}
           model={editing}
           onClose={() => setEditing(null)}
           onSuccess={(updated) => {
