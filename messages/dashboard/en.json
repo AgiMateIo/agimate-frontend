@@ -1744,6 +1744,11 @@
     "reload": "Reload",
     "backToList": "All views",
     "loading": "Loading the page…",
+    "showView": "Show view",
+    "hideView": "Hide view",
+    "openInNewTab": "Open in a new tab",
+    "invalidLink": "This view link is incomplete.",
+    "viewUnavailable": "This view is no longer available.",
     "loadError": "Could not load the page",
     "toolCallFailed": "The tool call failed"
   },

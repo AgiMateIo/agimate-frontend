@@ -47,7 +47,7 @@ function ErrandSessionModal({
       {/* The transcript fills whatever height it is given; the modal's own
           scroll would otherwise fight the list's. */}
       <div className="flex h-[60vh] min-h-0 flex-col">
-        <SessionTranscript sessionId={session.id} />
+        <SessionTranscript key={session.id} sessionId={session.id} agentId={session.agentId} />
       </div>
     </Modal>
   );

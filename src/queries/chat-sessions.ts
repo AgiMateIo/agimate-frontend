@@ -23,6 +23,8 @@ import { webchatKeys } from './webchat';
 export const chatSessionKeys = {
   all: ['chat-sessions'] as const,
   messages: (sessionId: string) => [...chatSessionKeys.all, 'messages', sessionId] as const,
+  toolCall: (sessionId: string, toolCallId: string) =>
+    [...chatSessionKeys.all, 'tool-call', sessionId, toolCallId] as const,
   errands: (parentSessionId: string) =>
     [...chatSessionKeys.all, 'errands', parentSessionId] as const,
 };
@@ -48,6 +50,23 @@ export function useSessionMessagesQuery(sessionId: string) {
     [query.data],
   );
   return { ...query, messages };
+}
+
+// One call of a session, for the full-screen view host. The host has no
+// personal channel to hear `session.tool_call`, so a call whose result is still
+// on its way is re-read every few seconds.
+export function useSessionToolCallQuery(
+  sessionId: string | null,
+  toolCallId: string | null,
+) {
+  return useQuery({
+    queryKey: chatSessionKeys.toolCall(sessionId ?? '', toolCallId ?? ''),
+    queryFn: () => apiService.getChatSessionToolCall(sessionId!, toolCallId!),
+    enabled: !!sessionId && !!toolCallId,
+    retry: false,
+    refetchInterval: (query) =>
+      query.state.data && !query.state.data.result ? 3_000 : false,
+  });
 }
 
 // Every errand a conversation has handed out, freshest first — the agent's own

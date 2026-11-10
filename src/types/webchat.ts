@@ -34,6 +34,8 @@ export interface WebchatMessagePayload {
   // AGENT: attachments arrive only with stream=answer. USER echoes carry the
   // uploaded parts with signed urls. Null/absent otherwise.
   parts: ChatPart[] | null;
+  // Ids of the tool calls a TOOL_CALL progress line names; null on other lines.
+  toolCallIds?: string[] | null;
   createdAt: string;
 }
 

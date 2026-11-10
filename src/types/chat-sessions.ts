@@ -6,6 +6,8 @@
 // Not to be confused with `UserSessionResponse` in `./sessions` — that is a
 // sign-in on a device, from another service entirely.
 
+import type { CallToolResult } from './agent-views';
+
 export type ChatDirection = 'USER' | 'AGENT';
 
 // null on USER messages; AGENT messages carry the stream kind.
@@ -118,7 +120,50 @@ export interface ChatSessionMessageResponse {
   // Attachments with freshly signed urls; null without files — and null outside
   // webchat, where attachments don't exist in this shape.
   parts: ChatPart[] | null;
+  // Ids of the tool calls a TOOL_CALL progress line names; null on other lines.
+  // `toolCalls` below is the fast path; fall back to
+  // `/manage/sessions/{id}/tool-calls/{toolCallId}` per id only when it is null.
+  toolCallIds?: string[] | null;
+  // The line's calls as the backend resolved them. null — not resolved (old
+  // backend, another line); [] — resolved, no call of this line is in the
+  // journal. Can be shorter than `toolCallIds`: join by id, never by index.
+  toolCalls?: SessionToolCallDescriptor[] | null;
   createdAt: string;
+}
+
+// A call a TOOL_CALL line names, resolved against the agent's current catalog.
+// `viewUri: null` means the call has no view; a missing entry means the journal
+// did not have the call when the line was read.
+export interface SessionToolCallDescriptor {
+  toolCallId: string;
+  name: string;
+  connectionId: string;
+  viewUri: string | null;
+}
+
+// One tool call of a session message as its inline view sees it. The endpoint
+// resolves it against the agent's *current* catalog, so a revoked binding or a
+// tool hidden from views answers without `viewUri`.
+export interface SessionToolCallResponse {
+  toolCallId: string;
+  // Connector tool name.
+  name: string;
+  connectionId: string;
+  // Absent when the call has no view.
+  viewUri?: string;
+  // Absent when there is no view (and possibly on a no-argument call).
+  input?: Record<string, unknown>;
+  // Absent while the call runs.
+  result?: CallToolResult;
+}
+
+// Payload of `session.tool_call` on the personal channel: the calls whose
+// results landed. Descriptors say which of them have views; null/absent means
+// the old backend — resolve `toolCallIds` through the endpoint then.
+export interface SessionToolCallPayload {
+  sessionId: string;
+  toolCallIds: string[];
+  toolCalls?: SessionToolCallDescriptor[] | null;
 }
 
 // Events of the personal `user:{userId}` channel that carry a session row —
