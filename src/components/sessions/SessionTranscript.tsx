@@ -164,6 +164,7 @@ export default function SessionTranscript({
                       views={inlineViews.views}
                       descriptors={inlineViews.descriptors}
                       agentId={agentId}
+                      sessionId={sessionId}
                       onResolve={inlineViews.resolve}
                     />
                   )}

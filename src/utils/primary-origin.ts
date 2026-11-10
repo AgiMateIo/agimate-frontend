@@ -44,6 +44,7 @@ const PRIVATE_PREFIXES = [
   '/connections',
   '/llm-providers',
   '/mcp',
+  '/agent-view',
 ];
 
 function isPrivatePath(pathname: string): boolean {

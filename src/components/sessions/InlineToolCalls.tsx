@@ -9,12 +9,14 @@ export default function InlineToolCalls({
   views,
   descriptors,
   agentId,
+  sessionId,
   onResolve,
 }: {
   toolCallIds: string[];
   views: Record<string, InlineToolCall>;
   descriptors: Record<string, InlineViewDescriptor>;
   agentId: string;
+  sessionId: string;
   onResolve: (toolCallId: string) => void;
 }) {
   const calls = toolCallIds.flatMap((id) => {
@@ -30,6 +32,7 @@ export default function InlineToolCalls({
         <InlineToolCallView
           key={id}
           agentId={agentId}
+          sessionId={sessionId}
           descriptor={descriptor}
           call={views[id]}
           onResolve={onResolve}

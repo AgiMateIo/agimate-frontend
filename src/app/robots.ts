@@ -13,7 +13,14 @@ export const dynamic = 'force-dynamic';
 // locale — plus the bare form, which the middleware only redirects. The bare
 // /connections form also covers the MCP OAuth client document and callback; an
 // OAuth provider fetching client.json does not consult robots.txt.
-const PRIVATE_PATHS = ['/dashboard', '/login', '/login-check', '/logout', '/connections'];
+const PRIVATE_PATHS = [
+  '/dashboard',
+  '/login',
+  '/login-check',
+  '/logout',
+  '/connections',
+  '/agent-view',
+];
 
 // Locale-less by construction, so it stays out of the per-locale flatMap below:
 // /app/auth is the Android App Link return address and exists at exactly one

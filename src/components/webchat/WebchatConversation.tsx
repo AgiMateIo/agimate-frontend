@@ -527,6 +527,7 @@ export default function WebchatConversation({
                         views={inlineViews.views}
                         descriptors={inlineViews.descriptors}
                         agentId={session.agentId}
+                        sessionId={sessionId}
                         onResolve={inlineViews.resolve}
                       />
                     )}
