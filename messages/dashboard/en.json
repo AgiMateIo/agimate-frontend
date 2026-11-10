@@ -1744,6 +1744,8 @@
     "reload": "Reload",
     "backToList": "All views",
     "loading": "Loading the page…",
+    "showView": "Show view",
+    "hideView": "Hide view",
     "loadError": "Could not load the page",
     "toolCallFailed": "The tool call failed"
   },

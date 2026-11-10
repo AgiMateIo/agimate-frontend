@@ -33,6 +33,8 @@ import { useWebchatSubscription } from '@/realtime/useWebchatSubscription';
 import { useMarkWebchatSessionRead } from '@/queries/webchat';
 import { useAgentStartersQuery, useHideAgentStarterMutation } from '@/queries/agents';
 import { useWebchatThread, ThreadMessage } from './useWebchatThread';
+import { useInlineToolViews } from '@/components/sessions/useInlineToolViews';
+import InlineToolCalls from '@/components/sessions/InlineToolCalls';
 import { ChatMessageText } from './ChatMessageText';
 import { ChatMessageAttachments, type RefreshParts } from './ChatMessageAttachments';
 import { ComposerAttachments } from './ComposerAttachments';
@@ -137,6 +139,7 @@ export default function WebchatConversation({
   const router = useRouter();
   const sessionId = session.id;
   const thread = useWebchatThread(sessionId, session.isRunning);
+  const inlineViews = useInlineToolViews(sessionId, thread.messages, thread.liveSeq);
   const markRead = useMarkWebchatSessionRead();
   // Text, tray and the in-flight send live above this component: switching
   // sessions remounts it (`key={sessionId}` — the thread is built on that), and
@@ -241,7 +244,15 @@ export default function WebchatConversation({
   useEffect(() => {
     const el = listRef.current;
     if (el && stickToBottomRef.current) el.scrollTop = el.scrollHeight;
-  }, [thread.messages, thread.awaitingReply, thread.loading, draft, composer.attachments]);
+  }, [
+    thread.messages,
+    thread.awaitingReply,
+    thread.loading,
+    draft,
+    composer.attachments,
+    inlineViews.views,
+    inlineViews.descriptors,
+  ]);
 
   // The composer grows with the text rather than scrolling inside a fixed two
   // rows. The height has to be cleared before measuring: scrollHeight never
@@ -500,10 +511,25 @@ export default function WebchatConversation({
             <div>
               {thread.messages.map((m, i) => {
                 const prev = thread.messages[i - 1];
-                const tight = i > 0 && isProgressRow(m) && isProgressRow(prev);
+                // A view under the previous line is a block of its own: packing
+                // the next progress line against it would read as one card.
+                const tight =
+                  i > 0 &&
+                  isProgressRow(m) &&
+                  isProgressRow(prev) &&
+                  prev.toolCallIds.length === 0;
                 return (
                   <div key={m.key} className={i === 0 ? '' : tight ? 'mt-0.5' : 'mt-3'}>
                     <MessageRow message={m} onExpired={thread.refreshParts} />
+                    {m.toolCallIds.length > 0 && (
+                      <InlineToolCalls
+                        toolCallIds={m.toolCallIds}
+                        views={inlineViews.views}
+                        descriptors={inlineViews.descriptors}
+                        agentId={session.agentId}
+                        onResolve={inlineViews.resolve}
+                      />
+                    )}
                   </div>
                 );
               })}

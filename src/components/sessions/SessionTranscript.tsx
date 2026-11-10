@@ -9,6 +9,8 @@ import { formatDate } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
 import { parseErrandRequest } from '@/utils/errand';
 import { ErrandRequestCard } from './ErrandRequestCard';
+import InlineToolCalls from './InlineToolCalls';
+import { useInlineToolViews } from './useInlineToolViews';
 
 // The read-only history of one conversation, whatever carries it: a messenger
 // thread on a channel's page, an errand a subagent was sent on. Webchat has its
@@ -18,27 +20,32 @@ import { ErrandRequestCard } from './ErrandRequestCard';
 //
 // Strings come from `Channels`, where this list started life; they say nothing
 // about channels and there is no reason to duplicate them per caller.
-export default function SessionTranscript({ sessionId }: { sessionId: string }) {
+export default function SessionTranscript({
+  sessionId,
+  agentId,
+}: {
+  sessionId: string;
+  agentId: string;
+}) {
   const t = useTranslations('Channels');
   const tCommon = useTranslations('Common');
   const locale = useLocale();
 
   const { messages, isPending, error, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useSessionMessagesQuery(sessionId);
+  const inlineViews = useInlineToolViews(sessionId, messages);
 
   const listRef = useRef<HTMLDivElement>(null);
   const anchorRef = useRef<number | null>(null);
-  const landedRef = useRef(false);
+  const stickToBottomRef = useRef(true);
 
   // The newest messages are the point of opening a session, and they sit at the
-  // bottom — so the first page lands scrolled down rather than on the oldest
-  // message it happens to contain.
+  // bottom. An inline view mounts (and grows) after the messages are laid out,
+  // so the tail is followed rather than scrolled to once.
   useEffect(() => {
     const el = listRef.current;
-    if (!el || landedRef.current || messages.length === 0) return;
-    el.scrollTop = el.scrollHeight;
-    landedRef.current = true;
-  }, [messages]);
+    if (el && stickToBottomRef.current) el.scrollTop = el.scrollHeight;
+  }, [messages, inlineViews.views, inlineViews.descriptors]);
 
   // Older messages are prepended, which pushes the read position down by exactly
   // the height they added — put it back before the browser paints.
@@ -62,6 +69,9 @@ export default function SessionTranscript({ sessionId }: { sessionId: string }) 
     // before `isFetchingNextPage` has re-rendered, and the second one would
     // overwrite the anchor the first is waiting on.
     if (!el || !hasNextPage || isFetchingNextPage || anchorRef.current !== null) return;
+    // An explicit move away from the tail: a short list would otherwise snap
+    // back to the bottom after the older page is prepended.
+    stickToBottomRef.current = false;
     anchorRef.current = el.scrollHeight;
     fetchNextPage();
   };
@@ -70,7 +80,9 @@ export default function SessionTranscript({ sessionId }: { sessionId: string }) 
   // the fallback for a thread too short to scroll at all.
   const handleScroll = () => {
     const el = listRef.current;
-    if (el && el.scrollTop < 80 && !error) handleLoadOlder();
+    if (!el) return;
+    stickToBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+    if (el.scrollTop < 80 && !error) handleLoadOlder();
   };
 
   const loadError = error ? getErrorMessage(error, 'Failed to load messages') : '';
@@ -125,25 +137,36 @@ export default function SessionTranscript({ sessionId }: { sessionId: string }) 
               // which this view has no way to show yet.
               const outgoing = m.direction === 'AGENT';
               return (
-                <div key={m.id} className={`flex ${outgoing ? 'justify-end' : 'justify-start'}`}>
-                  <div
-                    className={`max-w-[80%] rounded-lg px-3 py-2 ${
-                      outgoing
-                        ? 'bg-accent text-accent-foreground'
-                        : 'bg-surface-secondary text-foreground'
-                    }`}
-                  >
-                    <div className="text-sm whitespace-pre-wrap break-words">
-                      {m.text ?? t('messageAttachmentOnly')}
-                    </div>
+                <div key={m.id}>
+                  <div className={`flex ${outgoing ? 'justify-end' : 'justify-start'}`}>
                     <div
-                      className={`mt-1 text-[10px] ${
-                        outgoing ? 'text-accent-foreground/70' : 'text-muted'
+                      className={`max-w-[80%] rounded-lg px-3 py-2 ${
+                        outgoing
+                          ? 'bg-accent text-accent-foreground'
+                          : 'bg-surface-secondary text-foreground'
                       }`}
                     >
-                      {formatDate(m.createdAt, locale)}
+                      <div className="text-sm whitespace-pre-wrap break-words">
+                        {m.text ?? t('messageAttachmentOnly')}
+                      </div>
+                      <div
+                        className={`mt-1 text-[10px] ${
+                          outgoing ? 'text-accent-foreground/70' : 'text-muted'
+                        }`}
+                      >
+                        {formatDate(m.createdAt, locale)}
+                      </div>
                     </div>
                   </div>
+                  {m.toolCallIds && m.toolCallIds.length > 0 && (
+                    <InlineToolCalls
+                      toolCallIds={m.toolCallIds}
+                      views={inlineViews.views}
+                      descriptors={inlineViews.descriptors}
+                      agentId={agentId}
+                      onResolve={inlineViews.resolve}
+                    />
+                  )}
                 </div>
               );
             })}

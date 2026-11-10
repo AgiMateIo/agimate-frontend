@@ -4,7 +4,7 @@
 // Both are pure on purpose — the iframe component should read as wiring, and
 // the rules a security decision rests on should be readable in one file.
 
-import type { AgentViewCsp } from '@/types';
+import type { AgentViewCsp, CallToolResult } from '@/types';
 
 // What the page is allowed to reach, as a CSP the document carries itself.
 //
@@ -106,6 +106,27 @@ export const resultReply = (id: JsonRpcId, result: unknown): JsonRpcReply => ({
   jsonrpc: '2.0',
   id,
   result,
+});
+
+// Host → view notifications carry no id: the page is not expected to answer.
+export interface JsonRpcNotification {
+  jsonrpc: '2.0';
+  method: string;
+  params?: unknown;
+}
+
+// The data of the call a view was mounted for. Inline-only — the launcher opens
+// a cold page and sends neither of these.
+export const toolInputNotification = (input: Record<string, unknown>): JsonRpcNotification => ({
+  jsonrpc: '2.0',
+  method: 'ui/notifications/tool-input',
+  params: { arguments: input },
+});
+
+export const toolResultNotification = (result: CallToolResult): JsonRpcNotification => ({
+  jsonrpc: '2.0',
+  method: 'ui/notifications/tool-result',
+  params: result,
 });
 
 // What we tell a view about the host it opened in. `displayMode: 'inline'` and

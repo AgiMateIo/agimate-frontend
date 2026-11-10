@@ -11,33 +11,50 @@ import {
   decodeViewMessage,
   errorReply,
   resultReply,
+  toolInputNotification,
+  toolResultNotification,
   withCsp,
   JSONRPC_INTERNAL_ERROR,
+  type JsonRpcNotification,
   type JsonRpcReply,
   type ViewHostContext,
 } from '@/utils/mcp-view';
-import type { AgentViewContentResponse, AgentViewResponse } from '@/types';
+import type { AgentViewContentResponse, AgentViewResponse, CallToolResult } from '@/types';
 
 // The frame starts at a workable size and grows to what the page asks for. The
 // ceiling is not a layout preference: `ui/notifications/size-changed` is a
 // number from the page, and an unbounded one would hand a view the whole
 // scrollbar.
-const MIN_HEIGHT = 320;
+export const AGENT_VIEW_MIN_HEIGHT = 320;
+const MIN_HEIGHT = AGENT_VIEW_MIN_HEIGHT;
 const MAX_HEIGHT = 1200;
+
+// A view's SDK registers `ontoolinput`/`ontoolresult` in an effect that runs
+// *after* `initialized` (Excalidraw does exactly this). Sending in the same
+// task loses the data before any handler exists; a short defer lets the page's
+// React tree mount first.
+const INLINE_DATA_DELAY_MS = 100;
+
+// The call an inline view renders. The launcher passes nothing: its page opens
+// cold and asks for its own data.
+interface InlineToolCallData {
+  input: Record<string, unknown>;
+  result?: CallToolResult;
+}
 
 // The spec's CSS custom properties, filled from our own tokens so a view that
 // honours them looks like it belongs here rather than like a white rectangle in
-// a dark dashboard. A view is free to ignore every one of them.
+// a dark dashboard. A view is free to ignore every one of them. Only the names
+// the spec declares: `hostContext.styles.variables` is validated strictly, and
+// one extra key fails the whole handshake.
 const styleVariables = (scheme: 'light' | 'dark'): Record<string, string> => {
   const t = tokens[scheme];
   return {
     '--color-background-primary': t.background,
     '--color-background-secondary': t['surface-secondary'],
-    '--color-surface-primary': t.surface,
     '--color-text-primary': t.foreground,
     '--color-text-secondary': t.muted,
     '--color-border-primary': t.border,
-    '--color-accent-primary': t.accent,
     // What a panel paints its buttons and its errors with. We have no "info"
     // colour of our own — the accent is the one thing here that reads as
     // "act on this", so it plays both parts.
@@ -53,14 +70,24 @@ export default function AgentViewFrame({
   view,
   title,
   content,
+  toolCall,
+  embedded = false,
 }: {
   agentId: string;
-  view: AgentViewResponse;
+  // Only the connection is needed to run the view's tools; the launcher has the
+  // whole catalogue row, an inline view only the call it came from.
+  view: Pick<AgentViewResponse, 'connectionId'>;
   // The name the launcher settled on — the connector's catalogue name for our
   // own panels, the connection's for an MCP server. Worked out once there so
   // the frame and the heading above it cannot disagree.
   title: string;
   content: AgentViewContentResponse;
+  // Present only for an inline view: after `ui/notifications/initialized` the
+  // host hands the page the arguments and the result of the call it renders.
+  toolCall?: InlineToolCallData;
+  // The caller draws the card around the page (the inline entry does); the
+  // frame's own border would double it.
+  embedded?: boolean;
 }) {
   const t = useTranslations('AgentViews');
   const frameRef = useRef<HTMLIFrameElement>(null);
@@ -86,6 +113,18 @@ export default function AgentViewFrame({
   });
   const targetRef = useRef({ agentId, connectionId: view.connectionId });
 
+  // The inline data is a prop but the listener reads it from a ref: it is
+  // registered once, at mount, and the page may answer `ui/initialize` before
+  // the next render has updated anything.
+  const toolCallRef = useRef(toolCall);
+  const bridgeRef = useRef({
+    initialized: false,
+    initialSendDone: false,
+    inputSent: false,
+    sentResult: null as CallToolResult | null,
+    timer: null as ReturnType<typeof setTimeout> | null,
+  });
+
   // Refs are written after the render that changed them, never during one.
   // Declared above the listener effect so that at mount they are current before
   // the first message can arrive.
@@ -98,11 +137,51 @@ export default function AgentViewFrame({
   // policy on top of it, never the markup raw.
   const doc = useMemo(() => withCsp(content.html, content.csp), [content]);
 
-  const post = useCallback((reply: JsonRpcReply) => {
+  const post = useCallback((message: JsonRpcReply | JsonRpcNotification) => {
     // The window is gone once the view is closed; a tool call that resolves
     // after that has nowhere to land, and `contentWindow` is null there.
-    frameRef.current?.contentWindow?.postMessage(reply, '*');
+    frameRef.current?.contentWindow?.postMessage(message, '*');
   }, []);
+
+  // Input goes first and exactly once; a result that changes afterwards is
+  // sent alone, without reopening the page.
+  const sendInlineData = useCallback(() => {
+    const bridge = bridgeRef.current;
+    const call = toolCallRef.current;
+    if (!bridge.initialized || !call) return;
+    if (!bridge.inputSent) {
+      post(toolInputNotification(call.input));
+      bridge.inputSent = true;
+    }
+    if (call.result != null && bridge.sentResult !== call.result) {
+      post(toolResultNotification(call.result));
+      bridge.sentResult = call.result;
+    }
+    bridge.initialSendDone = true;
+  }, [post]);
+
+  const scheduleInitialSend = useCallback(() => {
+    const bridge = bridgeRef.current;
+    if (bridge.timer !== null) clearTimeout(bridge.timer);
+    bridge.timer = setTimeout(() => {
+      bridge.timer = null;
+      sendInlineData();
+    }, INLINE_DATA_DELAY_MS);
+  }, [sendInlineData]);
+
+  useEffect(() => {
+    toolCallRef.current = toolCall;
+    // Before the first send, the scheduled one picks up the latest data; a
+    // later result update is delivered directly.
+    if (bridgeRef.current.initialSendDone) sendInlineData();
+  }, [toolCall, sendInlineData]);
+
+  useEffect(
+    () => () => {
+      if (bridgeRef.current.timer !== null) clearTimeout(bridgeRef.current.timer);
+    },
+    [],
+  );
 
   // A layout effect, and the reason is the handshake. The listener has to exist
   // before the page can speak, and the phases are what guarantee it: React
@@ -155,7 +234,19 @@ export default function AgentViewFrame({
             );
           break;
         }
-        case 'ready':
+        case 'ready': {
+          const bridge = bridgeRef.current;
+          // A second `initialized` means the iframe loaded a new document (its
+          // `srcDoc` changed); the call data has to be handed to it again.
+          if (bridge.initialized) {
+            bridge.inputSent = false;
+            bridge.sentResult = null;
+          }
+          bridge.initialized = true;
+          bridge.initialSendDone = false;
+          if (toolCallRef.current) scheduleInitialSend();
+          break;
+        }
         case 'ignore':
           break;
       }
@@ -173,8 +264,9 @@ export default function AgentViewFrame({
   // room than the number it asked for — enough for a permanent scrollbar with a
   // full-length thumb. The border is added to the height rather than the box
   // switched to `content-box`, which would make `w-full` mean `100% + 2px` and
-  // trade the inner scrollbar for a horizontal one on the page.
-  const bordered = content.prefersBorder !== false;
+  // trade the inner scrollbar for a horizontal one on the page. An embedded
+  // frame has no border of its own: the caller's card is the frame.
+  const bordered = !embedded && content.prefersBorder !== false;
 
   return (
     <iframe
@@ -198,7 +290,7 @@ export default function AgentViewFrame({
       // `block` and not the default `inline`: an inline frame sits on a text
       // baseline, and the descender space left under it reads as a stray gap at
       // the bottom of the card.
-      className={`block w-full rounded-lg bg-surface transition-[height] ${bordered ? 'border border-border' : ''}`}
+      className={`block w-full bg-surface transition-[height] ${bordered ? 'rounded-lg border border-border' : ''}`}
     />
   );
 }

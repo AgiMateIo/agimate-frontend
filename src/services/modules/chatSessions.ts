@@ -9,6 +9,7 @@ import type {
   ChatSessionMessageResponse,
   ChatSessionResponse,
   PagedResponse,
+  SessionToolCallResponse,
 } from '@/types';
 
 export const chatSessionsApi = {
@@ -67,6 +68,18 @@ export const chatSessionsApi = {
     const query = buildPagedQuery({}, params);
     return httpClient.get<PagedResponse<ChatSessionMessageResponse>>(
       `${API.ENDPOINTS.CONTROL_API}/manage/sessions/${sessionId}/messages/?${query}`,
+    );
+  },
+
+  // A tool call named by a message's `toolCallIds`, resolved to its inline view:
+  // `viewUri` is absent when the tool has none (or the binding was revoked),
+  // `result` is absent while the call runs. 404/403 mean "no view" to the UI.
+  async getChatSessionToolCall(
+    sessionId: string,
+    toolCallId: string,
+  ): Promise<SessionToolCallResponse> {
+    return httpClient.get<SessionToolCallResponse>(
+      `${API.ENDPOINTS.CONTROL_API}/manage/sessions/${sessionId}/tool-calls/${encodeURIComponent(toolCallId)}`,
     );
   },
 

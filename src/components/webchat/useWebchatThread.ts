@@ -5,6 +5,7 @@ import apiService from '@/services/api';
 import { getErrorMessage } from '@/utils/error';
 import type {
   ChatDirection,
+  SessionToolCallDescriptor,
   WebchatMessagePayload,
   ChatSessionMessageResponse,
   ChatPart,
@@ -20,6 +21,12 @@ export interface ThreadMessage {
   stream: ChatStream | null;
   text: string; // trimmed; normalized to '' for attachment-only messages (wire sends null)
   parts: ChatPart[]; // attachments (normalized to [] when the wire field is null)
+  toolCallIds: string[]; // calls a progress line names; [] on everything else
+  // Resolved descriptors from history; absent on live lines — webchat.message
+  // carries ids only, and the descriptors arrive with session.tool_call.
+  // Present-but-null still means "the backend knows the field".
+  toolCalls?: SessionToolCallDescriptor[] | null;
+  live: boolean; // arrived as an event, not from history (see useInlineToolViews)
   createdAt: string;
   pending: boolean; // optimistic send not yet acknowledged by the backend
 }
@@ -42,6 +49,11 @@ const fromHistory = (m: ChatSessionMessageResponse): ThreadMessage => ({
   stream: m.stream,
   text: normalizeText(m.text),
   parts: m.parts ?? [],
+  toolCallIds: m.toolCallIds ?? [],
+  // Keep "absent" distinct from "present but null": the first is an old
+  // backend, the second a resolved line with no journal entries.
+  ...(m.toolCalls !== undefined ? { toolCalls: m.toolCalls } : {}),
+  live: false,
   createdAt: m.createdAt,
   pending: false,
 });
@@ -53,6 +65,8 @@ const fromEvent = (p: WebchatMessagePayload): ThreadMessage => ({
   stream: p.stream,
   text: normalizeText(p.text),
   parts: p.parts ?? [],
+  toolCallIds: p.toolCallIds ?? [],
+  live: true,
   createdAt: p.createdAt,
   pending: false,
 });
@@ -84,6 +98,9 @@ export function useWebchatThread(sessionId: string | null, running = false) {
   // backend only records the request, so this is "stopping", never "stopped".
   const [stopping, setStopping] = useState(false);
   const [stopError, setStopError] = useState('');
+  // Counts accepted live messages. Inline views need the boundary "another
+  // message arrived", not the text of it.
+  const [liveSeq, setLiveSeq] = useState(0);
 
   // messageIds already merged from history pages — events dedupe against the
   // messages state itself, so updaters stay pure (StrictMode-safe).
@@ -224,6 +241,7 @@ export function useWebchatThread(sessionId: string | null, running = false) {
       if (!sessionId || p.sessionId !== sessionId) return;
       if (processedEventIdsRef.current.has(p.messageId)) return;
       processedEventIdsRef.current.add(p.messageId);
+      setLiveSeq((n) => n + 1);
       if (p.direction === 'AGENT') {
         // progress = the agent is working; answer/error ends the wait.
         const working = p.stream === 'progress';
@@ -288,6 +306,8 @@ export function useWebchatThread(sessionId: string | null, running = false) {
           stream: null,
           text: trimmed,
           parts,
+          toolCallIds: [],
+          live: false,
           createdAt: new Date().toISOString(),
           pending: true,
         },
@@ -342,6 +362,7 @@ export function useWebchatThread(sessionId: string | null, running = false) {
 
   return {
     messages,
+    liveSeq,
     loading,
     loadingOlder,
     hasOlder,

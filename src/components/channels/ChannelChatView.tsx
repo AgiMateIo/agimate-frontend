@@ -76,7 +76,7 @@ export default function ChannelChatView({ session, onUpdated }: ChannelChatViewP
 
       {closeError && <ErrorAlert>{closeError}</ErrorAlert>}
 
-      <SessionTranscript sessionId={session.id} />
+      <SessionTranscript key={session.id} sessionId={session.id} agentId={session.agentId} />
 
       {renaming && (
         <RenameSessionModal
