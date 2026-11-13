@@ -16,6 +16,7 @@ import { chatSessionsApi } from './modules/chatSessions';
 import { boardsApi } from './modules/boards';
 import { connectionsApi } from './modules/connections';
 import { connectorsApi } from './modules/connectors';
+import { connectorPresetsApi } from './modules/connectorPresets';
 import { filesApi } from './modules/files';
 import { agenticTeamsApi } from './modules/agenticTeams';
 import { logsApi } from './modules/logs';
@@ -39,6 +40,7 @@ const apiService = {
   ...boardsApi,
   ...connectionsApi,
   ...connectorsApi,
+  ...connectorPresetsApi,
   ...filesApi,
   ...agenticTeamsApi,
   ...logsApi,

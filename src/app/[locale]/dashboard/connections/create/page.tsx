@@ -2,21 +2,30 @@
 
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/i18n/navigation';
 import type { ConnectionResponse } from '@/types';
 import { Alert } from '@/components/ui/Alert';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { integrationPlatformsOptions } from '@/queries/connectors';
+import { connectorPresetOptions } from '@/queries/connectorPresets';
 import { findConnector } from '@/utils/connector';
 import { useConnectionCacheActions } from '@/queries/connections';
 import ConnectionSetupForm from '@/components/connections/ConnectionSetupForm';
+import { PRESET_AVAILABILITY_LABEL } from '@/components/connections/presetLabels';
 import { Placeholder } from '@/components/ui/Placeholder';
 
-// Target of the `/connections/new` deep link: the connector is preselected from
-// the query, so the platform-picker step is skipped entirely.
+// Target of the `/connections/create` deep link. A preset, when present, is the
+// whole form: its connector, its fields, its server URL. The plain `connector`
+// path stays for everything the catalogue does not carry.
 function CreateConnectionContent() {
+  const searchParams = useSearchParams();
+  const presetCode = searchParams.get('preset') ?? '';
+  return presetCode ? <PresetConnectionContent code={presetCode} /> : <ManualConnectionContent />;
+}
+
+function ManualConnectionContent() {
   const t = useTranslations('Connections');
   const tCommon = useTranslations('Common');
   const router = useRouter();
@@ -56,6 +65,83 @@ function CreateConnectionContent() {
       <ConnectionSetupForm
         connector={connector}
         initialName={initialName}
+        onSuccess={handleSuccess}
+        onCancel={() => router.push('/dashboard/connections')}
+        cancelLabel={tCommon('cancel')}
+      />
+    </div>
+  );
+}
+
+function PresetConnectionContent({ code }: { code: string }) {
+  const t = useTranslations('Connections');
+  const tPresets = useTranslations('ConnectorPresets');
+  const tCommon = useTranslations('Common');
+  const router = useRouter();
+  const [{ data: platforms }, { data: preset }] = useSuspenseQueries({
+    queries: [integrationPlatformsOptions(), connectorPresetOptions(code)],
+  });
+  const { invalidateLists } = useConnectionCacheActions();
+
+  const handleSuccess = (connection: ConnectionResponse) => {
+    invalidateLists();
+    router.replace(`/dashboard/connections/${connection.id}`);
+  };
+
+  const back = (
+    <Link href="/dashboard/connections" className="text-sm text-accent underline hover:no-underline">
+      {t('backToConnections')}
+    </Link>
+  );
+
+  if (!preset) {
+    return (
+      <div className="max-w-2xl space-y-4">
+        <Alert variant="warning">{t('presetNotFound', { code })}</Alert>
+        {back}
+      </div>
+    );
+  }
+
+  const connector = findConnector(platforms, preset.connectorCode);
+  if (!connector) {
+    return (
+      <div className="max-w-2xl space-y-4">
+        <Alert variant="warning">
+          {t('presetConnectorMissing', { code: preset.connectorCode })}
+        </Alert>
+        {back}
+      </div>
+    );
+  }
+
+  // Availability is a hint, not a creation gate, but a preset whose form has no
+  // working auth method cannot produce a connection. The manual MCP form stays
+  // one click away — that is where a working token can still be entered.
+  if (preset.connection.availability !== 'AVAILABLE' || preset.form.authMethods.length === 0) {
+    const reason =
+      preset.connection.availability === 'AVAILABLE'
+        ? tPresets('availabilityAuthUnsupported')
+        : tPresets(PRESET_AVAILABILITY_LABEL[preset.connection.availability]);
+    return (
+      <div className="max-w-2xl space-y-4">
+        <Alert variant="warning">{t('presetUnavailable', { reason })}</Alert>
+        <Link
+          href={`/dashboard/connections/create?connector=${encodeURIComponent(preset.connectorCode)}`}
+          className="block text-sm text-accent underline hover:no-underline"
+        >
+          {t('createManually')}
+        </Link>
+        {back}
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-2xl">
+      <ConnectionSetupForm
+        connector={connector}
+        preset={preset}
         onSuccess={handleSuccess}
         onCancel={() => router.push('/dashboard/connections')}
         cancelLabel={tCommon('cancel')}

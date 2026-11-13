@@ -8,6 +8,7 @@ import { Link } from '@/i18n/navigation';
 import type {
   ConnectionResponse,
   ConnectorCatalogEntry,
+  ConnectorPresetResponse,
   CreateConnectionResult,
   CredentialFieldSpec,
 } from '@/types';
@@ -16,13 +17,23 @@ import { FormField, Input } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { getErrorMessage } from '@/utils/error';
 import { connectionNameFromUrl } from '@/utils/connection-name';
+import { parseHttpsUrl } from '@/utils/mcp-view';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { connectionsListOptions } from '@/queries/connections';
 import { ConnectionAvatar } from './ConnectionAvatar';
 import CredentialFieldsForm, { useCredentialFields } from './CredentialFieldsForm';
+import {
+  PresetAuthMethodField,
+  PresetHeaderFields,
+  usePresetFields,
+} from './PresetFields';
 
 interface ConnectionSetupFormProps {
   connector: ConnectorCatalogEntry;
+  // A catalogue preset to prefill the form from: its card, the merged
+  // credential fields, the extra header inputs and the auth-method choice.
+  // The request itself stays an ordinary create.
+  preset?: ConnectorPresetResponse;
   initialName?: string;
   // Pre-filled values (a skill's declared instance — the MCP server's URL);
   // secrets are never among them. Read once, on mount.
@@ -50,10 +61,12 @@ function parseConflictSubCode(message: string): string | null {
 /**
  * Step "configure connection": credential fields for one connector plus an
  * optional display name. Shared by the add-connection modal and the deep-link
- * page (`/connections/new?connector=…`), so both behave identically.
+ * page (`/dashboard/connections/create?connector=…`), so both behave
+ * identically; a catalogue preset only prefills it.
  */
 export default function ConnectionSetupForm({
   connector,
+  preset,
   initialName = '',
   initialCredentials,
   credentialFields: credentialFieldsOverride,
@@ -65,10 +78,14 @@ export default function ConnectionSetupForm({
 }: ConnectionSetupFormProps) {
   const t = useTranslations('Connections');
   const tAuth = useTranslations('ConnectionAuth');
+  const tPresets = useTranslations('ConnectorPresets');
   const queryClient = useQueryClient();
-  const [name, setName] = useState(initialName);
-  // Until the user types a name of their own, it follows the server address.
-  const [nameEdited, setNameEdited] = useState(initialName !== '');
+  const presetFields = usePresetFields(preset);
+  const startingName = preset?.card.name ?? initialName;
+  const [name, setName] = useState(startingName);
+  // Until the user types a name of their own, it follows the server address
+  // (a preset already starts with the service's name).
+  const [nameEdited, setNameEdited] = useState(startingName !== '');
   // set when the backend rejects the credentials as a duplicate instance (409)
   const [conflict, setConflict] = useState<ConnectionResponse | null>(null);
   // the browser is on its way to the provider's consent screen — nothing left
@@ -78,15 +95,28 @@ export default function ConnectionSetupForm({
   // so send the user to its card rather than have them create a second one
   const [pendingAuth, setPendingAuth] = useState<ConnectionResponse | null>(null);
 
-  const credentialFields = credentialFieldsOverride ?? connector.integrationMeta?.credentialFields ?? {};
+  const credentialFields = preset
+    ? presetFields.visibleCredentialFields
+    : (credentialFieldsOverride ?? connector.integrationMeta?.credentialFields ?? {});
+  // A preset's non-secret values (the MCP URL) ride in `params`; they are
+  // ordinary credentials once the form starts.
+  const presetInitialValues = preset ? { ...initialCredentials, ...preset.form.params } : initialCredentials;
   const { credentials, handleFieldChange, canSubmit, filledCredentials } =
-    useCredentialFields(credentialFields, initialCredentials);
+    useCredentialFields(credentialFields, presetInitialValues);
 
   const urlField = Object.entries(credentialFields).find(
     ([, spec]) => spec.required && spec.type === 'URL',
   )?.[0];
-  const suggestedName = urlField ? connectionNameFromUrl(credentials[urlField]) : null;
-  const shownName = nameEdited ? name : (suggestedName ?? '');
+  const presetUrl = preset?.form.params.url;
+  const suggestedName = urlField
+    ? connectionNameFromUrl(credentials[urlField])
+    : presetUrl
+      ? connectionNameFromUrl(presetUrl)
+      : null;
+  // A cleared name still falls back to the service's own name, not to nothing.
+  const fallbackName = preset?.card.name ?? suggestedName;
+  const shownName = nameEdited ? name : (fallbackName ?? '');
+  const docsUrl = parseHttpsUrl(preset?.card.docsUrl);
 
   // null result = we are leaving the SPA for the consent screen; routing to the
   // connection card now would fight the redirect.
@@ -114,12 +144,21 @@ export default function ConnectionSetupForm({
     handleSubmit(e, async () => {
       setConflict(null);
       setPendingAuth(null);
+      const credentialValues = filledCredentials();
+      if (preset) {
+        // A hidden token must not ride along after switching to OAuth, and the
+        // dedicated header inputs are assembled the way a hand-filled MCP form
+        // sends them.
+        if (!presetFields.tokenVisible) delete credentialValues.auth_token;
+        const headers = presetFields.buildHeaders();
+        if (headers) credentialValues.headers = headers;
+      }
       let created: CreateConnectionResult;
       try {
         created = await apiService.createConnection({
           connectorCode: connector.code,
-          credentials: filledCredentials(),
-          name: shownName.trim() || suggestedName || undefined,
+          credentials: credentialValues,
+          name: shownName.trim() || fallbackName || undefined,
         });
       } catch (err) {
         if (err instanceof ApiError && err.status === 409) {
@@ -167,17 +206,47 @@ export default function ConnectionSetupForm({
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      {!hideHeader && (
-        <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-secondary border border-border">
-          <ConnectionAvatar connectorCode={connector.code} connectorName={connector.name} />
-          <div className="min-w-0">
-            <div className="font-medium text-foreground">{connector.name}</div>
-            {connector.description && (
-              <p className="text-xs text-muted mt-0.5">{connector.description}</p>
+      {!hideHeader &&
+        (preset ? (
+          <div className="space-y-2 rounded-lg border border-border bg-surface-secondary p-3">
+            <div className="flex items-start gap-3">
+              <ConnectionAvatar
+                connectorCode={preset.code}
+                connectorName={preset.card.name}
+                iconUrl={preset.card.iconUrl}
+              />
+              <div className="min-w-0 flex-1">
+                <div className="font-medium text-foreground">{preset.card.name}</div>
+                {presetUrl && <p className="mt-0.5 break-all text-xs text-muted">{presetUrl}</p>}
+                {docsUrl && (
+                  <a
+                    href={docsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1 inline-block text-xs text-accent underline hover:no-underline"
+                  >
+                    {tPresets('whereToGetToken')}
+                  </a>
+                )}
+              </div>
+            </div>
+            {preset.card.description && (
+              <p className="text-xs text-muted">{preset.card.description}</p>
             )}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-secondary border border-border">
+            <ConnectionAvatar connectorCode={connector.code} connectorName={connector.name} />
+            <div className="min-w-0">
+              <div className="font-medium text-foreground">{connector.name}</div>
+              {connector.description && (
+                <p className="text-xs text-muted mt-0.5">{connector.description}</p>
+              )}
+            </div>
+          </div>
+        ))}
+
+      {preset && <PresetAuthMethodField state={presetFields} />}
 
       <CredentialFieldsForm
         credentialFields={credentialFields}
@@ -185,20 +254,39 @@ export default function ConnectionSetupForm({
         fieldErrors={fieldErrors}
         onFieldChange={handleFieldChange}
         afterRequired={
-          <FormField label={t('name')}>
-            <Input
-              type="text"
-              value={shownName}
-              onChange={(e) => {
-                setNameEdited(true);
-                setName(e.target.value);
-              }}
-              placeholder={suggestedName ?? t('namePlaceholder')}
-              maxLength={100}
-            />
-          </FormField>
+          preset ? undefined : (
+            <FormField label={t('name')}>
+              <Input
+                type="text"
+                value={shownName}
+                onChange={(e) => {
+                  setNameEdited(true);
+                  setName(e.target.value);
+                }}
+                placeholder={suggestedName ?? t('namePlaceholder')}
+                maxLength={100}
+              />
+            </FormField>
+          )
         }
       />
+
+      {preset && <PresetHeaderFields state={presetFields} />}
+
+      {preset && (
+        <FormField label={t('name')}>
+          <Input
+            type="text"
+            value={shownName}
+            onChange={(e) => {
+              setNameEdited(true);
+              setName(e.target.value);
+            }}
+            placeholder={fallbackName ?? t('namePlaceholder')}
+            maxLength={100}
+          />
+        </FormField>
+      )}
 
       {error && <ErrorAlert>{error}</ErrorAlert>}
 
@@ -231,7 +319,7 @@ export default function ConnectionSetupForm({
         )}
         <Button
           type="submit"
-          disabled={busy || !canSubmit}
+          disabled={busy || !canSubmit || !presetFields.complete}
           loading={busy}
           className="flex-1"
         >

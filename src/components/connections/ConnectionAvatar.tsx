@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { getConnectorLogo } from './connectorLogo';
 
 // Per-connector avatar tile. Known connectors get their hardcoded mark (see
@@ -45,12 +46,37 @@ interface ConnectionAvatarProps {
   connectorCode: string;
   connectorName: string;
   size?: AvatarSize;
+  // A catalogue card's own icon; falls back to the connector mark (or a
+  // monogram) when it is absent or fails to load.
+  iconUrl?: string | null;
 }
 
-export function ConnectionAvatar({ connectorCode, connectorName, size = 'md' }: ConnectionAvatarProps) {
+export function ConnectionAvatar({
+  connectorCode,
+  connectorName,
+  size = 'md',
+  iconUrl,
+}: ConnectionAvatarProps) {
   const { tile, glyph } = SIZES[size];
+  // Remember the URL that failed, not a boolean: a different icon must get its
+  // own chance without an effect or a remount.
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const logo = getConnectorLogo(connectorCode);
   const tone = logo?.tone ?? PALETTE[hashCode(connectorCode) % PALETTE.length];
+
+  if (iconUrl && failedSrc !== iconUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- a vendor-hosted icon
+      <img
+        src={iconUrl}
+        alt=""
+        loading="lazy"
+        referrerPolicy="no-referrer"
+        onError={() => setFailedSrc(iconUrl)}
+        className={`${tile} shrink-0 object-contain`}
+      />
+    );
+  }
 
   return (
     <div className={`${tile} flex items-center justify-center font-bold shrink-0 ${tone}`}>

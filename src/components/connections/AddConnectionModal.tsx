@@ -1,113 +1,172 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { ConnectorCatalogEntry, ConnectionResponse } from '@/types';
+import type {
+  ConnectionResponse,
+  ConnectorCatalogEntry,
+  ConnectorPresetResponse,
+} from '@/types';
 import { Modal } from '@/components/ui/Modal';
+import { Tabs } from '@/components/ui/Tabs';
 import { Button } from '@/components/ui/Button';
-import { Chip } from '@/components/ui/Chip';
+import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { Placeholder } from '@/components/ui/Placeholder';
+import { useConnectorPresetsQuery } from '@/queries/connectorPresets';
+import { findConnector } from '@/utils/connector';
 import { ConnectionAvatar } from './ConnectionAvatar';
 import ConnectionSetupForm from './ConnectionSetupForm';
-import { DEMO_CONNECTORS, DEMO_PAGE_SIZE } from './demoConnectors';
+import PresetCatalog from './PresetCatalog';
 
 interface AddConnectionModalProps {
   platforms: ConnectorCatalogEntry[];
+  connections: ConnectionResponse[];
   onClose: () => void;
   onSuccess: (connection: ConnectionResponse) => void;
 }
 
+type PickTab = 'presets' | 'manual';
+
+type Step =
+  | { kind: 'pick' }
+  | { kind: 'connector'; connector: ConnectorCatalogEntry }
+  | { kind: 'preset'; preset: ConnectorPresetResponse };
+
+// "Ready-made" is the first face of the picker: a service the user recognises
+// is easier to choose than an address to type. The manual tab keeps the
+// connector tiles — and the MCP one — for everything the catalogue does not
+// carry.
 export default function AddConnectionModal({
   platforms,
+  connections,
   onClose,
   onSuccess,
 }: AddConnectionModalProps) {
   const t = useTranslations('Connections');
+  const tPresets = useTranslations('ConnectorPresets');
   const tCommon = useTranslations('Common');
-  const [selectedPlatform, setSelectedPlatform] = useState<ConnectorCatalogEntry | null>(null);
+  const [tab, setTab] = useState<PickTab>('presets');
+  const [step, setStep] = useState<Step>({ kind: 'pick' });
+  // The picker is unmounted while a form is open; the catalogue's filters live
+  // here so coming back finds them as they were.
+  const [search, setSearch] = useState('');
+  const [category, setCategory] = useState('');
+  const [jurisdiction, setJurisdiction] = useState('');
+  const presets = useConnectorPresetsQuery();
 
-  const connectors = platforms.filter(p => p.integrationMeta);
-  // Hide a placeholder as soon as the real catalog carries the same code.
-  const codes = new Set(connectors.map(p => p.code));
-  const upcoming = DEMO_CONNECTORS.filter(d => !codes.has(d.code));
+  const connectors = platforms.filter((platform) => platform.integrationMeta);
+  const back = () => setStep({ kind: 'pick' });
 
-  // Placeholders are revealed a page at a time. There is nothing to fetch, so
-  // the "loading" is only there to keep the button from feeling instant.
-  const [shown, setShown] = useState(DEMO_PAGE_SIZE);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
-
-  const loadMore = () => {
-    setLoadingMore(true);
-    timer.current = setTimeout(() => {
-      setShown((n) => n + DEMO_PAGE_SIZE);
-      setLoadingMore(false);
-    }, 500);
-  };
+  const presetConnector =
+    step.kind === 'preset' ? findConnector(platforms, step.preset.connectorCode) : undefined;
 
   return (
     <Modal
       isOpen={true}
       onClose={onClose}
-      title={selectedPlatform ? t('configureConnection') : t('selectConnector')}
-      size={selectedPlatform ? 'md' : 'xl'}
+      title={step.kind === 'pick' ? t('selectConnector') : t('configureConnection')}
+      size={step.kind === 'pick' ? 'xl' : 'md'}
     >
-      {!selectedPlatform ? (
-        <div className="space-y-4">
-          <p className="text-sm text-muted">{t('selectConnectorSubtitle')}</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {connectors.map((platform) => (
-              <button
-                key={platform.code}
-                onClick={() => setSelectedPlatform(platform)}
-                className="flex items-start gap-3 p-4 rounded-lg border border-border bg-surface-secondary hover:bg-surface-secondary/80 hover:border-accent transition-colors text-left"
-              >
-                <ConnectionAvatar connectorCode={platform.code} connectorName={platform.name} size="sm" />
-                <div className="min-w-0">
-                  <div className="font-medium text-foreground truncate">{platform.name}</div>
-                  {platform.description && (
-                    <p className="text-xs text-muted mt-0.5 line-clamp-2">{platform.description}</p>
-                  )}
+      {step.kind === 'pick' ? (
+        <Tabs
+          activeTab={tab}
+          onTabChange={(id) => setTab(id as PickTab)}
+          tabs={[
+            {
+              id: 'presets',
+              label: t('tabPresets'),
+              content: presets.isPending ? (
+                <Placeholder size="sm">{tPresets('loading')}</Placeholder>
+              ) : presets.isError ? (
+                <div className="space-y-3">
+                  <ErrorAlert>{tPresets('loadError')}</ErrorAlert>
+                  <Button
+                    variant="outline"
+                    loading={presets.isFetching}
+                    onClick={() => presets.refetch()}
+                  >
+                    {tPresets('retry')}
+                  </Button>
                 </div>
-              </button>
-            ))}
-
-            {/* Not implemented yet — shown for orientation, deliberately inert. */}
-            {upcoming.slice(0, shown).map((connector) => (
-              <div
-                key={connector.code}
-                aria-disabled="true"
-                className="flex items-start gap-3 p-4 rounded-lg border border-dashed border-border bg-surface-secondary/40 opacity-70"
-              >
-                <ConnectionAvatar connectorCode={connector.code} connectorName={connector.name} size="sm" />
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="font-medium text-foreground truncate">{connector.name}</span>
-                    <Chip>{t('soon')}</Chip>
-                  </div>
-                  <p className="text-xs text-muted mt-0.5 line-clamp-2">{t(connector.descriptionKey)}</p>
+              ) : (presets.data ?? []).length === 0 ? (
+                <div className="space-y-3">
+                  <Placeholder size="sm">{tPresets('empty')}</Placeholder>
+                  <Button variant="secondary" onClick={() => setTab('manual')}>
+                    {t('tabManual')}
+                  </Button>
                 </div>
-              </div>
-            ))}
-          </div>
-
-          {shown < upcoming.length && (
-            <div className="flex justify-center pt-1">
-              <Button variant="secondary" onClick={loadMore} loading={loadingMore}>
-                {t('loadMore')}
-              </Button>
-            </div>
-          )}
-        </div>
-      ) : (
+              ) : (
+                <PresetCatalog
+                  presets={presets.data ?? []}
+                  connections={connections}
+                  search={search}
+                  onSearchChange={setSearch}
+                  category={category}
+                  onCategoryChange={setCategory}
+                  jurisdiction={jurisdiction}
+                  onJurisdictionChange={setJurisdiction}
+                  onSelect={(preset) => setStep({ kind: 'preset', preset })}
+                />
+              ),
+            },
+            {
+              id: 'manual',
+              label: t('tabManual'),
+              content: (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {connectors.map((platform) => (
+                    <button
+                      key={platform.code}
+                      onClick={() => setStep({ kind: 'connector', connector: platform })}
+                      className="flex items-start gap-3 rounded-lg border border-border bg-surface-secondary p-4 text-left transition-colors hover:border-accent hover:bg-surface-secondary/80"
+                    >
+                      <ConnectionAvatar
+                        connectorCode={platform.code}
+                        connectorName={platform.name}
+                        size="sm"
+                      />
+                      <div className="min-w-0">
+                        <div className="truncate font-medium text-foreground">{platform.name}</div>
+                        {platform.description && (
+                          <p className="mt-0.5 line-clamp-2 text-xs text-muted">
+                            {platform.description}
+                          </p>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ),
+            },
+          ]}
+        />
+      ) : step.kind === 'connector' ? (
         // Keyed by connector so credential state never leaks between platforms.
         <ConnectionSetupForm
-          key={selectedPlatform.code}
-          connector={selectedPlatform}
+          key={step.connector.code}
+          connector={step.connector}
           onSuccess={onSuccess}
-          onCancel={() => setSelectedPlatform(null)}
+          onCancel={back}
           cancelLabel={tCommon('back')}
         />
+      ) : presetConnector ? (
+        <ConnectionSetupForm
+          key={step.preset.code}
+          connector={presetConnector}
+          preset={step.preset}
+          onSuccess={onSuccess}
+          onCancel={back}
+          cancelLabel={tCommon('back')}
+        />
+      ) : (
+        <div className="space-y-3">
+          <ErrorAlert>
+            {t('presetConnectorMissing', { code: step.preset.connectorCode })}
+          </ErrorAlert>
+          <Button variant="secondary" onClick={back}>
+            {tCommon('back')}
+          </Button>
+        </div>
       )}
     </Modal>
   );

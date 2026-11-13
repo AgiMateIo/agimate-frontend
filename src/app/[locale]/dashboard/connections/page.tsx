@@ -48,6 +48,7 @@ function ConnectionsContent() {
       {showAddModal && (
         <AddConnectionModal
           platforms={platforms}
+          connections={connections}
           onClose={() => setShowAddModal(false)}
           onSuccess={handleAddSuccess}
         />
