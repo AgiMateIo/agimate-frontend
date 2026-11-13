@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
@@ -12,6 +12,7 @@ import { integrationPlatformsOptions } from '@/queries/connectors';
 import { connectorPresetOptions } from '@/queries/connectorPresets';
 import { findConnector } from '@/utils/connector';
 import { useConnectionCacheActions } from '@/queries/connections';
+import { takePendingPreset } from '@/utils/pending-preset';
 import ConnectionSetupForm from '@/components/connections/ConnectionSetupForm';
 import { PRESET_AVAILABILITY_LABEL } from '@/components/connections/presetLabels';
 import { Placeholder } from '@/components/ui/Placeholder';
@@ -21,7 +22,22 @@ import { Placeholder } from '@/components/ui/Placeholder';
 // path stays for everything the catalogue does not carry.
 function CreateConnectionContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const presetCode = searchParams.get('preset') ?? '';
+
+  // A connection preset chosen before sign-up waits in storage; consume it here
+  // so it cannot redirect a later dashboard visit. An agent preset is left for
+  // the wizard.
+  useEffect(() => {
+    const pending = takePendingPreset('connection');
+    if (pending && !presetCode) {
+      const query = new URLSearchParams(searchParams);
+      query.set('preset', pending.name);
+      router.replace(`/dashboard/connections/create?${query}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per opening
+  }, []);
+
   return presetCode ? <PresetConnectionContent code={presetCode} /> : <ManualConnectionContent />;
 }
 

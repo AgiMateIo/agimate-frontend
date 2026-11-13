@@ -4,6 +4,7 @@
 // the other one. Category and tag labels come from `taxonomy/`, never from here.
 
 import type { AgentType } from './agents';
+import type { ConnectorPresetAvailability, ConnectorPresetCard } from './connector-presets';
 
 export interface CatalogConnectorRef {
   code: string;
@@ -44,4 +45,17 @@ export interface CatalogSkillResponse {
   tags: string[];
   connectors: CatalogConnectorRef[];
   presets: CatalogPresetRef[];
+}
+
+// A known MCP server on the public site: the card and availability, never the
+// connection form or the instance identity. The card is the same shape the
+// dashboard picker shows, so both read a server's name and badges alike.
+export interface CatalogConnectorPresetResponse {
+  // Stable slug: the page's address and the `?preset=` of the sign-up link.
+  code: string;
+  connectorCode: string;
+  card: ConnectorPresetCard;
+  connection: {
+    availability: ConnectorPresetAvailability;
+  };
 }

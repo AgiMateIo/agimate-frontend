@@ -37,7 +37,12 @@ export default async function CatalogSkillsPage({ params }: { params: Promise<{ 
         active="skills"
         title={t('skillsIndex.title')}
         subtitle={t('skillsIndex.subtitle')}
-        tabs={{ label: t('tabsLabel'), agents: t('nav.agents'), skills: t('nav.skills') }}
+        tabs={{
+          label: t('tabsLabel'),
+          agents: t('nav.agents'),
+          skills: t('nav.skills'),
+          connectors: t('nav.connectors'),
+        }}
       />
       <CatalogBrowser kind="skills" items={skills} taxonomy={taxonomy} />
     </>

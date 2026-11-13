@@ -7,7 +7,7 @@ import { Link } from '@/i18n/navigation';
 import apiService from '@/services/api';
 import { safeNextPath } from '@/utils/next-path';
 import { currentReferralCode } from '@/utils/referral';
-import { isPresetName, rememberPendingPreset } from '@/utils/pending-preset';
+import { isPendingPresetKind, isPresetName, rememberPendingPreset } from '@/utils/pending-preset';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import AuthShell from '@/components/landing/AuthShell';
 import AuthCard from '@/components/auth/AuthCard';
@@ -24,12 +24,15 @@ function RegisterContent() {
   const t = useTranslations('Register');
   const searchParams = useSearchParams();
   const next = safeNextPath(searchParams.get('next'));
-  // A catalog preset to open in the wizard once the account exists — the
-  // confirmation letter opens a new tab, so it waits in storage.
+  // A catalog item to open once the account exists — the confirmation letter
+  // opens a new tab, so it waits in storage. `kind` says whether the dashboard
+  // opens the agent wizard or the prefilled connection form.
   const preset = searchParams.get('preset');
+  const kindParam = searchParams.get('kind');
+  const presetKind = isPendingPresetKind(kindParam) ? kindParam : 'agent';
   useEffect(() => {
-    if (isPresetName(preset)) rememberPendingPreset(preset);
-  }, [preset]);
+    if (isPresetName(preset)) rememberPendingPreset(presetKind, preset);
+  }, [preset, presetKind]);
   // Whoever's invite link brought this visitor here. Registration is the one
   // moment it can be applied; an unusable code is dropped by the backend and
   // never fails the request.
@@ -61,6 +64,7 @@ function RegisterContent() {
   const signInQuery = new URLSearchParams({
     ...(next && { next }),
     ...(isPresetName(preset) && { preset }),
+    ...(isPresetName(preset) && presetKind === 'connection' && { kind: presetKind }),
   }).toString();
   const signInHref = signInQuery ? `/login?${signInQuery}` : '/login';
 

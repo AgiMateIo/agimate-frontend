@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type {
   ConnectionResponse,
@@ -12,6 +12,7 @@ import { Placeholder } from '@/components/ui/Placeholder';
 import { SearchToolbar } from '@/components/ui/SearchToolbar';
 import { Select } from '@/components/ui/FormField';
 import { useTaxonomyLabels } from '@/queries/taxonomy';
+import { makeRegionLabel } from '@/utils/region';
 import { ConnectionAvatar } from './ConnectionAvatar';
 import { PRESET_AUTH_LABEL, PRESET_AVAILABILITY_LABEL } from './presetLabels';
 
@@ -27,14 +28,6 @@ const AUTH_TONE: Record<ConnectorPresetAuth, 'accent' | 'default' | 'muted'> = {
 // types could name the same subCode.
 const connectionKey = (connectorCode: string, subCode: string) =>
   `${connectorCode}\u0000${subCode}`;
-
-function makeRegionName(locale: string) {
-  try {
-    return new Intl.DisplayNames([locale], { type: 'region' });
-  } catch {
-    return null;
-  }
-}
 
 interface PresetCatalogProps {
   presets: ConnectorPresetResponse[];
@@ -70,11 +63,7 @@ export default function PresetCatalog({
   const locale = useLocale();
   const { taxonomy, categoryLabel } = useTaxonomyLabels();
 
-  const regionNames = useMemo(() => makeRegionName(locale), [locale]);
-  const regionLabel = useCallback(
-    (code: string) => regionNames?.of(code) ?? code,
-    [regionNames],
-  );
+  const regionLabel = useMemo(() => makeRegionLabel(locale), [locale]);
 
   const connected = useMemo(
     () =>

@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { routing } from '@/i18n/routing';
 import { PUBLIC_PAGES, getSiteOrigin } from '@/utils/seo';
-import { fetchCatalogPresets, fetchCatalogSkills } from '@/services/server/publicCatalog';
+import { fetchCatalogConnectorPresets, fetchCatalogPresets, fetchCatalogSkills } from '@/services/server/publicCatalog';
 
 // The origin comes from the request unless APP_PUBLIC_HOST pins it, so the same
 // image cannot ship a sitemap full of another deployment's URLs.
@@ -15,15 +15,17 @@ type Locale = (typeof routing.locales)[number];
 async function catalogEntries(origin: string): Promise<MetadataRoute.Sitemap> {
     const namesByLocale = await Promise.all(
         routing.locales.map(async (locale) => {
-            const [presets, skills] = await Promise.all([
+            const [presets, skills, connectors] = await Promise.all([
                 fetchCatalogPresets(locale).catch(() => []),
                 fetchCatalogSkills(locale).catch(() => []),
+                fetchCatalogConnectorPresets(locale).catch(() => []),
             ]);
             return {
                 locale,
                 paths: [
                     ...presets.map((p) => `/catalog/agents/${encodeURIComponent(p.name)}`),
                     ...skills.map((s) => `/catalog/skills/${encodeURIComponent(s.name)}`),
+                    ...connectors.map((c) => `/catalog/connectors/${encodeURIComponent(c.code)}`),
                 ],
             };
         }),

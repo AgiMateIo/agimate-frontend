@@ -16,6 +16,7 @@ export const PUBLIC_PAGES = [
     // The catalog lists; their entity pages come from the API, see sitemap.ts.
     { path: '/catalog/agents', namespace: 'CatalogPage', metaPrefix: 'meta.', priority: 0.9, changeFrequency: 'weekly' },
     { path: '/catalog/skills', namespace: 'CatalogPage.skillsIndex', metaPrefix: 'meta.', priority: 0.8, changeFrequency: 'weekly' },
+    { path: '/catalog/connectors', namespace: 'CatalogPage.connectorsIndex', metaPrefix: 'meta.', priority: 0.8, changeFrequency: 'weekly' },
     { path: '/n8n', namespace: 'N8nPage', metaPrefix: 'meta.', priority: 0.8, changeFrequency: 'monthly' },
     { path: '/desktop-connector', namespace: 'DesktopPage', metaPrefix: 'meta.', priority: 0.8, changeFrequency: 'monthly' },
     { path: '/android-chat', namespace: 'AndroidChatPage', metaPrefix: 'meta.', priority: 0.8, changeFrequency: 'monthly' },

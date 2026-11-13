@@ -1748,7 +1748,8 @@
     },
     "nav": {
       "agents": "Agents",
-      "skills": "Skills"
+      "skills": "Skills",
+      "connectors": "Services"
     },
     "title": "Agent catalog",
     "subtitle": "Ready-made agents for common jobs. Each one is assembled from skills and already knows which services to work with — all that is left is to connect your own accounts.",
@@ -1781,7 +1782,7 @@
     },
     "notFound": {
       "title": "No such page in the catalog",
-      "text": "The agent or skill may have been renamed, removed from the catalog, or exist only in another language.",
+      "text": "The agent, skill or service may have been renamed, removed from the catalog, or exist only in another language.",
       "back": "Back to the catalog"
     },
     "error": {
@@ -1797,6 +1798,42 @@
       },
       "title": "Skill catalog",
       "subtitle": "A skill tells an agent how to work with a service. Ready-made agents are assembled from skills, and any skill can be added to your own agent."
+    },
+    "connectorsIndex": {
+      "meta": {
+        "title": "MCP server catalog — AgiMate",
+        "description": "Ready-made MCP servers for AgiMate agents: services with a ready connection form — the server address, auth method and extra headers are filled in. Pick a service and connect it after signing in.",
+        "ogTitle": "AgiMate MCP server catalog",
+        "ogDescription": "Ready-made MCP servers: what each one connects to, how it authenticates and whether it can be connected today."
+      },
+      "title": "Service catalog",
+      "subtitle": "MCP servers with a ready connection form. Pick a service you know — the address and auth fields are filled in, and the platform checks the server before saving.",
+      "searchPlaceholder": "Search services...",
+      "country": "Country",
+      "allCountries": "All countries",
+      "count": "{count, plural, one {# service} other {# services}}",
+      "empty": "No services in the catalog yet."
+    },
+    "connector": {
+      "metaTitle": "{title} — an MCP server for AgiMate",
+      "label": "MCP server",
+      "docsLink": "Setup guide",
+      "unavailable": "This server cannot be connected automatically yet: {reason}",
+      "howItWorksTitle": "How it connects",
+      "howItWorksText": "After sign-in, the connection form opens with this server's address already filled in. If the server needs a token, the form says where to get it; the platform checks the server with a live request before saving the connection.",
+      "authOauth": "OAuth",
+      "authToken": "Token",
+      "authNone": "No auth",
+      "authUnknown": "Unknown auth",
+      "availabilityDown": "Server is unreachable",
+      "availabilityTransportUnsupported": "Transport is not supported",
+      "availabilityProtocolUnsupported": "Protocol is not supported",
+      "availabilityAuthUnsupported": "Authorization method is not supported"
+    },
+    "connectorCta": {
+      "create": "Connect",
+      "haveAccount": "Already have an account? Sign in",
+      "note": "Sign-up is free. Afterwards the connection form opens with this server filled in."
     },
     "tabsLabel": "Catalog sections"
   }

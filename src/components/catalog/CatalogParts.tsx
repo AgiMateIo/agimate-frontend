@@ -7,7 +7,7 @@ export function CatalogBreadcrumb({
   parentLabel,
   current,
 }: {
-  parentHref: '/catalog/agents' | '/catalog/skills';
+  parentHref: '/catalog/agents' | '/catalog/skills' | '/catalog/connectors';
   parentLabel: string;
   current: string;
 }) {
@@ -22,19 +22,19 @@ export function CatalogBreadcrumb({
   );
 }
 
-// The heading of a catalog list, with the switch between the two lists.
+// The heading of a catalog list, with the switch between the lists.
 export function CatalogHero({
   active,
   title,
   subtitle,
   tabs,
 }: {
-  active: 'agents' | 'skills';
+  active: 'agents' | 'skills' | 'connectors';
   title: string;
   subtitle: string;
-  tabs: { label: string; agents: string; skills: string };
+  tabs: { label: string; agents: string; skills: string; connectors: string };
 }) {
-  const tab = (key: 'agents' | 'skills', label: string) => (
+  const tab = (key: 'agents' | 'skills' | 'connectors', label: string) => (
     <Link
       href={`/catalog/${key}`}
       aria-current={active === key ? 'page' : undefined}
@@ -53,6 +53,7 @@ export function CatalogHero({
       >
         {tab('agents', tabs.agents)}
         {tab('skills', tabs.skills)}
+        {tab('connectors', tabs.connectors)}
       </nav>
       <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl">{title}</h1>
       <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted">{subtitle}</p>

@@ -1,4 +1,5 @@
 import type {
+  CatalogConnectorPresetResponse,
   CatalogPresetResponse,
   CatalogSkillResponse,
   TaxonomyResponse,
@@ -49,6 +50,18 @@ export function fetchCatalogSkills(locale: string): Promise<CatalogSkillResponse
 export function fetchCatalogSkill(name: string, locale: string): Promise<CatalogSkillResponse | null> {
   if (!NAME_PATTERN.test(name)) return Promise.resolve(null);
   return catalogGet(`skills/${encodeURIComponent(name)}`, locale);
+}
+
+export function fetchCatalogConnectorPresets(locale: string): Promise<CatalogConnectorPresetResponse[]> {
+  return catalogList('connector-presets/', locale);
+}
+
+export function fetchCatalogConnectorPreset(
+  code: string,
+  locale: string,
+): Promise<CatalogConnectorPresetResponse | null> {
+  if (!NAME_PATTERN.test(code)) return Promise.resolve(null);
+  return catalogGet(`connector-presets/${encodeURIComponent(code)}`, locale);
 }
 
 export async function fetchCatalogTaxonomy(locale: string): Promise<TaxonomyResponse> {

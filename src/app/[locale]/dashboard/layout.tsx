@@ -66,16 +66,29 @@ export default function DashboardLayout({
     }
   }, [user, loading, router]);
 
-  // A preset chosen in the public catalog before signing up: the first page of
-  // the dashboard hands over to the wizard. A guest keeps it until activated
-  // (it expires on its own); the wizard takes it itself when opened directly.
+  // An item chosen in the public catalog before signing up: the first page of
+  // the dashboard hands over to the agent wizard or the prefilled connection
+  // form. A guest keeps it until activated (it expires on its own); the target
+  // page takes it itself when opened directly.
   const presetChecked = useRef(false);
   useEffect(() => {
     if (!user || isGuest || presetChecked.current) return;
     presetChecked.current = true;
-    if (pathname === '/dashboard/agents/create') return;
-    const preset = takePendingPreset();
-    if (preset) router.replace(`/dashboard/agents/create?preset=${encodeURIComponent(preset)}`);
+    if (
+      pathname === '/dashboard/agents/create' ||
+      pathname === '/dashboard/connections/create'
+    ) {
+      return;
+    }
+    const pending = takePendingPreset();
+    if (!pending) return;
+    if (pending.kind === 'connection') {
+      router.replace(
+        `/dashboard/connections/create?preset=${encodeURIComponent(pending.name)}`,
+      );
+    } else {
+      router.replace(`/dashboard/agents/create?preset=${encodeURIComponent(pending.name)}`);
+    }
   }, [user, isGuest, pathname, router]);
 
   useEffect(() => {
