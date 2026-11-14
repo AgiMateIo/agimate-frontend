@@ -1,5 +1,6 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import apiService, { ApiError } from '@/services/api';
+import { presetsByPopularity } from '@/utils/presetOrder';
 import type { ConnectorPresetResponse } from '@/types';
 
 export const connectorPresetKeys = {
@@ -14,6 +15,7 @@ export const connectorPresetsOptions = () =>
   queryOptions({
     queryKey: connectorPresetKeys.list(),
     queryFn: () => apiService.getConnectorPresets(),
+    select: presetsByPopularity,
     staleTime: 5 * 60 * 1000,
   });
 

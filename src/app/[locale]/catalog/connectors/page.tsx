@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { resolveLocale } from '@/i18n/routing';
 import { buildAlternates } from '@/utils/seo';
+import { presetsByPopularity } from '@/utils/presetOrder';
 import { CatalogHero } from '@/components/catalog/CatalogParts';
 import { ConnectorCatalogBrowser } from '@/components/catalog/ConnectorCatalogBrowser';
 import {
@@ -51,7 +52,7 @@ export default async function CatalogConnectorsPage({
           connectors: t('nav.connectors'),
         }}
       />
-      <ConnectorCatalogBrowser items={presets} taxonomy={taxonomy} />
+      <ConnectorCatalogBrowser items={presetsByPopularity(presets)} taxonomy={taxonomy} />
     </>
   );
 }
