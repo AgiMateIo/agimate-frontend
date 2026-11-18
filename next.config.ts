@@ -12,6 +12,9 @@ const { version } = JSON.parse(
 
 const nextConfig: NextConfig = {
     output: 'standalone',
+    experimental: {
+        agentUpgrade: 'security',
+    },
     // Local development is served from the `.lc` hosts, not from localhost, and
     // `next dev` refuses to hand `/_next/*` to anything it wasn't told about.
     // Up to Next 16.0 an unset `allowedDevOrigins` only logged a warning; from
