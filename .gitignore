@@ -46,3 +46,6 @@ next-env.d.ts
 # local Claude Code state — .claude/CLAUDE.md is checked in on purpose
 .claude/*
 !.claude/CLAUDE.md
+
+# superpowers process docs stay out of the repo
+docs/superpowers/
