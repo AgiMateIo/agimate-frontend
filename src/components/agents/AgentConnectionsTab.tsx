@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import apiService from '@/services/api';
 import { AgentConnectionResponse } from '@/types';
-import { agentConnectionsOptions, useAgentCacheActions } from '@/queries/agents';
+import { agentConnectionsOptions, useAgentCacheActions, useAgentSkillsQuery } from '@/queries/agents';
+import { connectionsListOptions } from '@/queries/connections';
+import { ConnectionAuthBadge } from '@/components/connections/ConnectionAuth';
 import { getErrorMessage } from '@/utils/error';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { Button } from '@/components/ui/Button';
@@ -20,6 +22,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { ConnectionAvatar } from '@/components/connections/ConnectionAvatar';
 import BindConnectionModal from './BindConnectionModal';
+import AddAgentSkillModal from './AddAgentSkillModal';
 import ConnectionPoliciesPanel from './ConnectionPoliciesPanel';
 import { Placeholder } from '@/components/ui/Placeholder';
 
@@ -40,10 +43,25 @@ export default function AgentConnectionsTab({
   const { invalidateAgentAccess } = useAgentCacheActions();
 
   const { data: connections, isPending, error } = useQuery(agentConnectionsOptions(agentId));
+  // A binding row carries no auth state; the connection list has it, and the
+  // bind modal reads the same entry.
+  const { data: allConnections } = useQuery(connectionsListOptions());
+  // The skill picker needs the bindings themselves: a bound skill is re-pointed,
+  // not refused, and a still-loading list must not let a bind hit a 409.
+  const {
+    data: skillPage,
+    isPending: skillsPending,
+    error: skillsError,
+  } = useAgentSkillsQuery(agentId);
+  const authById = useMemo(
+    () => new Map((allConnections ?? []).map((c) => [c.id, c.authStatus])),
+    [allConnections],
+  );
 
   const [showBind, setShowBind] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [unbinding, setUnbinding] = useState<AgentConnectionResponse | null>(null);
+  const [skillSetup, setSkillSetup] = useState<AgentConnectionResponse | null>(null);
 
   // A badge click on the skills tab lands here with a connector to preselect —
   // derived rather than synced, so the modal opens with the URL and closes with
@@ -83,6 +101,7 @@ export default function AgentConnectionsTab({
         <div className="space-y-2">
           {rows.map((conn) => {
             const expanded = expandedId === conn.id;
+            const authStatus = authById.get(conn.connectionId);
             return (
               <div key={conn.id} className="rounded-lg border border-border overflow-hidden">
                 <div className="flex items-center gap-3 px-4 py-3 hover:bg-surface-secondary transition-colors">
@@ -105,12 +124,25 @@ export default function AgentConnectionsTab({
                       </div>
                     </div>
                   </button>
-                  {conn.usedBySkills === 0 ? (
-                    <span className="shrink-0" title={t('usedByNoSkillsHint')}>
-                      <Chip tone="warning" icon={ExclamationTriangleIcon}>
-                        {t('usedByNoSkills')}
-                      </Chip>
+                  {authStatus && (
+                    <span className="shrink-0">
+                      <ConnectionAuthBadge status={authStatus} />
                     </span>
+                  )}
+                  {conn.usedBySkills === 0 ? (
+                    conn.enabled && (
+                      <button
+                        type="button"
+                        onClick={() => setSkillSetup(conn)}
+                        aria-label={t('pickSkillAction')}
+                        title={t('usedByNoSkillsHint')}
+                        className="shrink-0"
+                      >
+                        <Chip tone="warning" icon={ExclamationTriangleIcon}>
+                          {t('pickSkillAction')}
+                        </Chip>
+                      </button>
+                    )
                   ) : (
                     <span className="shrink-0">
                       <Chip tone="accent">{t('usedBySkills', { count: conn.usedBySkills })}</Chip>
@@ -160,6 +192,26 @@ export default function AgentConnectionsTab({
           onSuccess={() => {
             setShowBind(false);
             onBindConnectorHandled?.();
+            invalidateAgentAccess(agentId);
+          }}
+        />
+      )}
+
+      {skillSetup && (
+        <AddAgentSkillModal
+          agentId={agentId}
+          connection={{
+            id: skillSetup.connectionId,
+            label: skillSetup.name ?? skillSetup.fullCode,
+          }}
+          boundSkills={skillPage?.content ?? []}
+          boundSkillsPending={skillsPending}
+          boundSkillsError={
+            skillsError ? getErrorMessage(skillsError, t('bindingsLoadError')) : null
+          }
+          onClose={() => setSkillSetup(null)}
+          onSuccess={() => {
+            setSkillSetup(null);
             invalidateAgentAccess(agentId);
           }}
         />

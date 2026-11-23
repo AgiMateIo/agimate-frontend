@@ -376,7 +376,7 @@ export default function AgentSkillsTab({ agentId }: AgentSkillsTabProps) {
       {showAdd && (
         <AddAgentSkillModal
           agentId={agentId}
-          boundSkillIds={new Set(bindings.map((b) => b.skillId))}
+          boundSkills={bindings}
           onClose={() => setShowAdd(false)}
           onSuccess={handleMutationSuccess}
         />

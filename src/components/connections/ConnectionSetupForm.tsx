@@ -15,11 +15,11 @@ import type {
 import { Button } from '@/components/ui/Button';
 import { FormField, Input } from '@/components/ui/FormField';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
-import { getErrorMessage } from '@/utils/error';
+import { getDetailedErrorMessage, getErrorMessage } from '@/utils/error';
 import { connectionNameFromUrl } from '@/utils/connection-name';
 import { parseHttpsUrl } from '@/utils/mcp-view';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
-import { connectionsListOptions } from '@/queries/connections';
+import { connectionsListOptions, useConnectionCacheActions } from '@/queries/connections';
 import { ConnectionAvatar } from './ConnectionAvatar';
 import CredentialFieldsForm, { useCredentialFields } from './CredentialFieldsForm';
 import {
@@ -46,6 +46,9 @@ interface ConnectionSetupFormProps {
   hideHeader?: boolean;
   // No way back from this form (a wizard step that has nothing else to offer).
   hideCancel?: boolean;
+  // A hook into creation itself: called before the consent-screen redirect and
+  // awaited. A rejection stops the flow (the error is shown by the form).
+  onCreated?: (connection: ConnectionResponse) => void | Promise<void>;
   onSuccess: (connection: ConnectionResponse) => void;
   onCancel: () => void;
   cancelLabel: string;
@@ -72,6 +75,7 @@ export default function ConnectionSetupForm({
   credentialFields: credentialFieldsOverride,
   hideHeader = false,
   hideCancel = false,
+  onCreated,
   onSuccess,
   onCancel,
   cancelLabel,
@@ -80,6 +84,7 @@ export default function ConnectionSetupForm({
   const tAuth = useTranslations('ConnectionAuth');
   const tPresets = useTranslations('ConnectorPresets');
   const queryClient = useQueryClient();
+  const { invalidateLists } = useConnectionCacheActions();
   const presetFields = usePresetFields(preset);
   const startingName = preset?.card.name ?? initialName;
   const [name, setName] = useState(startingName);
@@ -94,6 +99,9 @@ export default function ConnectionSetupForm({
   // created in PENDING_AUTH, but minting the consent URL failed: the row exists,
   // so send the user to its card rather than have them create a second one
   const [pendingAuth, setPendingAuth] = useState<ConnectionResponse | null>(null);
+  // created, but the caller's follow-up (binding) failed: the row exists, so a
+  // second submit would make another
+  const [createdUnbound, setCreatedUnbound] = useState<ConnectionResponse | null>(null);
 
   const credentialFields = preset
     ? presetFields.visibleCredentialFields
@@ -173,6 +181,19 @@ export default function ConnectionSetupForm({
           setConflict(await findConflictingConnection(err.message));
         }
         throw err;
+      }
+
+      // Creation changes the whole account: the list is stale whatever happens
+      // to the binding below, and on the OAuth path onSuccess never fires.
+      invalidateLists();
+
+      try {
+        await onCreated?.(created.connection);
+      } catch (e) {
+        // The row exists — a second submit would create another.
+        setCreatedUnbound(created.connection);
+        setError(getDetailedErrorMessage(e, t('createError')));
+        return null;
       }
 
       // The server asked for OAuth: the row exists but has no tokens yet, so
@@ -316,6 +337,17 @@ export default function ConnectionSetupForm({
         </Link>
       )}
 
+      {createdUnbound && (
+        <Link
+          href={`/dashboard/connections/${createdUnbound.id}`}
+          className="block text-sm text-accent underline hover:no-underline"
+        >
+          {t('openCreatedConnection', {
+            name: createdUnbound.name || createdUnbound.fullCode,
+          })}
+        </Link>
+      )}
+
       {loading && !redirecting && <p className="text-xs text-muted">{t('validatingHint')}</p>}
       {redirecting && <p className="text-xs text-muted">{t('authorizingHint')}</p>}
 
@@ -327,7 +359,7 @@ export default function ConnectionSetupForm({
         )}
         <Button
           type="submit"
-          disabled={busy || !canSubmit || !presetFields.complete}
+          disabled={busy || !canSubmit || !presetFields.complete || createdUnbound !== null}
           loading={busy}
           className="flex-1"
         >

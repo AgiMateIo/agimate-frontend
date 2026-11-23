@@ -1,14 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import apiService from '@/services/api';
-import { ConnectionResponse, SkillResponse } from '@/types';
+import { AgentSkillResponse, ConnectionResponse, SkillResponse } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
-import { Chip } from '@/components/ui/Chip';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { useAsyncForm } from '@/hooks/useAsyncForm';
 import { getErrorMessage } from '@/utils/error';
@@ -16,26 +15,17 @@ import { skillRequirements } from '@/utils/skill';
 import { agentDetailOptions, useAgentSkillPlanQuery } from '@/queries/agents';
 import { connectorCatalogOptions } from '@/queries/connectors';
 import { connectorNameOf } from '@/utils/connector';
-import { useSkillPickerQuery } from '@/queries/skills';
-import SkillRequirementChips from '@/components/skills/SkillRequirementChips';
-import {
-  SkillCatalogToolbar,
-  SkillListTail,
-  useRevealedRows,
-  useSkillCatalogFilters,
-} from '@/components/skills/SkillCatalogToolbar';
 import SkillRequirementSteps from './SkillRequirementSteps';
+import SkillPickerList from './SkillPickerList';
+import ConnectionSkillList from './ConnectionSkillList';
 import {
   choicesComplete,
   openRequiredAccess,
+  withPreferredConnection,
   type CreatedConnections,
   type RequirementChoices,
 } from './skillAccess';
 import { Placeholder } from '@/components/ui/Placeholder';
-
-// Rows revealed at once; "show more" grows the list in place. Both scopes are
-// merged client-side, so there is no server page to walk (see the query module).
-const CHUNK = 8;
 
 // The connector behind the "team agents" skill — handing work to another agent
 // of the same team. An agent outside a team can hold the skill but has nobody
@@ -45,17 +35,40 @@ const TEAM_AGENTS_CODE = 'agents';
 
 interface AddAgentSkillModalProps {
   agentId: string;
-  boundSkillIds: Set<string>;
+  // The bindings themselves: a bound skill is re-pointed, not refused.
+  boundSkills: AgentSkillResponse[];
+  // Still loading — the footer waits, so an unknown binding cannot 409.
+  boundSkillsPending?: boolean;
+  // The bindings could not be read: same gate, and the reason is shown.
+  boundSkillsError?: string | null;
+  // Opened from a connection row: the list narrows to skills that fit it, and
+  // the fitting requirement is prefilled with it.
+  connection?: { id: string; label: string };
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, onSuccess }: AddAgentSkillModalProps) {
+export default function AddAgentSkillModal({
+  agentId,
+  boundSkills,
+  boundSkillsPending = false,
+  boundSkillsError = null,
+  connection,
+  onClose,
+  onSuccess,
+}: AddAgentSkillModalProps) {
   const t = useTranslations('Agents');
   const tCommon = useTranslations('Common');
-  const tSkills = useTranslations('Skills');
 
   const [selectedSkill, setSelectedSkill] = useState<SkillResponse | null>(null);
+
+  const boundSkillIds = useMemo(
+    () => new Set(boundSkills.map((b) => b.skillId)),
+    [boundSkills],
+  );
+  const skillLocked = selectedSkill
+    ? boundSkills.find((b) => b.skillId === selectedSkill.id)
+    : undefined;
 
   // Which instance the skill will work with, per requirement key, and the
   // connections created from inside the wizard. Reset with the selection: the
@@ -69,18 +82,6 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
     setCreated({});
   };
 
-  // The selection is dropped where the source changes rather than in an effect
-  // watching it — the selected skill and its choices belong to one source, so
-  // they die with the switch that caused it.
-  const catalogFilters = useSkillCatalogFilters({ onSourceChange: () => pickSkill(null) });
-
-  const {
-    skills,
-    isPending: skillsLoading,
-    error: skillsError,
-    truncated,
-  } = useSkillPickerQuery(catalogFilters.source, catalogFilters.debouncedSearch, catalogFilters.filters);
-
   const { data: catalog } = useQuery(connectorCatalogOptions());
   // Cached by the agent's own pages, which this modal always opens from.
   const { data: agent } = useQuery(agentDetailOptions(agentId));
@@ -93,7 +94,10 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
     selectedSkill?.id ?? null,
   );
 
-  const { visible, revealMore } = useRevealedRows(catalogFilters.listKey, CHUNK);
+  // The plan is not suspense — on the render that follows a pick it is undefined.
+  const effectiveChoice = plan
+    ? withPreferredConnection(plan.connectors, choice, connection?.id)
+    : choice;
 
   const { loading, error, handleSubmit } = useAsyncForm<void>({
     onSuccess,
@@ -105,16 +109,26 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
       if (!selectedSkill || !plan) return;
       // Connections first: a skill may only point at what the agent can reach,
       // and the rules are written on the binding at the last step.
-      const connections = await openRequiredAccess(agentId, plan.connectors, choice, created);
-      await apiService.bindAgentSkill(agentId, {
-        skillId: selectedSkill.id,
-        connections: Object.keys(connections).length > 0 ? connections : undefined,
-      });
+      const connections = await openRequiredAccess(
+        agentId,
+        plan.connectors,
+        effectiveChoice,
+        created,
+      );
+      if (skillLocked) {
+        // The skill exists and points elsewhere — move it, don't bind it twice.
+        await apiService.updateAgentSkillConnections(agentId, skillLocked.skillId, connections);
+      } else {
+        await apiService.bindAgentSkill(agentId, {
+          skillId: selectedSkill.id,
+          connections: Object.keys(connections).length > 0 ? connections : undefined,
+        });
+      }
     });
 
   // Every external requirement needs an instance: without one the backend
   // refuses the binding rather than guessing between two accounts.
-  const incomplete = !plan || !choicesComplete(plan.connectors, choice, created);
+  const incomplete = !plan || !choicesComplete(plan.connectors, effectiveChoice, created);
 
   // Binding is allowed and does nothing: the agent would get a skill whose
   // whole subject is the colleagues it doesn't have. A note rather than a
@@ -125,68 +139,38 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
     skillRequirements(selectedSkill).some((r) => r.code === TEAM_AGENTS_CODE);
 
 
-  const shown = skills.slice(0, visible);
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={t('addSkill')} size="lg">
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title={connection ? t('pickSkillForConnection', { label: connection.label }) : t('addSkill')}
+      size="lg"
+    >
       {/* Not a <form>: the inline connection form of a step is one, and a form
           nested in a form submits both — Enter or "Create" in the inner one
           would also fire the binding. The one button below is the only submit. */}
       <div className="space-y-4">
-        {/* Same toolbar as the Skills page: source and tags behind the funnel,
-            the catalog's sections in the open. */}
-        <SkillCatalogToolbar state={catalogFilters} placeholder={t('searchSkills')} size="sm" />
+        {connection && <p className="text-sm text-muted">{t('pickSkillForConnectionHint')}</p>}
+        {connection && boundSkillsError && <ErrorAlert>{boundSkillsError}</ErrorAlert>}
 
-        {/* Skills list */}
-        <div className="min-h-[280px]">
-          {skillsLoading ? (
-            <Placeholder size="sm">{t('loadingSkills')}</Placeholder>
-          ) : skillsError ? (
-            <ErrorAlert>{getErrorMessage(skillsError, 'Failed to load skills')}</ErrorAlert>
-          ) : skills.length === 0 ? (
-            <Placeholder size="sm">{t('noSkillsFound')}</Placeholder>
-          ) : (
-            <div className="space-y-1">
-              {shown.map((skill) => {
-                const isBound = boundSkillIds.has(skill.id);
-                return (
-                  <button
-                    key={skill.id}
-                    type="button"
-                    onClick={() => !isBound && pickSkill(skill)}
-                    disabled={isBound}
-                    className={`w-full text-left px-3 py-2.5 rounded-lg border transition-colors ${
-                      isBound
-                        ? 'border-transparent opacity-50 cursor-not-allowed'
-                        : selectedSkill?.id === skill.id
-                          ? 'border-accent bg-accent/5'
-                          : 'border-transparent hover:bg-surface-secondary'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-foreground">{skill.title}</span>
-                      <span className="text-xs text-muted">v{skill.version}</span>
-                      {skill.isPublic && (
-                        <Chip strong tone="success">{tSkills('public')}</Chip>
-                      )}
-                      {isBound && (
-                        <span className="text-xs text-muted">({t('alreadyBound')})</span>
-                      )}
-                    </div>
-                    {skill.description && (
-                      <p className="text-xs text-muted mt-0.5 line-clamp-1">{skill.description}</p>
-                    )}
-                    <div className="mt-1">
-                      <SkillRequirementChips requirements={skillRequirements(skill)} nameOf={connectorName} />
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        <SkillListTail total={skills.length} visible={visible} truncated={truncated} onMore={revealMore} />
+        {connection ? (
+          <ConnectionSkillList
+            connectionId={connection.id}
+            boundSkillIds={boundSkillIds}
+            selectedSkillId={selectedSkill?.id ?? null}
+            connectorName={connectorName}
+            onPick={pickSkill}
+          />
+        ) : (
+          <SkillPickerList
+            boundSkillIds={boundSkillIds}
+            selectedSkillId={selectedSkill?.id ?? null}
+            connectorName={connectorName}
+            onPick={pickSkill}
+            onSourceChange={() => pickSkill(null)}
+          />
+        )}
 
         {/* The plan — the skill cannot be bound without its instances, so the
             steps sit in the same modal rather than behind a second screen. */}
@@ -203,7 +187,7 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
             ) : (
               <SkillRequirementSteps
                 connectors={plan.connectors}
-                choice={choice}
+                choice={effectiveChoice}
                 onChoice={(key, id) => setChoice((prev) => ({ ...prev, [key]: id }))}
                 created={created}
                 onCreated={(key, connection: ConnectionResponse) =>
@@ -231,11 +215,11 @@ export default function AddAgentSkillModal({ agentId, boundSkillIds, onClose, on
           <Button
             type="button"
             onClick={onSubmit}
-            disabled={loading || !selectedSkill || incomplete}
+            disabled={loading || !selectedSkill || incomplete || boundSkillsPending || !!boundSkillsError}
             loading={loading}
             className="flex-1"
           >
-            {t('addSkill')}
+            {skillLocked ? t('changeConnection') : t('addSkill')}
           </Button>
         </div>
       </div>

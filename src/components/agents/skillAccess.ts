@@ -78,6 +78,24 @@ export function choicesComplete(
   return connectors.every((c) => c.internal || resolveChoice(c, choice, created) !== '');
 }
 
+// The instance the user arrived from, for every requirement whose `matches`
+// hold it. Explicit choices always win.
+export function withPreferredConnection(
+  connectors: AgentSkillConnectorStatus[],
+  choice: RequirementChoices,
+  preferredId?: string,
+): RequirementChoices {
+  if (!preferredId) return choice;
+  const out = { ...choice };
+  for (const c of connectors) {
+    if (c.internal) continue;
+    const key = requirementKey(c);
+    if (key in out) continue;
+    if (requirementMatches(c).some((m) => m.connectionId === preferredId)) out[key] = preferredId;
+  }
+  return out;
+}
+
 // Steps two and three of the plan, minus the skill call itself: opens to the
 // agent every instance the skill is about to point at, and answers the
 // connections map (keyed by requirement key) the skill call takes. Internal

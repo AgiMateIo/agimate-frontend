@@ -5,7 +5,7 @@ import { useSuspenseQueries } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { connectionsListOptions, useConnectionCacheActions } from '@/queries/connections';
+import { connectionsListOptions } from '@/queries/connections';
 import { connectorCatalogOptions, integrationPlatformsOptions } from '@/queries/connectors';
 import ConnectionsList from '@/components/connections/ConnectionsList';
 import AddConnectionModal from '@/components/connections/AddConnectionModal';
@@ -20,13 +20,10 @@ function ConnectionsContent() {
       connectionsListOptions(),
     ],
   });
-  const { invalidateLists } = useConnectionCacheActions();
   const [showAddModal, setShowAddModal] = useState(false);
 
-  const handleAddSuccess = () => {
-    invalidateLists();
-    setShowAddModal(false);
-  };
+  // The form invalidates the list itself, right after creation.
+  const handleAddSuccess = () => setShowAddModal(false);
 
   return (
     <>

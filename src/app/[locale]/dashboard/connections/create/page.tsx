@@ -11,7 +11,6 @@ import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { integrationPlatformsOptions } from '@/queries/connectors';
 import { connectorPresetOptions } from '@/queries/connectorPresets';
 import { findConnector } from '@/utils/connector';
-import { useConnectionCacheActions } from '@/queries/connections';
 import { takePendingPreset } from '@/utils/pending-preset';
 import ConnectionSetupForm from '@/components/connections/ConnectionSetupForm';
 import { PRESET_AVAILABILITY_LABEL } from '@/components/connections/presetLabels';
@@ -50,14 +49,13 @@ function ManualConnectionContent() {
   const initialName = searchParams.get('name') ?? '';
 
   const { data: platforms } = useSuspenseQuery(integrationPlatformsOptions());
-  const { invalidateLists } = useConnectionCacheActions();
 
   // Only integration connectors are in `platforms` — anything else has no
   // credentials to collect, so there is no form to show.
   const connector = findConnector(platforms, connectorCode);
 
+  // The form invalidates the list itself, right after creation.
   const handleSuccess = (connection: ConnectionResponse) => {
-    invalidateLists();
     router.replace(`/dashboard/connections/${connection.id}`);
   };
 
@@ -97,10 +95,9 @@ function PresetConnectionContent({ code }: { code: string }) {
   const [{ data: platforms }, { data: preset }] = useSuspenseQueries({
     queries: [integrationPlatformsOptions(), connectorPresetOptions(code)],
   });
-  const { invalidateLists } = useConnectionCacheActions();
 
+  // The form invalidates the list itself, right after creation.
   const handleSuccess = (connection: ConnectionResponse) => {
-    invalidateLists();
     router.replace(`/dashboard/connections/${connection.id}`);
   };
 
