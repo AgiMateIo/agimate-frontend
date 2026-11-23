@@ -125,6 +125,14 @@ export default function ConnectionSetupForm({
     defaultError: t('createError'),
   });
 
+  // A detail keyed to a field this form does not render (a preset's URL, a
+  // token hidden under OAuth) has no slot of its own — it goes into the alert.
+  const unshownFieldErrors = Object.entries(fieldErrors)
+    .filter(([field]) => !Object.hasOwn(credentialFields, field))
+    .map(([, message]) => message)
+    .filter(Boolean);
+  const shownError = [error, ...unshownFieldErrors].filter(Boolean).join('; ') || null;
+
   // 409 → point the user at the connection that already holds this instance.
   const findConflictingConnection = async (message: string) => {
     const subCode = parseConflictSubCode(message);
@@ -198,7 +206,7 @@ export default function ConnectionSetupForm({
         }
       }
       return created.connection;
-    });
+    }).catch(() => {});
 
   // `loading` drops back to false the moment the action returns, but on the
   // OAuth path the browser is still navigating away — keep the form frozen.
@@ -288,7 +296,7 @@ export default function ConnectionSetupForm({
         </FormField>
       )}
 
-      {error && <ErrorAlert>{error}</ErrorAlert>}
+      {shownError && <ErrorAlert>{shownError}</ErrorAlert>}
 
       {conflict && (
         <Link
